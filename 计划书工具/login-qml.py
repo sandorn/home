@@ -7,10 +7,8 @@
 @Author  :   Even Sand
 @Version :   1.0
 @Contact :   sandorn@163.com
-@License :   (C)Copyright 2019-2019, NewSea
-@Desc    :   None
+@License :   (C)Copyright 2019-2019, NewSe
 '''
-
 
 from PyQt5.QtCore import QUrl, QObject, pyqtSlot
 from PyQt5.QtGui import QGuiApplication
