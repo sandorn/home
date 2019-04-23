@@ -1,0 +1,85 @@
+import win.ui;
+import web.form;
+import web.form.util;
+/*DSG{{*/
+var winform = win.form(text = "自动测试视力"; right = 807; bottom = 671)
+winform.add(
+    button = {
+        cls = "button";text = "开始游戏";left = 336;top = 8;right = 448;bottom = 48;z = 2
+    }; lbWeb = {
+        cls = "static";left = 16;top = 64;right = 792;bottom = 664;z = 1
+    }
+)
+/*}}*/
+
+web.form.emulation(11001);
+var wb = web.form(winform.lbWeb, , 0 | 0x200 | 0x40000000 | 0x1000);
+wb.go("http://game2.huhu101.com/wx/sl/#rd")
+wb.wait()
+
+var box = wb.getEle("box")
+
+winform.button.oncommand = function(id, event) {
+    winform.button.disabled = true;
+    var t = time.tick()
+    var ele = wb.querySelector("button[class='btn play-btn']");
+    if(ele && box) {
+        ele.click()
+        do {
+            win.delay(1)
+        } while (findDiff())
+    }
+    win.msgbox('共计耗时（毫秒）'++(time.tick() - t), '提示：')
+    winform.button.disabled = false;
+}
+
+findDiff = function() {
+    var colors = 0;
+    var tmp = {};
+    var spans = wb.queryEles(parent = box; tagName = "span")
+    if(#spans) {
+        for(i = 1;# spans; 1) {
+            var tmp_color = spans[i].style["backgroundColor"]
+            if(tmp[tmp_color]) {
+                tmp[tmp_color]++; //有大于1个的颜色存在,存数量
+                if(table.count(tmp) == 2){
+                    spans[colors].click()
+                    return true;
+                }
+            } else {
+                tmp[tmp_color] = 1;
+                colors = i;
+            }
+
+        }
+        return false;
+    }
+}
+
+findDiff2 = function() {
+    var tmp = {};
+    var color = "";
+    var colors = {};
+    var spans = wb.queryEles(parent = box; tagName = "span")
+    if(#spans) {
+        for(i = 1;# spans; 1) {
+            color = spans[i].style["backgroundColor"]
+            if(tmp[color]) {
+                tmp[color] = 2; //有大于1个的颜色存在
+                if(table.find(tmp, 1)) { //查找只有一个的颜色
+                    spans[colors[table.find(tmp, 1)]].click(); //点击
+                    return true;
+                }
+            } else {
+                tmp[color] = 1;
+                colors[color] = i;
+            }
+        }
+        spans[#spans].click(); //最后一个是单独色
+        return true;
+    }
+    return false;
+}
+
+winform.show(); //显示窗体
+win.loopMessage();

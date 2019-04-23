@@ -1,0 +1,103 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="aardio form";right=759;bottom=469)
+winform.add()
+/*}}*/
+
+io.open()
+
+import hpsocket.ssl.httpClient
+var http = hpsocket.ssl.httpClient()
+
+http.sslCleanup()
+http.sslSetupContext(0)
+
+
+http.onConnect = function(hpHttpClient,connId){
+ 	 ..io.print("onConnect",connId)
+}
+
+http.onReceive = function(hpHttpClient,connId,pData,length){
+	io.print( "onReceive--------------", length )
+	if( length == 2  ){
+		if( raw.convert( pData, {BYTE ver;BYTE method}).ver == 5  ){
+			var t = {
+				BYTE ver = 5;
+				BYTE cmd = 1;
+				BYTE rsv = 0;
+				BYTE atyp = 3;
+				BYTE hostLen = #"www.youtube.com";
+				BYTE host[] = "www.youtube.com";
+				WORD port = raw.swap(443,"WORD");
+			}
+			hpHttpClient.send( t )		
+		}	
+	}
+	elseif( raw.convert( pData, {BYTE ver;BYTE rep}).rep == 0 ) {
+		hpHttpClient.startHttp() 
+	}	
+}
+
+http.onHandShake = function(hpHttpClient,connId){
+	..io.print("onHandShake",connId)
+	var header = {
+  		Host = "www.youtube.com";
+    	["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36";
+	}
+	hpHttpClient.sendGet(  "/", header)			
+}
+
+
+http.onMessageBegin = function(hpHttpClient,connId){
+}
+
+http.onStatusLine = function(hpHttpClient,connId,statusCode,Desc){
+}
+
+http.onHeader = function(hpHttpClient,connId,name,value){
+}
+
+/**基本事件**/
+http.onHeadersComplete = function(hpHttpClient,connId){	
+	hpHttpClient.reallocString(1 )		
+}
+
+/**基本事件**/
+http.onBody = function(hpHttpClient,connId,pData,len){
+	hpHttpClient.appendString(pData, len )
+}
+
+/**基本事件**/
+http.onMessageComplete = function(hpHttpClient,connId){
+    // 线程中的io.print最大长度很小的，所以打印不全    
+	io.print( "onMessageComplete", hpHttpClient.getString() )
+	
+	hpHttpClient.reallocString( 0 )
+}
+
+/**基本事件**/
+http.onParseError = function(hpHttpClient,connId,errorCode,errorDesc){
+	io.print( "onParseError" )
+}
+
+http.onClose = function(hpHttpClient,connId,enOperation,errCode){
+	 io.print( "onClose" )
+	 hpHttpClient.reallocString( 0 )	
+}
+
+http.setHttpAutoStart(false)
+
+// 连接socks5代理
+if( http.start( "127.0.0.1", 1081,false ) ){
+	var t = {
+		BYTE ver = 5;
+		BYTE nmethods = 1;
+		BYTE methods = 0;
+	}
+	
+	http.send(t)		
+}
+
+
+winform.show() 
+win.loopMessage();

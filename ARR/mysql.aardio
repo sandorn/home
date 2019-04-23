@@ -1,0 +1,144 @@
+import xJlib.console;
+import carl.mysql;
+
+var print = xJlib.console.print
+xJlib.console.set()
+var dbMysql, stru_List
+
+function 连接数据库() {
+    print("正在连接数据库服务器..."); //启动一个线程开始输出连接进度
+    thread.invoke(function() while(!thread.get("C06998F6-350D-4ED2-AD24-4205A82D6172")) {
+        io.stdout.write(">");
+        sleep(100);
+    })
+
+    var server = `db4free.net`
+    var database = `baoxianjihuashu`
+    var uid = `sandorn`
+    var pwd = `eeM3sh4KPkp4sJ8A`
+    //真正连接数据库服务器
+    dbMysql, err = carl.mysql(server, database, uid, pwd)
+    //显示连接结果
+    thread.set("C06998F6-350D-4ED2-AD24-4205A82D6172", true)
+    if(!dbMysql) {
+        print("连接数据库失败", err);
+        return;
+    } else {
+        print("连接数据库成功！");
+    }
+
+    //获取服务器的数据库版本
+    var result = dbMysql.conn.getServerVersion()
+    print((result == 80015) ? "数据库版本匹配:8.00.15！" : "警告：数据库版本不匹配")
+}
+
+function 列表() {
+    table_temp = {}
+    var result = dbMysql.getTable("SELECT * FROM `产品结构`")
+    for(i = 1;# result; 1) {
+        res = {}
+        table.push(res, result[i]['产品名称']);
+        table.push(res, result[i]['保险公司']);
+        table.push(res, result[i]['产品大类']);
+        table.push(res, result[i]['产品小类']);
+        if result[i]['字段1'] != '' {
+            table.push(res, result[i]['字段1']);
+        }
+        if result[i]['字段2'] != '' {
+            table.push(res, result[i]['字段2']);
+        }
+        if result[i]['字段3'] != '' {
+            table.push(res, result[i]['字段3']);
+        }
+        if result[i]['字段4'] != '' {
+            table.push(res, result[i]['字段4']);
+        }
+        if result[i]['字段5'] != '' {
+            table.push(res, result[i]['字段5']);
+        }
+        if result[i]['字段6'] != '' {
+            table.push(res, result[i]['字段6']);
+        }
+        if result[i]['字段7'] != '' {
+            table.push(res, result[i]['字段7']);
+        }
+        if result[i]['字段8'] != '' {
+            table.push(res, result[i]['字段8']);
+        }
+
+        table.push(table_temp, res)
+    }
+
+    return table_temp;
+}
+
+function CreatView(stru_list) {
+    var sel_sql_begin = "Create or Replace  VIEW  `v%s` AS SELECT `ID`,`产品名称`,`保险公司`,`产品大类`,`产品小类`"
+    var sel_sql_end = " FROM `费率表` WHERE  `产品名称` = '%s' "
+    var 视图sql_list = {}
+    for(row = 1;# stru_list; 1) {
+        var sel_sql = sel_sql_begin
+        sel_sql = string.format(sel_sql, stru_list[row][1])
+
+        for(i = 1;# stru_list[row]; 1) {
+            if(i > 4) {
+                sel_sql = sel_sql + ",`" + stru_list[row][i] + "`"
+            }
+        }
+        sel_sql = sel_sql + string.format(sel_sql_end, stru_list[row][1])
+        table.push(视图sql_list, sel_sql)
+    }
+    var ok, err = dbMysql.transaction(视图sql_list)
+    return ok, err
+}
+
+function SqlQuey(tablename, innum, insex) {
+    var tab, err = dbMysql.getTable("Select * from `" + tablename + "` where 年龄=@num and 性别=@sex", {
+        num = innum;
+        sex = insex;
+    })
+    return tab, err;
+}
+
+function main() {
+    连接数据库()
+    stru_list = 列表()
+}
+
+function lisTab() {
+    var dbTable, err = dbMysql.conn.listTables()
+    for tbl in dbTable.each() {
+        console.log("发现数据表:", tbl);
+    }
+}
+
+main()
+lisTab()
+
+var ok, err = CreatView(stru_list)
+print(ok ? '创建视图成功！' : '创建视图错误:', err)
+var tab, err = SqlQuey('v爱守护', 44, '男')
+console.dump(tab ? '结果：', tab : '错误:', err)
+
+
+
+dbMysql.close()
+console.pause()
+
+/*
+选择数据库
+dbMysql.selectDb("baoxianjihuashu")  
+
+执行SQL语句,使用命名参数
+var ok,err = dbMysql.exec("INSERT `library` VALUES('测试',@num,@str)",{
+    num = 123;
+    str = "测试:'这是字符串!'命名参数可以自动处理字符串转义";
+} ) 
+console.log(ok,err);
+
+查询数据并返回记录集
+var result = dbMysql.query("SELECT * FROM `library`");
+for name,auditing,bytes in result.each(){ 
+    console.log( name,auditing,bytes ); //逐行输出所有记录
+}
+*/
