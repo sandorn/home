@@ -1,3 +1,17 @@
+# ！/usr/bin/env python
+# -*-coding:utf-8-*-
+'''
+@Software:   VSCode
+@File    :   login-qml.py
+@Time    :   2019/04/23 14:56:18
+@Author  :   Even Sand
+@Version :   1.0
+@Contact :   sandorn@163.com
+@License :   (C)Copyright 2019-2019, NewSea
+@Desc    :   None
+'''
+
+
 from PyQt5.QtCore import QUrl, QObject, pyqtSlot
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQuick import QQuickView
