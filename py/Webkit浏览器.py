@@ -25,7 +25,7 @@ view.setHtml('''
         function completeAndReturnName() {
           var fname = document.getElementById('fname').value;
           var lname = document.getElementById('lname').value;
-          var full = fname + '' + lname;
+          var full = fname + '' + lname+'99999999999999999';
 
           document.getElementById('fullname').value = full;
           document.getElementById('submit-btn').style.display = 'block';
