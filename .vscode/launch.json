@@ -5,13 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "java",
-            "name": "Debug (Attach)",
-            "request": "attach",
-            "hostName": "localhost",
-            "port": "<debug port of the debuggee>"
-        },
-        {
             "name": "Python: Integrated Terminal",
             "type": "python",
             "request": "launch",

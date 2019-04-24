@@ -1,0 +1,33 @@
+<style type="text/css">
+    header {
+        width: *;
+        line-height: 1.6em;
+        flow: horizontal;
+    }
+
+    header>caption {
+        width: *;
+        height: *;
+        text-indent: 3dip;
+    }
+
+    header>window-button {
+        display: block;
+        width: max-content;
+        font-family: Marlett;
+        font-size: 14dip;
+        line-height: 1.6em;
+        behavior: clickable;
+        padding: 0 10dip;
+        border-bottom: 1px #cccccc solid;
+    }
+
+</style>
+<header>
+    <caption role="window-caption">拖动</caption>
+    <window-button #window-debug>s</window-button>
+    <window-button #window-menu>6</window-button>
+    <window-button #window-min role="window-minimize">0</window-button>
+    <window-button #window-max role="window-maximize">1</window-button>
+    <window-button #window-close role="window-close">r</window-button>
+</header>

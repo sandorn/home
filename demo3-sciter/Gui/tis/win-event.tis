@@ -1,0 +1,37 @@
+function setWinToCenter(w=0, h=0){
+    var (xs,ys,ws,hs) = view.screenBox(#workarea,#rectw);
+    var (ww, hw) = view.box(#dimension, #border, #screen);
+    ww = w == 0 ? ww : w;
+    hw = h == 0 ? hw : h;
+    var cx = ( ws - ww ) / 2;
+    var cy = ( hs - hw ) / 2;
+    view.move(cx,cy,ww,hw);
+}
+
+// 拦截关闭事件
+// view.root.on("closerequest",function(evt) {
+//     const REASONS = ["BY CHROME", "BY CODE", "BY LOAD"];
+//     view.msgbox(#information, "closing " + REASONS[evt.reason]);
+// });
+
+// 窗口移动、缩放事件
+// view.on("move",alert"move"())
+//     .on("size",alert("on size"))
+//     .on("mediachange", alert("on mediachange"));
+
+// 窗口状态变更
+// const states = [ "WINDOW_STATE_NA", "WINDOW_SHOWN", "WINDOW_MINIMIZED", "WINDOW_MAXIMIZED", "WINDOW_HIDDEN", "WINDOW_FULL_SCREEN"];
+view << event statechange {
+    switch( view.state ){
+        case View.WINDOW_MAXIMIZED :
+            $(#window-max).text = 2;
+            $(#window-resize).style#display = "none";
+            $(body).style#padding = 0;
+            break;
+        case View.WINDOW_SHOWN :
+            $(#window-max).text = 1;
+            $(#window-resize).style#display = "block";
+            $(body).style#padding = "5dip";
+            break;
+    }
+};

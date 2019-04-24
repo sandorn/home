@@ -1,0 +1,6 @@
+﻿include "win-event.tis";
+function alert(p){
+    view.msgbox( #information, p);
+}
+
+

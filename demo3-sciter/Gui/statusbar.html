@@ -1,0 +1,82 @@
+<script type="text/tiscript">
+    class ResizeView: Behavior {
+        var dx, dy;
+        var sx, sy;
+        var nw, nh;
+        var resizing = false;
+        var handler;
+        var minWidth = 320;
+        var minHeight = 197.76;
+        function attached() {
+            handler = this;
+            handler.on("mousedown", onMouseDown);
+            handler.on("~mouseup", onMouseUp);
+            handler.on("~mousemove", onMouseMove);
+        }
+        function onMouseDown(evt) {
+            var (x, y, w, h) = view.box(#rectw, #border, #screen);
+            sx = x;
+            sy = y;
+            dx = w - evt.xView;
+            dy = h - evt.yView;
+            resizing = true;
+            handler.capture(true);
+            view.doEvent(#untilMouseUp);
+            handler.capture(false);
+            resizing = false;
+            return true;
+        }
+        function onMouseMove(evt) {
+
+            if (resizing) {
+                nw = Integer.max( (evt.xView + dx).toInteger(), minWidth.toInteger() );
+                nh = Integer.max( (evt.yView + dy).toInteger(), minHeight.toInteger() );
+                view.move(sx, sy, nw, nh);
+                view.update();
+                return true;
+            }
+            return false;
+        }
+        function onMouseUp(evt) {
+            if (resizing) {
+                resizing = false;
+                handler.capture(false);
+                return true;
+            }
+            return false;
+        }
+    }
+</script>
+<style type="text/css">
+    footer {
+        width: *;
+        height: 1.2em;
+        flow: horizontal;
+    }
+
+    footer>section {
+        width: *;
+        text-indent: 3dip;
+        line-height: 1em;
+    }
+
+    footer>window-button {
+        display: block;
+        width: max-content;
+        font-family: Marlett;
+        font-size: 1.2em;
+        behavior: clickable;
+    }
+
+    #window-resize {
+        prototype: ResizeView;
+        text-align: right;
+        vertical-align: bottom;
+        cursor: se-resize;
+        font-size: 0.8em;
+    }
+</style>
+<footer>
+    <section>status</section>
+    <window-button #window-resize>o</window-button>
+</footer>
