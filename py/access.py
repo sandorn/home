@@ -4,11 +4,12 @@ __author__ = 'mayi'
 #导入模块
 import pypyodbc
 
+
 #定义conn
-def mdb_conn(db_name, password = ""):
+def mdb_conn(db_name, password=""):
     """
     功能：创建数据库连接
-    :param db_name: C:\Users\刘新军\Desktop\展业\计划书工具\res\db.mdb
+    :param db_name: C:\\Users\\刘新军\\Desktop\\展业\\计划书工具\\res\\db.mdb
     :param db_name: 数据库密码，默认为空
     :return: 返回数据库连接
     """
@@ -16,6 +17,7 @@ def mdb_conn(db_name, password = ""):
     conn = pypyodbc.win_connect_mdb(str)
 
     return conn
+
 
 #增加记录
 def mdb_add(conn, cur, sql):
@@ -33,6 +35,7 @@ def mdb_add(conn, cur, sql):
     except:
         return False
 
+
 #删除记录
 def mdb_del(conn, cur, sql):
     """
@@ -48,6 +51,7 @@ def mdb_del(conn, cur, sql):
         return True
     except:
         return False
+
 
 #修改记录
 def mdb_modi(conn, cur, sql):
@@ -65,6 +69,7 @@ def mdb_modi(conn, cur, sql):
     except:
         return False
 
+
 #查询记录
 def mdb_sel(cur, sql):
     """
@@ -79,6 +84,7 @@ def mdb_sel(cur, sql):
     except:
         return []
 
+
 if __name__ == '__main__':
     pathfile = 'test.mdb'
     tablename = 'prov'
@@ -88,28 +94,28 @@ if __name__ == '__main__':
     #增
     sql = "Insert Into " + tablename + " Values (33, 12, '天津', 0)"
     if mdb_add(conn, cur, sql):
-       print("插入成功！")
+        print("插入成功！")
     else:
-       print("插入失败！")
+        print("插入失败！")
 
     #删
     sql = "Delete * FROM " + tablename + " where id = 32"
     if mdb_del(conn, cur, sql):
-       print("删除成功！")
+        print("删除成功！")
     else:
-       print("删除失败！")
+        print("删除失败！")
 
     #改
     sql = "Update " + tablename + " Set IsFullName = 1 where ID = 33"
     if mdb_modi(conn, cur, sql):
-       print("修改成功！")
+        print("修改成功！")
     else:
-       print("修改失败！")
+        print("修改失败！")
 
     #查
     sql = "SELECT * FROM " + tablename + " where id > 10"
     sel_data = mdb_sel(cur, sql)
     print(sel_data)
 
-cur.close()    #关闭游标
-conn.close()   #关闭数据库连接
+cur.close()  # 关闭游标
+conn.close()  # 关闭数据库连接
