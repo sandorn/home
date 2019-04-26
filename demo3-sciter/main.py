@@ -12,7 +12,6 @@
 '''
 
 import ctypes
-import json
 import os
 from multiprocessing import Process, Queue
 from os import getcwd, mkdir
@@ -41,6 +40,7 @@ def queueLoop(_GuiQueue, funCall):
 
 
 class Frame(sciter.Window):
+
     def __init__(self):
         '''
             ismain=False, ispopup=False, ischild=False, resizeable=True,
@@ -59,9 +59,10 @@ class Frame(sciter.Window):
         self.GuiQueue = Queue()
         # 创建用于接收界面进程发送的任务的队列，此队列线程安全
         self.ServiceQueue = Queue()
-        p = Process(target=startServiceP,
-                    args=(self.GuiQueue, self.ServiceQueue, self.cfg))
-        p.daemon = True  #设置为守护进程,保证主进程退出时子进程也会退出
+        p = Process(
+            target=startServiceP,
+            args=(self.GuiQueue, self.ServiceQueue, self.cfg))
+        p.daemon = True  # 设置为守护进程,保证主进程退出时子进程也会退出
         p.start()
         t = Thread(target=queueLoop, args=(self.GuiQueue, self.call_function))
         t.daemon = True
