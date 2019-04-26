@@ -56,7 +56,7 @@ class MysqlHelp:
         except Exception as error:
             self.session.ROLLBACK()
             print('\033[', error, ']\033', sep='')  # repr(error)
-            return False, e
+            return False, error
 
     def insert(self, dt):
         ls = [(k, dt[k]) for k in dt if dt[k] is not None]

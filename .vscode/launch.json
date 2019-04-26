@@ -1,34 +1,15 @@
 {
-    // 使用 IntelliSense 了解相关属性。
+    // 使用 IntelliSense 了解相关属性。 
     // 悬停以查看现有属性的描述。
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Integrated Terminal",
+            "name": "Python: Current File (Integrated Terminal)",
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal",
-            "console1": "externalTerminal"
-        },
-        {
-            "name": "Python: args",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": true,
-            "program": "${file}",
-            "cwd": "${workspaceRoot}",
-            "args": [
-                "param_1",
-                "param_2",
-                "param_3"
-            ],
-            "debugOptions": [
-                "WaitOnAbnormalExit",
-                "WaitOnNormalExit",
-                "RedirectOutput"
-            ]
+            "console": "integratedTerminal"
         },
         {
             "name": "Python: Remote Attach",
@@ -77,6 +58,13 @@
                 "--no-reload"
             ],
             "jinja": true
+        },
+        {
+            "name": "Python: Current File (External Terminal)",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "externalTerminal"
         }
     ]
 }

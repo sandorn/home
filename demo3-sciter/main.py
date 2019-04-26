@@ -11,18 +11,19 @@
 @Desc    :   None
 '''
 
-
-# 导入sciter支持,必须安装pysciter
-import sciter
 import ctypes
 import json
 import os
-from os import path as osPath, getcwd, mkdir
-
 from multiprocessing import Process, Queue
+from os import getcwd, mkdir
+from os import path as osPath
 from threading import Thread
+
+# 导入sciter支持,必须安装pysciter
+import sciter
+
 from EventManager import EventManager
-from FunManager import ServiceEvent, GuiCallBack
+from FunManager import GuiCallBack, ServiceEvent
 
 # 设置dpi, 防止程序在高分屏下发虚
 ctypes.windll.user32.SetProcessDPIAware(2)

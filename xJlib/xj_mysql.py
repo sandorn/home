@@ -132,7 +132,7 @@ if __name__ == '__main__':
     print("data[0]:", data[0], "++++++++++data[1][1]:", data[1][1])
 '''
 # 如果使用事务引擎，可以设置自动提交事务，或者在每次操作完成后手动提交事务conn.commit()
-conn.autocommit(1)    # conn.autocommit(True) 
+conn.autocommit(1)    # conn.autocommit(True)
 # 使用cursor()方法获取操作游标
 cursor = conn.cursor()
 # 因该模块底层其实是调用CAPI的，所以，需要先得到当前指向数据库的指针。
