@@ -3,7 +3,7 @@
 '''
 @Software:   VSCode
 @File    :   database_router.PY
-@Time    :   2019/04/22 12:08:30
+@Time    :   2019/04/28 16:42:33
 @Author  :   Even Sand
 @Version :   1.0
 @Contact :   sandorn@163.com
@@ -15,12 +15,20 @@ DBSERVER = {
     'default': {
         'host': 'rm-8vbdh9h80t8m9smmuqo.mysql.zhangbei.rds.aliyuncs.com',
         'port': 3306,
-        'user': 'root',
-        'passwd': 'Sand2808',
+        'user': 'sandorn',
+        'passwd': '123456',
         'db': 'bxflb',
         'charset': 'utf8mb4',
     },
     'ali': {
+        'host': 'rm-8vbdh9h80t8m9smmuqo.mysql.zhangbei.rds.aliyuncs.com',
+        'port': 3306,
+        'user': 'sandorn',
+        'passwd': '123456',
+        'db': 'bxflb',
+        'charset': 'utf8mb4',
+    },
+    'aliSuper': {
         'host': 'rm-8vbdh9h80t8m9smmuqo.mysql.zhangbei.rds.aliyuncs.com',
         'port': 3306,
         'user': 'root',
@@ -28,11 +36,19 @@ DBSERVER = {
         'db': 'bxflb',
         'charset': 'utf8mb4',
     },
-    'tencent': {
+    'tx': {
+        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
+        'port': 10014,
+        'user': 'sandorn',
+        'passwd': '123456',
+        'db': 'bxflb',
+        'charset': 'utf8mb4',
+    },
+    'txSuper': {
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
         'user': 'root',
-        'passwd': 'sand2808',
+        'passwd': 'Sand2808',
         'db': 'bxflb',
         'charset': 'utf8mb4',
     },
