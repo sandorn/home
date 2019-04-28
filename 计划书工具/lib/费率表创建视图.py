@@ -1,22 +1,12 @@
 # ！/usr/bin/env python
 # -*-coding:utf-8-*-
 
-import pymysql as mysql
-
-# import MySQLdb as mysql    # 同样有效，MySQLdb来自于mysqlclient/DB API
-
+import xj_mysql
 
 def 连接数据库():
     global db, cur
-    db = mysql.connect(
-        host='cdb-lfp74hz4.bj.tencentcdb.com',
-        port=10014,
-        user='root',
-        passwd='sand2808',
-        db='bxflb',
-        charset='utf8mb4')
-    # 使用cursor()方法获取操作游标
-    cur = db.cursor()
+    db = myDb = xj_mysql.MysqlHelp()
+    cur = db.cur
     # 使用execute方法执行SQL语句
     cur.execute("SELECT VERSION()")
     # 使用 fetchone() 方法获取一条数据库。

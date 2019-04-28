@@ -15,14 +15,14 @@ try:
 except ImportError:
     import pymysql as myodbc
 import pandas
-import database_router
+import db_router
 
 
 class MysqlHelp:
 
     def __init__(self, name='default'):
         try:
-            self.conn = myodbc.connect(**database_router.DBSERVER[name])
+            self.conn = myodbc.connect(**db_router.DBSERVER[name])
             # 使用cursor()获取操作游标
             self.cur = self.conn.cursor()
         except Exception as error:
