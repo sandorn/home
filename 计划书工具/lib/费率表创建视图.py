@@ -53,7 +53,7 @@ def 执行视图sql(sql):
         #print('执行|', i, '|', sql[i])
 
 
-def main(name):
+def main(name="default"):
     连接数据库(name)
     if 列表():
         temp_list = 构建视图sql()
@@ -63,5 +63,5 @@ def main(name):
 
 
 if __name__ == '__main__':
-    main("default")
+    main()
     print("产品结构列表[1]:", 产品结构列表[1])

@@ -15,14 +15,18 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 import pandas
 import db_router
-dbr = db_router.DBSERVER
+dbr = db_router.config
 
 
-class MysqlHelp:
+class MysqlHelp(object):
 
     def __new__(cls, *args, **kwargs):
         #print("__new__方法被调用")
-        return object.__new__(cls)
+        if not hasattr(cls, '_instance'):
+            #if not '_instance' in vars(cls):
+            cls._instance = super(MysqlHelp, cls).__new__(cls)
+        return cls._instance
+        #return object.__new__(cls)
 
     def __init__(self, name='default'):
 

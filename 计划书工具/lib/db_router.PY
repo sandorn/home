@@ -11,7 +11,7 @@
 @Desc    :   None
 '''
 
-DBSERVER = {
+config = {
     'default': {
         'host': 'rm-8vbdh9h80t8m9smmuqo.mysql.zhangbei.rds.aliyuncs.com',
         'port': 3306,
