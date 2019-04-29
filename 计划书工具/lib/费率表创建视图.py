@@ -3,23 +3,23 @@
 
 import xj_mysql
 
-def 连接数据库():
-    global db, cur
-    db = myDb = xj_mysql.MysqlHelp()
-    cur = db.cur
+
+def 连接数据库(name):
+    global db
+    db = xj_mysql.MysqlHelp(name)
     # 使用execute方法执行SQL语句
-    cur.execute("SELECT VERSION()")
+    db.cur.execute("SELECT VERSION()")
     # 使用 fetchone() 方法获取一条数据库。
-    print("数据库版本：", cur.fetchone())
+    print("数据库版本：", db.cur.fetchone())
 
 
 def 列表():
     sel_sql = "SELECT  *  FROM  费率结构   "  # SQL语句
-    cur.execute(sel_sql)
+    db.cur.execute(sel_sql)
     global 产品结构列表
     产品结构列表 = []
     # 使用 fetchall() 方法获取数据
-    results = cur.fetchall()
+    results = db.cur.fetchall()
     for row in results:
         res = []
         for cell in row:
@@ -39,6 +39,7 @@ def 构建视图sql():
 
         for i in range(len(row)):
             if i > 4:
+                #print(row[1],row[i])
                 sel_sql = sel_sql + ",`" + row[i] + "`"
 
         sel_sql = sel_sql + sel_sql_end.format(row[1])
@@ -48,17 +49,12 @@ def 构建视图sql():
 
 def 执行视图sql(sql):
     for i in range(len(sql)):
-        try:
-            cur.execute(sql[i])  # 执行SQL语句
-            #print('执行|', i, '|', sql[i])
-            db.commit()  # 提交修改
-        except Exception as e:
-            print('回滚|', i, e)
-            db.rollback()  # 发生错误时回滚
+        db.worKon(sql[i])  # 执行SQL语句
+        #print('执行|', i, '|', sql[i])
 
 
-def main():
-    连接数据库()
+def main(name):
+    连接数据库(name)
     if 列表():
         temp_list = 构建视图sql()
         for i in range(len(temp_list)):
@@ -67,10 +63,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main("default")
     print("产品结构列表[1]:", 产品结构列表[1])
-
-# 关闭数据库连接
-cur.close()
-db.commit()
-db.close()

@@ -1,42 +1,57 @@
-#  ！/usr/bin/env python
-#  -*-coding:utf-8-*-
+# ！/usr/bin/env python
+# -*-coding:utf-8-*-
 '''
 @Software:   VSCode
 @File    :   xj_mysql.py
-@Time    :   2019/04/15 18:52:43
+@Time    :   2019/04/29 12:04:24
 @Author  :   Even Sand
 @Version :   1.0
 @Contact :   sandorn@163.com
 @License :   (C)Copyright 2019-2019, NewSea
 @Desc    :   None
 '''
+
 try:
     import MySQLdb as myodbc  # 与  pymysql 相同
 except ImportError:
     import pymysql as myodbc
 import pandas
 import db_router
+dbr = db_router.DBSERVER
 
 
-class MysqlHelp:
+class MysqlHelp(object):
+
+    def __new__(cls, *args, **kwargs):
+        #print("__new__方法被调用")
+        return object.__new__(cls)
 
     def __init__(self, name='default'):
+
+        if name not in dbr:
+            print('错误提示：\n        检查数据库路由名称！')
+            #self.__del__()
+            exit(1)
+
         try:
-            self.conn = myodbc.connect(**db_router.DBSERVER[name])
+            self.conn = myodbc.connect(**dbr[name])
             # 使用cursor()获取操作游标
             self.cur = self.conn.cursor()
         except Exception as error:
             print(
                 '\033[connect Error:\n', error, ']\033', sep='')  # repr(error)
-            exit(1)
+            return None  # raise  # exit(1)
 
     def __del__(self):
-        self.cur.close()
-        self.conn.close()
+        #print("__del__方法被调用")
+        if hasattr(self, 'cur'):
+            self.cur.close()
+        if hasattr(self, 'conn'):
+            self.conn.close()
 
-    def close(self):
-        self.cur.close()
-        self.conn.close()
+    def __str__(self):
+        """返回一个对象的描述信息"""
+        return 'MySQLdb数据库对象'
 
     def worKon(self, sql, args=[]):
         try:
@@ -118,18 +133,21 @@ def getVer(db_name):
 
 if __name__ == '__main__':
     myDb = MysqlHelp()
-    print("ver:", myDb.ver())
-    print("getVer:", getVer(myDb))
-    sql = " select * from users ;"
-    pdtable = myDb.getPt(sql)
-    print("pdtable.values[1][1]:", pdtable.values[1][1])
-    print("pdtable[1:2]:", pdtable[1:2])
-    print("pdtable.iloc[0]:", pdtable.iloc[0])
-    dic = myDb.getDic(sql)
-    print(dic)
-    data = myDb.getAll(sql)
-    print(data)
-    print("data[0]:", data[0], "++++++++++data[1][1]:", data[1][1])
+    print(myDb)
+    if myDb:
+        print("ver:", myDb.ver())
+        print("getVer:", getVer(myDb))
+        sql = " select * from users ;"
+        pdtable = myDb.getPt(sql)
+        print("pdtable.values[1][1]:", pdtable.values[1][1])
+        print("pdtable[1:2]:", pdtable[1:2])
+        print("pdtable.iloc[0]:", pdtable.iloc[0])
+        dic = myDb.getDic(sql)
+        print('dic:', dic)
+        data = myDb.getAll(sql)
+        print('data:', data)
+        print("data[0]:", data[0], "++++++++++data[1][1]:", data[1][1])
+        del myDb
 '''
 # 如果使用事务引擎，可以设置自动提交事务，或者在每次操作完成后手动提交事务conn.commit()
 conn.autocommit(1)    # conn.autocommit(True)
@@ -139,7 +157,8 @@ cursor = conn.cursor()
 
 # 插入单条数据
 sql = 'INSERT INTO user values("%d","%s")' %(1,"jack")
-
+#复制一条记录
+sql = 'INSERT INTO user selcet * from user where id=16'
 # 不建议直接拼接sql，占位符方面可能会出问题，execute提供了直接传值
 value = [2,'John']
 cursor.execute('INSERT INTO test values(%s,%s)',value)
