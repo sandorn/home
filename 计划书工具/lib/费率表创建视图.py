@@ -39,7 +39,7 @@ def 构建视图sql():
 
         for i in range(len(row)):
             if i > 4:
-                #print(row[1],row[i])
+                #print(row[1], row[i])
                 sel_sql = sel_sql + ",`" + row[i] + "`"
 
         sel_sql = sel_sql + sel_sql_end.format(row[1])
@@ -57,11 +57,15 @@ def main(name="default"):
     连接数据库(name)
     if 列表():
         temp_list = 构建视图sql()
+        '''
         for i in range(len(temp_list)):
             print(temp_list[i])
+        '''
     执行视图sql(temp_list)
 
 
 if __name__ == '__main__':
     main()
+    #print(type(db))
+    #print(db.__class__)
     print("产品结构列表[1]:", 产品结构列表[1])
