@@ -17,14 +17,15 @@ import threading
 import ctypes
 
 ctypes.windll.user32.SetProcessDPIAware(2)
-
 '''def run(self):
     while 1:
         time.sleep(2)
         # 调用html中方法
         self.eval_script('hello("42");')'''
 
+
 class Frame(sciter.Window):
+
     def __init__(self):
         super().__init__(ismain=True, uni_theme=True)
         pass
@@ -40,13 +41,15 @@ class Frame(sciter.Window):
         t = threading.Thread(target=run, args=(self,))
         t.start()
 
+
 if __name__ == '__main__':
     import os
-    htm = os.path.join(os.path.dirname(__file__), 'Gui/pysciter.html')   #pysciter.html文件编码格式必须 Unix(LF) UTF-8-BOM 以防止中文乱码
+    htm = os.path.join(os.path.dirname(__file__), 'sct.html')
+    #phtml文件编码格式必须 Unix(LF) UTF-8-BOM 以防止中文乱码
     frame = Frame()
-    frame.load_file("sct.html")
+    frame.load_file(htm)
     frame.run_app()
     frame.PythonCall("参数")
-    array=(1,2,3,4,5,6,7,9)
+    array = (1, 2, 3, 4, 5, 6, 7, 9)
     for index in enumerate(array):
-        frame.eval_script('hello('+index+');')
+        frame.eval_script('hello(' + index + ');')

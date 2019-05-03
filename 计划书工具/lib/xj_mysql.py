@@ -153,6 +153,18 @@ if __name__ == '__main__':
         print("data[0]:", data[0], "++++++++++data[1][1]:", data[1][1])
         del myDb
 '''
+# 查询语句，选出 users 表中的所有数据
+sql =  "select * from users;"
+# read_sql_query的两个参数: sql语句， 数据库连接
+df = pd.read_sql_query(sql, engine)
+# 输出 users 表的查询结果
+print(df)
+
+# 新建pandas中的DataFrame, 只有id,num两列
+df = pd.DataFrame({'id': [1, 2, 3, 4], 'name': ['zhangsan', 'lisi', 'wangwu', 'zhuliu']})
+# 将新建的DataFrame储存为MySQL中的数据表，储存index列
+df.to_sql('mydf', engine, index=True)
+print('Read from and write to Mysql table successfully!')
 # 如果使用事务引擎，可以设置自动提交事务，或者在每次操作完成后手动提交事务conn.commit()
 conn.autocommit(1)    # conn.autocommit(True)
 # 使用cursor()方法获取操作游标

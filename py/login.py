@@ -1,106 +1,127 @@
-﻿import tkinter
-from tkinter import messagebox
+import tkinter.messagebox as messagebox
+from tkinter import *
+
 import db
-import pandas as pd
 
 
-class Login(object):
-    def __init__(self):
-        # 创建主窗口,用于容纳其它组件
-        self.root = tkinter.Tk()
-        # 给主窗口设置标题内容
-        self.root.title("盛唐保险计划书制作系统")
-        self.root.geometry('450x300')
-        # 运行代码时记得添加一个gif图片文件，不然是会出错的
-        self.canvas = tkinter.Canvas(self.root, height=180, width=450)  # 创建画布
-        self.image_file = tkinter.PhotoImage(file='welcome_1.gif')  # 加载图片文件
-        self.image = self.canvas.create_image(
-            0, 0, anchor='nw', image=self.image_file)  # 将图片置于画布上
-        self.canvas.pack(side='top')  # 放置画布（为上端）
-        # 创建一个`label`名为`Account: `
-        self.label_account = tkinter.Label(self.root, text='Account: ')
-        # 创建一个`label`名为`Password: `
-        self.label_password = tkinter.Label(self.root, text='Password: ')
-        # 创建一个账号输入框,并设置尺寸
-        self.input_account = tkinter.Entry(self.root, width=30)
-        # 创建一个密码输入框,并设置尺寸
-        self.input_password = tkinter.Entry(self.root, show='*', width=30)
-        # 创建一个登录系统的按钮
-        self.login_button = tkinter.Button(
-            self.root,
-            command=self.backstage_interface,
-            text="Login",
-            width=10)
-        # 创建一个注册系统的按钮
-        self.siginUp_button = tkinter.Button(
-            self.root,
-            command=self.siginUp_interface,
-            text="Sign up",
-            width=10)
+class LoginPage:
+    """ 登 录 界 面 """
 
-    # 完成布局
-    def gui_arrang(self):
-        self.label_account.place(x=60, y=195)
-        self.label_password.place(x=60, y=220)
-        self.input_account.place(x=135, y=195)
-        self.input_password.place(x=135, y=220)
-        self.login_button.place(x=140, y=255)
-        self.siginUp_button.place(x=240, y=255)
+    def __init__(self, master):
+        self.root = master
+        self.root.geometry('400x200+600+400')
+        self.root.title('保险计划书Alpha0.1')
+        self.conn = db.MysqlHelp()
+        self.手机 = StringVar()
+        self.密码 = StringVar()
+        self.page = Frame(self.root)
+        self.creatapage()
 
-    # 进入注册界面
-    def siginUp_interface(self):
-        # self.root.destroy()
-        tkinter.messagebox.showinfo(title='唐保保', message='进入注册界面')
+    def creatapage(self):
+        """界面布局"""
+        Label(self.page).grid(row=0)
+        Label(self.page, text='手机号:').grid(row=1, stick=W, pady=10)
+        Entry(self.page, textvariable=self.手机).grid(row=1, column=1, stick=E)
+        Label(self.page, text='密码:').grid(row=2, stick=W, pady=10)
+        Entry(
+            self.page, textvariable=self.密码, show='*').grid(
+                row=2, stick=E, column=1)
+        Button(
+            self.page, text='登录', command=self.login).grid(
+                row=3, stick=W, pady=10)
+        Button(
+            self.page, text='注册账号', command=self.register).grid(
+                row=3, stick=E, column=1)
+        self.page.pack()
 
-    # 进行登录信息验证
-    def backstage_interface(self):
-        account = self.input_account.get().ljust(10, " ")
-        password = self.input_password.get().ljust(10, " ")
-        # 对账户信息进行验证，普通用户返回user，管理员返回master，账户错误返回noAccount，密码错误返回noPassword
+    def login(self):
+        """登录功能"""
+        query = "select 手机, 密码,登陆次数 from users where 手机='%s'" % self.手机.get()
+        c = self.conn.getall(query)  # 返回一个迭代器
+        if len(c) == 0:
+            messagebox.showerror('登录失败', '手机号不存在')
+        else:
+            us, pw, lerror = c[0]
+            if int(lerror) >= 3:
+                messagebox.showwarning('登录失败', '手机号已被锁定')
+            elif us == self.手机.get() and pw == self.密码.get():
+                #self.conn.close()
+                messagebox.showinfo('登录成功', '欢迎：%s' % us)
+            else:
+                messagebox.showwarning('登录失败', '密码错误')
+
+    def register(self):
+        """注册功能跳转"""
+        self.conn.close()
+        self.page.destroy()
+        RegisterPage(self.root)
 
 
-def getusers():
-    global conn
-    # 初始化对象
-    conn = db.db()
-    if conn:
-        print('数据库连接')
+class RegisterPage:
+    """注册界面"""
 
-    if db.cur(conn):
-        print('数据库版本匹配')
-        sql = ''' select * from users; '''
-        # read_sql_query的两个参数: sql语句， 数据库连接
-        df = pd.read_sql_query(sql, conn)
-        # 输出employee表的查询结果
-        print(df.values[0])
-        print(df.values[1])
-        print(df.values[0][1])
-        print(df.values[1][1])
+    def __init__(self, master=None):
+        self.root = master
+        self.root.title('账号注册')
+        self.root.geometry('400x250')
+        self.conn = db.MysqlHelp()
+        self.手机 = StringVar()
+        self.密码0 = StringVar()  # 第一次输入密码
+        self.密码1 = StringVar()  # 第二次输入密码
+        self.email = StringVar()
+        self.page = Frame(self.root)
+        self.createpage()
+
+    def createpage(self):
+        """界面布局"""
+        Label(self.page).grid(row=0)
+        Label(self.page, text="手机:").grid(row=1, stick=W, pady=10)
+        Entry(self.page, textvariable=self.手机).grid(row=1, column=1, stick=E)
+        Label(self.page, text="密码:").grid(row=2, stick=W, pady=10)
+        Entry(
+            self.page, textvariable=self.密码0, show='*').grid(
+                row=2, column=1, stick=E)
+        Label(self.page, text="再次输入:").grid(row=3, stick=W, pady=10)
+        Entry(
+            self.page, textvariable=self.密码1, show='*').grid(
+                row=3, column=1, stick=E)
+        Button(
+            self.page, text="返回", command=self.repage).grid(
+                row=5, stick=W, pady=10)
+        Button(
+            self.page, text="注册", command=self.register).grid(
+                row=5, column=1, stick=E)
+        self.page.pack()
+
+    def repage(self):
+        """返回登录界面"""
+        self.page.destroy()
+        self.conn.close()
+        LoginPage(self.root)
+
+    def register(self):
+        """注册"""
+        if self.密码0.get() != self.密码1.get():
+            messagebox.showwarning('错误', '密码核对错误')
+        elif len(self.手机.get()) == 0 or len(self.密码0.get()) == 0:
+            messagebox.showerror("错误", "不能为空")
+        else:
+            str1 = "insert into users(手机, 密码) values('{}','{}','{}')".format(
+                self.手机.get(), self.密码0.get())
+            rel = self.conn.workon(str1)
+            if rel:
+                messagebox.showinfo("成功", "注册成功，按确定返回登录界面")
+                self.page.destroy()
+                LoginPage(self.root)
+            else:
+                messagebox.showerror("注册失败", e)
 
 
-def main():
-    # 初始化对象
-    L = Login()
-    # 进行布局
-    L.gui_arrang()
-    # 登陆页面启动
-    tkinter.mainloop()
+def L():
+    root = Tk()
+    LoginPage(root)
+    root.mainloop()
 
 
 if __name__ == '__main__':
-    main()
-    getusers()
-"""
-    verifyResult=verifyAccount.verifyAccountData(account,password)#校验用户名密码
-
-    if verifyResult=='master':
-        self.root.destroy()
-        tkinter.messagebox.showinfo(title='影视资源管理系统', message='进入管理界面')
-    elif verifyResult=='user':
-        self.root.destroy()
-        tkinter.messagebox.showinfo(title='影视资源管理系统', message='进入用户界面')
-    elif verifyResult=='noAccount':
-        tkinter.messagebox.showinfo(title='影视资源管理系统', message='该账号不存在请重新输入!')
-    elif verifyResult=='noPassword':
-        tkinter.messagebox.showinfo(title='影视资源管理系统', message='账号/密码错误请重新输入!')
-"""
+    L()
