@@ -10,7 +10,7 @@ except ImportError:
 app = QtGui.QApplication(sys.argv)
 
 hello = QtGui.QPushButton("Hello world!")
-hello.resize(100, 30)
+hello.resize(500, 200)
 
 hello.show()
 

@@ -1,3 +1,16 @@
+# ！/usr/bin/env python
+# -*- coding:utf -8-*-
+'''
+@Software:   VSCode
+@File    :   login.py
+@Time    :   2019/05/05 09:08:48
+@Author  :   Even Sand
+@Version :   1.0
+@Contact :   sandorn@163.com
+@License :   (C)Copyright 2019-2019, NewSea
+@Desc    :   None
+'''
+
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -12,14 +25,25 @@ class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle('My Browser')
-        self.size = (1080, 720)  # 窗口大小
+        self.size = (720, 1080)  # 窗口大小
         #self.showMaximized()  # 窗口最大化
 
         self.webview = WebEngineView()
-        _url = "index.html"
-        self.webview.load(QUrl(_url))
-        # self.browser.setHtml(页面字符串)
+        import os
+        filename = os.path.join(os.path.dirname(__file__), 'index.html')
+        filename = ('file:///' + filename).replace('\\', '/')
+        #filename = QUrl(QFileInfo("index.html").absoluteFilePath())
+        #filename = QUrl(os.path.abspath("./index.html"))
+        print(filename)
+        self.webview.load(QUrl(filename))
+        '''with open(filename, "r", encoding="utf-8") as f:
+            html = f.read()
+        self.webview.setHtml(html)'''
         self.setCentralWidget(self.webview)
+        self.show()
+
+    def __del__(self):
+        self.webview.deleteLater()
 
 
 ################################################
@@ -44,7 +68,6 @@ class WebEngineView(QWebEngineView):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     w = MainWindow()
-    w.show()
     sys.exit(app.exec_())
 '''
 # 创建一个按钮去调用 JavaScript代码

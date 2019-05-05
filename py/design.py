@@ -1,5 +1,19 @@
+# ！/usr/bin/env python
+# -*- coding:utf -8-*-
+'''
+@Software:   VSCode
+@File    :   design.py
+@Time    :   2019/05/04 13:13:39
+@Author  :   Even Sand
+@Version :   1.0
+@Contact :   sandorn@163.com
+@License :   (C)Copyright 2019-2019, NewSea
+@Desc    :   None
+'''
+
 from PySide2.QtCore import QCoreApplication, QMetaObject
 from PySide2.QtWidgets import QListWidget, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
 
 
 # 在Qt Designer中自动生成的代码，但需要部分修改
@@ -38,6 +52,17 @@ class Ui_MainWindow(object):
         _translate = QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "Pick a folder"))
+
+
+def main():
+    # 创建新的实例应用
+    app = QApplication(sys.argv)
+    # 我们将表单设置为WoHeYunApp
+    widgets = Ui_MainWindow()
+    # 显示我们的表单
+    #widgets.show()
+    # 退出程序
+    app.exec_()
 
 
 # 如果我们直接运行文件而不是导入它，则执行

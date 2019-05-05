@@ -121,7 +121,6 @@ if __name__ == '__main__':
         #" ALTER TABLE  users AUTO_INCREMENT=3201"  # 设定自增ID
         # "insert into users(username, password,手机) values('%s','%s','%s')" % ('gaogao', '1234567', '17610786502')
     )
-    
     query = "INSERT INTO users(username, password,手机) values ('%s','%s','%s')"
     val = ('gaogao', '1234567', '17610786502')
     curs.execute(
