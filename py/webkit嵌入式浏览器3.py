@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         # 设置窗口标题
         self.setWindowTitle('My Browser')
         # 设置窗口图标
-        self.setWindowIcon(QIcon('icons/penguin.png'))
+        self.setWindowIcon(QIcon('toolbar.bmp'))
         # 设置窗口大小900*600
         self.resize(900, 600)
         self.show()
@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
 
 # 创建应用
 app = QApplication(sys.argv)
+app.setWindowIcon(QIcon('toolbar.bmp'))
 # 创建主窗口
 window = MainWindow()
 # 运行应用，并监听事件

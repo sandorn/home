@@ -1,0 +1,225 @@
+.logoImg{
+    width: 200px;
+    height: auto;
+    display: block;
+    margin:0.3rem auto 1.2rem;
+}
+@media only screen and  (max-width: 360px) {
+	.logoImg{
+    	width: 170px;
+    }
+}
+
+.DeInfo_Inpet{
+	padding: 1rem;
+}
+.DeInfo_Inpet2{
+	/*padding:0 1rem;*/
+}
+.LoginInput{
+	position: relative;
+}
+.LoginInput label{
+	line-height: 1rem;
+	padding: 0 0.6rem 0 0.1rem;
+	margin:0.65rem 0.6rem 0.65rem 0;
+	border-right: 1px solid #ccc;
+}
+.LoginInput label:before{
+	font-size: 1.4rem;
+}
+.optCont{
+	overflow: hidden;
+}
+.OptContInfo{
+	margin:0 0.8rem 0.8rem 0;
+}
+.OptContInfo2{
+	margin: 0;
+}
+.OptInfoL{
+	margin:0 0.4rem 0 0;
+}
+.OptInfoR{
+	font-size: 0.9rem;
+	color: #009b63;
+}
+/*复选框、单选框*/
+.checkedNum[data-style="checkeds"]{
+	display: none;
+}
+.checkedNum[data-style="checkeds"] + label{
+	border:1px solid #009b63;
+	padding: 6px;
+	border-radius: 2px;
+	display: inline-block;
+	overflow: hidden;
+	position: relative;
+	width: 0.4rem;
+	height: 0.4rem;
+}
+.checkedNum[data-style="checkeds"]:checked + label{
+	background-color: #009b63;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0px -15px 10px -12px rgba(0, 0, 0, 0.05), inset 15px 10px -12px rgba(255, 255, 255, 0.1);
+}
+.checkedNum[data-style="checkeds"] + label:before{
+	position: absolute;
+	top:0.15rem;
+	content:"\e919";
+	color: #009b63;
+	width: 100%;
+	text-align: center;
+	left:0rem;
+	font-size: 0.8rem;
+	-webkit-transition: all 0.2s linear;
+	transition: all 0.2s linear;
+
+}
+.checkedNum[data-style="checkeds"]:checked + label:before{
+	color: #fff;
+}
+
+
+.loginLink{
+	text-align: center;
+	margin-top: 0.8rem;
+}
+.loginLink_text{
+	display: inline-block;
+}
+.loginLink_text a{
+	font-size: 0.92rem;
+	color: #009b63;
+}
+.loginLink_text a:last-child{
+	color: #333;
+}
+.loginLink_text span{
+	margin:0 0.3rem;
+	height: 0.9rem;
+}
+
+/*注册*/
+.regUseBtn{
+    overflow: hidden;
+    padding: 0.8rem 1rem 0;
+}
+.regUseBtn a{
+	display: block;
+	width: 48%;
+	float: left;
+	transition: background 0.5s ease;
+	-webkit-transition: background 0.5s ease;
+}
+.regUseBtn a i{
+	font-style: normal;
+}
+.regUseBtn a:last-child{
+	float: right;
+}
+.yanzhengBtn{
+	position: absolute;
+    right: 0.4rem;
+    top: 0.09rem;
+    padding: 0.35rem 0;
+    font-size: 0.85rem;
+    width: 5rem;
+}
+.yanzhengNumOn{
+	background: #ccc;
+}
+.regUseBtn .regUseCurr{
+	background: #048858;
+}
+.regUseBtn .regUseCurr.BigBtnTwo{
+	background: #de871b;
+}
+/*团险个险*/
+.addPolicyBtn a span{
+	display: inline-block;
+}
+.addPolicyBtn a span:before{
+	color: #fff;
+	font-size: 1.3rem;
+	float: left;
+}
+.addPolicyBtn a i{
+	font-size: 0.9rem;
+    display: inline;
+    line-height: 1.4rem;
+    margin-left: 0.2rem;
+}
+/*我*/
+.UserList{
+	overflow: hidden;
+	margin:1rem 0;
+}
+.UserList li{
+	background: #fff;
+	border-bottom: 1px solid #ccc;
+}
+.UserList li a{
+	display: block;
+	padding:0.8rem 1rem;
+	position: relative;
+	overflow: hidden;
+	color: #666;
+	line-height: 1.3rem;
+	font-size: 0.95rem;
+}
+.UserList li a:before{
+	content:''; 
+	height:0.6rem; 
+	width:0.6rem; 
+	display:block; 
+	border:2px solid #999; 
+	border-left-width:0; 
+	border-top-width:0; 
+	transform:rotate(-45deg);
+	-webkit-transform:rotate(-45deg);
+	-moz-transform:rotate(-45deg);
+	-o-transform:rotate(-45deg);
+	-ms-transform:rotate(-45deg); 
+	position:absolute; 
+    top: 50%;
+    right:1rem;
+    margin-top: -0.3rem;
+}
+.UserList li a i:before{
+	font-size: 1.3rem;
+	float: left;
+	margin: 0.06rem 0.8rem 0 0;
+}
+.UserList li.UserPic{
+	margin-bottom: 1rem;
+	border-bottom: none;
+}
+.UserList li.UserPic img{
+	display: block;
+	width: 4rem;
+	height:4rem;
+	border-radius: 50%;
+	float: left;
+	margin-right:0.8rem;
+}
+.UserList li.UserPic a{
+	color: #009B63;
+	line-height: 4rem;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
