@@ -24,15 +24,16 @@
     <div class="wrapper">
         <!--页头-->
         <header class="header">
-            <a href="#" class="return floatL"></a>
-            <h3 class="floatL Logo headTit">登录</h3>
+            <!--<a href="#" class="return floatL"></a>//这是一个返回的箭头-->
+            <h3 class="floatL Logo">登录</h3>
         </header>
         <section class="main" id="groupForm">
             <div class="DeInfo_Inpet DeInfo_Inpet2">
                 <div class="DeInfoInput LoginInput">
                     <label class="icon-1 floatL"></label>
-                    <label style="display: none;">用户名/手机号</label>
-                    <input type="text" placeholder="请输入用户名/手机号" class="DeInfo_text" data-regtest="^1[3|4|5|7|8]\d{9}$ ">
+                    <label style="display: none;">用户手机号</label>
+                    <input type="text" placeholder="请输入手机号" class="DeInfo_text" data-regtest="^1[3|4|5|7|8]\d{9}$"
+                        maxlength="11" onkeyup="value=value.replace(/[^\d]/g,'')">
                 </div>
                 <div class="DeInfoInput LoginInput">
                     <label class="icon-11 floatL"></label>
@@ -80,7 +81,6 @@
     <script type="text/javascript" src="js/common.js"></script>
     <script type="text/javascript" src="js/yanzheng.js"></script>
     <div class="footer">
-        <!--style="color:#00FF00;text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';" -->
         <p>保险代理人展业助手</p>
         <p>有问题请联系：13910118122@qq.com</p>
         <p>盛唐融信：http://www.tanginsure.com</p>

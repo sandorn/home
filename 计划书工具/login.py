@@ -69,15 +69,14 @@ class MainWindow(QMainWindow):
         else:
             print('index.html文件未找到')
 
-        #1. 设置应用窗口固定大小显示，实现代码：
-        # self.setFixedSize(788,468)
-        #2. 设置应用窗口以最大、最小显示，实现代码：
-        self.setMinimumSize(788, 468)
-        # self.setMaximumSize(360, 150)
+        # self.setFixedSize(788,468) #设置应用窗口固定大小显示
+        weith, height = 788, 548
+        #self.setMinimumSize(weith, height)  # 设置窗口最小尺寸
+        # self.setMaximumSize(1080, 720)  # 设置窗口最大尺寸
         #设置窗口位置和大小
         screen = QDesktopWidget().screenGeometry()
-        self.setGeometry((screen.width() - 788) / 2,
-                         (screen.height() - 468) / 2, 788, 468)
+        self.setGeometry((screen.width() - weith) / 2,
+                         (screen.height() - height) / 2, weith, height)
 
         self.setWindowTitle('代宝宝')
         self.setWindowIcon(
