@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python:控制台",
+            "name": "Python: 终端",
             "type": "python",
             "request": "launch",
             "program": "${file}",
@@ -19,11 +19,7 @@
             "env": {
                 "FLASK_APP": "app.py"
             },
-            "args": [
-                "run",
-                "--no-debugger",
-                "--no-reload"
-            ],
+            "args": ["run", "--no-debugger", "--no-reload"],
             "jinja": true
         },
         {

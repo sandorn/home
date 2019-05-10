@@ -87,7 +87,7 @@ def main():
     from urllib.parse import quote
     import string
     print("downloading with urllib")
-    url = 'https://gitee.com/sandorn/home/blob/master/%E8%AE%A1%E5%88%92%E4%B9%A6%E5%B7%A5%E5%85%B7/index.html'
+    url = 'https://www.baidu.com'
     #url = quote(url, safe=string.printable)
     f = request.urlopen(url)
     print(f)
@@ -96,7 +96,7 @@ def main():
     data = data.decode('utf-8')
     print(data)
     #data = unicode(f, 'ascii').encode('UTF-8')
-    with open("index.html", "wb", encoding='utf-8') as code:
+    with open("结果.txt", "wb", encoding='utf-8') as code:
         code.write(data)
 
 

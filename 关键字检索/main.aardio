@@ -1,0 +1,220 @@
+import win.ui;
+import fsys.dlg;
+import win.ui.statusbar;
+/*DSG{{*/
+var mainForm = win.form(text="关键字检索";right=423;bottom=469;border="thin";cp=1;max=false)
+mainForm.add(
+button={cls="button";text="导入";left=366;top=198;right=414;bottom=237;z=7};
+button2={cls="button";text="结果保存位置";left=319;top=51;right=410;bottom=75;z=9};
+button3={cls="button";text="清空";left=366;top=266;right=414;bottom=306;z=11};
+button4={cls="button";text="删除";left=366;top=335;right=414;bottom=374;z=12};
+checkbox={cls="checkbox";text="百度";left=139;top=14;right=195;bottom=38;checked=1;font=LOGFONT(name='微软雅黑';h=-14);z=5};
+checkbox2={cls="checkbox";text="好搜";left=197;top=15;right=253;bottom=39;checked=1;font=LOGFONT(name='微软雅黑';h=-14);z=6};
+edit2={cls="edit";text="d:\321.txt";left=26;top=51;right=316;bottom=75;autohscroll=false;autovscroll=false;dl=1;dt=1;edge=1;font=LOGFONT(name='微软雅黑';h=-14);z=8};
+get={cls="button";text="运行";left=21;top=7;right=111;bottom=44;color=-1;dr=1;dt=1;font=LOGFONT(name='微软雅黑';h=-14);z=1};
+groupbox={cls="groupbox";text="关键字";left=6;top=77;right=421;bottom=447;z=2};
+listview={cls="listview";left=8;top=98;right=354;bottom=417;acceptfiles=1;asel=false;bgcolor=16777215;edge=1;fullRow=1;gridLines=1;vscroll=1;z=10};
+pages={cls="edit";left=366;top=152;right=414;bottom=176;align="center";autohscroll=false;autovscroll=false;dl=1;dt=1;edge=1;font=LOGFONT(name='微软雅黑';h=-14);num=1;z=3};
+progress2={cls="progress";left=8;top=428;right=419;bottom=445;edge=1;max=100;min=0;z=13};
+static3={cls="static";text="页码数";left=366;top=117;right=414;bottom=141;align="center";center=1;font=LOGFONT(name='微软雅黑';h=-14);notify=1;transparent=1;z=4}
+)
+/*}}*/
+
+import win.ui.atom;
+var atom,hwnd = mainForm.atom("DE43C54B-8D43-4572-BCF7-2A5DFC39AFA0");
+if(!atom){
+	win.quitMessage();return;/*避免程序重复运行*/
+}
+
+mainForm.listview.insertColumn('序号',40)
+mainForm.listview.insertColumn('关键字',220)
+mainForm.listview.insertColumn('页码数',60)
+
+//测试
+mainForm.listview.addItem({1;"减肥计划";4})
+mainForm.listview.addItem({2;"减肥运动";4})
+mainForm.listview.addItem({3;"有效减肥";4})
+mainForm.listview.addItem({4;"减肥食谱";4})
+mainForm.listview.addItem({5;"腰腹减肥";4})
+mainForm.listview.addItem({6;"减腰";4})
+mainForm.listview.addItem({7;"减肥操";4})
+mainForm.listview.addItem({8;"减肥视频";4})
+mainForm.listview.addItem({9;"最快减肥";4})
+mainForm.listview.addItem({10;"减肥茶";4})
+//io.open()
+//测试结束
+
+var stbar = win.ui.statusbar(mainForm)
+stbar.addItem('状态栏',45)
+stbar.addItem('',250)
+stbar.addItem('')
+stbar.setText('就绪',3)
+mainForm.show(); //显示窗体
+
+import thread.command;
+var listener = thread.command(mainForm);
+listener.print = function( str ){
+    stbar.setText(str,2)
+}
+listener.initProgress = function(num) {
+	mainForm.progress2.max = num;
+}
+listener.stepProgress = function() {
+	mainForm.progress2.stepIt();
+}
+
+mainForm.button2.oncommand = function(id,event){
+	 mainForm.edit2.text = fsys.dlg.save("文本文件|*.txt|")
+	 if(mainForm.edit2.text != ''){stbar.setText('结果保存文件已选择',2)}
+}
+mainForm.button3.oncommand = function(id,event){
+	mainForm.listview.clear();
+}
+
+mainForm.button4.oncommand = function(id,event){
+	mainForm.listview.delItem(mainForm.listview.selIndex)
+}
+
+mainForm.button.oncommand = function(id,event){
+	var pages = tonumber(mainForm.pages.text)
+	if(!pages){return win.msgboxTimeout('请填入页码数');}
+	mainForm.pages.text = ''
+    var path = fsys.dlg.open("文本文件|*.txt");
+    if( !io.exist(path) ){return;} //文件不存在则返回
+    var i = mainForm.listview.count;
+    for line in io.lines(path){
+    	if( string.match(line,"^\s*$") ){continue ;}//空行直接跳过
+    	if(!#line){continue;}
+    	mainForm.listview.addItem({i;string.fromto(line,0,65001);pages})
+    	i++
+    }
+    stbar.setText('导入关键字文件成功！',2)
+}
+
+import thread.event
+import thread.works;
+var collection  = thread.works(20,
+	function(url){
+		import thread.command;
+        import thread.event;
+    	import inet.http
+		import string;
+		import table;
+		import win
+		thread.command.print("任务【"++thread.getId()++"】开始执行...")
+		var evt = thread.event("STOP ALL",true);//参数2为真避免线程自动切换信号
+		var tbResult = {}
+		var http = inet.http();//创建客户端
+		http.setTimeouts(3000,3000,3000)
+		var result = http.get( url );
+		if(!result){return ; }
+		result = string.replace(result," style=.*?\>","")
+		var str = ''
+		if( string.find(url,'so.com')){
+			str = //\<p class=\"res-linkinfo\"\>\<cite.*?\>([^\s\>*?]\w+\.\w+\.\w+\.?[a-zA-Z]{2,4}?)
+		}else{
+			str = //c-showurl\"([^\s\>*?]\w+\.\w+\.\w+\.?[a-zA-Z]{2,4}?)
+		}
+
+		for m in string.gmatch(result,str){
+			var m = string.match(m,"[^\s\>*?]\w+\.\w+\.\w+\.?[a-zA-Z]{2,4}?")
+			if(!m){continue ;}
+			if(string.find(m,'@.baidu.com') or string.find(m,'@.so.com') ){ continue ;}
+			if(string.right(m,2) == "co"){m ++= "m"}
+
+			table.push(tbResult,m)
+		}
+		http.close()
+		thread.command.print("任务【"++thread.getId()++"】执行完毕。")
+		thread.command.stepProgress()
+        evt.wait(5) /*检测主线程是否发出停止信号*/;
+        return tbResult;
+	}
+);
+
+var savetxt = function(处理前数据){
+	if(mainForm.edit2.text == ''){
+		mainForm.button2.oncommand()
+	}
+
+	var unique = function(tab){
+		var arr = {};
+		for(k,v in tab){arr[v] = true;}//此处用到了表的特性，即键具有唯一性。
+
+		var newArr = {};
+		for(k,v in arr){table.push(newArr,k); } //将arr表中的键作为值数据添加到新数组newArr中
+		return newArr;
+	}
+
+	处理后数据 = unique(处理前数据)
+
+	string.save( mainForm.edit2.text,string.join(处理后数据,'\r\n') )
+}
+
+makeUrl = function(){
+	var urls = {}
+	stbar.setText('构建抓取网址...',2);
+	for(i=1;mainForm.listview.count;1){
+		var 关键字 = mainForm.listview.getItemText(i,2)
+		var 页数 = tonumber(mainForm.listview.getItemText(i,3))
+		if(mainForm.checkbox.checked){
+			for(i=1;页数;1){
+				var url = 'http://www.baidu.com/baidu?wd='++关键字++((i==0)?"":("&pn="++i*10))
+				table.push(urls,url)
+			}
+		}
+		if(mainForm.checkbox2.checked){
+			for(i=1;页数;1){
+				var url = 'https://www.so.com/s?q='++关键字++((i==0)?"":("&pn="++i))
+				table.push(urls,url)
+			}
+		}
+	}
+	return urls;
+}
+
+import time;
+mainForm.get.oncommand = function(id,event){
+	if(mainForm.edit2.text == ''){mainForm.button2.oncommand()}
+	if(!mainForm.listview.count){return win.msgboxTimeout('尚未读取关键字文本!');}
+	if(!mainForm.checkbox.checked and !mainForm.checkbox2.checked ){return win.msgboxTimeout('搜索引擎必须选!');}
+	mainForm.get.disabled = true
+	var t = time.tick();
+	stbar.setText('运行中',3)
+	var urls = makeUrl()
+	thread.command.initProgress(#urls)
+	for(i=1;#urls;1){
+		if(collection.queueCount() > 50){
+			win.delay(200,5)
+		}
+    	stbar.setText('任务分派:'++i++'/'++#urls,3)
+		collection.push(urls[i])
+		win.delay(20);
+	}
+	stbar.setText('等待任务执行',3)
+
+	var 结果t = {}
+	collection.wait(
+		function(线程返回){
+			if(#线程返回){
+				结果t = table.concat(结果t,线程返回)
+			}
+    	}
+	)
+
+	savetxt(结果t)
+
+	stbar.setText('检索结果:'++mainForm.edit2.text++",耗时"++(time.tick()-t)/1000++"秒。",2)
+	stbar.setText('就绪',3)
+
+	mainForm.get.disabled = false
+	win.msgboxTimeout("检索完毕!");
+}
+
+mainForm.onClose = function(hwnd,message,wParam,lParam){
+	mainForm.text = "正在等待关闭";
+    thread.event("STOP ALL",true).set(); /*发出停止信号*/
+    collection.quit()
+}
+
+win.loopMessage();

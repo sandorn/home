@@ -8,6 +8,7 @@
 @Version :   1.0
 @Contact :   sandorn@163.com
 @License :   (C)Copyright 2019-2019, NewSea
+pip install pyqt5   #不要加--user,会放到用户文件目录下
 '''
 
 import sys
@@ -23,7 +24,6 @@ class MainWindow(QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         # 退出Action设置
         exitAction = QAction(
             QIcon(os.path.join(os.path.dirname(__file__), './ico/exit.ico')),
