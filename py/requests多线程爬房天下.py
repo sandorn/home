@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-10 15:09:43
-@LastEditTime: 2019-05-10 15:19:23
+@LastEditTime: 2019-05-11 11:46:45
 '''
 import random
 import re
@@ -122,9 +122,11 @@ def get_detail(url):  ###详情页
         if content != '':
             break
 
-    content = content.decode('gbk').encode(
-        'utf8'
-    )  ##查看网页源代码可看到是gbk编码，直接print的话，如果你在pycharm设置控制台是utf8编码，那么控制台的中文则会乱码，cmd是gbk的恰好可以显示。如果你在pycharm设置控制台是utf8编码，需要这样做
+    content = content.decode('gbk').encode('utf8')
+    ##查看网页源代码可看到是gbk编码，直接print的话，
+    # 如果你在pycharm设置控制台是utf8编码，
+    # 那么控制台的中文则会乱码，cmd是gbk的恰好可以显示。
+    # 如果你在pycharm设置控制台是utf8编码，需要这样做
     #print content
 
     inforTxt = getlist0(
