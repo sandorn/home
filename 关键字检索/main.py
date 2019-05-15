@@ -9,35 +9,32 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-08 19:18:48
-@LastEditTime: 2019-05-10 15:38:21
+@LastEditTime: 2019-05-13 10:59:19
 '''
 
-import requests
 import time
+
+import requests
 from bs4 import BeautifulSoup
 
 
 class downloader(object):
-
     def __init__(self):
-        self.names = []  #存放关键字
-        self.nums = 0  #设定页面数量
-        self.text = {}  #链接名:网址
+        self.names = []  # 存放关键字
+        self.nums = 0  # 设定页面数量
+        self.text = {}  # 链接名:网址
 
     def get_download_url(self, target):
         headers = {
-            "Accept":
-                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Encoding":
-                "gzip, deflate, br",
-            "Accept-Language":
-                "zh-CN,zh;q=0.9",
-            "Connection":
-                "keep-alive",
-            "Host":
-                "www.baidu.com",
-            "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
+            'Accept': '*/*',
+            'Accept-Encoding': 'gzip,deflate,sdch, br',
+            'Accept-Language': 'zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4',
+            'Cache-Control': 'max-age=0',
+            'Connection': 'close',
+            # Cache-Control':'no-cache','keep-alive'
+            # Connection':'close','keep-alive'
+            'Proxy-Connection': 'no-cache',
+            "Host": "www.baidu.com",
         }
         while True:
             response = requests.get(url=target, headers=headers)
@@ -46,7 +43,7 @@ class downloader(object):
             time.sleep(0.2)
 
         result = response.text
-        #response.content.decode("utf-8")
+        # response.content.decode("utf-8")
         c_tools = BeautifulSoup(result, 'html5lib')
         #'html5lib','html.parser','lxml','html_parser')
         c_tools = c_tools.find_all(class_='c-tools')
@@ -77,6 +74,7 @@ class downloader(object):
 
 def fd():
     import win32ui
+
     _dlg = win32ui.CreateFileDialog(1)  # 1表示打开文件对话框
     _dlg.SetOFNInitialDir('c:/')  # 设置打开文件对话框中的初始显示目录
     _dlg.DoModal()
@@ -93,24 +91,20 @@ def get_urls(pages):
 
     with open(_file) as 文件:
         for row in 文件.readlines():
-            row = row.strip()  #默认删除空白符
+            row = row.strip()  # 默认删除空白符
             keys.append(row)
 
     for page in range(0, pages, 10):  # 迭代 10 到 20 之间的数字
         nums.append(page)
 
-    out_url = [
-        "https://www.baidu.com/s?wd={}&pn={}".format(key, num)
-        for key in keys
-        for num in nums
-    ]
+    out_url = ["https://www.baidu.com/s?wd={}&pn={}".format(key, num) for key in keys for num in nums]
 
     return out_url
 
 
 if __name__ == "__main__":
     dl = downloader()
-    #dl.get_download_url()
+    # dl.get_download_url()
     urls = get_urls(30)
     print(urls)
     print(len(urls))

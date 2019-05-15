@@ -1,14 +1,15 @@
-#！/usr/bin/env python
-#-*-coding:utf-8-*-
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Software:   VSCode
-@File    :   main.py
-@Time    :   2019/04/13 15:17:52
-@Author  :   Even Sand
-@Version :   1.0
-@Contact :   sandorn@163.com
-@License :   (C)Copyright 2019-2019, NewSea
-@Desc    :   None
+@Descripttion: 头部注释None
+@Develop: VSCode
+@Author: Even.Sand
+@Contact: sandorn@163.com
+@Github: https://github.com/sandorn/home
+@License: (C)Copyright 2009-2019, NewSea
+@Date: 2019-05-03 23:26:06
+@LastEditors: Even.Sand
+@LastEditTime: 2019-05-14 09:58:54
 '''
 
 import tkinter
