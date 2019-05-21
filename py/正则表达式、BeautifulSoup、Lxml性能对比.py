@@ -11,7 +11,7 @@ https://www.jianshu.com/p/d0541ecfa5b4
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-10 13:13:55
-@LastEditTime: 2019-05-10 13:32:04
+@LastEditTime: 2019-05-19 22:06:59
 '''
 import requests
 import re
@@ -20,7 +20,7 @@ from lxml import etree
 import time
 
 
-##正则表达式
+# 正则表达式
 def re_info(r):
     ids = re.findall("<h2>(.*?)</h2>", r.text, re.S)
     contents = re.findall('<div class="content">.*?<span>(.*?)</span>', r.text,
@@ -29,7 +29,7 @@ def re_info(r):
     return [ids, contents]
 
 
-##BeautifulSoup
+# BeautifulSoup
 def bs4_info(r):
     soup = BeautifulSoup(r.text, "lxml")
     infos = soup.select("div.article")
@@ -40,7 +40,7 @@ def bs4_info(r):
         return [id, content]
 
 
-#lxml
+# lxml
 def lxml_info(r):
     html = etree.HTML(r.text)
     infos = html.xpath(

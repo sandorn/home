@@ -7,8 +7,10 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 17:28:19
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-12 17:38:03
+@LastEditTime: 2019-05-17 22:00:51
 '''
+import time
+from urllib import parse
 import requests
 import os
 import gevent
@@ -17,13 +19,6 @@ import random
 import re
 from lxml import etree
 monkey.patch_all(select=False)
-from urllib import parse
-import time
-
-
-def setDir():
-    if 'Noval' not in os.listdir('./'):
-        os.mkdir('./Noval')
 
 
 def getNoval(url, id):
@@ -55,7 +50,7 @@ def getNoval(url, id):
         s = ps[0].text + '\n'
         s = s + content[0].xpath("string(.)")
         with open(
-                './Noval/%d.txt' % id, 'w', encoding='gb18030',
+                '%d.txt' % id, 'w', encoding='gb18030',
                 errors='ignore') as f:
             f.write(s)
 
@@ -79,7 +74,7 @@ def getContentFile(url):
         'HTTPS': 'http://60.174.74.40:8118'
     }]
     IP = random.choice(IPs)
-    res = requests.get(url, headers=headers)  #, proxies=IP)
+    res = requests.get(url, headers=headers)  # , proxies=IP)
     res.encoding = 'GB18030'
     page = etree.HTML(res.text)
     bookname = page.xpath('//div[@id="info"]/h1')[0].xpath('string(.)')
@@ -128,8 +123,7 @@ def BuildGevent(baseurl):
 
 if __name__ == '__main__':
     starttime = time.time()
-    setDir()
-    url = 'https://www.biquge.com/3_3711/'
+    url = 'https://www.biqudu.com/0_68/'
     BuildGevent(url)
     endtime = time.time()
     print("Total use time: %.6f" % (endtime - starttime))

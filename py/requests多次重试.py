@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-12 07:53:07
-@LastEditTime: 2019-05-12 08:01:58
+@LastEditTime: 2019-05-16 14:08:25
 '''
 import requests
 from requests.adapters import HTTPAdapter
@@ -29,8 +29,8 @@ headers = {}
 def parse_url(url):
     @retry(stop_max_attempt_number=3) #最大重试3次，3次全部报错，才会报错
     def _parse_url(url):
-        response = requests.get(url, headers=headers, timeout=3) #超时的时候回报错并重试
-        assert response.status_code == 200 #状态码不是200，也会报错并充实
+        response = requests.get(url, headers=headers, timeout=3)  # 超时的时候回报错并重试
+        assert response.status_code == 200 #状态码不是200，也会报错并重试3
         return response
 
     try:   # 进行异常捕获

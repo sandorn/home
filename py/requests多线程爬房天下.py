@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-10 15:09:43
-@LastEditTime: 2019-05-11 11:46:45
+@LastEditTime: 2019-05-16 14:10:01
 '''
 import random
 import re
@@ -92,9 +92,8 @@ def fang_com(page_url):  ##列表页
         #加锁的目的是别的线程不能运行这段代码了。但我之前看到有的人乱加锁，把消耗时间很长的代码加锁，那样导致多线程就基本个废物
         global count
         count += 1
-        print(
-            time.strftime('%H:%M:%S', time.localtime(time.time())), '    ',
-            count)
+        print(time.strftime('%H:%M:%S', time.localtime(time.time())), '    ',
+              count)
         print('列表页：')
         print(' title: %s\n url: %s\n info: %s\n' % (title, url, info))
 
@@ -130,9 +129,9 @@ def get_detail(url):  ###详情页
     #print content
 
     inforTxt = getlist0(
-        re.findall(
-            '(<div class="inforTxt">[\s\S]*?)<ul class="tool">',
-            content))  ###########为了利于大家学习，这段演示正则表达式提取信息，某些信息可能在有的房子界面没有，要做好判断
+        re.findall('(<div class="inforTxt">[\s\S]*?)<ul class="tool">',
+                   content))
+    ###########为了利于大家学习，这段演示正则表达式提取信息，某些信息可能在有的房子界面没有，要做好判断
     #print inforTxt
 
     total_price = getlist0(
@@ -187,8 +186,8 @@ if __name__ == '__main__':
     '''
     threads = []  ###这个是演示多线程爬取
     for i in range(1, 101):  #开了100线程，这样开100线程去爬100页面的详情页面，因为fang.com只能看100页
-        t = threading.Thread(
-            target=fang_com, args=('http://esf.sz.fang.com/house/i3%s' % i,))
+        t = threading.Thread(target=fang_com,
+                             args=('http://esf.sz.fang.com/house/i3%s' % i,))
 
         threads.append(t)
 

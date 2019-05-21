@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-14 11:09:11
+@LastEditTime: 2019-05-18 16:57:21
 '''
 # package
 # __init__.py
@@ -25,6 +25,8 @@ from . import mysql
 from . import sqlorm
 from . import txCos
 from . import qiniuCos
+from . import threadPool
+from . import req
 
-__all__ = ["db_router", "mysql", "sqlorm", "txCos", "qiniuCos"]
+__all__ = ["db_router", "mysql", "sqlorm", "txCos", "qiniuCos", "req", 'threadPool']
 logging.getLogger(__name__).addHandler(NullHandler())

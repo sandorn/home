@@ -1,28 +1,29 @@
-# ！/usr/bin/env python
-# -*- coding:utf -8-*-
 '''
-@Descripttion: 使用multiprocessing.pool多进程
+@Descripttion: 头部注释None
 @Develop: VSCode
 @Author: Even.Sand
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
+@Date: 2019-05-18 05:28:03
 @LastEditors: Even.Sand
-@Date: 2019-05-08 18:31:14
-@LastEditTime: 2019-05-18 11:53:43
-努努书坊 - 小说在线阅读   https://www.kanunu8.com/
+@LastEditTime: 2019-05-18 10:34:57
 '''
 
 import time
+
+from concurrent.futures import ProcessPoolExecutor as Pool  # 进程池模块
 import multiprocessing
 from bs4 import BeautifulSoup
 from xjLib.req import parse_url as parse_url
 from xjLib.req import savefile as writer
 from xjLib.req import get_stime
 
+texts = []
+
 
 def get_download_url(target):
-    url_list = []
+    urls_list = []
     _response = parse_url(target)
     _bookname = _response.find('h2').get_text()
     # 搜索文档树,找出div标签中class为listmain的所有子标签
@@ -40,8 +41,8 @@ def get_download_url(target):
         # 爬取链接并下载链接内容
         if begin_flag and child.name == 'dd':
             download_url = 'http://www.biqukan.com/' + child.find('a').get('href')
-            url_list.append(download_url)
-    return _bookname, url_list
+            urls_list.append(download_url)
+    return _bookname, urls_list
 
 
 def get_contents(lock, index, url):
@@ -51,41 +52,44 @@ def get_contents(lock, index, url):
     _showtext = _response.select('.showtxt')[0]
     for text in _showtext.stripped_strings:
         _texts += text + '\n'
-
     with lock:
-        print('{} done with {} at {}'.format(multiprocessing.current_process().name, index, get_stime()), flush=True)
+        print('{}\tdone\twith\t{}\tat\t{}'.format(multiprocessing.current_process().name, index, get_stime()), flush=True)
     return [index, _name, _texts]
+
+
+# 回调方式获取线程结果
+def clb(obj):
+    try:
+        res = obj.result()
+        texts.append(res)
+    except Exception as e:
+        print("obj.result()error:", e, flush=True)
 
 
 def main_Pool(target):
     _stime = time.time()
-    # 父进程创建Queue\lock，传给个子进程：
     lock = multiprocessing.Manager().Lock()
+    #queue = multiprocessing.JoinableQueue()
+    urls = []  # 存放章节链接
 
     print('开始下载：《{}》\t{}\t获取下载链接......'.format(target, get_stime()), flush=True)
     bookname, urls = get_download_url(target)
-    print('multiprocessing.pool，开始下载：《' + bookname + '》', flush=True)
-    mypool = multiprocessing.Pool(25)  # !进程数
+    print('CFProcessPool,开始下载：《' + bookname + '》', flush=True)
     # 创建多进程队列
-    future_tasks = []
-    for i in range(len(urls)):
-        item = mypool.apply_async(get_contents, args=(lock, i, urls[i]))
-        # pool.apply_async(func=task,callback=_callba)
-        future_tasks.append(item)
-    mypool.close()  # 关闭进程池,不再接受请求
-    mypool.join()  # 等待进程池中的事件执行完毕，回收进程池
+    with Pool(25) as p:
+        _ = [
+            p.submit(get_contents, lock, i, urls[i]).add_done_callback(clb)
+            for i in range(len(urls))
+        ]
 
-    texts = []  # 将爬下来的小说都存在里面
-    for i, item in enumerate(future_tasks):
-        _text = item.get()  # join后获取进程返回值
-        texts.append(_text)
-
-    print('\n multiprocessing.pool，书籍《' + bookname + '》完成下载', flush=True)
+    print('\nCFProcessPool,书籍《' + bookname + '》完成下载', flush=True)
     writer(bookname + '.txt', texts)
     print('{} 结束，\t用时:{} 秒。'.format(get_stime(), round(time.time() - _stime, 2)), flush=True)
 
 
 if __name__ == '__main__':
-    main_Pool('https://www.biqukan.com/2_2704/')
-
-# 本人电脑用时约120秒，6239KB
+    main_Pool('https://www.biqukan.com//2_2704/')
+    # '65_65593'  #章节少，测试用
+    # '2_2704'  #231万字  #107m
+    # "2_2714"   #《武炼巅峰》664万字
+    # [武炼巅峰.txt]150W, 用时: 947.34 秒。

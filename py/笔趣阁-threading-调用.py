@@ -9,56 +9,22 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-15 21:38:27
-
-python--threading多线程总结 - 苍松 - 博客园
-http://www.cnblogs.com/tkqasn/p/5700281.html
-threading.currentThread(): 返回当前的线程变量。
-threading.enumerate(): 返回一个包含正在运行的线程的list。正在运行指线程启动后、结束前，不包括启动前和终止后的线程。
-threading.activeCount(): 返回正在运行的线程数量，与len(threading.enumerate())有相同的结果。
+@LastEditTime: 2019-05-18 11:19:39
 '''
-
-import logging
-import sys
+import threading
 import time
 from queue import Queue
-import threading
 
-import requests
 from bs4 import BeautifulSoup
-from retrying import retry
+from xjLib.req import parse_url as parse_url
+from xjLib.req import savefile as writer
+from xjLib.req import get_stime
 
-lock = threading.Lock()
+lock = threading.RLock()
 urls = Queue()  # 存放章节链接
 texts = []  # 将爬下来的小说都存在里面，做最后排序
-
-myhead = {
-    'Accept': '*/*',
-    'Accept-Encoding': 'gzip,deflate,sdch, br',
-    'Accept-Language': 'zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4',
-    'Cache-Control': 'max-age=0',  #' no-cache','keep-alive'
-    'Connection': 'close',  # keep-alive'
-    'Proxy-Connection': 'no-cache',
-    'User-Agent':
-    'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
-    'Host': 'www.biqukan.com',
-}
-
-
-def parse_url(url):
-
-    @retry(stop_max_attempt_number=10)
-    def _parse_url(url):
-        # print('此处计入装饰器:', url ,'*' * 40, flush=True)
-        header = myhead
-        response = requests.get(url, headers=header, timeout=11)
-        assert response.status_code == 200
-        # print('此处获取url反馈:', url, flush=True)
-        htmlTree = BeautifulSoup(response.text, 'html5lib')
-        return htmlTree.body
-
-    htmlTree = _parse_url(url)
-    return htmlTree
+SemaphoreNum = 25
+semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线程数，其他等待执行
 
 
 def get_download_url(target):
@@ -84,51 +50,30 @@ def get_download_url(target):
     return _bookname
 
 
-def get_contents(index):
-    sph.acquire()  # 计数器 -1
-    target = urls.get()
-    lock.acquire()
-    print('队列剩余:{}，活动线程:{}'.format(urls.qsize(), threading.active_count()),
-          flush=True)
-    print('ID：[{}],下载《{}》......'.format(index, target), flush=True)
-    lock.release()
-
-    _texts = ''
-    _response = parse_url(target)
-    _name = _response.h1.get_text()  #章节名
-    _showtext = _response.select('.showtxt')[0]
-    for text in _showtext.stripped_strings:
-        _texts += text + '\n'
-
-    lock.acquire()
-    print('ID：[{}],下载《{}》完成！！！'.format(index, _name), flush=True)
-    texts.append([index, _name, _texts])
-    lock.release()
-    urls.task_done()  #发出此队列完成信号
-    sph.release()  # 计数 +1.
+def get_contents(index, count):
+    with semaphore:
+        target = urls.get()
+        _texts = ''
+        _response = parse_url(target)
+        _name = _response.h1.get_text()  # 章节名
+        _showtext = _response.select('.showtxt')[0]
+        for text in _showtext.stripped_strings:
+            _texts += text + '\n'
+        with lock:
+            texts.append([index, _name, _texts])
+            print('下载进度{}%......\t'.format((count - threading.activeCount()) / count * 100), end='', flush=True)
+            print('{}\tdone\twith\t{}\tat\t{}'.format(threading.currentThread().name, index, get_stime()), flush=True)
+        urls.task_done()  # 发出此队列完成信号
 
 
-def writer():
-    # @函数说明:将爬取的文章内容写入文件
-    print('《' + bookname + '》开始保存......', end='', flush=True)
-    texts.sort()
-    with open(bookname + '.txt', 'a', encoding='utf-8') as f:
-        for i in texts:
-            f.write(i[1] + '\n' + i[2] + '\n')
-    print('《' + bookname + '》保存完成，任务结束！！！', flush=True)
-
-
-def main_thread():
-    index = 0  # 用来排序
+def main_thread(target):
+    _stime = time.time()
+    bookname = get_download_url(target)
     thread_list = []
-    global sph
-    sph = threading.BoundedSemaphore(10)  # 设置同时执行的线程数，其他等待执行
-    #threading.BoundedSemaphore(6)
     print('threading-调用，开始下载：《' + bookname + '》', flush=True)
-    for i in range(urls.qsize()):
-        index += 1
-        time.sleep(0.1)
-        res = threading.Thread(target=get_contents, args=(index,))
+    count = urls.qsize()
+    for index in range(count):
+        res = threading.Thread(target=get_contents, args=(index, count))
         res.start()
         thread_list.append(res)
 
@@ -136,14 +81,13 @@ def main_thread():
         item.join()  # join等待线程执行结束
 
     print('threading-调用，书籍《' + bookname + '》完成下载', flush=True)
+    writer(bookname + '.txt', texts)
+    print('下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)),
+          flush=True)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    _stime = time.time()
-    global bookname
-    bookname = get_download_url('https://www.biqukan.com/31_31765/')
-    main_thread()
-    writer()
-    print('下载《{}》完成，用时:{} 秒。'.format(bookname, round((time.time() - _stime))),
-          flush=True)
+    main_thread('https://www.biqukan.com/2_2704/')
+    # '65_65593'  #章节少，测试用
+    # '2_2704'  #231万字  #6239kb, 153秒
+    # "2_2714"   #《武炼巅峰》664万字, 秒。

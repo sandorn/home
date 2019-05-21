@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-08 18:31:14
-@LastEditTime: 2019-05-15 23:17:17
+@LastEditTime: 2019-05-18 10:19:09
 努努书坊 - 小说在线阅读   https://www.kanunu8.com/
 
 Python3网络爬虫快速入门实战解析（一小时入门 Python 3 网络爬虫） - u012662731的博客 - CSDN博客
@@ -59,11 +59,11 @@ class downloader(object):
 
         @retry(stop_max_attempt_number=10)
         def _parse_url(url):
-            # //print('此处计入装饰器:', url ,'*' * 40, flush=True)
+            #print('此处计入装饰器:', url ,'*' * 40, flush=True)
             header = self.myhead
             response = requests.get(url, headers=header, timeout=6)
             assert response.status_code == 200
-            # //print('此处获取url反馈:', url, flush=True)
+            #print('此处获取url反馈:', url, flush=True)
             htmlTree = BeautifulSoup(response.text, 'html5lib')
             return htmlTree.body
 
@@ -98,7 +98,7 @@ class downloader(object):
 
         texts = ''
         _response = self.parse_url(target)
-        _name = _response.h1.get_text()  #章节名
+        _name = _response.h1.get_text()  # 章节名
         _showtext = _response.select('.showtxt')[0]
         for text in _showtext.stripped_strings:
             texts += text + '\n'
@@ -108,53 +108,46 @@ class downloader(object):
 
     def writer(self):
         # @函数说明:将爬取的文章内容写入文件
-        print('《' + self.bookname + '》开始保存', flush=True)
+        print('《' + self.bookname + '》开始保存...', end='', flush=True)
 
         self.texts.sort()
         with open(self.bookname + '.txt', 'a', encoding='utf-8') as f:
             for i in self.texts:
                 f.write(i[1] + '\n' + i[2] + '\n')
 
-        print('《' + self.bookname + '》保存完成，任务结束', flush=True)
+        print('《' + self.bookname + '》保存完成，任务结束！！！', flush=True)
 
 
-def main_Pool():
+def main_Pool(target):
+    _stime = time.time()
+    myclient = downloader(target)
+    myclient.get_download_url()
+
     index = 1  # 用来排序
-    pool_result = []  # 线程池
+    pool_result = []  # 进程池
 
     print('开始下载：《' + myclient.bookname + '》', flush=True)
-    mypool = Pool(20)  #!进程数
-    while not myclient.urls.empty():
+    mypool = Pool(20)  # !进程数
+    # while not myclient.urls.empty():
+    for i in range(myclient.urls.qsize()):
         target = myclient.urls.get()
         result = mypool.apply_async(myclient.get_contents, args=(index, target))
         pool_result.append(result)
         index += 1
-
     mypool.close()  # 关闭进程池，表示不能在往进程池中添加进程
     mypool.join()  # 等待进程池中的所有进程执行完毕，必须在close()之后调用
 
+    # oin后获取进程返回值
     for res in pool_result:
-        myclient.texts.append(res.get())
-
-    # @join后获取进程返回值
-    # res.wait()  # 等待进程函数执行完毕
-    # res.ready():  # 进程函数是否已经启动了
-    # res.successful():  # 进程函数是否执行成功
+        _tes = res.get()
+        myclient.texts.append(_tes)
 
     print('\r《' + myclient.bookname + '》完成下载', flush=True)
-
-
-if __name__ == '__main__':
-    import logging
-    import sys
-
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    _stime = time.time()
-    global myclient
-    myclient = downloader('https://www.biqukan.com/65_65593/')
-    myclient.get_download_url()
-    main_Pool()
     myclient.writer()
     print('下载《{}》完成，用时:{} 秒。'.format(myclient.bookname,
                                      round((time.time() - _stime))),
           flush=True)
+
+
+if __name__ == '__main__':
+    main_Pool('https://www.biqukan.com/65_65593/')

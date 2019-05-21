@@ -1,31 +1,340 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+@Descripttion: 头部注释None
+@Develop: VSCode
+@Author: Even.Sand
+@Contact: sandorn@163.com
+@Github: https://github.com/sandorn/home
+@License: (C)Copyright 2009-2019, NewSea
+@Date: 2019-05-03 23:26:06
+@LastEditors: Even.Sand
+@LastEditTime: 2019-05-20 11:27:08
+'''
 # -*- coding:utf-8 -*-
-import xJlib as x
 
-list_1=[]
-#1.使用append()函数，向列表中追加数据,会把添加的数据放在列表的最后
-#object：对象，要添加到列表中的数据
-list_1.append('2018-1-23')
-print("list_1:【",list_1,"】是{}".format(x.getType(list_1)) )
-#2.使用insert(index,object) 函数，向列表中插入一条数据
-# index 索引 object 要插入的数据 如果超出最大索引，会将数据放在列表最后。若index为负值，位置会从后向前查找，最后一条数据索引为-1
-list_1.insert(4,'oppo')
-print("list_1:【",list_1,"】是{}".format(x.getType(list_1)) )
-#3.使用extend()函数，可以将一个可迭代对象的所有数据追加到该列表中
-#extend(iterable)
-#可迭代对象   例如： 列表 字符串 字典 元组
-list_2 =['a','b','c','e','f']
-list_1.extend(list_2)
-print("list_2:【",list_2,"】是{}".format(x.getType(list_2)) )
-print("list_1:【",list_1,"】是{}".format(x.getType(list_1)) )
+list_1 = [
+    [
+        "https://www.baidu.com/s?wd=减肥法&pn=10",
+        [
+            1,
+            "8小时减肥法是如何减肥的_百度宝宝知道",
+            "http://www.baidu.com/link?url=Tc9X9y_1rGW4y0Maq2gMhXjtEEp4XEHSwE197-iaseqoXg0qOxT3ORM_XkuV1cJ88CW_u-vNXlXKJesKBqhU68IYWbZcLr04mXk-KR7X2CQg4fdgXT1CxQ1JS5ILgWsC"
+        ],
+        [
+            2,
+            "阿特金斯减肥法_百度百科",
+            "http://www.baidu.com/link?url=yqQVg6-JGVd1_D1tG3i1QPmXttp7uqU6hKFOgf40BEqsI3yKgPkgCKvES8IgccAVDH2rjX2lK7E_-p9qQ5z-8VhAz2m2TAzcHxzq4JQu75WGb4gyTE1Vie9ckB8feBeU1FtVODiasmFhav77B16mccKHLDT0ZBbMDOWJ73ok8QO"
+        ],
+        [
+            3,
+            "七日快速减肥法_百度百科",
+            "http://www.baidu.com/link?url=VuoqlbBBs9tL_hIC5CLWHayXTtN3NY-ivPOXjXZtyiq1bnxBl5y1MdqsA5TEgb1gC4Y56Fd4lzkADTuOUJYv3pr4xfE6O0tKlz55_aBzh__GRJpMwMkIDaDM15fRssIhaosEqPjqb5tnNoN0SeeT_K"
+        ],
+        [
+            4,
+            "断食减肥法_百度百科",
+            "http://www.baidu.com/link?url=YTBvsw_TAGpzH8DlkANmEkCPPzXd-t3YUI-W-kB4h-HHxwnr_dBcWR3M1GOG1pe8NA0q9zRDKrvBDxILGhbGFBu2ci_DR_qiXBcD8sprs22gHhfOfNrHi33s_moF-A7n"
+        ],
+        [
+            5,
+            "水果减肥法_百度百科",
+            "http://www.baidu.com/link?url=FjKCg0tv4jYjPffDNa8lXNYAj-dWsaUIRcLVs6s9c6KUZBwSG9P7Le2vQFbHVAjtDIkKSpG4gCTMTv3ZQgUXeWPSiLwjwlKLSMGoWSjXoAncyvMBaGvrC7dICly-Odsr"
+        ],
+        [
+            6,
+            "运动减肥法_百度百科",
+            "http://www.baidu.com/link?url=rnEdhQ06PeA8-yYmBvowey9lEHhVAAkifqsebJBwJjQ7X_GIQXN3EF8uYUhM6ssTddgaVbqs40C6W2WFwPpimFikjMjpPxZRsR3-2JS2L02SfQhmIu3mInHkMWmMkHU9"
+        ],
+        [
+            7,
+            "喝水减肥法_百度百科",
+            "http://www.baidu.com/link?url=E7k56RQyIINo3U42cyCKlOeqNpTtUaUwe8bAp6tL4Oo-kCXn5S6yzPavKlbKNOUoOZ3dRuZcNO-HgcMZXscIy-eQHGL0-7XGW5OVvS0yU-w0ghuiGWIuQCBbCjxCU7hH"
+        ],
+        [
+            8,
+            "7种最有效的懒人减肥方法_39健康网",
+            "http://www.baidu.com/link?url=FI9BGP4S8Ev6kB5cyu_RB9JR5IDFu1rFzLwEwB3G7TUsWokwaKgdjaN8D0x6Ysa6hZoYxS6KckRi1iFsK2WIo_"
+        ],
+        [
+            9,
+            "三十种简单快速的减肥法_百度文库",
+            "http://www.baidu.com/link?url=4Po2CU49_e3mgJEsTo5iNt9g9eal8l8e9XJo7NxzM9cb3XC_71nqCQA4vQyjzlTKhlw8PjcGbrmvMuBmdKSDYN2bSQFYSQl-oF007nz9LgeY2gWlAdgoK3axj5PmabR1"
+        ],
+        [
+            10,
+            "蜂蜜减肥法_百度百科",
+            "http://www.baidu.com/link?url=Z2G2V-hu-rnY9QcPWeRmni4-cVkXBy6CaHEHQADkq3rMCpTihNy4CamQItXfZlV5OORJwghLgBExfizgIs7dhXWplpTgTFfXMQc_AFt_DPY75UTNqnvFJPP38Uf5Az4F"
+        ]
+    ],
+    [
+        "https://www.baidu.com/s?wd=减肥法&pn=20",
+        [
+            1,
+            "水果减肥法_百度百科",
+            "http://www.baidu.com/link?url=Kfp2Trce2r-7RPtGQ9RV4pW7otSlKhxpaLmJ3geFxF8hu_bYRJTkmbpTRZkEij11P-T0Io0UBoUYBm9gpQE7IuSsE5RvzYNfv1vjkJS_YfnMZSCcGmSSV7KvSWeBFs6Vkp8tvltVeNq3knNU46fuq_"
+        ],
+        [
+            2,
+            "21天减肥法是减肥的好方法_挑战瘦32斤",
+            "http://www.baidu.com/link?url=uFQEfI1ztWGRhbKr8Jw3Gj44oHVUacPqeTj7-b2Fe8a"
+        ],
+        [
+            3,
+            "懒人减肥法三天瘦十斤,懒人减肥最好的方法,懒人减肥大全 - 七丽...",
+            "http://www.baidu.com/link?url=IJ7Pbb58bygORZ4V3iOCnJuE8rEtuGdU9ofzuguOFWI6xrEUrpgBvc2Vudy9XNYUI9vYEtdtk9bjbaHR7Fm9fa"
+        ],
+        [
+            4,
+            "减肥方法有效",
+            "http://www.baidu.com/link?url=O9XCxH8NfvviH2ObEx7sN8DKCmkWjc-Qj-uIJ9qnZZYpY8r1aHg-PakEKrocnRN9"
+        ],
+        [
+            5,
+            "21天减肥法_39健康网",
+            "http://www.baidu.com/link?url=vp8cvZg_wr-w14pfY7_t-JDeii6tPBXDFg_rsFsFEVH-lF-2FHmbUyKRR4DTHoOo"
+        ],
+        [
+            6,
+            "三日苹果减肥法 - 薄荷网",
+            "http://www.baidu.com/link?url=52J1NKO_3kGK6MtUduoWie_gdkbavEIzf7hkIEU3_-hlZzIigEBrlSJ2YcW-YphBsTOYp9FxJPKZoPuFTHhQDK"
+        ],
+        [
+            7,
+            "【3337减肥法】告诉你3337减肥法有用吗?分享3337减肥法成功案例_...",
+            "http://www.baidu.com/link?url=cPbx1Th1K89fs41zUq7xlf6HOzavaYNg5e52R1jYVjhzCwOkHTIvgX2jDhKkPm_-LYxCu6MB-OAOGCBt0clOtq"
+        ],
+        [
+            8,
+            "杜坎减肥法,吃到饱的减肥(已更新完)-美体瘦身-时尚美颜-重庆购物狂",
+            "http://www.baidu.com/link?url=M8IxhxHhR9046j8dBSt8_qsWqKSz_EAIls_5jdfR1p_J9haPqlc4sCWmPnu_OUdhUaBH13_P9D2v7r9Fsez9vicH2RB5Hah7wVTZuYaGe9i"
+        ],
+        [
+            9,
+            "性爱减肥法 (豆瓣)",
+            "http://www.baidu.com/link?url=7xFSz1fBjPS0lfYEIuLyQ-UTzLIb7Y16riTI_q_N6GiiJFflet0WhAS6fjVc_KAV5qow6axHrayir0PwS3mBaq"
+        ],
+        [
+            10,
+            "减肥法_YOKA时尚网",
+            "http://www.baidu.com/link?url=FTF7u_sW6xrI7O28If0TK-Nc1X4HBtCAOTb-1XphOI7k4M0A7xmmAwUIw3huz0h72cEoJqCaQFHWZaSpxVDbuK"
+        ]
+    ],
+    [
+        "https://www.baidu.com/s?wd=减肥法&pn=0",
+        [
+            1,
+            "21天减肥法_百度百科",
+            "http://www.baidu.com/link?url=0vpD-5JhmVBmGROP4FyFreG907epRA9WvVI-oeyeodQ6oNFNnsUGH73skFHo4oThABg2gQj7rTLzmhBAJNjlCpbJXEXLJTdFKDYzP5kTCXPwAmFsMoOBTYPghyjM_gTO"
+        ],
+        [
+            2,
+            "减肥法_百度百科",
+            "http://www.baidu.com/link?url=qu8gBpdVrsv-dRY_PHduVkY2oYpA-HY3LZLQgTvT5AYjkgDya4IBsO1hyH8HBZBQ38JYVIEcmKMM8dgjWYjg6gWXGBSU1Dy493rkdA02wey"
+        ],
+        [
+            3,
+            "真人减肥记史:21天减肥法全程详细记录,减重12斤,值得学习借鉴",
+            "http://www.baidu.com/link?url=nrcZzezpHVjpYROY0MJwrkIsZ7xr-O8CixmHPWrX37T-zSQDLY9tkpDElURk-CjbZELBMEy-nVHKHEE47RN5lSvzZzIOyuPJ24RmP1dirF7"
+        ],
+        [
+            4,
+            "什么是苹果减肥法 - 杜琳 - 民福康健康养生百科",
+            "http://www.baidu.com/link?url=EYhvVm5KtunZq1svB74LQ9inpvr0oabbZetWWxEtqvFT9Q4njzHFst8825sV5ehR-1C2yOi8Qm4vqAY-KgNVya"
+        ],
+        [
+            5,
+            "【睡觉减肥法】怎么睡觉减肥,睡觉减肥还是增肥_太平洋时尚网专区",
+            "http://www.baidu.com/link?url=jPe8ss4IotAfVRNFt5eaVMc9apbq8IP0r69f6RmhtUGXYL0FOt_ovaI1F6V56DAuZuAWeTv-9JzzHXtL2oOwPq"
+        ],
+        [
+            6,
+            "不吃饭减肥法 让你一周速瘦10斤_百度经验",
+            "http://www.baidu.com/link?url=pWWkHmJdZpWy6yQF0owh_yI1yMD-B7MA8G0iKsYyZMOIjBkVZib7BZZPIr-537nq6757jLTEN9VnnGTS7nOQUdBFnVcIqSxPH4NHUzMw1Rq"
+        ],
+        [
+            7,
+            "这次不喝水了,IU靠自创减肥法4天瘦了8斤_凤凰时尚",
+            "http://www.baidu.com/link?url=751MUshUyKgbHgTzOQJ9TplzBnGnaZEG31xbD49x6jMqgDGAaHjnRtMTu6tChe6HFItFwi7T9yBuehmc6aNb-_"
+        ],
+        [
+            8,
+            "美莱中医健康减肥_中医减肥_埋线减肥_中医健康减肥",
+            "http://www.baidu.com/link?url=QnY4DYCAwFT68PVtfgGNLNjISo4qyJlgvezhih1Oy3bUQpcO28ob3rq-VlMdS1Zu"
+        ],
+        [
+            9,
+            "7种最有效的懒人减肥方法_39健康网",
+            "http://www.baidu.com/link?url=Z3Gvl75QcwJSe2y02CCCmkOHI9i38cLfX7IQw1iBV1-k-Uhs1s6QD4f4roW3yc1IzsoUiHGo_jbcaPLGX9qnWK"
+        ],
+        [
+            10,
+            "减肥法的最新相关信息",
+            "http://www.baidu.com/link?url=3jU2yLQCA1XyOCG2jJxrVvjGknM3iUSHwsMXb0U05pDaWvnXmnoNb39rwxqoy8baYJ4LFKwrvTI9nztMmrqbx8irsyU-uWwrLRoeTa4I8aZmtFHutyO9MGOlCgac4QQGgS0WWsQ6UrofdAgmKd9ot_"
+        ]
+    ],
+    [
+        "https://www.baidu.com/s?wd=减腰&pn=10",
+        [
+            1,
+            "腰腹部赘肉怎么减?",
+            "http://www.baidu.com/link?url=vgc-5EQt1pJwVIitU6rl4PfbGECN6ZJxNg7VPHXVvZq8hlRHc5FpO30aqCNP50cvWGY2C9skTpggMBDYc7d8Ra"
+        ],
+        [
+            2,
+            "怎样才能最快的减去腰腹部的赘肉_百度文库",
+            "http://www.baidu.com/link?url=2CA5zDWmvpUnHDLCZ38In4rpwgTUZiUvEUNQIpDdoKdZL1CuXzFPUEY4XYUOkLG6axkcMNGV4vzFjBMPnDF5uCbKpVsjkhnvNzleeCJk7-S"
+        ],
+        [
+            3,
+            "最有效减腰腹赘肉的方法_百度经验",
+            "http://www.baidu.com/link?url=pWWkHmJdZpWy6yQF0owh_yI1yMD-B7MA8G0iKsYyZMOIjBkVZib7BZZPIr-537nqfDCnl-G-sD31Kiv5KjA6W2xZx_ALX7-fzBFnpe7CnBO"
+        ],
+        [
+            4,
+            "产后如何减腰上和肚子上的肉?_百度宝宝知道",
+            "http://www.baidu.com/link?url=VCScJyfrwdLuRIn9tGkDrkmkVPYnSgFbpyaIX2hGxls02TUoRxo3YN3a_pc7Nbw9i5Qkd7zn8ryCJzdHA3WgpnuYWemLfJIQKgRjMyAJGrQJ_r4UB4OxclU7kV5a7H4u"
+        ],
+        [
+            5,
+            "怎样减去腰腹部赘肉_百度经验",
+            "http://www.baidu.com/link?url=sZXxr4JIi7UW63Bmu2OuJL8MAi5vw9hFmF5KHOAz2iTQpz0UyPUy6Y22OApjUPAi2zcJXTVILIiao4kWwuoQzWlX-SljdIQ7uP-OeDz0y3y"
+        ],
+        [
+            6,
+            "如何减腰腹部赘肉_百度经验",
+            "http://www.baidu.com/link?url=ydQoegGj8QvCoLdhAeLXaceE67hS889xpRMR6w2eU2ah07SXw5JQ5KrGMY5tR0aSon5_o-f17oYgQt8YnWGqvKGOjJZac4W1bXRnjHbegA3"
+        ],
+        [
+            7,
+            "带减腰围_百度百科",
+            "http://www.baidu.com/link?url=CiAZa71f-Egb06BXwy-40bLuVO0vhkAFnK9v7kZqPB26ZF0fRpkuP9q7E5Jqs4WI2HwjHuNpa7LNaLtsjI5lCUmdSZJpRSQOD8dz_Z2_e18MBxO3G3E07SdaSYMoYSyv"
+        ],
+        [
+            8,
+            "如何减掉腰腹部的脂肪? - 知乎",
+            "http://www.baidu.com/link?url=RIHJIQGwPSe2DHVHxUba8_wAsuUyHiJQJS9KwdA_Qtn7vk-N0jiDUNb-uaXPVuzF2iriuItvGsvCbwk5jWUqA_"
+        ],
+        [
+            9,
+            "如何只减身体的某个部位,如:腿,臀,腰_百度经验",
+            "http://www.baidu.com/link?url=f9sfjVEEnX9FdwCa7w2NiD0whl9ymmWT5261N_JXBLzol04Zp7OOsXhXVT4lJKlF60ws7RY1G3ncDsohtpAG3jIYoMjWfb3XrTYhSfnvJMq"
+        ],
+        [
+            10,
+            "如何减掉腰部赘肉_百度经验",
+            "http://www.baidu.com/link?url=55naa_RKlGvXcrvXnqWnbxhC7fE6XzAHQLgmjD_NiUZ3cq5HmlrXbQsleCTQpK8781T_-Yv9Y0PMUo9FMrSz50bqTaMZJZ8wtWxkzPYlmF3"
+        ]
+    ],
+    [
+        "https://www.baidu.com/s?wd=减腰&pn=0",
+        [
+            1,
+            "减腰腹赘肉_百度百科",
+            "http://www.baidu.com/link?url=f8PAnc9Ww2eWWo4bxSNlB_oKBIMxIgL1EVOb2g9LqkHkHy0cXWRaoHzyhJVoqVqbTKCSqyC4zN9mMClAZvq5aG5AEASSqR7Z-U9j4ohf2XQgD25tIO8tkREM6epteKHqUQm8H0rsdDsWGZSf6qRYYq"
+        ],
+        [
+            2,
+            "减腰部两侧赘肉，试一下这个动作。_百度经验",
+            "http://www.baidu.com/link?url=pWWkHmJdZpWy6yQF0owh_yI1yMD-B7MA8G0iKsYyZMOIjBkVZib7BZZPIr-537nqz2YPq-IKV3KGoT9q_HBmGc_gBEC06SKx4DhkhCP5LLm"
+        ],
+        [
+            3,
+            "最有效减腰腹赘肉的方法_百度经验",
+            "http://www.baidu.com/link?url=wVqgAVxLmWk8TLQ2-YPhcEklQLxaaz1_ajcx1RalqEhul4qpQ5d_ieJoDaaadk21xK6n9zTloTjuiOaj0EBOO4xhjkbU2HvPQKaO-zGMq0_"
+        ],
+        [
+            4,
+            "女人变胖之前,都有这几个表现,出现其中3个,你要减腰腹赘肉了",
+            "http://www.baidu.com/link?url=pFpuNOm0paKf52C6NvGaKaliYA4Zp9gsmAXsBKnL518H9LrE9uu_e9k5dOtY9hKcm_Yg680aztRGSOtAKrWzjgALeMs-fifi6p24FLu_1em"
+        ],
+        [
+            5,
+            "减腰_视频大全_高清在线观看",
+            "/sf/vsearch?pd=video&tn=vsearch&lid=cbb328f10001ee97&ie=utf-8&rsv_pq=cbb328f10001ee97&wd=%E5%87%8F%E8%85%B0&rsv_spt=5&rsv_t=50e5aNA75XLFn7IuWxJfoKeI3C22SpHzAEFGvs%2BYSRtsAF4Wzb%2FnK1YwABw&rsv_bp=1&f=8"
+        ],
+        [
+            6,
+            "减腰_百度图片",
+            "http://www.baidu.com/link?url=yKn4AT-CNAqoIQw_sJOzN_Bnn14HMWhPhwvvFjwPJRh6xrd312D7WTM50JWoyUQJ7ddratLhyhJED0lzZ_-GY5Z2F_m3wrA2HUJv0Pr0jOtob3GmTmoueNZE0SWPv4CFdEBmHX1-KiaK616TcBVfMG-hJEoHShP0ngmAVMy6ietjo8U0J11IgqpUlyNep9woftUSc0kcP5WBK6r3EdokIk0h5JH_C8dHDDAKE5IcVma"
+        ],
+        [
+            7,
+            "如何减掉腰部,腹部赘肉_百度知道",
+            "http://www.baidu.com/link?url=-HGriXpMlNq8mSSfVUhvlb6caN_YiOBRejPO18qZ3wZ9_r-8HRs24a8pVWZL1ZMgq95HoIwcz0xho4JHSWK4hw48_e0q6l_Q8_uqCEOzJvK"
+        ],
+        [
+            8,
+            "怎样减掉腰上的肉?_百度知道",
+            "http://www.baidu.com/link?url=5UAK-plPcpOGEDweTAmoTfqcO6mlfNq71Md7yG1kqgbrzKcwit6nWju9oZfgDYfvpICmzysEgoKsvcD9Q0VS9a"
+        ],
+        [
+            9,
+            "怎么减腰腹赘肉?记住这3个技巧,腰围轻轻松松“瘦一圈”!",
+            "http://www.baidu.com/link?url=Lt6FiFDBbI5oDmtpWD7fhTlBeq_y6w9xYxdWzFnXhS0fv32io60oeqjAagXQfx9eHk5jFsA6ygNJ2PnrvTEMvPchc8ZBaWYPeQfH_jv3BGa"
+        ],
+        [
+            10,
+            "怎么减腰腹赘肉_美呗整形知识",
+            "http://www.baidu.com/link?url=nN4jY3rLZLohHYrHxOGSQdFOL5JM7lQZNbo4oh7Rta8qjB22uYSGdAcjbGtxT0ne"
+        ]
+    ],
+    [
+        "https://www.baidu.com/s?wd=减腰&pn=20",
+        [
+            1,
+            "抓带脉之减肥瘦腰加调理大姨妈_百度经验",
+            "http://www.baidu.com/link?url=rN4bHAtkT1yLHP8oQ8V4Vge-uLIcA2IulXlKeyLDE_1lZ8OzcjWXhyLu77fWpUkJCY_dgBq-lHb6lwDHI1XNnpBehXjt7fdQGcnd_wm38Gm"
+        ],
+        [
+            2,
+            "怎样快速减腰和肚子 - 七丽女性网",
+            "http://www.baidu.com/link?url=6-HUqS2vzdSod6lm5Rypclz8CvR7gz3zNADJPJbV3oLA8kpDlG-Zw-bBX0YN-vrb"
+        ],
+        [
+            3,
+            "怎样减掉屁股和腰上的肉肉啊~~~_已解决 - 阿里巴巴生意经",
+            "http://www.baidu.com/link?url=NHKWGUaUKcP1rj2a-ncooJQ3UX0CeAgxD2Uy1JWMzRK82hajWIL2SfS0CtkRBT43bNqPVZC42RJub4JDhimDAa"
+        ],
+        [
+            4,
+            "【瘦腰】瘦腰瘦肚子,瘦腰的最快方法,腰部减肥,瘦腰运动,..._妈妈网",
+            "http://www.baidu.com/link?url=wqnvDqS42aZGz23VJkbItOzASS5KvoU_nWCO6Tb8F1qPnKHNU_TfQu21YUNlUmJx"
+        ],
+        [
+            5,
+            "【腰部减肥】腰部减肥方法,腰部减肥最快的方法_太平洋时尚网专区",
+            "http://www.baidu.com/link?url=kShXMDHzE91yp1vmVTlyNGLO8IDZcOYCLUz_LyeKxE8Er0zZQl1VsmCGJoVwRlaMQ8M0-rXqm3VfyaSfRKnEsK"
+        ],
+        [
+            6,
+            "瘦腰_减腰_腰部减肥方法_腰部减肥健美体操 - 康爱多网上药店",
+            "http://www.baidu.com/link?url=dt5kix-taSMFVBnEDdZE43JyB8Fk9PTgmgl519apBNufhmrQS-PAu46f9tpUs5T2NiQv9Hs0nchAFt4TqLQ_I_"
+        ],
+        [
+            7,
+            "【快速瘦腰】怎样才能快速瘦腰,最快速瘦腰的方法_PClady百科_...",
+            "http://www.baidu.com/link?url=Sno2NltfgTQYKGpJkfjQl2fNblhDAhZ4xOPbc8hW0I2JX-ABaGjBG6e5AjvoH-6GTOBCekQtRd5i7uyznKcn-K"
+        ],
+        [
+            8,
+            "腰上有肉怎么减最有效 9个简单方法帮你消除腰上赘肉 - 爱秀美",
+            "http://www.baidu.com/link?url=IoQE0KVXZ3sKbg9Tdog_htLeznP2BOmuARIKfaWWanRzPQRu5V4a9sZMOeY2IokC3qWyVqKbganSHDzgS5K8v_"
+        ],
+        [
+            9,
+            "减腰腹胃腩_百度百科",
+            "http://www.baidu.com/link?url=0TNGcY1FgBzHMRIx8XvJFTAJdgadAQ1_7gBN7Ca-wj4BNo9mEkIF62-JEvpV905mewKbaNiDBSURNVKeuTdiYOEueKTh1E7HtbHkwgm79dwbdHqKdWn9qjhpLdmJf9uogrviFFOQdzbE625okINOJq"
+        ],
+        [
+            10,
+            "减腰腹赘肉 4个小运动练就“小腰精”_39健康网_减肥",
+            "http://www.baidu.com/link?url=rn4pZaSTzJKq6dJzN1HkEOXYaCDeN5enV9QhbSzP3RYZ55CLA8QvDR2wLIPB7vKuuuE5_VJX2fM9M8DqsEvje_"
+        ]
+    ]
+]
 
-#index()函数 可以根据数据，查找数据的索引
-#1.数据 2. 开始搜索的位置3.结束搜索的位置
-#如果数据不在列表中（或不在指定范围），会出现异常错误
-# 'hello' is not in list 原因1：列表中确实没有该元素 原因2：指定的范围没有该元素
-index = list_1.index('oppo',0,5)
-print(index)
-list_1[3] = True
-print(list_1)
-#根据索引修改数据
-list_1[index] = 'vivo'
-print(list_1)
+# ist_1.append('我是第一')
+#list_1.append(['年龄', '43', '性别', '男'])
+for index, item in enumerate(list_1):
+    print('index:', index, 'item:', item)

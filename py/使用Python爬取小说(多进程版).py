@@ -7,7 +7,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 16:06:11
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-12 16:07:07
+@LastEditTime: 2019-05-19 13:27:27
 '''
 import requests
 import random
@@ -175,7 +175,7 @@ class ScrapyProcess(process):
 if __name__ == "__main__":
     for i in range(1, 9):
         # 为每个分类下的爬取创建一个进程
-        process = ScrapyProcess('http://www.biqugecom.com/list/%s-1.html' %
+        process = ScrapyProcess('http://www.xbiquge.la/fenlei/%s-1.html' %
                                 (str(i)))
         process.start()
 '''
