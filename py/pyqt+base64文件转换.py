@@ -1,17 +1,21 @@
-# ！/usr/bin/env python
-# -*- coding:utf -8-*-
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Software :   VSCode
-@File     :   pyqt+base64文件转换.py
-@Time     :   2019/05/06 09:13:38
-@Author   :   Even Sand
-@Version  :   1.0
-@Contact  :   sandorn@163.com
-@License  :   (C)Copyright 2009-2019, NewSea
+@Descripttion: 头部注释None
+@Develop: VSCode
+@Author: Even.Sand
+@Contact: sandorn@163.com
+@Github: https://github.com/sandorn/home
+@License: (C)Copyright 2009-2019, NewSea
+@Date: 2019-05-06 09:13:30
+@LastEditors: Even.Sand
+@LastEditTime: 2019-05-22 10:14:53
+
 python 对任意文件(jpg,png,mp3,mp4)base64的编码解码 - dcb3688 - 博客园
 https://www.cnblogs.com/dcb3688/p/4610642.html
 '''
-import io, shutil, sys, os
+import sys
+import os
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
 import base64
@@ -58,8 +62,7 @@ class MainWidgetUI(QDialog):
                 tmpFileObj.write(contents.split(',')[1])
                 tmpFileObj.close()
                 GlobalToFile(
-                    tmpFile, fileDict['filepath'] + "/" + fileDict['shotname'] +
-                    "." + extensions[0])
+                    tmpFile, fileDict['filepath'] + "/" + fileDict['shotname'] + "." + extensions[0])
                 QMessageBox.information(self, '提示！', "转换成功", QMessageBox.Yes)
                 os.remove(tmpFile)  # 删除临时文件
 
@@ -70,8 +73,7 @@ class MainWidgetUI(QDialog):
                                                        "mp3")  # 获取输入对话框内容
                 if okPressed and mine:  # 选择确认且输入文本
                     GlobalToFile(
-                        fileDict['file'], fileDict['filepath'] + "/" +
-                        fileDict['shotname'] + "." + mine)
+                        fileDict['file'], fileDict['filepath'] + "/" + fileDict['shotname'] + "." + mine)
                     QMessageBox.information(self, '提示！', "转换成功",
                                             QMessageBox.Yes)
                 else:

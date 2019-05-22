@@ -9,14 +9,17 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 00:20:05
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-21 18:54:22
+@LastEditTime: 2019-05-21 18:56:09
+
+使用beautifulsoup和pyquery爬小说 - 坚强的小蚂蚁 - 博客园
+https://www.cnblogs.com/regit/p/8529222.html
 '''
 
 import time
 
 from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
 import threading
-from bs4 import BeautifulSoup
+from pyquery import PyQuery
 from xjLib.req import parse_url as parse_url
 from xjLib.req import savefile as writer
 from xjLib.req import get_stime
@@ -28,24 +31,20 @@ texts = []
 def get_download_url(url):
     urls_list = []
     _response = parse_url(url)
-    soup = BeautifulSoup(_response.text, 'lxml')
-    [s.extract() for s in soup(["script", "style"])]
-    _bookname = soup.find('h2').get_text()
-    # 搜索文档树,找出div标签中class为listmain的所有子标签
-    _div = str(soup.find_all('div', class_='listmain')[0])
-    download_soup = BeautifulSoup(_div, features="html5lib")
+    soup = PyQuery(_response.content)
+    _bookname = soup('h2').text()
 
     # 开始记录内容标志位,只要正文卷下面的链接,最新章节列表链接剔除
     begin_flag = False
-
-    # 遍历 dl 标签下所有子节点
-    for child in download_soup.dl.children:
+    # 遍历所有子节点    #item()遍历节点数组
+    for child in soup('body > div.listmain > dl').children():
         # 找到正文卷,使能标志位
-        if child.string.strip() == '《' + _bookname + '》正文卷':
+        if child.tag == 'dt' and child.text.strip() == '《' + _bookname + '》正文卷':
             begin_flag = True
         # 爬取链接并下载链接内容
-        if begin_flag and child.name == 'dd':
-            download_url = 'http://www.biqukan.com/' + child.find('a').get('href')
+        if begin_flag and child.tag == 'dd':
+            _soup = PyQuery(child)
+            download_url = 'http://www.biqukan.com' + _soup('a').attr('href')
             urls_list.append(download_url)
     return _bookname, urls_list
 
@@ -53,12 +52,10 @@ def get_download_url(url):
 def get_contents(index, url):
     _texts = ''
     _response = parse_url(url)
-    soup = BeautifulSoup(_response.text, 'lxml')
-    [s.extract() for s in soup(["script", "style"])]
-    _name = soup.h1.get_text()  # 章节名
-    _showtext = soup.select('.showtxt')[0]
-    for text in _showtext.stripped_strings:
-        _texts += text + '\n'
+    soup = PyQuery(_response.content)
+    _name = soup('h1').text()  # 章节名
+    _showtext = soup('#content').text()  # '.showtxt'
+    _texts = _showtext.replace('\n\n', '\n')
     with lock:
         print('{}\tdone\twith\t{}\tat\t{}'.format(threading.currentThread().name, index, get_stime()), flush=True)
     return [index, _name, _texts]
@@ -84,31 +81,18 @@ def main_Pool(target):
     with Pool(25) as p:
         _ = [
             p.submit(get_contents, i, urls[i]).add_done_callback(clb)
-            #task_list = [p.submit(get_contents, urls.get()) for i in range(urls.qsize())]
+            # task_list = [p.submit(get_contents, urls.get()) for i in range(urls.qsize())]
             for i in range(len(urls))
         ]
-    '''
-    # 返回值方式
-    with Pool(20) as p:
-        future_tasks = [p.submit(get_contents,  i, urls[i]) for i in range(len(urls))]
 
-    from concurrent.futures import as_completed
-    texts = []  # 将爬下来的小说都存在里面，做最后排序
-    for obj in as_completed(future_tasks):
-        if obj.done():
-            try:
-                texts.append(obj.result())
-            except Exception as e:
-                print("obj.result()error:", e)
-    '''
     print('\nCFThreadPool，书籍《' + bookname + '》完成下载', flush=True)
     writer(bookname + '.txt', texts)
-    print('{} 结束，\t用时:{} 秒。'.format(get_stime(), round(time.time() - _stime, 2)), flush=True)
+    print('{} 结束，\t用时:{} 秒。'.format(get_stime(), time.time() - _stime), flush=True)
 
 
 if __name__ == '__main__':
-    main_Pool('https://www.biqukan.com//2_2704/')
+    main_Pool('https://www.biqukan.com//65_65593/')
     # '65_65593'  #章节少，测试用
-    # '2_2704'  #231万字  #6239kb,36秒钟
+    # '2_2704'  #231万字  #6239kb,33秒钟
     # "2_2714"   #《武炼巅峰》664万字
     # [武炼巅峰.txt]150W, 用时: 947.34 秒。

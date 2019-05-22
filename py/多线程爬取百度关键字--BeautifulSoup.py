@@ -1,5 +1,5 @@
-# ！/usr/bin/env python
-# -*- coding:utf -8-*-
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
 @Descripttion: 头部注释None
 @Develop: VSCode
@@ -7,28 +7,102 @@
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
+@Date: 2019-05-20 17:34:16
 @LastEditors: Even.Sand
-@Date: 2019-05-08 19:18:48
-@LastEditTime: 2019-05-20 20:28:41
+@LastEditTime: 2019-05-21 10:43:16
 '''
+# ！/usr/bin/env python
+# -*- coding:utf -8-*-
 
 import time
-from xjLib import threadPool
 from retrying import retry
 import requests
 from bs4 import BeautifulSoup
+import threading
+from queue import Queue
+
+lock = threading.RLock()
+
+
+class WorkManager(object):
+    def __init__(self, do_job, works, thread_num=25):
+        self.job = do_job
+        self.work_queue = Queue()  # 任务队列
+        self.result_queue = Queue()  # 结果队列
+        self.threads = []
+        self.__init_work_queue(works)
+        self.__init_thread_pool(thread_num)
+
+    # #初始化工作队列,添加工作入队
+    def __init_work_queue(self, works):
+        for item in works:
+            # print('__init_work_queue item:', item)  # 参数tupe
+            self.work_queue.put((self.job, item))  # 将任务函数和参数传入任务队列
+
+    # #初始化线程,同时运行线程数量有效果，原理没明白
+    def __init_thread_pool(self, thread_num):
+        for i in range(thread_num):
+            self.threads.append(Work(self.work_queue, self.result_queue))
+
+    # #等待所有线程运行完毕
+    def wait_allcomplete(self):
+        '''
+        @description:等待线程结束，并取得运行结果
+        @return:result_list
+        '''
+        for item in self.threads:
+            if item.isAlive():
+                item.join()
+
+        result_list = []
+        for i in range(self.result_queue.qsize()):
+            res = self.result_queue.get()
+            #print('wait_allcomplete:', res)
+            result_list.append(res)
+        return result_list
+
+
+class Work(threading.Thread):
+    def __init__(self, work_queue, result_queue):
+        threading.Thread.__init__(self)
+        self.work_queue = work_queue
+        self.result_queue = result_queue
+        self.start()  # 启动线程
+
+    def run(self):
+        # 一定不用死循环
+        while not self.work_queue.empty():
+            try:
+                do, args = self.work_queue.get(block=False)  # 任务异步出队
+                # print('Work args：', args)  # 参数list or tupe,注意检查此处
+                result = do(*args)  # 传递  list or tupe 各元素
+                #print('work run result:', result, flush=True)
+                self.result_queue.put(result)  # 取得函数返回值
+                self.work_queue.task_done()  # 通知系统任务完成
+                with lock:
+                    print('{}\tdone\twith\t{}\tat\t{}'.format(threading.currentThread().name, args[0], get_stime()), flush=True)
+            except Exception as error:
+                print(error, flush=True)
+                break
+
+
+def get_stime():
+    ct = time.time()
+    local_time = time.localtime(ct)
+    data_head = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
+    data_secs = (ct - int(ct)) * 1000
+    stamp = "%s.%03d" % (data_head, data_secs)
+    return stamp
+
 
 myhead = {
-    'User-Agent':
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
-    # 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
     'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
     'Accept-Encoding': 'gzip,deflate,sdch, br',
     'Accept-Language': 'zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4',
     'Cache-Control': 'max-age=0',
     'Connection': 'close',
     'Proxy-Connection': 'no-cache'
-    # 'Host': 'www.baidu.com'
 }
 
 
@@ -39,11 +113,9 @@ def parse_url(url, params=None, headers=myhead, proxies=None, timeout=6, ecode='
     def _parse_url(url):
         response = requests.get(url, params=params, headers=headers, proxies=proxies, timeout=timeout)
         assert response.status_code == 200
-        # return response.text
         return response.content.decode(ecode)
 
     try:
-        # 以下except捕获当requests请求异常
         response = _parse_url(url)
         soup = BeautifulSoup(response, 'lxml')
         [s.extract() for s in soup(["script", "style"])]
@@ -69,35 +141,52 @@ def fd():
 
 
 def make_urls(pages):
+    '''
     _k = []
-    _file = 'D:/CODE/关键字检索/关键词 (015).txt'  # fd()
+    _file = fd()
     if not _file:
         return False
     res = _file.split('.')[0:-1]  # 文件名，含完整路径，去掉后缀
 
     with open(_file) as f:
         for row in f.readlines():
-            row = row.strip()  # 默认删除空白符  '#^\s*$'
+            row = row.strip()  # 默认删除空白符  #   '#^\s*$'
             if len(row) == 0:
                 break  # 去除行len为0的行
             _k.append(row)
     keys = sorted(set(_k), key=_k.index)
+    #为方便演示，用list直接替代读文件
+    '''
+    keys = [
+        "减肥计划",
+        "减肥运动",
+        "如何减肥",
+        "怎么减肥",
+        "有效减肥",
+        "郑多燕减肥",
+        "减肥视频",
+        "减肥",
+        "减肥方法",
+        "减肥食谱",
+        "   ",
+        "减肚子",
+        "腰腹减肥",
+        "\t",
+        "减腰",
+        "减肥法",
+        "减肥法"
+    ]
 
     out_url = [(key, page, "https://www.baidu.com/s?wd={}&pn={}".format(key, page * 10),) for key in keys for page in range(pages)]
-
-    return res[0], out_url
+    return 'baidu', out_url
+    # return res[0], out_url
 
 
 def getkeys(key, page, url):
-    '''
-    @description:
-    关键词 (015)* 10 页 =  16.38721013069153 秒
-    @param {type}
-    @return:
-    '''
     _texts = []
     result = parse_url(url=url)
 
+    # 方法1
     tagh3 = result.find_all('h3')
     index = 0
     for h3 in tagh3:
@@ -109,23 +198,15 @@ def getkeys(key, page, url):
             break
         baidu_url = requests.get(url=href, headers=myhead, allow_redirects=False)  # 禁止跳转
         real_url = baidu_url.headers['Location']  # 得到网页原始地址
+        if '.baidu.com' in real_url:
+            break
         if real_url.startswith('http'):
             index += 1
             _texts.append([key, page, index, title, real_url])
-
-    return _texts
-
-
-def getkeys2(key, page, url):
+    # 方法1结束
     '''
-    @description:
-    关键词 (015)* 10 页 =  19.847952604293823 秒
-    @param {type}
-    @return:
-    '''
-    _texts = []
-    result = parse_url(url=url)
 
+    # 方法2，效果与方法1相同
     allTags = result.findAll('div', ['result-op c-container xpath-log', 'result c-container'])
     # 'result-op c-container xpath-log'   #百度自己内容
     index = 0
@@ -138,10 +219,13 @@ def getkeys2(key, page, url):
             break
         baidu_url = requests.get(url=href, headers=myhead, allow_redirects=False)
         real_url = baidu_url.headers['Location']  # 得到网页原始地址
+        if '.baidu.com' in real_url:
+            break
         if real_url.startswith('http'):
             index += 1
             _texts.append([key, page, index, title, real_url])
-
+    # 方法2结束
+    '''
     return _texts
 
 
@@ -166,7 +250,7 @@ def main():
         print(e)
         return False
 
-    work_manager = threadPool.WorkManager(getkeys2, urls)  # 调用函数,参数:list内tupe,线程数量
+    work_manager = WorkManager(getkeys, urls)  # 调用函数,参数:list内tupe,线程数量
     texts = work_manager.wait_allcomplete()
     savefile(_name + '_百度词频.txt', texts)
     print("threadPool cost all time: %s" % (time.time() - start), flush=True)
@@ -174,3 +258,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # threadPool cost all time: 27.787729501724243

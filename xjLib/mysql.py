@@ -9,16 +9,12 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-15 08:24:16
+@LastEditTime: 2019-05-21 12:02:49
 '''
+from xjLib import db_router
 import MySQLdb as myodbc
-
 # import pymysql as myodbc
 import pandas
-
-'''base_package = __name__.split('.')[:-1]
-exec('from %s import db_router' % base_package)'''
-from xjLib import db_router
 
 dbr = db_router.config
 

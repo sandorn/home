@@ -1,15 +1,17 @@
-# ！/usr/bin/env python
-# -*- coding:utf -8-*-
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Software :   VSCode
-@File     :   pyqt5-记事本-main.py
-@Time     :   2019/05/06 17:47:19
-@Author   :   Even Sand
-@Version  :   1.0
-@Contact  :   sandorn@163.com
-@License  :   (C)Copyright 2009-2019, NewSea
-《快速掌握PyQt5》第二十三章 主窗口QMainWindow - La_vie_est_belle的博客 - CSDN博客
-https://blog.csdn.net/La_vie_est_belle/article/details/82819766
+@Descripttion: 头部注释None
+@Develop: VSCode
+@Author: Even.Sand
+@Contact: sandorn@163.com
+@Github: https://github.com/sandorn/home
+@License: (C)Copyright 2009-2019, NewSea
+@Date: 2019-05-06 17:46:12
+@LastEditors: Even.Sand
+@LastEditTime: 2019-05-21 16:37:09
+#《快速掌握PyQt5》第二十三章 主窗口QMainWindow - La_vie_est_belle的博客 - CSDN博客
+#https://blog.csdn.net/La_vie_est_belle/article/details/82819766
 '''
 import sys
 import os
@@ -17,7 +19,7 @@ import time
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QMimeData, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QAction, QFileDialog, QMessageBox,\
-                            QFontDialog, QColorDialog, QSplashScreen
+    QFontDialog, QColorDialog, QSplashScreen
 
 
 class mywindow(QMainWindow):
@@ -27,8 +29,8 @@ class mywindow(QMainWindow):
 
     def __init__(self):
         super(mywindow, self).__init__()
-        _path =os.path.dirname(__file__)+'/'
-        self.setWindowIcon(QIcon(_path+'images/book.png'))
+        _path = os.path.dirname(__file__) + '/'
+        self.setWindowIcon(QIcon(_path + 'images/book.png'))
         self.file_menu = self.menuBar().addMenu('File')
         self.edit_menu = self.menuBar().addMenu('Edit')
         self.help_menu = self.menuBar().addMenu('Help')
@@ -90,75 +92,75 @@ class mywindow(QMainWindow):
         self.edit_toolbar.addAction(self.paste_action)
         self.edit_toolbar.addAction(self.font_action)
         self.edit_toolbar.addAction(self.color_action)
-        self.edit_toolbar.addSeparator() # 分割线
+        self.edit_toolbar.addSeparator()  # 分割线
         self.help_toolbar.addAction(self.close_action)
 
     def status_bar_init(self):
         self.status_bar.showMessage('Ready to compose')
 
     def action_init(self):
-        _path =os.path.dirname(__file__)+'/'
-        self.new_action.setIcon(QIcon(_path+'images/new.ico'))
+        _path = os.path.dirname(__file__) + '/'
+        self.new_action.setIcon(QIcon(_path + 'images/new.ico'))
         self.new_action.setShortcut('Ctrl+N')
         self.new_action.setToolTip('Create a new file')
         self.new_action.setStatusTip('Create a new file')
         self.new_action.triggered.connect(self.new_func)
 
-        self.open_action.setIcon(QIcon(_path+'images/open.ico'))
+        self.open_action.setIcon(QIcon(_path + 'images/open.ico'))
         self.open_action.setShortcut('Ctrl+O')
         self.open_action.setToolTip('Open an existing file')
         self.open_action.setStatusTip('Open an existing file')
         self.open_action.triggered.connect(self.open_file_func)
 
-        self.save_action.setIcon(QIcon(_path+'images/save.ico'))
+        self.save_action.setIcon(QIcon(_path + 'images/save.ico'))
         self.save_action.setShortcut('Ctrl+S')
         self.save_action.setToolTip('Save the file')
         self.save_action.setStatusTip('Save the file')
         self.save_action.triggered.connect(lambda: self.save_func(self.text_edit.toHtml()))
 
-        self.save_as_action.setIcon(QIcon(_path+'images/save_as.ico'))
+        self.save_as_action.setIcon(QIcon(_path + 'images/save_as.ico'))
         self.save_as_action.setShortcut('Ctrl+A')
         self.save_as_action.setToolTip('Save the file to a specified location')
         self.save_as_action.setStatusTip('Save the file to a specified location')
         self.save_as_action.triggered.connect(lambda: self.save_as_func(self.text_edit.toHtml()))
 
-        self.close_action.setIcon(QIcon(_path+'images/close.ico'))
+        self.close_action.setIcon(QIcon(_path + 'images/close.ico'))
         self.close_action.setShortcut('Ctrl+E')
         self.close_action.setToolTip('Close the window')
         self.close_action.setStatusTip('Close the window')
         self.close_action.triggered.connect(self.close_func)
 
-        self.cut_action.setIcon(QIcon(_path+'images/cut.ico'))
+        self.cut_action.setIcon(QIcon(_path + 'images/cut.ico'))
         self.cut_action.setShortcut('Ctrl+X')
         self.cut_action.setToolTip('Cut the text to clipboard')
         self.cut_action.setStatusTip('Cut the text')
         self.cut_action.triggered.connect(self.cut_func)
 
-        self.copy_action.setIcon(QIcon(_path+'images/copy.ico'))
+        self.copy_action.setIcon(QIcon(_path + 'images/copy.ico'))
         self.copy_action.setShortcut('Ctrl+C')
         self.copy_action.setToolTip('Copy the text')
         self.copy_action.setStatusTip('Copy the text')
         self.copy_action.triggered.connect(self.copy_func)
 
-        self.paste_action.setIcon(QIcon(_path+'images/paste.ico'))
+        self.paste_action.setIcon(QIcon(_path + 'images/paste.ico'))
         self.paste_action.setShortcut('Ctrl+V')
         self.paste_action.setToolTip('Paste the text')
         self.paste_action.setStatusTip('Paste the text')
         self.paste_action.triggered.connect(self.paste_func)
 
-        self.font_action.setIcon(QIcon(_path+'images/font.ico'))
+        self.font_action.setIcon(QIcon(_path + 'images/font.ico'))
         self.font_action.setShortcut('Ctrl+T')
         self.font_action.setToolTip('Change the font')
         self.font_action.setStatusTip('Change the font')
         self.font_action.triggered.connect(self.font_func)
 
-        self.color_action.setIcon(QIcon(_path+'images/color.ico'))
+        self.color_action.setIcon(QIcon(_path + 'images/color.ico'))
         self.color_action.setShortcut('Ctrl+R')
         self.color_action.setToolTip('Change the color')
         self.color_action.setStatusTip('Change the color')
         self.color_action.triggered.connect(self.color_func)
 
-        self.about_action.setIcon(QIcon(_path+'images/about.ico'))
+        self.about_action.setIcon(QIcon(_path + 'images/about.ico'))
         self.about_action.setShortcut('Ctrl+Q')
         self.about_action.setToolTip('What is Qt?')
         self.about_action.setStatusTip('What is Qt?')
@@ -289,7 +291,7 @@ def main():
     app = QApplication(sys.argv)
     splash = QSplashScreen()
 
-    _path =os.path.dirname(__file__)+'/'
+    _path = os.path.dirname(__file__) + '/'
     splash.setPixmap(QPixmap(_path + 'images/splash.jpg'))
     splash.show()
     splash.showMessage('Welcome to Use This PyQt5-Made Notebook~',
@@ -301,6 +303,7 @@ def main():
     splash.finish(demo)
 
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     main()

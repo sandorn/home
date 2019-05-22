@@ -9,35 +9,38 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 01:04:34
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-18 04:47:34
+@LastEditTime: 2019-05-22 10:44:58
 '''
+import aiohttp
 import asyncio
+import time
+import requests
 
 
-async def wget(host):
-    print('wget %s...' % host)
-    connect = asyncio.open_connection(host, 80)
-    reader, writer = await connect
-    header = 'GET / HTTP/1.0\r\nHost: %s\r\n\r\n' % host
-    writer.write(header.encode('utf-8'))
-    await writer.drain()
-    rede, rit = await connect
-    while True:
-        line = await reader.readline()
-        if line == b'\r\n':
-            break
-        print('%s header > %s' % (host, line.decode('utf-8').rstrip()))
-    writer.close()
+async def fetch(session, url):
+    async with session.get(url) as response:
+        return await response.text()
 
 
+async def main():
+    async with aiohttp.ClientSession() as session:
+        await fetch(session, 'http://python.org')
+
+
+st = time.time()
 loop = asyncio.get_event_loop()
-tasks = [
-    wget(host) for host in ['www.sina.com.cn', 'www.sohu.com', 'www.163.com']
-]
-loop.run_until_complete(asyncio.wait(tasks))
-loop.close()
-'''---------------------
-作者：三贝
+loop.run_until_complete(asyncio.wait([main(), main()]))
+et = time.time()
+print(et - st)
+
+st = time.time()
+res_text = requests.get('http://python.org').text
+res_text_2 = requests.get('http://python.org').text
+et = time.time()
+print(et - st)
+'''
+---------------------
+作者：肥宅_Sean
 来源：CSDN
-原文：https://blog.csdn.net/lecorn/article/details/82814142
+原文：https://blog.csdn.net/a19990412/article/details/82218826
 版权声明：本文为博主原创文章，转载请附上博文链接！'''

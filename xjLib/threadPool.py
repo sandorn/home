@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-20 17:35:21
+@LastEditTime: 2019-05-21 09:19:41
 '''
 
 import threading
@@ -20,7 +20,6 @@ from bs4 import BeautifulSoup
 from xjLib.req import get_stime
 from xjLib.req import parse_url as parse_url  # session_url as parse_url
 from xjLib.req import savefile as writer
-
 
 lock = threading.RLock()
 
@@ -58,7 +57,7 @@ class WorkManager(object):
         result_list = []
         for i in range(self.result_queue.qsize()):
             res = self.result_queue.get()
-            #print('wait_allcomplete:', res)
+            # print('wait_allcomplete:', res)
             result_list.append(res)
         return result_list
 
@@ -77,7 +76,7 @@ class Work(threading.Thread):
                 do, args = self.work_queue.get(block=False)  # 任务异步出队
                 # print('Work args：', args)  # 参数list or tupe,注意检查此处
                 result = do(*args)  # 传递  list or tupe 各元素
-                #print('work run result:', result, flush=True)
+                # print('work run result:', result, flush=True)
                 self.result_queue.put(result)  # 取得函数返回值
                 self.work_queue.task_done()  # 通知系统任务完成
                 with lock:
@@ -123,7 +122,7 @@ def get_contents(index, url):
 if __name__ == "__main__":
     start = time.time()
     _name, urls = get_download_url('http://www.biqukan.com//2_2704/')
-    args = [(i, urls[i])for i in range(len(urls))]
+    args = [(i, urls[i]) for i in range(len(urls))]
     work_manager = WorkManager(get_contents, args)  # 调用函数,参数:list内tupe,线程数量
     texts = work_manager.wait_allcomplete()
     writer(_name + '.txt', texts)
