@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-24 01:05:54
+@LastEditTime: 2019-05-24 00:48:46
 '''
 from xjLib.req import parse_url
 from xjLib.req import get_stime
@@ -26,27 +26,12 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
-class MainWindow(QMainWindow):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
         self.urls = []  # url_list
         self._name = ''  # 文件名
         self.texts = []  # 用于存放结果
         self.step = 0
-        self.openb = True
-        self.runb = False
-        self.saveb = False
-        self.initUI()
-        self.lable_init()
-        self.layout_init()
-        self.menu_init()
-        self.toolbar_init()
-        self.action_init()
-        self.show()
-        pass
-
-    def initUI(self):
         _path = os.path.dirname(__file__) + '/'
         self.ready = False
         self.setWindowIcon(QIcon(_path + 'ico/ico.ico'))
@@ -58,21 +43,15 @@ class MainWindow(QMainWindow):
         self.label.setText("进度： ")
         self.status_bar.addPermanentWidget(self.label)
         self.status_bar.addPermanentWidget(self.pbar)
-        self.pbar.setMaximum(500)
-        self.pbar.setMinimum(0)
-        self.pbar.setValue(self.step)
 
-        menubar = self.menuBar()
-        menubar.setNativeMenuBar(False)  # 全平台一致的效果
-        self.file_menu = menubar.addMenu('File')
         self.file_toolbar = self.addToolBar('File')
         self.file_toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)  # @同时显示文字和图标
         _path = os.path.dirname(__file__) + '/'
         self.open_action = QAction(QIcon(_path + 'ico/open.ico'), 'Open', self)
         self.save_action = QAction(QIcon(_path + 'ico/save.ico'), 'Save', self)
         self.run_action = QAction(QIcon(_path + 'ico/run.jpg'), 'Run', self)
+        self.run_action.setObjectName("runObject")  # 必须
         self.close_action = QAction(QIcon(_path + 'ico/close.ico'), 'Close', self)
-
         # 窗口大小位置
         (_weith, _height) = (760, 540)
         screen = QDesktopWidget().screenGeometry()
@@ -80,7 +59,12 @@ class MainWindow(QMainWindow):
         self.setGeometry((screen.width() - _weith) / 2,
                          (screen.height() - _height) / 2, _weith, _height)
 
-    def lable_init(self):
+        self.retranslateUi()
+        QMetaObject.connectSlotsByName(MainWindow)
+        self.show()
+        pass
+
+    def retranslateUi(self):
         self.keysTable = QTableWidget(0, 1)  # 存放keys
         self.keysTable.setStyleSheet("selection-background-color:pink")
         self.keysTable.setHorizontalHeaderLabels(['关键字', ])
@@ -109,7 +93,6 @@ class MainWindow(QMainWindow):
         self.resultTable.setContextMenuPolicy(Qt.CustomContextMenu)
         self.resultTable.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
-    def layout_init(self):
         # 设置窗口的布局
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.keysTable)
@@ -121,23 +104,11 @@ class MainWindow(QMainWindow):
         # hlayout.setSpacing(2)  # 设置控件间距
         vlayout = QVBoxLayout()
         vlayout.addLayout(hlayout)
-        # vlayout.addWidget(self.pbar)
 
         widget = QWidget()
         widget.setLayout(vlayout)
         self.setCentralWidget(widget)
 
-    def menu_init(self):
-        self.file_menu.addAction(self.open_action)
-        self.file_menu.addAction(self.save_action)
-        self.file_menu.addAction(self.run_action)
-        self.file_menu.addSeparator()
-        self.file_menu.addAction(self.close_action)
-        # setEnabled()
-
-    # #菜单栏中的操作按钮可以是字符串或QAction对象
-
-    def toolbar_init(self):
         self.file_toolbar.addAction(self.open_action)
         self.file_toolbar.addAction(self.save_action)
         self.file_toolbar.addSeparator()  # 分隔线
@@ -161,29 +132,21 @@ class MainWindow(QMainWindow):
         self.file_toolbar.addSeparator()
         self.file_toolbar.addAction(self.close_action)
 
-    def action_init(self):
         self.open_action.setShortcut('Ctrl+O')
         self.open_action.setToolTip('Open an text file')
         self.open_action.setStatusTip('Open an text file')
         self.open_action.triggered.connect(self.open_func)
-
         self.save_action.setShortcut('Ctrl+S')
         self.save_action.setToolTip('Save the file')
         self.save_action.setStatusTip('Save the file')
         self.save_action.triggered.connect(self.save_func)
-
         self.run_action.setShortcut('Ctrl+R')
         self.run_action.setToolTip('Serch the keys')
         self.run_action.setStatusTip('Serch the keys')
-        self.run_action.triggered.connect(self.run_func)
-
         self.close_action.setShortcut('Ctrl+Q')
         self.close_action.setToolTip('Close the window')
         self.close_action.setStatusTip('Close the window')
         self.close_action.triggered.connect(qApp.quit)
-
-    def __del__(self):
-        qApp.quit()
 
     def open_func(self):
         # self.keysTable.clearContents()
@@ -204,7 +167,77 @@ class MainWindow(QMainWindow):
             self.ready = True
         self.status_bar.showMessage('获取关键字完毕')
 
-    def run_func(self):
+    def save_func(self):
+        savefile(self._name + '_百度词频.txt', self.texts)
+        self.status_bar.showMessage("threadPool done")
+
+
+def make_keys(_file, pages):
+    _k = []
+
+    with open(_file) as f:
+        for row in f.readlines():
+            row = row.strip()  # 默认删除空白符  #  '#^\s*$'
+            if len(row) == 0:
+                continue  # len为0的行,跳出本次循环
+            _k.append(row)
+    keys = sorted(set(_k), key=_k.index)
+    return keys
+
+
+def getkeys(self, target):
+    (key, page, url) = target
+    _texts = []
+    response = parse_url(url=url)
+    result = PyQuery(response.text)  # content.decode('uft-8')
+    index = 0
+    for each in result("h3 a").items():
+        # #获取显示字符和网页链接
+        index += 1
+        href = each.attr('href')
+        title = each.text()
+
+        # # 剔除百度自营内容
+        if '百度' in title:
+            continue
+        if not href.startswith('http'):
+            continue
+
+        # #获取真实网址
+        baidu_url = parse_url(url=href, allow_redirects=False)
+        real_url = baidu_url.headers['Location']  # 得到网页原始地址
+        if '.baidu.com' in real_url:
+            continue
+        if real_url.startswith('http'):
+            _texts.append([key, page, index, title, real_url])
+    self.status_bar.showMessage('{}\tdone\twith\t{}\tat\t{}'.format(threading.currentThread().name, key, get_stime()))
+    self.step += 1
+    self.pbar.setValue(int(self.step))
+    QApplication.processEvents()
+    time.sleep(0.05)
+    return _texts
+
+
+def savefile(_filename, lists):
+    # 函数说明:将爬取的文章lists写入文件
+    print('[' + _filename + ']开始保存......', end='', flush=True)
+    lists.sort()
+
+    with open(_filename, 'a', encoding='utf-8') as f:
+        for lists_line in lists:
+            for index, item in enumerate(lists_line):
+                f.write('key:' + item[0] + '\tpage:' + str(item[1]) + '\tindex:' + str(item[2]) + '\ttitle:' + item[3] + '\turl:' + item[4] + '\n')
+
+    print('[' + _filename + ']保存完成。', flush=True)
+
+
+class MyWindow(QMainWindow, Ui_MainWindow):
+    def __init__(self, parent=None):
+        super(MyWindow, self).__init__(parent)
+        self.setupUi(self)
+
+    @pyqtSlot()
+    def on_runObject_triggered(self):
         QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
         # QApplication.processEvents()
         self.step = 0
@@ -253,73 +286,8 @@ class MainWindow(QMainWindow):
 
         self.status_bar.showMessage('抓取百度检索信息完毕')
 
-    def save_func(self):
-        savefile(self._name + '_百度词频.txt', self.texts)
-        self.status_bar.showMessage("threadPool done")
-
-
-def make_keys(_file, pages):
-    _k = []
-
-    with open(_file) as f:
-        for row in f.readlines():
-            row = row.strip()  # 默认删除空白符  #  '#^\s*$'
-            if len(row) == 0:
-                continue  # len为0的行,跳出本次循环
-            _k.append(row)
-    keys = sorted(set(_k), key=_k.index)
-    return keys
-
-
-def getkeys(self, target):
-    (key, page, url) = target
-    _texts = []
-    response = parse_url(url=url)
-    result = PyQuery(response.text)  # content.decode('uft-8')
-
-    index = 0
-    for each in result("h3 a").items():
-        # #获取显示字符和网页链接
-        index += 1
-        href = each.attr('href')
-        title = each.text()
-
-        # # 剔除百度自营内容
-        if '百度' in title:
-            continue
-        if not href.startswith('http'):
-            continue
-
-        # #获取真实网址
-        baidu_url = parse_url(url=href, allow_redirects=False)
-        real_url = baidu_url.headers['Location']  # 得到网页原始地址
-        if '.baidu.com' in real_url:
-            continue
-        if real_url.startswith('http'):
-            _texts.append([key, page, index, title, real_url])
-
-    self.status_bar.showMessage('{}\tdone\twith\t{}\tat\t{}'.format(threading.currentThread().name, key, get_stime()))
-    self.step += 1
-    self.pbar.setValue(int(self.step))
-    QApplication.processEvents()
-    time.sleep(0.05)
-    return _texts
-
-
-def savefile(_filename, lists):
-    # 函数说明:将爬取的文章lists写入文件
-    print('[' + _filename + ']开始保存......', end='', flush=True)
-    lists.sort()
-
-    with open(_filename, 'a', encoding='utf-8') as f:
-        for lists_line in lists:
-            for index, item in enumerate(lists_line):
-                f.write('key:' + item[0] + '\tpage:' + str(item[1]) + '\tindex:' + str(item[2]) + '\ttitle:' + item[3] + '\turl:' + item[4] + '\n')
-
-    print('[' + _filename + ']保存完成。', flush=True)
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    w = MainWindow()
+    w = MyWindow()
     sys.exit(app.exec_())

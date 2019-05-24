@@ -9,8 +9,9 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-08 19:18:48
-@LastEditTime: 2019-05-22 17:43:00
+@LastEditTime: 2019-05-24 00:05:40
 '''
+import os
 import time
 import threading
 from pyquery import PyQuery
@@ -22,31 +23,18 @@ from xjLib.req import parse_url
 lock = threading.RLock()
 
 
-def fd():
-    import win32ui
-    _dlg = win32ui.CreateFileDialog(1)  # 1表示打开文件对话框
-    _dlg.SetOFNInitialDir('c:/')  # 设置打开文件对话框中的初始显示目录
-    _dlg.DoModal()
-    filename = _dlg.GetPathName()  # 获取选择的文件名称
-    return filename
-
-
-def make_urls(pages):
+def make_urls(_file, pages):
     _k = []
-    _file = fd()
-    if not _file:
-        exit(0)
-    res = _file.split('.')[0:-1]  # 文件名，含完整路径，去掉后缀
-
+    _file = os.path.dirname(__file__) + "/" + _file
     with open(_file) as f:
         for row in f.readlines():
             row = row.strip()  # 默认删除空白符  #  '#^\s*$'
             if len(row) == 0:
-                break  # 去除行len为0的行
+                continue  # len为0的行,跳出本次循环
             _k.append(row)
     keys = sorted(set(_k), key=_k.index)
     out_url = [(key, page, "https://www.baidu.com/s?wd={}&pn={}".format(key, page * 10)) for key in keys for page in range(pages)]
-    return res[0], out_url
+    return out_url
 
 
 def getkeys(target):
@@ -86,9 +74,10 @@ def savefile(_filename, lists):
     lists.sort()
 
     with open(_filename, 'a', encoding='utf-8') as f:
+        f.write('key' + '\tpage' + '\tindex' + '\ttitle' + '\turl' + '\n')
         for lists_line in lists:
             for index, item in enumerate(lists_line):
-                f.write('key:' + item[0] + '\tpage:' + str(item[1]) + '\tindex:' + str(item[2]) + '\ttitle:' + item[3] + '\turl:' + item[4] + '\n')
+                f.write(item[0] + '\t' + str(item[1]) + '\t' + str(item[2]) + '\t' + item[3] + '\t' + item[4] + '\n')
 
     print('[' + _filename + ']保存完成。', flush=True)
 
@@ -96,21 +85,19 @@ def savefile(_filename, lists):
 def main():
     start = time.time()
     texts = []  # 用于存放结果
+    _file = "关键词 (015).txt"
+    _name = _file.split('.')[0]  # 文件名，含完整路径，去掉后缀
+
     try:
-        _name, urls = make_urls(10)
+        urls = make_urls(_file, 1)
     except Exception as e:
         print(e)
         return False
 
     with ThreadPoolExecutor(20) as p:
         future_tasks = [p.submit(getkeys, url) for url in urls]
-
-    for obj in as_completed(future_tasks):
-        if obj.done():
-            try:
-                texts.append(obj.result())
-            except Exception as e:
-                print("obj.result()error:", e)
+        thread_results = [task.result() for task in as_completed(future_tasks)]
+        texts = [item for item in thread_results if item != '']
 
     savefile(_name + '_百度词频.txt', texts)
     print("threadPool cost all time: %s 秒" % (time.time() - start), flush=True)
