@@ -11,7 +11,7 @@ https://blog.csdn.net/monkeyfx/article/details/58602502
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-23 13:47:31
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-23 18:41:12
+@LastEditTime: 2019-05-25 16:02:08
 '''
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
@@ -41,7 +41,7 @@ class Ui_Calc(object):
 
 
 class MainWindow(QMainWindow, Ui_Calc):
-    #_signal = QtCore.pyqtSignal(str)
+    _signal = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -51,8 +51,8 @@ class MainWindow(QMainWindow, Ui_Calc):
 
     @pyqtSlot()
     def on_pg_clicked(self):
-        self.outputWidget.setText(str(self.inputSpinBox1.value() * self.inputSpinBox2.value()))  # 按下按钮需要完成的的任务
-        # execute.test(self)  # 按下按钮需要完成的的任务
+        # self.outputWidget.setText(str(self.inputSpinBox1.value() * self.inputSpinBox2.value()))  # 按下按钮需要完成的的任务
+        execute.test(self)  # 按下按钮需要完成的的任务
 
     @pyqtSlot(int)
     def on_in1_valueChanged(self, value):
@@ -68,9 +68,8 @@ class MainWindow(QMainWindow, Ui_Calc):
 
 class execute(QMainWindow, Ui_Calc):
     def test(self):
-        add = MainWindow()  # c#中的类的实例化，方便调用
-        add._signal.connect(self.chengfa)  # 连接信号
-        add._signal.emit("aaaa")  # 传递要添加数据的信号
+        self._signal.connect(self.chengfa)  # 连接信号
+        self._signal.emit()  # 传递要添加数据的信号
 
 
 if __name__ == "__main__":

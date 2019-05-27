@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-08 18:31:14
-@LastEditTime: 2019-05-18 11:53:43
+@LastEditTime: 2019-05-25 18:07:54
 努努书坊 - 小说在线阅读   https://www.kanunu8.com/
 '''
 
@@ -23,7 +23,9 @@ from xjLib.req import get_stime
 
 def get_download_url(target):
     url_list = []
-    _response = parse_url(target)
+    response = parse_url(target)
+    _response = BeautifulSoup(response.content, 'lxml')
+    [s.extract() for s in _response(["script", "style"])]
     _bookname = _response.find('h2').get_text()
     # 搜索文档树,找出div标签中class为listmain的所有子标签
     _div = str(_response.find_all('div', class_='listmain')[0])
@@ -44,9 +46,11 @@ def get_download_url(target):
     return _bookname, url_list
 
 
-def get_contents(lock, index, url):
+def get_contents(lock, index, target):
     _texts = ''
-    _response = parse_url(url)
+    response = parse_url(target)
+    _response = BeautifulSoup(response.content, 'lxml')
+    [s.extract() for s in _response(["script", "style"])]
     _name = _response.h1.get_text()  # 章节名
     _showtext = _response.select('.showtxt')[0]
     for text in _showtext.stripped_strings:
@@ -88,4 +92,4 @@ def main_Pool(target):
 if __name__ == '__main__':
     main_Pool('https://www.biqukan.com/2_2704/')
 
-# 本人电脑用时约120秒，6239KB
+# 本人电脑用时约70秒，6239KB

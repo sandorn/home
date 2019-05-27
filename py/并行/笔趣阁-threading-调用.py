@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-18 11:19:39
+@LastEditTime: 2019-05-25 18:04:51
 '''
 import threading
 import time
@@ -28,7 +28,9 @@ semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线
 
 
 def get_download_url(target):
-    _response = parse_url(target)
+    response = parse_url(target)
+    _response = BeautifulSoup(response.content, 'lxml')
+    [s.extract() for s in _response(["script", "style"])]
     _bookname = _response.find('h2').get_text()
     # 搜索文档树,找出div标签中class为listmain的所有子标签
     _div = str(_response.find_all('div', class_='listmain')[0])
@@ -54,7 +56,9 @@ def get_contents(index, count):
     with semaphore:
         target = urls.get()
         _texts = ''
-        _response = parse_url(target)
+        response = parse_url(target)
+        _response = BeautifulSoup(response.content, 'lxml')
+        [s.extract() for s in _response(["script", "style"])]
         _name = _response.h1.get_text()  # 章节名
         _showtext = _response.select('.showtxt')[0]
         for text in _showtext.stripped_strings:

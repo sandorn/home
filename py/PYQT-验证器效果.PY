@@ -7,7 +7,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-22 12:41:37
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-22 12:41:37
+@LastEditTime: 2019-05-24 12:37:23
 '''
 # 导入，Qapplication，单行文本框，窗口，表单布局
 from PyQt5.QtWidgets import QApplication, QLineEdit, QWidget, QFormLayout
@@ -74,6 +74,20 @@ class lineEditDemo(QWidget):
         self.setLayout(flo)
 
 
+'''
+QHBoxLayout类中常用的方法如下
+方法	描述
+addLayout(self,stretch=0)	在窗口的右边添加布局，使用stretch（伸缩量）进行伸缩，伸缩量默认为0
+addWidget(self,QWidget.stretch,Qt.Alignmeny alihnment)	在布局中添加控件
+stretch（伸缩量），只适用于QBoxLayout，控件和窗口会随着伸缩量的变大而增大
+alignment：指定的对齐方式
+addSpacing(self,int)	设置各控件的上下间距，通过该方法可以增加额外的控件
+---------------------
+作者：jia666666
+来源：CSDN
+原文：https://blog.csdn.net/jia666666/article/details/81699900
+版权声明：本文为博主原创文章，转载请附上博文链接！
+'''
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     win = lineEditDemo()

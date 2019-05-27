@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-21 17:09:42
+@LastEditTime: 2019-05-25 11:20:07
 '''
 
 from retrying import retry
@@ -125,12 +125,12 @@ def savefile(_filename, 内容):
 def get_stime():
     import datetime
     time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-    '''
-    #UTC时间
-    datetime.datetime.utcnow()
-    (datetime.datetime.now() - start).seconds
-    (days), 秒(seconds)
-    '''
+    return time_now
+
+
+def get_litetime():
+    import datetime
+    time_now = datetime.datetime.now().strftime('%H:%M:%S.%f')
     return time_now
 
 

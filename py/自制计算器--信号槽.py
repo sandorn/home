@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-23 13:50:49
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-23 19:02:57
+@LastEditTime: 2019-05-24 18:04:35
 '''
 # calc.py
 
@@ -30,7 +30,7 @@ class Ui_Calc(object):
         self.inputSpinBox2.setGeometry(QtCore.QRect(70, 26, 46, 25))
         self.inputSpinBox2.setObjectName("in2")  # 必须
 
-        self.outputWidget = QtWidgets.QLineEdit(Form)
+        self.outputWidget = QtWidgets.QLabel(Form)
         self.outputWidget.setGeometry(QtCore.QRect(140, 24, 36, 27))
         self.outputWidget.setObjectName("outw")  # 必须
 
@@ -70,8 +70,8 @@ class MyCalc(QWidget):
         self.ui.outputWidget.setText(str(value + self.ui.inputSpinBox1.value()))
 
     @pyqtSlot(str)
-    def on_outw_textChanged(self, text):
-        self.ui.pushButton_getip.setText(str(self.ui.outputWidget.text()))
+    def on_outw_valueChanged(self, text):
+        self.ui.pushButton_getip.setText(str(self.ui.outputWidget.value()))
 
     @pyqtSlot()
     def on_pg_clicked(self):  # 接到信号完成添加任务  triggered
@@ -102,8 +102,8 @@ class MyCalc2(QWidget, Ui_Calc):
         self.outputWidget.setText(str(value + self.inputSpinBox1.value()))
 
     @pyqtSlot(str)
-    def on_outw_textChanged(self, text):
-        self.pushButton_getip.setText(str(self.outputWidget.text()))
+    def on_outw_valueChanged(self, text):
+        self.pushButton_getip.setText(str(self.outputWidget.value()))
 
 
 if __name__ == '__main__':

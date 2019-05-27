@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-23 17:36:02
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-23 17:38:53
+@LastEditTime: 2019-05-24 14:55:30
 '''
 import sys
 import os
@@ -39,8 +39,8 @@ class Example(QMainWindow):
 
         # 在工具栏ToolBar里同时添加图标和文字，并设置图标和文字的相对位置；若没有下面的一行代码，则只显示图标或文字。
         # self.toolbar1.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        self.toolbar1.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self.toolbar2.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.toolbar1.setToolButtonStyle(3)
+        self.toolbar2.setToolButtonStyle(3)
 
         self.toolbar1.addAction(exitAction1)
         self.toolbar2.addAction(exitAction2)

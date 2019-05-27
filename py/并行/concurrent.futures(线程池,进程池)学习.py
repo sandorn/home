@@ -19,7 +19,7 @@ https://blog.csdn.net/weixin_37426504/article/details/88657260
 import time
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
-from concurrent.futures import ProcessPoolExecutor
+#from concurrent.futures import ProcessPoolExecutor
 
 
 def Bysubmit():
@@ -180,7 +180,7 @@ def map2():
 
 
 def wait2():
-    from concurrent.futures import wait, ALL_COMPLETED, FIRST_COMPLETED
+    from concurrent.futures import wait, ALL_COMPLETED  # , FIRST_COMPLETED
 
     def get_html(times):
         time.sleep(times)
@@ -191,11 +191,12 @@ def wait2():
     urls = [10, 2, 20]  # 并不是真的url
     all_task = [executor.submit(get_html, (url)) for url in urls]
     wait(all_task, return_when=ALL_COMPLETED)
+    print('wait2 done')
 
 
 if __name__ == '__main__':
-    '''Bysubmit()
     Bywait()
+    '''Bysubmit()
     Bymap()
     Byas_completed()
     fibBythread()
@@ -206,6 +207,6 @@ if __name__ == '__main__':
     process_results = [task.result() for task in as_completed(task_list)]  # @简化结果获取
     print(process_results)
     print("ProcessPoolExecutor time is: {}".format(time.time() - start_time))'''
-    as_completed2()
-    map2()
+    # as_completed2()
+    # map2()
     wait2()
