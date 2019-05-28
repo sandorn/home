@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-08 19:18:48
-@LastEditTime: 2019-05-24 00:05:40
+@LastEditTime: 2019-05-28 08:58:02
 '''
 import os
 import time
@@ -19,6 +19,7 @@ from concurrent.futures import ThreadPoolExecutor    # 线程池模块
 from concurrent.futures import as_completed
 from xjLib.req import get_stime
 from xjLib.req import parse_url
+from xjLib.req import log
 
 lock = threading.RLock()
 
@@ -104,4 +105,5 @@ def main():
 
 
 if __name__ == "__main__":
+    log()
     main()

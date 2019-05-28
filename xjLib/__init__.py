@@ -9,25 +9,34 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-25 10:52:28
+@LastEditTime: 2019-05-28 10:23:37
 '''
 # package
 # __init__.py
 
 __author__ = 'Even.Sand'
 __license__ = 'NewSea'
-__version__ = '1.00.0'
-import logging
-from logging import NullHandler
 
-from . import db_router
-from . import mysql
-from . import sqlorm
-from . import txCos
-from . import qiniuCos
-from . import threadPool
-from . import req
+from . import log
 from . import UI
+from . import req
+from . import threadPool
+from . import qiniuCos
+from . import txCos
+from . import sqlorm
+from . import mysql
+from . import db_router
+xjLib_VERSION = __version__ = '0.0.2'
 
-__all__ = ["db_router", "mysql", "sqlorm", "txCos", "qiniuCos", "threadPool","req", "UI"]
-logging.getLogger(__name__).addHandler(NullHandler())
+
+__all__ = [
+    "db_router",
+    "mysql",
+    "sqlorm",
+    "txCos",
+    "qiniuCos",
+    "threadPool",
+    "req",
+    "UI",
+    "log"
+]

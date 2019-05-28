@@ -9,9 +9,10 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-27 17:04:08
+@LastEditTime: 2019-05-28 16:33:34
 '''
 from xjLib.req import parse_url
+from xjLib.log import logd
 from pyquery import PyQuery
 import sys
 import time
@@ -44,7 +45,8 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         pass
 
     def update(self, _res):
-        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
+        QApplication.processEvents(
+            QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
         QApplication.setOverrideCursor(Qt.WaitCursor)  # 显示等待中的鼠标样式
         for item in _res:
             RowCont = self.resultTable.rowCount()
@@ -66,17 +68,25 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         filename, _ = QFileDialog.getOpenFileName(self, 'Open file', './')
 
         if filename:
-            [self.keysTable.removeRow(0) for _ in range(self.keysTable.rowCount())]
+            [
+                self.keysTable.removeRow(0)
+                for _ in range(self.keysTable.rowCount())
+            ]
             self.status_bar.showMessage('导入关键字......')
             self._name = filename.split('.')[0:-1][0]  # 文件名，含完整路径，去掉后缀
 
             _k = []
-            with open(filename) as f:
-                for row in f.readlines():
-                    row = row.strip()  # 默认删除空白符  #  '#^\s*$'
+            with open(filename) as myFile:
+                '''
+                #for row in myFile.readlines():
+                for row in myFile:
+                    row = row.strip()  # 默认删除空白符
                     if len(row) == 0:
                         continue  # len为0的行,跳出本次循环
                     _k.append(row)
+                # !下面一句语句代替
+                '''
+                _k = [row.strip() for row in myFile if len(row.strip()) != 0]
             self.keys = sorted(set(_k), key=_k.index)
 
             self.step = 0
@@ -108,10 +118,12 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         self.resultTable.clearContents()
         self.resultTable.setRowCount(0)
         QApplication.setOverrideCursor(Qt.WaitCursor)
-        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
+        QApplication.processEvents(
+            QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
         # 构建urls
         pages = self.lineEdit.value()
-        self.urls = [(key, page, "https://www.baidu.com/s?wd={}&pn={}".format(key, page * 10)) for key in self.keys for page in range(pages)]
+        self.urls = [(key, page, "https://www.baidu.com/s?wd={}&pn={}".format(
+            key, page * 10)) for key in self.keys for page in range(pages)]
         _max = len(self.urls)
         self.step = 0
         self.pbar.setMaximum(0)
@@ -127,14 +139,16 @@ class MyWindow(QMainWindow, Ui_MainWindow):
                 self.step += 1
                 self._step.emit()  # 传递更新进度条信号
                 self.label.setText("进度：{}/{}".format(self.step, _max))
-                QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
+                QApplication.processEvents(
+                    QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
                 time.sleep(0.05)
 
         self.step = 0
         self._step.emit()  # 传递更新进度条信号
         self.pbar.setMaximum(_max)
         self.status_bar.showMessage('抓取百度检索信息......')
-        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
+        QApplication.processEvents(
+            QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
         self.texts = []  # #清空结果库
         # 等待到所有线程结束
         for obj in as_completed(future_tasks):
@@ -200,12 +214,27 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         # 函数说明:将爬取的文章lists写入文件
         self.status_bar.showMessage('[' + _filename + ']开始保存......')
 
-        with open(_filename, 'a', encoding='utf-8') as f:
-            f.write('    key    \tpage\tindex\ttitle\turl\t\n')
-            for lists_line in lists:
-                for index, item in enumerate(lists_line):
-                    f.write('{}\t{}\t{}\t{}\t{}\t\n'.format(item[0], str(item[1]), str(item[2]), item[3], item[4]))
+        with open(_filename, 'w', encoding='utf-8') as f:
+            f.write('   key   \tpage\tindex\ttitle\turl\t\n')
+            for key in lists:  # 区分关键字
+                for index in key:  # 区分记录index
+                    [f.write(str(v) + '\t') for v in index]
+                    f.write('\n')
+            '''
+            # # 下面换行问题
+            # #[f.write(str(v) + '\t') for key in lists for index in key for v in index]
+            # #多层次的list 或 tuple写入文件
+            def each(data):
+                for index, value in enumerate(data):
+                    if isinstance(value, list) or isinstance(value, tuple):
+                        each(value)
+                    else:
+                        f.write(str(value) + '\t')
+                        if index == len(data) - 1:
+                            f.write('\n')
 
+            each(lists)
+            '''
         self.texts = []
         self.status_bar.showMessage('[' + _filename + ']保存完成。')
         self.open_action.setEnabled(True)
@@ -214,6 +243,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
 
 if __name__ == "__main__":
+    logd()
     app = QApplication(sys.argv)
     w = MyWindow()
     sys.exit(app.exec_())
