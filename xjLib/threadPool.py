@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-21 09:19:41
+@LastEditTime: 2019-05-31 10:44:47
 '''
 
 import threading
@@ -18,7 +18,7 @@ from queue import Queue
 
 from bs4 import BeautifulSoup
 from xjLib.req import get_stime
-from xjLib.req import parse_url as parse_url  # session_url as parse_url
+from xjLib.req import parse_get
 from xjLib.req import savefile as writer
 
 lock = threading.RLock()
@@ -88,10 +88,11 @@ class Work(threading.Thread):
 
 def get_download_url(target):
     _urls = []
-    _response = parse_url(target)
-    _bookname = _response.find('h2').get_text()
+    _response = parse_get(target)
+    download_soup = BeautifulSoup(_response.text, features="html5lib")
+    _bookname = download_soup.find('h2').get_text()
     # 搜索文档树,找出div标签中class为listmain的所有子标签
-    _div = str(_response.find_all('div', class_='listmain')[0])
+    _div = str(download_soup.find_all('div', class_='listmain')[0])
     download_soup = BeautifulSoup(_div, features="html5lib")
 
     # 开始记录内容标志位,只要正文卷下面的链接,最新章节列表链接剔除
@@ -111,9 +112,10 @@ def get_download_url(target):
 
 def get_contents(index, url):
     _texts = ''
-    _response = parse_url(url)
-    _name = _response.h1.get_text()  # 章节名
-    _showtext = _response.select('.showtxt')[0]
+    _response = parse_get(url)
+    download_soup = BeautifulSoup(_response.text, features="html5lib")
+    _name = download_soup.h1.get_text()  # 章节名
+    _showtext = download_soup.select('.showtxt')[0]
     for text in _showtext.stripped_strings:
         _texts += text + '\n'
     return (index, _name, _texts)

@@ -1,17 +1,18 @@
-﻿# ！/usr/bin/env python
-# -*-coding:utf-8-*-
+﻿# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Software:   VSCode
-@File    :   检查更新.py
-@Time    :   2019/04/26 10:15:51
-@Author  :   Even Sand
-@Version :   1.0
-@Contact :   sandorn@163.com
-@License :   (C)Copyright 2019-2019, NewSea
-@Desc    :   None
+@Descripttion: 头部注释None
+@Develop: VSCode
+@Author: Even.Sand
+@Contact: sandorn@163.com
+@Github: https://github.com/sandorn/home
+@License: (C)Copyright 2009-2019, NewSea
+@Date: 2019-05-03 23:26:06
+@LastEditors: Even.Sand
+@LastEditTime: 2019-05-28 17:22:57
 '''
 
-#检索需要升级的库，逐个升级
+# 检索需要升级的库，逐个升级
 import subprocess
 
 
@@ -62,7 +63,7 @@ def PIP更新2():
     s = len(get_installed_distributions())
     for dist in get_installed_distributions():
         subprocess.call("pip install -U " + dist.project_name, shell=True)
-        #conda upgrade --all：更新所有包
+        # conda upgrade --all：更新所有包
         print("共有{}个库，正在更新第{}个库{}，请耐心等待.......".format(s, n, dist.project_name))
         n += 1
     print("{}个库已全部更新完毕！".format(s))
@@ -115,7 +116,7 @@ PIP更新1(1)\n\
 PIP更新2(2)\n\
 PIP更新3(3)\n\
 不更新退出(9)\n\
-please input:"              )
+please input:")
 
     for case in switch(NO):
         if case('0'):

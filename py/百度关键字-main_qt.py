@@ -9,10 +9,10 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-28 16:33:34
+@LastEditTime: 2019-05-31 10:32:18
 '''
-from xjLib.req import parse_url
-from xjLib.log import logd
+from xjLib.req import parse_get
+from xjLib.log import log
 from pyquery import PyQuery
 import sys
 import time
@@ -68,10 +68,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         filename, _ = QFileDialog.getOpenFileName(self, 'Open file', './')
 
         if filename:
-            [
-                self.keysTable.removeRow(0)
-                for _ in range(self.keysTable.rowCount())
-            ]
+            [self.keysTable.removeRow(0) for _ in range(self.keysTable.rowCount())]
             self.status_bar.showMessage('导入关键字......')
             self._name = filename.split('.')[0:-1][0]  # 文件名，含完整路径，去掉后缀
 
@@ -173,7 +170,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
     def getkeys(self, target):
         (key, page, url) = target
         _texts = []
-        response = parse_url(url=url)
+        response = parse_get(url=url)
         result = PyQuery(response.text)  # content.decode('uft-8')
         index = 0
         for each in result("h3 a").items():
@@ -189,7 +186,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
                 continue
 
             # #获取真实网址
-            baidu_url = parse_url(url=href, allow_redirects=False)
+            baidu_url = parse_get(url=href, allow_redirects=False)
             real_url = baidu_url.headers['Location']  # 得到网页原始地址
             if '.baidu.com' in real_url:
                 continue
@@ -243,7 +240,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
 
 if __name__ == "__main__":
-    logd()
+    log = log()
     app = QApplication(sys.argv)
     w = MyWindow()
     sys.exit(app.exec_())
