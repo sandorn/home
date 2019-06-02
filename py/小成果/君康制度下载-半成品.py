@@ -1,8 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion:
-自动登陆，利用账号及密码，下载公告
+@Descripttion: 头部注释None
 @Develop: VSCode
 @Author: Even.Sand
 @Contact: sandorn@163.com
@@ -10,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 00:20:05
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-02 15:56:40
+@LastEditTime: 2019-06-01 17:02:35
 
 使用beautifulsoup和pyquery爬小说 - 坚强的小蚂蚁 - 博客园
 https://www.cnblogs.com/regit/p/8529222.html
@@ -18,7 +17,8 @@ https://www.cnblogs.com/regit/p/8529222.html
 
 from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
 from pyquery import PyQuery
-import requests
+from xjLib.req import parse_get
+from xjLib.req import parse_post
 import json
 
 head = {
@@ -30,50 +30,10 @@ head = {
     'Origin': 'http://oa.jklife.com',
     'RequestType': 'AJAX',
     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+    'Cookie': 'JSESSIONID=C5D8EF3FD6E8903D068D37D9B5F0D80D; avatarImageUrl=7597432631771349600; loginPageURL=; login_locale=zh_CN',
     'Referer': 'http://oa.jklife.com/seeyon/bulData.do?method=bulIndex&typeId=&boardId=&_isModalDialog=true&openFrom=',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
 }
-
-cookies = {'avatarImageUrl': '7597432631771349600',  # 与用户名对应
-           'loginPageURL': '',
-           'login_locale': 'zh_CN'}
-session = requests.session()
-session.keep_alive = False
-# 设置请求头信息
-session.headers = head
-requests.utils.add_dict_to_cookiejar(session.cookies, cookies)
-
-
-def login():
-
-    response = session.get('http://oa.jklife.com/')
-    #log.p(response.headers, response.cookies)
-    session.cookies = set_cookies(response.cookies)
-    # log.p(session.cookies)
-
-    payload = {
-        'authorization': None,
-        'login.timezone': 'GMT+8:00',
-        'login_username': 'liuxinjun',
-        'login_password': 'sand2808',
-        'login_validatePwdStrength': 2,
-        'random': None,
-        'fontSize': 12,
-        'screenWidth': 1920,
-        'screenHeight': 1080,
-    }
-    response = session.post('http://oa.jklife.com/seeyon/main.do?method=login', data=payload, allow_redirects=False)
-    session.cookies = set_cookies(response.cookies)
-    # log.p(session.cookies)
-
-
-def set_cookies(cookies):
-    # 将CookieJar转为字典：
-    res_cookies_dic = requests.utils.dict_from_cookiejar(cookies)
-    # 将新的cookies信息更新到手动cookies字典
-    for i in res_cookies_dic.keys():
-        cookies[i] = res_cookies_dic[i]
-    return cookies
 
 
 def get_download_url():
@@ -81,10 +41,9 @@ def get_download_url():
     payload = {"managerMethod": "findBulDatas",
                "arguments": json.dumps([{"pageSize": "20", "pageNo": 1, "spaceType": "", "spaceId": "", "typeId": "", "condition": "", "textfield1": "", "textfield2": "", "myBul": ""}])}
 
-    _response = session.post("http://oa.jklife.com/seeyon/ajax.do?method=ajaxAction&managerName=bulDataManager&rnd=97013",
-                             data=payload)
+    _response = parse_post("http://oa.jklife.com/seeyon/ajax.do?method=ajaxAction&managerName=bulDataManager&rnd=97013",
+                           headers=head, data=payload)
     # log.p(_response.text)
-
     _dic = _response.json()
     pages = int(_dic['pages'])  # 总页数
     size = _dic['size']  # 总项目数量
@@ -97,8 +56,8 @@ def get_download_url():
         pageNo = i + 1
         payload = {"managerMethod": "findBulDatas",
                    "arguments": json.dumps([{"pageSize": "20", "pageNo": pageNo, "spaceType": "", "spaceId": "", "typeId": "", "condition": "", "textfield1": "", "textfield2": "", "myBul": ""}])}
-        _response = session.post("http://oa.jklife.com/seeyon/ajax.do?method=ajaxAction&managerName=bulDataManager&rnd=40592",
-                                 data=payload)
+        _response = parse_post("http://oa.jklife.com/seeyon/ajax.do?method=ajaxAction&managerName=bulDataManager&rnd=40592",
+                               headers=head, data=payload)
 
         _dic = _response.json()
         _itlist = _dic['list']  # 当前页面项目列表
@@ -136,7 +95,7 @@ def getdown(title, url):
     if not mkdir(path):
         return
 
-    _res = session.get(url)
+    _res = parse_get(url, headers=head)
     # log.p(_res.headers)
     with open(path + '/' + title + '.html', 'w', encoding='utf-8') as f:
         f.write(_res.content.decode('utf-8'))
@@ -161,7 +120,7 @@ def getdown(title, url):
             'createDate': item['createdate'].split(' ')[0],
             'filename': item['filename'],
         }
-        _res = session.get(url=_url, params=formdata, allow_redirects=False)
+        _res = parse_get(url=_url, params=formdata, headers=head, allow_redirects=False)
         # requests.get(url=_url, params=formdata, headers=head, allow_redirects=False)
         real_url = _res.headers['Location']  # 得到网页原始地址
         log.p(real_url)
@@ -169,7 +128,7 @@ def getdown(title, url):
 
     _t = 'http://oa.jklife.com'
     for item in 附件跳转列表:
-        _res = session.get(url=_t + item[1], allow_redirects=False)
+        _res = parse_get(url=_t + item[1], headers=head, allow_redirects=False)
         # log.p(_res.text)
         with open(path + '/' + item[0], 'wb') as f:
             f.write(_res.content)
@@ -177,8 +136,6 @@ def getdown(title, url):
 
 def main():
     log.p('开始下载公告，获取列表信息......')
-    login()
-
     urls = get_download_url()
     log.p('总项目：' + str(len(urls)))
     log.p('获取列表信息完成，开始下载正文及附件......')
