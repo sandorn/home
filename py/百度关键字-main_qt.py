@@ -9,15 +9,14 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-31 10:32:18
+@LastEditTime: 2019-06-03 15:40:39
 '''
 from xjLib.req import parse_get
 from xjLib.log import log
 from pyquery import PyQuery
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor  # 线程池模块
-from concurrent.futures import as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed  # 线程池模块
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *

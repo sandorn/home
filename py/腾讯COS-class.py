@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-13 17:41:47
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-13 18:33:24
+@LastEditTime: 2019-06-03 15:59:48
 
 
 tencentyun/cos-python-sdk-v5
@@ -67,6 +67,8 @@ def main():
     txcoses = txCos()
     # 调用txcoses对象的下载图片方法
     res = txcoses.down('1557742130.jpg', 'd:/26.jpg')
+    print(res)
+    res = txcoses.up('d:/26.jpg')
     print(res)
     # image_name = 'd:/16.jpg'  # 图片上传
     # res = txcoses.up(image_name)

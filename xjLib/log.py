@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-31 09:27:49
+@LastEditTime: 2019-06-03 15:51:03
 # author:      he.zhiming
 '''
 
@@ -52,18 +52,16 @@ _nameToLevel = {
 }
 
 
-def _make_filename(filename='py.log', log_level=10):
+def _make_filename(filename='.log', log_level=10):
     result = _levelToName.get(log_level)
     if result is not None:
         _level = result
     else:
         _level = log_level
     # _level = _levelToName[log_level]
-
     date_str = datetime.today().strftime('%Y%m%d')
-    # pidstr = str(os.getpid())
-    pidstr = '-'
-    return ''.join((date_str, '-', pidstr, '-', _level, '-', filename,))
+    pidstr = '-' or str(os.getpid())
+    return ''.join((date_str, '-', pidstr, '-', _level, '', filename,))
 
 
 class _logDic(object):

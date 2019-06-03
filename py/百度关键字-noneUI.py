@@ -9,22 +9,18 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-08 19:18:48
-@LastEditTime: 2019-05-28 08:58:02
+@LastEditTime: 2019-06-03 15:36:45
 '''
 import os
 import time
 import threading
 from pyquery import PyQuery
-from concurrent.futures import ThreadPoolExecutor    # 线程池模块
-from concurrent.futures import as_completed
-from xjLib.req import get_stime
-from xjLib.req import parse_url
-from xjLib.req import log
-
-lock = threading.RLock()
+from concurrent.futures import ThreadPoolExecutor, as_completed    # 线程池模块
+from xjLib.req import get_stime, parse_get
+from xjLib.log import log
 
 
-def make_urls(_file, pages):
+def make_urls(_file, pages=1):
     _k = []
     _file = os.path.dirname(__file__) + "/" + _file
     with open(_file) as f:
@@ -41,7 +37,7 @@ def make_urls(_file, pages):
 def getkeys(target):
     (key, page, url) = target
     _texts = []
-    response = parse_url(url=url)
+    response = parse_get(url=url)
     result = PyQuery(response.text)  # content.decode('uft-8')
 
     index = 0
@@ -58,14 +54,13 @@ def getkeys(target):
             continue
 
         # #获取真实网址
-        baidu_url = parse_url(url=href, allow_redirects=False)
+        baidu_url = parse_get(url=href, allow_redirects=False)
         real_url = baidu_url.headers['Location']  # 得到网页原始地址
         if '.baidu.com' in real_url:
             continue
         if real_url.startswith('http'):
             _texts.append([key, page, index, title, real_url])
-    with lock:
-        print('{}\tdone\twith\t{}\tat\t{}'.format(threading.currentThread().name, key, get_stime()), flush=True)
+    print('{}\tdone\twith\t{}\tat\t{}'.format(threading.currentThread().name, key, get_stime()), flush=True)
     return _texts
 
 
@@ -83,14 +78,13 @@ def savefile(_filename, lists):
     print('[' + _filename + ']保存完成。', flush=True)
 
 
-def main():
+def main(_file, pages):
     start = time.time()
     texts = []  # 用于存放结果
-    _file = "关键词 (015).txt"
     _name = _file.split('.')[0]  # 文件名，含完整路径，去掉后缀
 
     try:
-        urls = make_urls(_file, 1)
+        urls = make_urls(_file, pages)
     except Exception as e:
         print(e)
         return False
@@ -106,4 +100,4 @@ def main():
 
 if __name__ == "__main__":
     log()
-    main()
+    main("关键词 (015).txt", 2)

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 09:01:46
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-15 08:21:21
+@LastEditTime: 2019-06-03 16:02:21
 '''
 
 
@@ -60,6 +60,8 @@ if __name__ == '__main__':
     txcoses = txCos()
     # 调用txcoses对象的下载图片方法
     res = txcoses.down('1557742130.jpg', 'd:/26.jpg')
+    print(res)
+    res = txcoses.up('d:/26.jpg')
     print(res)
     # image_name = 'd:/16.jpg'  # 图片上传
     # res = txcoses.up(image_name)
