@@ -10,7 +10,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 00:20:05
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-02 15:56:40
+@LastEditTime: 2019-06-03 12:11:18
 
 使用beautifulsoup和pyquery爬小说 - 坚强的小蚂蚁 - 博客园
 https://www.cnblogs.com/regit/p/8529222.html
@@ -91,7 +91,7 @@ def get_download_url():
     log.p('总页数：' + str(pages) + '\t总size数：' + str(size))
 
     # @上一次下载到的文件位置，停止标志
-    stop = '君保发〔2019〕106号关于2019年端午节放假的通知'
+    stop = '君保发〔2019〕108号关于下发《君康人寿保险股份有限公司自媒体管理办法》的通知'
 
     for i in range(pages):
         pageNo = i + 1

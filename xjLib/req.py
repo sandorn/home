@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-31 14:56:41
+@LastEditTime: 2019-06-03 12:11:56
 '''
 from __future__ import absolute_import, unicode_literals
 from retrying import retry
@@ -166,6 +166,7 @@ def session_url(url,
 def list2file(_filename, _list_texts, br='\t'):
     # 函数说明:将爬取的文章内容写入文件,只能1层
     print('[' + _filename + ']开始保存......', end='', flush=True)
+    _list_texts.sort()
     with open(_filename, 'w', encoding='utf-8') as f:
         f.write('   key   \tpage\tindex\ttitle\turl\t\n')
         for key in _list_texts:  # 区分关键字

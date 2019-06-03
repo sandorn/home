@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-08 18:31:14
-@LastEditTime: 2019-05-31 10:56:49
+@LastEditTime: 2019-06-03 11:33:31
 努努书坊 - 小说在线阅读   https://www.kanunu8.com/
 '''
 
@@ -92,6 +92,7 @@ def main_Pool(target):
 if __name__ == '__main__':
     from xjLib.log import log
     log = log()
-    main_Pool('https://www.biqukan.com/2_2704/')
-
-# 本人电脑用时约60秒，6239KB
+    main_Pool('https://www.biqukan.com/65_65593/')
+    # '65_65593'  #章节少，测试用 26秒
+    # '2_2704'  #231万字  #6239kb, 420.94 秒
+    # "2_2714"   #《武炼巅峰》664万字, 秒。

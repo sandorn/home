@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 00:20:05
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-28 17:26:37
+@LastEditTime: 2019-06-03 13:05:13
 
 使用beautifulsoup和pyquery爬小说 - 坚强的小蚂蚁 - 博客园
 https://www.cnblogs.com/regit/p/8529222.html
@@ -20,7 +20,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
 import threading
 from pyquery import PyQuery
-from xjLib.req import parse_url as parse_url
+from xjLib.req import parse_get as parse_url
 from xjLib.req import savefile as writer
 from xjLib.req import get_stime
 
@@ -86,13 +86,15 @@ def main_Pool(target):
         ]
 
     print('\nCFThreadPool，书籍《' + bookname + '》完成下载', flush=True)
+    texts.sort()
     writer(bookname + '.txt', texts)
     print('{} 结束，\t用时:{} 秒。'.format(get_stime(), time.time() - _stime), flush=True)
 
 
 if __name__ == '__main__':
+    from xjLib.log import log
+    log = log()
     main_Pool('https://www.biqukan.com//65_65593/')
-    # '65_65593'  #章节少，测试用
-    # '2_2704'  #231万字  #6239kb,33秒钟
-    # "2_2714"   #《武炼巅峰》664万字
-    # [武炼巅峰.txt]150W, 用时: 947.34 秒。
+    # '65_65593'  #章节少，测试用  3秒钟
+    # '2_2704'  #231万字  #6239kb,34秒钟
+    # "2_2714"   #《武炼巅峰》664万字  用时: 266 秒。
