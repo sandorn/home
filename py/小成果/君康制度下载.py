@@ -10,7 +10,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 00:20:05
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-03 12:11:18
+@LastEditTime: 2019-06-13 16:52:00
 
 使用beautifulsoup和pyquery爬小说 - 坚强的小蚂蚁 - 博客园
 https://www.cnblogs.com/regit/p/8529222.html
@@ -76,7 +76,7 @@ def set_cookies(cookies):
     return cookies
 
 
-def get_download_url():
+def get_download_url(stop=None):
     _urls = []
     payload = {"managerMethod": "findBulDatas",
                "arguments": json.dumps([{"pageSize": "20", "pageNo": 1, "spaceType": "", "spaceId": "", "typeId": "", "condition": "", "textfield1": "", "textfield2": "", "myBul": ""}])}
@@ -89,9 +89,6 @@ def get_download_url():
     pages = int(_dic['pages'])  # 总页数
     size = _dic['size']  # 总项目数量
     log.p('总页数：' + str(pages) + '\t总size数：' + str(size))
-
-    # @上一次下载到的文件位置，停止标志
-    stop = '君保发〔2019〕108号关于下发《君康人寿保险股份有限公司自媒体管理办法》的通知'
 
     for i in range(pages):
         pageNo = i + 1
@@ -178,8 +175,10 @@ def getdown(title, url):
 def main():
     log.p('开始下载公告，获取列表信息......')
     login()
+    # @上一次下载到的文件位置，停止标志
+    stop = '君保发〔2019〕110号关于下发《君康人寿保险股份有限公司保险欺诈风险管理制度（2019版）》的通知'
 
-    urls = get_download_url()
+    urls = get_download_url(stop)
     log.p('总项目：' + str(len(urls)))
     log.p('获取列表信息完成，开始下载正文及附件......')
     t = 'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId='
