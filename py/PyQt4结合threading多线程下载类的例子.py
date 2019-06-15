@@ -9,13 +9,13 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-27 08:58:09
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-27 09:05:00
+@LastEditTime: 2019-06-15 10:53:19
 '''
 
 # 参数和退出：sys.argv和sys.exit()，常规引入
 import sys
 # 处理网络连接
-import urllib3
+import requests
 # 多线程类
 from threading import Thread, RLock
 # 任务队列，方便各子线程共用
@@ -33,7 +33,7 @@ URLS = [
     'http://github.com', 'http://google.com', 'http://tumblr.com'
 ]
 # 开启的线程数
-WORKER_NUM = 5
+WORKER_NUM = 6
 
 
 class DownLoader(QTreeWidget):
@@ -95,7 +95,7 @@ class DownLoader(QTreeWidget):
             try:
                 # 这里只是打开网页，并没有下载，可以改为自己的函数
                 # 连接超时时间设置为10秒，防止无谓的尝试，你懂的
-                urllib3.urlopen(url, timeout=10)
+                requests.get(url, timeout=10)
                 state = '1'
             except:
                 state = '0'

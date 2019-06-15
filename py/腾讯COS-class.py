@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-13 17:41:47
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-03 15:59:48
+@LastEditTime: 2019-06-15 10:29:40
 
 
 tencentyun/cos-python-sdk-v5
