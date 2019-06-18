@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-03 15:40:39
+@LastEditTime: 2019-06-17 17:20:52
 '''
 from xjLib.req import parse_get
 from xjLib.log import log
@@ -217,7 +217,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
                     [f.write(str(v) + '\t') for v in index]
                     f.write('\n')
             '''
-            # # 下面换行问题
+            # # 下面有换行问题
             # #[f.write(str(v) + '\t') for key in lists for index in key for v in index]
             # #多层次的list 或 tuple写入文件
             def each(data):

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-27 15:55:52
+@LastEditTime: 2019-06-17 12:05:10
 '''
 import os
 from PyQt5.QtCore import *
@@ -158,3 +158,16 @@ class Ui_MainWindow(object):
         self.close_action.setToolTip('Close the window')
         self.close_action.setStatusTip('Close the window')
         self.close_action.triggered.connect(qApp.quit)
+
+
+if __name__ == "__main__":
+    class MyWindow(QMainWindow, Ui_MainWindow):
+        def __init__(self, parent=None):
+            super(MyWindow, self).__init__(parent)
+            self.setupUi(self)
+
+    import sys
+    app = QApplication(sys.argv)
+
+    w = MyWindow()
+    sys.exit(app.exec_())
