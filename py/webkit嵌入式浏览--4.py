@@ -1,14 +1,16 @@
-# ！/usr/bin/env python
-# -*- coding:utf -8-*-
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Software:   VSCode
-@File    :   webkit嵌入式浏览--4.py
-@Time    :   2019/05/05 13:27:30
-@Author  :   Even Sand
-@Version :   1.0
-@Contact :   sandorn@163.com
-@License :   (C)Copyright 2019-2019, NewSea
-@Desc    :   None
+@Descripttion: 头部注释None
+@Develop: VSCode
+@Author: Even.Sand
+@Contact: sandorn@163.com
+@Github: https://github.com/sandorn/home
+@License: (C)Copyright 2009-2019, NewSea
+@Date: 2019-05-05 13:27:17
+@LastEditors: Even.Sand
+@LastEditTime: 2019-06-18 16:25:32
+
 《快速掌握PyQt5》第三十章 网页交互QWebEngineView - La_vie_est_belle的博客 - CSDN博客
 https://blog.csdn.net/La_vie_est_belle/article/details/84837174
 '''
