@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-17 12:05:10
+@LastEditTime: 2019-06-20 10:50:39
 '''
 import os
 from PyQt5.QtCore import *
@@ -30,7 +30,12 @@ class Ui_MainWindow(object):
         self.status_bar = QStatusBar()
         self.status_bar.showMessage('Ready to compose')
         self.pbar = QProgressBar()
-        self.pbar.setStyleSheet("QProgressBar{border: 1px solid grey;text-align: center;font:bold 8pt 微软雅黑}")
+        self.setStyleSheet("QProgressBar{border: 1px solid grey;text-align: center;font:bold 8pt 微软雅黑}"
+                           "QLabel{color:rgb(100,100,100,250);font:bold 10pt 微软雅黑;}"
+                           "QPushButton{background-color:rgb(22,36,92);color:white;width:100%;height:35%;border-radius:10px;border:2px groove gray;border-style:outset;font:bold 10pt 微软雅黑;}"
+                           "QPushButton:hover{background-color:rgb(248,242,220);color: black;}"
+                           "QPushButton:pressed{background-color:rgb(163,159,147);border-style:inset;}"
+                           "QLineEdit{width:100% ;height:20%; border:2px groove gray;border-radius:10px;padding:2px 4px;background:lightBlue;color:Indigo; font: bold 11pt 等线;}")
         '''
         self.pbar.setStyleSheet("QProgressBar{border: 1px solid grey;border-radius: 5px;text-align: center;font:bold 8pt 微软雅黑}"
                                 "QProgressBar::chunk{background-color: #CD96CD;width: 10px;margin: 0.5px;}")# 斑马线,色条
@@ -132,7 +137,7 @@ class Ui_MainWindow(object):
         self.file_toolbar.addAction(self.open_action)
         self.file_toolbar.addSeparator()  # 分隔线
         self.lb1 = QLabel(' 搜索页数：', self)
-        self.lb1.setFont(QFont('微软雅黑', 12))
+        self.lb1.setFont(QFont('微软雅黑', 12, QFont.Bold))
         self.file_toolbar.addWidget(self.lb1)
         self.lineEdit = QSpinBox()
         self.lineEdit.setRange(1, 200)
@@ -150,10 +155,10 @@ class Ui_MainWindow(object):
         self.open_action.setShortcut('Ctrl+O')
         self.save_action.setShortcut('Ctrl+S')
         self.run_action.setShortcut('Ctrl+R')
-        self.open_action.setFont(QFont('微软雅黑', 9))
-        self.save_action.setFont(QFont('微软雅黑', 9))
-        self.run_action.setFont(QFont('微软雅黑', 9))
-        self.close_action.setFont(QFont('微软雅黑', 9))
+        self.open_action.setFont(QFont('微软雅黑', 9, QFont.Bold))
+        self.save_action.setFont(QFont('微软雅黑', 9, QFont.Bold))
+        self.run_action.setFont(QFont('微软雅黑', 9, QFont.Bold))
+        self.close_action.setFont(QFont('微软雅黑', 9, QFont.Bold))
         self.close_action.setShortcut('Ctrl+Q')
         self.close_action.setToolTip('Close the window')
         self.close_action.setStatusTip('Close the window')
