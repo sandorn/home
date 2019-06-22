@@ -11,7 +11,7 @@ https://blog.csdn.net/broadview2006/article/details/80132757
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-23 19:42:42
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-23 20:00:40
+@LastEditTime: 2019-06-22 19:30:13
 '''
 
 import sys
@@ -25,8 +25,10 @@ class CustWidget(QWidget):
         super(CustWidget, self).__init__(parent)
 
         self.okButton = QPushButton("OK", self)
+        self.noButton = QPushButton("NO", self)
         # 使用setObjectName设置对象名称
         self.okButton.setObjectName("okButton")
+        self.noButton.setObjectName("noButton")
         layout = QHBoxLayout()
         layout.addWidget(self.okButton)
         self.setLayout(layout)
@@ -35,6 +37,10 @@ class CustWidget(QWidget):
 
     def okButton_clicked(self):
         print("单击了OK按钮")
+
+    @QtCore.pyqtSlot()
+    def on_noButton_clicked(self):
+        print("单击了NO按钮")
 
 
 if __name__ == "__main__":
