@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-06-18 15:28:01
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-21 16:51:58
+@LastEditTime: 2019-08-25 14:55:46
 '''
 
 import os
@@ -19,7 +19,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from xjLib.log import log
-import time
 
 
 class Ui_MainWindow(object):
@@ -65,13 +64,12 @@ class Ui_MainWindow(object):
         self.toolbar_init()
         self.Layout_init()
         self.browser_init()
-        # 这个函数用于关联转化空间名字
-        QMetaObject.connectSlotsByName(MainWindow)  # @  关键，用于自动绑定信号和函数
+        # @  关键，用于自动绑定信号和函数
+        QMetaObject.connectSlotsByName(MainWindow)
 
     def browser_init(self):
         self.browser.load(QUrl('https://my.cbg.163.com'))
         # self.browser.urlChanged.connect(lambda: self.url_le.setText(self.browser.url().toDisplayString()))
-        self.browser.loadFinished.connect(lambda: 1)
         self.browser.titleChanged.connect(lambda: self.setWindowTitle(self.browser.title()))
         self.browser.iconChanged.connect(lambda: self.setWindowIcon(QIcon(self.browser.icon())))
         self.show()
@@ -91,8 +89,8 @@ class Ui_MainWindow(object):
 
     def btn_init(self):
         self.btnUI(self.zoom_in_btn, 'ico/1075665.png', 'Ctrl+=', '放大页面\tCtrl+=')
-        self.btnUI(self.reload_btn, 'ico/1075664.png', 'Ctrl+0', '复原页面\tCtrl+0')
-        self.btnUI(self.zoom_out_btn, 'ico/1075667.png', 'Ctrl+-', '缩小页面\tCtrl+-')
+        self.btnUI(self.reload_btn, 'ico/1075667.png', 'Ctrl+0', '复原页面\tCtrl+0')
+        self.btnUI(self.zoom_out_btn, 'ico/1075664.png', 'Ctrl+-', '缩小页面\tCtrl+-')
         self.zoom_in_btn.clicked.connect(lambda: self.browser.setZoomFactor(
             self.browser.zoomFactor() + 0.1))
         self.reload_btn.clicked.connect(lambda: self.browser.setZoomFactor(1))
@@ -119,6 +117,8 @@ class Ui_MainWindow(object):
         self.file_toolbar.addWidget(self.la2)
         self.file_toolbar.addWidget(self.login_btn)
         self.file_toolbar.addSeparator()  # 分隔线
+        self.js = QTextEdit(self)
+        self.file_toolbar.addWidget(self.js)
         self.file_toolbar.addWidget(self.fliter_btn)
         self.file_toolbar.addSeparator()  # 分隔线
         self.file_toolbar.addWidget(self.buy_btn)
@@ -147,39 +147,84 @@ class MyWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super(MyWindow, self).__init__(parent)
         self.setupUi(self)
+        self.browser.loadFinished.connect(self.onDone)
+
+    def onDone(self):
+        ttt = self.browser.url()  # .toDisplayString()
+        print(ttt)
 
     @pyqtSlot()
     def on_login_O_clicked(self):
-        # self.browser.load(QUrl('https://my.cbg.163.com/cgi/mweb/user'))  # 'icon.icon-footer-mine'
+        self.browser.load(QUrl('https://my.cbg.163.com/cgi/show_login?back_url=https%3A%2F%2Fmy.cbg.163.com'))
         js_string = '''
-        function redirect(){ //跳转页
-            window.location.href="/cgi/mweb/user";//指定要跳转到的目标页面
-        }
-        redirect()
-        $(function){
+        //window.location.href="/cgi/mweb/user";//指定要跳转到的目标页面
+
+        var int=self.setInterval(function(){  //延迟执行大括号里的方法
+            alert('setInterval');
             document.querySelector('.btn.primary').click();
-        }
+        },5000) //这里5000代表两秒
+
         '''
         self.browser.page().runJavaScript(js_string)
 
     @pyqtSlot()
     def on_fliter_O_clicked(self):
-        js_string = '''document.querySelector('.btn.primary').click();'''
+        js_string = self.js.toPlainText()
+        # jQuery相关语句
+        '''
+        self.browser.load(QUrl(
+            'https://my.cbg.163.com/cgi/show_login?back_url=https%3A%2F%2Fmy.cbg.163.com%2Fcgi%2Fmweb%2Fuser'
+            'https://my.cbg.163.com/cgi/mweb/user'
+            ))  # 'icon.icon-footer-mine'
+
+        self.browser.triggerAction（QWebPage :: Copy）;
+        body > div.page-app > div > div.page-loading.vpa-router-view.child-view > div > div.site-content > div.user-header > p.login > a
+        /html/body/div[1]/div/div[1]/div/div[2]/div[1]/p[2]/a
+        # document.querySelector('.btn.primary').click();
         # <div data-action="goEmailLogin" class="u-head1 j-head" id="auto-id-1561096233059">网易邮箱帐号登录</div>
+        <div data-action="goEmailLogin" class="u-head1 j-head" id="auto-id-1561516270426">网易邮箱帐号登录</div>
         #innerHTML,innerText,outerHTML,outerText的区别 - ...
-        # '''alert("hello,world！");'''
+        # alert("hello,world！")
+        # .exist()
         # document.getElementById('kw').value='减肥';
         # document.getElementById('su').click();
-        self.browser.page().runJavaScript(js_string)
+        #document.querySelector('.u-head1 j-head').click();
+        $('.btn').trigger('click')
+        $('.btn').eq(0).trigger('click')
+        document.getElementById('img1').onload = function(e){
+            e.stopPropagation();
+            alert(1);}
 
-        time.sleep(1)
+        function sleep(delay) {
+            var start = (new Date()).getTime();
+            while ((new Date()).getTime() - start < delay) {
+                continue;
+            }
+        };
+        window.location.href="/cgi/mweb/user";//指定要跳转到的目标页面
+        //document.querySelector('.icon.icon-footer-mine').click();
 
-        js_string = '''
-        $(function){
-            document.querySelector('.u-head1 j-head').click();
-        }
+        function re() {
+            var i = 1
+            while ( !document.querySelector('.btn.primary').complete ){
+                sleep(500)
+                console.log(i)
+                i++
+            };
+
+            document.querySelector('.btn.primary').click();
+        };
+
+        re();
+
+        //document.querySelector('.btn.primary').onload = function(e){
+        //    document.querySelector('.btn.primary').click();
+        //    alert(1);
+        //}
+
         '''
         self.browser.page().runJavaScript(js_string)
+        pass
 
 
 if __name__ == '__main__':

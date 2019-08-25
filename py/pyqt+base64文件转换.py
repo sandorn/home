@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-06 09:13:30
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-22 10:14:53
+@LastEditTime: 2019-06-27 14:07:50
 
 python 对任意文件(jpg,png,mp3,mp4)base64的编码解码 - dcb3688 - 博客园
 https://www.cnblogs.com/dcb3688/p/4610642.html
@@ -25,21 +25,41 @@ class MainWidgetUI(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.setFixedSize(250, 200)  # PyQT禁止调整窗口大小
+        self.setFixedSize(250, 500)  # PyQT禁止调整窗口大小
         self.setWindowTitle('文件base64编码互转')
         self.setWindowIcon(QtGui.QIcon("favicon.ico"))
-
+        self.intext = QTextEdit(self)
+        self.outtext = QTextEdit(self)
         Layout = QVBoxLayout()
-        self.pushButton1 = QPushButton("To base64")
-        self.pushButton2 = QPushButton("To file from base64")
+        self.pushButton1 = QPushButton("file To base64")
+        self.pushButton2 = QPushButton("from base64 To file ")
+        self.pushButton3 = QPushButton("text To base64")
+        self.pushButton4 = QPushButton("from base64 To text")
         Layout.addWidget(self.pushButton1)  # addWidget 添加一个挂件
-        Layout.addSpacing(60)  # 添加一个100px的空间距离 且不带弹性
+        Layout.addSpacing(10)  # 添加一个10px的空间距离 且不带弹性
         Layout.addWidget(self.pushButton2)
+        Layout.addSpacing(10)  # 添加一个10px的空间距离 且不带弹性
+        Layout.addWidget(self.intext)
+        Layout.addWidget(self.pushButton3)
+        Layout.addWidget(self.outtext)
+        Layout.addWidget(self.pushButton4)
+
         self.setLayout(Layout)
         # setLayout设置 QVBoxLayout()垂直 与QHBoxLayout() 水平布局, 查看布局请移步CURL-api.py
         self.pushButton1.clicked.connect(self.Tobase64)
         self.pushButton2.clicked.connect(self.Tofile)
+        self.pushButton3.clicked.connect(self.textTobase64)
+        self.pushButton4.clicked.connect(self.bTotext)
         self.show()
+
+    def textTobase64(self):
+        vstr = bytes(self.intext.toPlainText(), 'utf8')
+        base64_data = base64.b64encode(vstr)
+        self.outtext.setPlainText(base64_data.decode())
+
+    def bTotext(self):
+        ori_image_data = str(base64.b64decode(self.outtext.toPlainText()), 'utf8')
+        self.intext.setPlainText(ori_image_data)
 
     def Tobase64(self):
         fileDict = self.selectFile()
