@@ -10,6 +10,7 @@
 @Date: 2019-05-14 09:01:46
 @LastEditors: Even.Sand
 @LastEditTime: 2019-06-03 16:02:21
+腾讯对象存储，可以储存文件
 '''
 
 

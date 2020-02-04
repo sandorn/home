@@ -9,8 +9,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 00:20:05
-@LastEditors: Even.Sand
-@LastEditTime: 2019-06-13 16:52:00
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-04 16:53:36
 
 使用beautifulsoup和pyquery爬小说 - 坚强的小蚂蚁 - 博客园
 https://www.cnblogs.com/regit/p/8529222.html
@@ -176,7 +176,7 @@ def main():
     log.p('开始下载公告，获取列表信息......')
     login()
     # @上一次下载到的文件位置，停止标志
-    stop = '君保发〔2019〕152号关于下发《君康人寿保险股份有限公司印章管理办法》的通知'
+    stop = '18号关于李飞等职务任免的通知'
 
     urls = get_download_url(stop)
     log.p('总项目：' + str(len(urls)))
