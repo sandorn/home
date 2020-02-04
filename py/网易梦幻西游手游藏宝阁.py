@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-06-18 15:28:01
 @LastEditors: Even.Sand
-@LastEditTime: 2019-08-25 14:55:46
+@LastEditTime: 2019-09-04 13:50:41
 '''
 
 import os
@@ -74,20 +74,23 @@ class Ui_MainWindow(object):
         self.browser.iconChanged.connect(lambda: self.setWindowIcon(QIcon(self.browser.icon())))
         self.show()
 
-    def btnUI(self, btn, ico, sht=None, msg=None, name=None):
-        _path = os.path.dirname(__file__) + '/'
-        btn.setIcon(QIcon(_path + ico))
-        btn.setIconSize(QSize(36, 36))
-        # btn.setFont(QFont('微软雅黑', 10,QFont.Bold))
-        if sht:
-            btn.setShortcut(sht)
-        if msg:
-            btn.setToolTip(msg)
-            btn.setStatusTip(msg)
-        if name:
-            btn.setObjectName(name)  # @用于自动绑定信号和函数
+
 
     def btn_init(self):
+
+        def btnUI(self, btn, ico, sht=None, msg=None, name=None):
+            _path = os.path.dirname(__file__) + '/'
+            btn.setIcon(QIcon(_path + ico))
+            btn.setIconSize(QSize(36, 36))
+            # btn.setFont(QFont('微软雅黑', 10,QFont.Bold))
+            if sht:
+                btn.setShortcut(sht)
+            if msg:
+                btn.setToolTip(msg)
+                btn.setStatusTip(msg)
+            if name:
+                btn.setObjectName(name)  # @用于自动绑定信号和函数        
+                
         self.btnUI(self.zoom_in_btn, 'ico/1075665.png', 'Ctrl+=', '放大页面\tCtrl+=')
         self.btnUI(self.reload_btn, 'ico/1075667.png', 'Ctrl+0', '复原页面\tCtrl+0')
         self.btnUI(self.zoom_out_btn, 'ico/1075664.png', 'Ctrl+-', '缩小页面\tCtrl+-')

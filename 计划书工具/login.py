@@ -42,11 +42,11 @@ class MainWindow(QMainWindow):
         self.toolbar = self.addToolBar('Exit')
         self.toolbar.addAction(exitAction)
 
-        #self.showMaximized()
+        # self.showMaximized()
         # 设置窗体无边框
-        #self.setWindowFlags(Qt.FramelessWindowHint)
+        # self.setWindowFlags(Qt.FramelessWindowHint)
         # 设置背景透明
-        #self.setAttribute(Qt.WA_TranslucentBackground)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
         self.status = self.statusBar()
         self.status.showMessage("准备就绪")
 
@@ -71,9 +71,9 @@ class MainWindow(QMainWindow):
 
         # self.setFixedSize(788,468) #设置应用窗口固定大小显示
         weith, height = 788, 548
-        #self.setMinimumSize(weith, height)  # 设置窗口最小尺寸
+        # self.setMinimumSize(weith, height)  # 设置窗口最小尺寸
         # self.setMaximumSize(1080, 720)  # 设置窗口最大尺寸
-        #设置窗口位置和大小
+        # 设置窗口位置和大小
         screen = QDesktopWidget().screenGeometry()
         self.setGeometry((screen.width() - weith) / 2,
                          (screen.height() - height) / 2, weith, height)
@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
 
     def __del__(self):
         self.webview.deleteLater()
-        #程序退出
+        # 程序退出
         #app = QApplication.instance()
         qApp.quit()  # qApp就相当于 QCoreApplication.instance()
 
@@ -98,14 +98,20 @@ class WebEngineView(QWebEngineView):
         new_webview = WebEngineView()
         new_window = MainWindow()
         new_window.setCentralWidget(new_webview)
-        #self.windowList.append(new_window)  # 注：没有这句会崩溃！！！
+        # self.windowList.append(new_window)  # 注：没有这句会崩溃！！！
         return new_webview
 
 
-if __name__ == "__main__":
+def L():
     app = QApplication(sys.argv)
     w = MainWindow()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    L()
+
+
 '''
 # 创建一个按钮去调用 JavaScript代码
 button = QPushButton('设置全名')

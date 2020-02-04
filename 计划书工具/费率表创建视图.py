@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-14 10:08:51
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-04 16:15:22
 '''
 
 from xjLib import mysql as mysql
@@ -75,7 +75,7 @@ def main(name="default"):
 
 
 if __name__ == '__main__':
-    main()
+    main("default")
     # print(type(db))
     # print(db.__class__)
     print("产品结构列表[1]:", 产品结构列表[1])
