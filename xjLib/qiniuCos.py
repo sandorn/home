@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 10:31:24
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-14 10:43:14
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-04 17:11:48
 '''
 
 import requests
@@ -49,10 +49,10 @@ class qiniuCos:
 
 if __name__ == '__main__':
     # 创建UploadDownload对象，包含3个属性
-    ud = qiniuCos()
-    # 调用ud对象的下载图片方法
-    # ud.down('1557737502.jpg')
-    image_name = 'd:/26.jpg'
+    QN = qiniuCos()
+    # 调用QN对象的下载图片方法
+    QN.down('1580807450.jpg')
+    # image_name = 'd:/26.jpg'
     # 图片上传
-    res = ud.up(image_name)
-    print(res)
+    # res = QN.up(image_name)
+    # print(res)
