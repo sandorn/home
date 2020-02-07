@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
-@LastEditors: Even.Sand
-@LastEditTime: 2019-06-03 13:04:00
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-07 18:25:07
 
 python--threading多线程总结 - 苍松 - 博客园
 http://www.cnblogs.com/tkqasn/p/5700281.html
@@ -74,7 +74,8 @@ class MyThread(threading.Thread):
 
             with lock:
                 texts.append([self.index, _name, _texts])
-                print('下载进度{}%......\t'.format((self.count - threading.activeCount()) / self.count * 100), end='', flush=True)
+                # @ print('下载进度{}%......\n'.format((self.count - threading.activeCount()) / self.count * 100), end='', flush=True)
+                print('下载进度\t' + str(round(((self.count - threading.activeCount()) / self.count * 100), 2)), '%\t......\n', end='', flush=True)
                 print('{}\tdone\twith\t{}\tat\t{}'.format(self.name, self.index, get_stime()), flush=True)
             urls.task_done()
 
@@ -102,8 +103,8 @@ def main_thread(target):
 
 if __name__ == '__main__':
     from xjLib.log import log
-    log = log()
-    main_thread('https://www.biqukan.com/65_65593/')
+    #! log = log()
+    main_thread('https://www.biqukan.com/2_2704/')
     # '65_65593'  #章节少，测试用 4秒
     # '2_2704'  #231万字  #6239kb, 132秒
     # "2_2714"   #《武炼巅峰》664万字, 秒。

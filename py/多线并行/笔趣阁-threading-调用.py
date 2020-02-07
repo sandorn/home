@@ -8,15 +8,15 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-25 18:04:51
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-07 18:25:29
 '''
 import threading
 import time
 from queue import Queue
 
 from bs4 import BeautifulSoup
-from xjLib.req import parse_url as parse_url
+from xjLib.req import parse_get as parse_url
 from xjLib.req import savefile as writer
 from xjLib.req import get_stime
 
@@ -65,7 +65,7 @@ def get_contents(index, count):
             _texts += text + '\n'
         with lock:
             texts.append([index, _name, _texts])
-            print('下载进度{}%......\t'.format((count - threading.activeCount()) / count * 100), end='', flush=True)
+            print('下载进度\t' + str(round(((count - threading.activeCount()) / count * 100), 2)), '%\t......\n', end='', flush=True)
             print('{}\tdone\twith\t{}\tat\t{}'.format(threading.currentThread().name, index, get_stime()), flush=True)
         urls.task_done()  # 发出此队列完成信号
 

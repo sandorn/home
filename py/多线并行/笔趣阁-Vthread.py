@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-18 03:50:41
-@LastEditors: Even.Sand
-@LastEditTime: 2019-06-02 18:27:32
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-07 17:56:58
 
 # !存在问题，主线程先结束，子线程后结束，未能取得返回值
 '''
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     from xjLib.log import log
     log = log()
     start = time.time()
-    _name, urls = get_download_url('http://www.biqukan.com//65_65593/')
+    _name, urls = get_download_url('https://www.biqukan.com/2_2704/')
     args = [(i, urls[i])for i in range(len(urls))]
     for item in args:
         get_contents(*item)

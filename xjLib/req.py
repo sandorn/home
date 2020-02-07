@@ -10,6 +10,7 @@
 @Date: 2019-05-16 12:57:23
 @LastEditors: Even.Sand
 @LastEditTime: 2019-06-03 12:11:56
+requests 简化调用
 '''
 from __future__ import absolute_import, unicode_literals
 from retrying import retry
