@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-10 17:43:55
+@LastEditTime : 2020-02-11 02:45:10
 '''
 import threading
 import time
@@ -23,7 +23,7 @@ from xjLib.req import get_stime
 lock = threading.RLock()
 urls = Queue()  # 存放章节链接
 texts = []  # 将爬下来的小说都存在里面，做最后排序
-SemaphoreNum = 25
+SemaphoreNum = 30
 semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线程数，其他等待执行
 
 
@@ -52,7 +52,7 @@ def get_download_url(target):
     return _bookname
 
 
-def get_contents(index, count):
+def get_contents(index):
     with semaphore:
         target = urls.get()
         _texts = ''
@@ -65,8 +65,7 @@ def get_contents(index, count):
             _texts += text + '\n'
         with lock:
             texts.append([index, _name, _texts])
-            print('下载进度\t' + str(round(((count - threading.activeCount()) / count * 100), 2)), '%\t......\n', end='', flush=True)
-            print('{}\tdone\twith\t{}\tat\t{}'.format(threading.currentThread().name, index, get_stime()), flush=True)
+            print('线程 #{} 号  has done。\n'.format(index), end='', flush=True)
         urls.task_done()  # 发出此队列完成信号
 
 
@@ -75,9 +74,8 @@ def main_thread(target):
     bookname = get_download_url(target)
     thread_list = []
     print('threading-调用，开始下载：《' + bookname + '》', flush=True)
-    count = urls.qsize()
-    for index in range(count):
-        res = threading.Thread(target=get_contents, args=(index, count))
+    for index in range(urls.qsize()):
+        res = threading.Thread(target=get_contents, args=(index,))
         res.start()
         thread_list.append(res)
 
@@ -91,7 +89,7 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
-    main_thread('https://www.biqukan.com/2_2704/')
+    main_thread('https://www.biqukan.com/65_65593/')
     # '65_65593'  #章节少，测试用
     # '2_2704'  #231万字  #6239kb, 153秒
     # "2_2714"   #《武炼巅峰》664万字, 秒。

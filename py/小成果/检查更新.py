@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-28 17:22:57
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-11 01:30:32
 '''
 
 # 检索需要升级的库，逐个升级
@@ -44,8 +44,8 @@ def PIP更新1():
     n = 1
     for nu in need_update:
         com_update = 'pip install -U {py}'.format(py=nu)
-        print("共有{}个库，正在更新第{}个库[{}]，\n执行命令：{}，请耐心等待.......".format(
-            s, n, nu, com_update))
+        print("正在更新第{}/{}个库[{}]，\n执行：{}，请等待...".format(
+            n, s, nu, com_update))
         subprocess.call(com_update)
         n += 1
         print("----------{com} 执行结束-----------\n".format(com=com_update))
@@ -64,7 +64,7 @@ def PIP更新2():
     for dist in get_installed_distributions():
         subprocess.call("pip install -U " + dist.project_name, shell=True)
         # conda upgrade --all：更新所有包
-        print("共有{}个库，正在更新第{}个库{}，请耐心等待.......".format(s, n, dist.project_name))
+        print("正在更新第{}/{}个库[{}]，请等待.......".format(n, s, dist.project_name))
         n += 1
     print("{}个库已全部更新完毕！".format(s))
     # 逐个更新，速度较慢
@@ -83,6 +83,7 @@ def PIP更新3():
 
 def CONDA更新():
     print("CONDA更新：\n检查更新情况:")
+    # # subprocess.call("conda update -n base -c defaults conda ", shell=True)
     subprocess.call("conda update --all ", shell=True)
     subprocess.call("conda upgrade --all ", shell=True)
     subprocess.call("conda clean -a ", shell=True)
@@ -121,15 +122,15 @@ please input:")
     for case in switch(NO):
         if case('0'):
             CONDA更新()
-            break
+            exit
         if case('1'):
             PIP更新1()
-            break
+            exit
         if case('2'):
             PIP更新2()
-            break
+            exit
         if case('3'):
             PIP更新3()
-            break
+            exit
         if case('9'):
-            break
+            exit

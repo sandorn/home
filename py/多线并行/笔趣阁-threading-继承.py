@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-07 18:25:07
+@LastEditTime : 2020-02-11 02:39:26
 
 python--threading多线程总结 - 苍松 - 博客园
 http://www.cnblogs.com/tkqasn/p/5700281.html
@@ -26,7 +26,7 @@ from xjLib.req import savefile as writer
 from xjLib.req import get_stime
 from pyquery import PyQuery
 
-SemaphoreNum = 25
+SemaphoreNum = 30
 Semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线程数，其他等待执行
 lock = threading.Lock()
 urls = Queue()  # 存放章节链接
@@ -102,9 +102,9 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
-    from xjLib.log import log
+    #!from xjLib.log import log
     #! log = log()
-    main_thread('https://www.biqukan.com/2_2704/')
+    main_thread('https://www.biqukan.com/65_65593/')
     # '65_65593'  #章节少，测试用 4秒
     # '2_2704'  #231万字  #6239kb, 132秒
     # "2_2714"   #《武炼巅峰》664万字, 秒。
