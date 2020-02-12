@@ -7,16 +7,13 @@
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-12 14:52:44
+@Date: 2020-02-11 01:48:27
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-11 13:36:59
-
-python--threading多线程总结 - 苍松 - 博客园
-http://www.cnblogs.com/tkqasn/p/5700281.html
-threading.currentThread(): 返回当前的线程变量。
-threading.enumerate(): 返回一个包含正在运行的线程的list。正在运行指线程启动后、结束前，不包括启动前和终止后的线程。
-threading.activeCount(): 返回正在运行的线程数量，与len(threading.enumerate())有相同的结果。
+@LastEditTime : 2020-02-11 19:44:50
+法拍网(三方网站)http://www.fapaiwang.cn，信息采集
 '''
+
+# 'http://www.fapaiwang.cn/show?cid=0&ext2=0&ext3=0&ext4=0&ext5=0&min_pr=250&max_pr=580&min_ar=&max_ar=&orderId=2&status=2&q='
 
 import time
 from queue import Queue

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-11 02:45:10
+@LastEditTime : 2020-02-11 13:37:16
 '''
 import threading
 import time
@@ -83,13 +83,14 @@ def main_thread(target):
         item.join()  # join等待线程执行结束
 
     print('threading-调用，书籍《' + bookname + '》完成下载', flush=True)
+    texts.sort(key=lambda x: x[0])
     writer(bookname + '.txt', texts)
     print('下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)),
           flush=True)
 
 
 if __name__ == '__main__':
-    main_thread('https://www.biqukan.com/65_65593/')
+    main_thread('https://www.biqukan.com/2_2704/')
     # '65_65593'  #章节少，测试用
     # '2_2704'  #231万字  #6239kb, 153秒
     # "2_2714"   #《武炼巅峰》664万字, 秒。
