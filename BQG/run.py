@@ -9,13 +9,14 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:30:36
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-12 16:37:52
+@LastEditTime : 2020-02-13 15:14:28
 '''
 
 
 from scrapy.cmdline import execute
 import sys
 import os
+
 # 获取当前脚本路径
 dirpath = os.path.dirname(os.path.abspath(__file__))
 # 运行文件绝对路径

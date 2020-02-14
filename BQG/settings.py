@@ -1,5 +1,61 @@
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
+'''
+@Descripttion: 头部注释None
+@Develop: VSCode
+@Author: Even.Sand
+@Contact: sandorn@163.com
+@Github: https://github.com/sandorn/home
+@License: (C)Copyright 2009-2019, NewSea
+@Date: 2020-02-12 15:44:47
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-14 13:07:59
+'''
 
+from scrapy.exporters import JsonLinesItemExporter  # 默认显示的中文是阅读性较差的Unicode字符
+BOT_NAME = 'BQG'
+
+SPIDER_MODULES = ['BQG.spiders']
+NEWSPIDER_MODULE = 'BQG.spiders'
+
+# 修改默认的输出编码方式
+# 需要定义子类显示出原来的字符集（将父类的ensure_ascii属性设置为False即可）
+FEED_EXPORT_ENCODING = 'utf-8'
+
+
+class CustomJsonLinesItemExporter(JsonLinesItemExporter):
+    def __init__(self, file, **kwargs):
+        super(CustomJsonLinesItemExporter, self).__init__(file, ensure_ascii=False, **kwargs)
+    # 启用新定义的Exporter类\
+    FEED_EXPORTERS = {
+        'json': 'stockstar.settings.CustomJsonLinesItemExporter',
+    }
+
+
+ROBOTSTXT_OBEY = False
+DOWNLOAD_DELAY = 0.5
+
+ITEM_PIPELINES = {
+    'BQG.pipelines.BqgPipeline': 300,
+}
+# 爬虫线程数量
+CONCURRENT_REQUESTS = 32
+
+DEFAULT_REQUEST_HEADERS = {
+    'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    # 指定客户端浏览器可以支持的web服务器返回内容压缩编码类型
+    'Accept-Encoding': 'gzip, deflate, br',
+    # 指定HTTP客户端浏览器用来展示返回信息所优先选择的语言。
+    'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
+    # 浏览器可以接受的字符编码集
+    'Accept-Charset': 'gb2312,utf-8;q=0.7,*;q=0.7',
+    # 表示是否需要持久连接  'keep-alive','close'
+    'Connection': 'close',
+    # 显示此HTTP连接的Keep-Alive时间    'Keep-Alive': '300',
+    # 请求的web服务器域名地址    'Host': 'www.baidu.com',
+}
 # Scrapy settings for BQG project
 #
 # For simplicity, this file contains only settings considered important or
@@ -9,17 +65,11 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'BQG'
-
-SPIDER_MODULES = ['BQG.spiders']
-NEWSPIDER_MODULE = 'BQG.spiders'
-
-
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'BQG (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+# ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -27,6 +77,7 @@ ROBOTSTXT_OBEY = True
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
+# DOWNLOAD_DELAY = 0.25
 #DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
@@ -39,34 +90,34 @@ ROBOTSTXT_OBEY = True
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
+# DEFAULT_REQUEST_HEADERS = {
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 #   'Accept-Language': 'en',
-#}
+# }
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
+# SPIDER_MIDDLEWARES = {
 #    'BQG.middlewares.BqgSpiderMiddleware': 543,
-#}
+# }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
+# DOWNLOADER_MIDDLEWARES = {
 #    'BQG.middlewares.BqgDownloaderMiddleware': 543,
-#}
+# }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
+# EXTENSIONS = {
 #    'scrapy.extensions.telnet.TelnetConsole': None,
-#}
+# }
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
+# ITEM_PIPELINES = {
 #    'BQG.pipelines.BqgPipeline': 300,
-#}
+# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

@@ -8,45 +8,36 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-15 08:22:23
-'''
-
-
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-14 23:47:26
 __Author__ = 'Even.Sand'
-
-
+'''
+from xjLib.dBrouter import dbconf
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 import pandas
-from xjLib import db_router
-
-dbr = db_router.config
 
 
-class MysqlHelp(object):
+class MySQLConnection(object):
     def __new__(cls, *args, **kwargs):
-        # print("__new__方法被调用")
         if not hasattr(cls, '_instance'):
-            # if not '_instance' in vars(cls):
-            cls._instance = super(MysqlHelp, cls).__new__(cls)
+            cls._instance = super(MySQLConnection, cls).__new__(cls)
         return cls._instance
-        # return object.__new__(cls)
 
-    def __init__(self, name='default'):
-
-        if name not in dbr:
-            print('错误提示：\n        检查数据库路由名称！')
+    def __init__(self, DBname='master'):
+        if DBname not in dbconf:
+            print('错误提示：检查数据库配置：' + DBname)
             # self.__del__()
             exit(1)
 
-        _connect_info = 'mysql://{}:{}@{}:{}/{}?charset={}'.format(dbr[name]['user'], dbr[name]['passwd'], dbr[name]['host'], dbr[name]['port'], dbr[name]['db'], dbr[name]['charset'])
+        _connect_info = 'mysql://{}:{}@{}:{}/{}?charset={}'.format(dbconf[DBname]['user'], dbconf[DBname]['passwd'], dbconf[DBname]['host'], dbconf[DBname]['port'], dbconf[DBname]['db'], dbconf[DBname]['charset'])
         try:
             self.engine = create_engine(_connect_info, encoding="utf-8", echo=True)
             self.metadata = MetaData(self.engine)  # 绑定元信息
             # 创建session对象:
             _DB_Session = sessionmaker(bind=self.engine)
             self.session = _DB_Session()
+            print("获取数据库连接对象成功,连接池:{}".format(str(self.metadata)))
         except Exception as error:
             print('\033[create_engine Error:\n', error, ']\033', sep='')  # repr(error)
             return None  # raise  # exit(1)
@@ -128,23 +119,11 @@ class MysqlHelp(object):
             return False
 
 
-def getVer(db_name):
-    #  使用execute执行SQL语句
-    _cur = db_name.session.execute("SELECT VERSION()")
-    #  使用 fetchone() 方法获取一条数据库。
-    版本号 = _cur.fetchone()
-    if 版本号:
-        return 版本号
-    else:
-        return False
-
-
 if __name__ == '__main__':
-    myDb = MysqlHelp()
+    myDb = MySQLConnection()
     print(myDb)
     if myDb:
         print("ver:", myDb.ver())
-        print("getVer:", getVer(myDb))
         sql = " select * from users ;"
         pdtable = myDb.getPt(sql)
         print("pdtable.values[1][1]:", pdtable.values[1][1])

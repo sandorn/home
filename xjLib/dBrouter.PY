@@ -7,20 +7,12 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-04 16:35:43
+@LastEditTime : 2020-02-14 22:56:12
 '''
 # ！/usr/bin/env python
 # -*-coding:utf-8-*-
 
-config = {
-    'default': {
-        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
-        'port': 10014,
-        'user': 'sandorn',
-        'passwd': '123456',
-        'db': 'bxflb',
-        'charset': 'utf8mb4',
-    },
+dbconf = {
     'tx': {
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
@@ -47,6 +39,7 @@ config = {
     },
 }
 
+dbconf['master'] = dbconf['tx']
 
 '''
 阿里已经欠费

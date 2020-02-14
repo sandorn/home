@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-28 10:23:37
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-14 23:32:50
 '''
 # package
 # __init__.py
@@ -25,12 +25,16 @@ from . import qiniuCos
 from . import txCos
 from . import sqlorm
 from . import mysql
-from . import db_router
+from . import mssql
+from . import mystr
+from . import dBrouter
+
 xjLib_VERSION = __version__ = '0.0.2'
 
-
 __all__ = [
-    "db_router",
+    "dBrouter",
+    "mystr",
+    "mssql",
     "mysql",
     "sqlorm",
     "txCos",

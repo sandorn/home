@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:30:36
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-12 15:43:58
+@LastEditTime : 2020-02-13 03:03:21
 '''
 
 
@@ -27,4 +27,4 @@ sys.path.append(dirpath)
 # 切换工作目录
 os.chdir(dirpath)
 # 启动爬虫,第三个参数为爬虫name
-execute(['scrapy', 'crawl', 'name'])
+execute(['scrapy', 'crawl', '爬虫name', '-o', 'items.json', '-s', 'FEED_EXPORT_ENCODING=utf-8'])

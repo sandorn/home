@@ -8,45 +8,44 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-21 12:02:49
+@LastEditors  : Even.Sand
+@LastEditTime : 2020-02-14 23:51:34
 '''
-from xjLib import db_router
-import MySQLdb as myodbc
-# import pymysql as myodbc
+
+from xjLib.dBrouter import dbconf
+import MySQLdb as mysql
+import pymysql as pmysql
 import pandas
 
-dbr = db_router.config
 
-
-class MysqlHelp(object):
+class MySQLConnection(object):
     def __new__(cls, *args, **kwargs):
         # print("__new__方法被调用")
         if not hasattr(cls, '_instance'):
             # if not '_instance' in vars(cls):
-            cls._instance = super(MysqlHelp, cls).__new__(cls)
+            cls._instance = super(MySQLConnection, cls).__new__(cls)
         return cls._instance
-        # return object.__new__(cls)
 
-    def __init__(self, name='default'):
-
-        if name not in dbr:
-            print('错误提示：\n        检查数据库路由名称！')
+    def __init__(self, DBname='master', odbc='mysql'):
+        if DBname not in dbconf:
+            print('错误提示：检查数据库配置：' + DBname)
             # self.__del__()
             exit(1)
 
         try:
-            self.conn = myodbc.connect(**dbr[name])
-            # 使用cursor()获取操作游标
+            if odbc == 'mysql':
+                self.conn = mysql.connect(**dbconf[DBname])
+            else:
+                self.conn = pmysql.connect(**dbconf[DBname])
             self.cur = self.conn.cursor()
+            print("获取数据库连接对象成功,连接池:{}".format(str(self.conn)))
         except Exception as error:
             print('\033[connect Error:\n', error, ']\033', sep='')  # repr(error)
             return None  # raise  # exit(1)
 
     '''
     对with的处理:所求值的对象必须有一个__enter__()方法，一个__exit__()方法。
-    跟with后面的语句被求值后，返回对象的__enter__()方法被调用，这个方法的返回值将被赋值给as后面的变量。
-    当with后面的代码块全部被执行完之后，将调用前面返回对象的__exit__()方法。
+    跟with后面的语句被求值后，返回对象的__enter__()方法被调用，这个方法的返回值将被赋值给as后面的变量。当with后面的代码块全部被执行完之后，将调用前面返回对象的__exit__()方法。
     '''
 
     def __enter__(self):
@@ -82,6 +81,7 @@ class MysqlHelp(object):
         # 以字典形式提交插入
         ls = [(k, dt[k]) for k in dt if dt[k] is not None]
         sql = 'insert %s (' % self.tb + ','.join([i[0] for i in ls]) + ') values (' + ','.join(['%r' % i[1] for i in ls]) + ');'
+        # print(sql)
         self.worKon(sql)
 
     def update(self, dt_update, dt_condition, table):
@@ -120,7 +120,7 @@ class MysqlHelp(object):
 
     def getDic(self, sql):
         # 重新定义游标格式
-        self.cur = self.conn.cursor(cursorclass=myodbc.cursors.DictCursor)
+        self.cur = self.conn.cursor(cursorclass=mysql.cursors.DictCursor)
         self.cur.execute(sql)
         dic = self.cur.fetchall()
         self.cur = self.conn.cursor(cursorclass=None)
@@ -130,23 +130,23 @@ class MysqlHelp(object):
             return False
 
 
-def getVer(db_name):
-    #  使用execute执行SQL语句
-    db_name.cur.execute("SELECT VERSION()")
-    #  使用 fetchone() 方法获取一条数据库。
-    版本号 = db_name.cur.fetchone()
-    if 版本号:
-        return 版本号[0]
-    else:
-        return False
-
-
 if __name__ == '__main__':
-    myDb = MysqlHelp()
-    print(myDb)
+    db = MySQLConnection()
+    # 使用execute方法执行SQL语句
+    db.cur.execute("SELECT VERSION()")
+    # 使用 fetchone() 方法获取一条数据库。
+    print("数据库版本：", db.cur.fetchone())
+
+    db2 = MySQLConnection('db4', 'pmysql')
+    # 使用execute方法执行SQL语句
+    db2.cur.execute("SELECT VERSION()")
+    # 使用 fetchone() 方法获取一条数据库。
+    print("数据库版本：", db2.cur.fetchone())
+
+
+'''
     if myDb:
         print("ver:", myDb.ver())
-        print("getVer:", getVer(myDb))
         sql = " select * from users ;"
         pdtable = myDb.getPt(sql)
         print("pdtable.values[1][1]:", pdtable.values[1][1])
@@ -158,6 +158,9 @@ if __name__ == '__main__':
         print('data:', data)
         print("data[0]:", data[0], "++++++++++data[1][1]:", data[1][1])
         del myDb
+'''
+
+
 '''
 # 查询语句，选出 users 表中的所有数据
 sql =  "select * from users;"
