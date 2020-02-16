@@ -9,108 +9,139 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-14 15:48:58
+@LastEditTime : 2020-02-16 23:28:51
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 '''
 
+from twisted.enterprise import adbapi
+from scrapy.exporters import JsonItemExporter
+from xjLib.mssql import MySQLConnection as mysql
+from xjLib.dBrouter import dbconf
+import codecs
+import json
 
-import re
-from xjLib.string import cn2num  # 章节数字转换
-import xjLib.mysql as mysql
 
-
-class BqgPipeline(object):
+class PipelineToTxt(object):
 
     def __init__(self):
         self.content_list = []
-
-        self.db = mysql.MysqlHelp()
-        # 使用execute方法执行SQL语句
-        self.db.cur.execute("SELECT VERSION()")
-        # 使用 fetchone() 方法获取一条数据库。
-        print("数据库版本：", self.db.cur.fetchone())
+        self.file = {}
 
     def process_item(self, item, spider):
         bookname = item["书名"]
-        self.file = open(bookname + '.txt', 'w', encoding='utf-8')
-        self.file.write("-----------------------%s-----------------------\n" % (bookname))
+        self.file[bookname] = open(bookname + '.txt', 'w', encoding='utf-8')
+        self.file[bookname].write("-----------------------%s-----------------------\n" % (bookname))
 
-        name = item['章节名称']
-        chapter = re.findall(r"第(.*)章", name)
-        item['序号'] = cn2num(chapter)
         self.content_list.append(item)
         return item
 
     def close_spider(self, spider):
-        list_sorted = sorted(self.content_list, key=lambda x: x['序号'])
+        list_sorted = sorted(self.content_list, key=lambda x: x['index'])
         for item in list_sorted:
             # 首先从items里取出数据
             _BOOKNAME = item['书名']
             _INDEX = item['index']
-            _XUHAO = item['序号']
             _ZJNAME = item['章节名称']
-            _ZJTEXT = self.multiple_replace(item['章节正文'], {'\xa0': '', '&nbsp;': '', '\\b;': '', 'app2();': '', 'chaptererror();': '', '百度搜索“笔趣看小说网”手机阅读：m.biqukan.com': '', '请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：wap.biqukan.com': '', '[笔趣看www.biqukan.com]': '', '\n\n': '\n', '\n\n': '\n', '\n\n': '\n'}) + "\n"
+            _ZJTEXT = item['章节正文']
 
-            self.file.write("----------------%d----------------- %s--------------\n" % (_XUHAO, _ZJNAME))
-            self.file.write(_ZJTEXT)
+            self.file[_BOOKNAME].write("----------%s----------%d----------%s----------\n" % (_BOOKNAME, _INDEX, _ZJNAME))
+            self.file[_BOOKNAME].write(_ZJTEXT)
+        self.file[_BOOKNAME].close()
 
-            try:
-                _sql = 'Insert into xiashu(`BOOKNAME`,`INDEX`,`XUHAO`,`ZJNAME`,`ZJTEXT`) values (\'%s\',%d ,%d ,\'%s\',\'%s\')' % (_BOOKNAME, _INDEX, _XUHAO, _ZJNAME, _ZJTEXT)
-                self.db.worKon(_sql)
-            except Exception as e:
-                print("插入数据出错,错误原因%s" % e)
-            return item
+
+class PipelineToJson:
+
+    # 初始化时指定要操作的文件
+    def __init__(self):
+        self.file = codecs.open('Items.json', 'w', encoding='utf-8')
+
+    def open_spider(self, spider):
+        # 可选实现，当spider被开启时，这个方法被调用。
+        pass
+
+    def process_item(self, item, spider):
+        # 存储数据，将 Item 实例作为 json 数据写入到文件中
+        lines = json.dumps(dict(item), ensure_ascii=False) + '\n'
+        self.file.write(lines)
+        return item
+
+    def close_spider(self, spider):
+        # 可选实现，当spider被关闭时，这个方法被调用
         self.file.close()
 
-    # 批量替换字符
-    def multiple_replace(self, text, adict):
-        rx = re.compile('|'.join(map(re.escape, adict)))
 
-        def one_xlat(match):
-            return adict[match.group(0)]
-        return rx.sub(one_xlat, text)
-
-
-'''
-import json
-import codecs
-class 预留(object):
-    # 实现方式1
+class PipelineToJsonExp:
+    # 调用 scrapy 提供的 json exporter 导出 json 文件
     def __init__(self):
-        self.file = codecs.open('items.json', 'wb', encoding='utf-8')
-    def process_item(self, item, spider):
-        line = json.dumps(dict(item), ensure_ascii=False) + '\n'
-        self.file.write(line)
+        self.file = open('Items_exp.json', 'wb')
+        # 初始化 exporter 实例，执行输出的文件和编码
+        self.exporter = JsonItemExporter(self.file, encoding='utf-8', ensure_ascii=False)
+        # 开启倒数
+        self.exporter.start_exporting()
 
-    # 实现方式2
+    def close_spider(self, spider):
+        self.exporter.finish_exporting()
+        self.file.close()
+
+    # 将 Item 实例导出到 json 文件
     def process_item(self, item, spider):
-        with open('items.json', 'a') as f:
-            json.dump(dict(item), f, ensure_ascii=False)
-            f.write(',\n')
+        self.exporter.export_item(item)
         return item
 
 
-
-from xjLib import mysql as mysql
-
-class BqgPipeline(object):
+class PipelineToSql(object):
     def __init__(self):
-        self.db = mysql.MysqlHelp("default")
-        # 使用execute方法执行SQL语句
-        self.db.cur.execute("SELECT VERSION()")
-        # 使用 fetchone() 方法获取一条数据库。
-        print("数据库版本：", self.db.cur.fetchone())
+        self.connect = mysql('TXbook')
 
     def process_item(self, item, spider):
-        params = [item['书名'], item['序号'], item['章节名称'], item['章节正文']]
-        try:
-            self.db.cur.execute(
-                'insert into xiashu(BOOKNAME, INDEX, ZJNAME, ZJTEXT)values (%s,%s,%s,%s)', params)
-            self.conn.commit()
-        except Exception as e:
-            print("插入数据出错,错误原因%s" % e)
+        _BOOKNAME = item['书名']
+        Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
+        self.connect.execute(Csql)
+        self.connect.commit()
+
+        _INDEX = item['index']
+        _ZJNAME = item['章节名称']
+        _ZJTEXT = item['章节正文']
+
+        _sql = 'Insert into %s (`BOOKNAME`,`INDEX`,`ZJNAME`,`ZJTEXT`) values (\'%s\',%d ,\'%s\',\'%s\')' % (_BOOKNAME, _BOOKNAME, _INDEX, _ZJNAME, _ZJTEXT)
+        self.connect.insert(_sql)
+        self.connect.commit()
+
         return item
-'''
+
+    def close_spider(self, spider):
+        # del self.connect
+        self.connect.close()
+
+    def handle_error(self, e):
+        # log.err(e)
+        print(e)
+
+
+class PipelineToSqlTwisted(object):
+    def __init__(self, DBname='TXbook'):
+        # 指定擦做数据库的模块名和数据库参数参数
+        self.dbpool = adbapi.ConnectionPool("pymysql", **dbconf[DBname])
+        self.Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)'
+
+    def process_item(self, cursor, item, spider):
+        _BOOKNAME = item['书名']
+        cursor.execute(self.Csql, _BOOKNAME)
+
+        # 指定操作方法和操作的数据
+        query = self.dbpool.runInteraction(self.do_insert, item)
+        # 指定异常处理方法
+        query.addErrback(self.handle_error, item, spider)  # 处理异常
+
+    def handle_error(self, failure, item, spider):
+        # 处理异步插入的异常
+        print(failure)
+
+    def do_insert(self, cursor, item):
+        # 执行具体的插入
+        # 根据不同的item 构建不同的sql语句并插入到mysql中
+        insert_sql, params = item.get_insert_sql()
+        cursor.execute(insert_sql, params)

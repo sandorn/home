@@ -173,9 +173,9 @@ class MySQLConnection(object):
         :return:
         """
         if param is None:
-            self.connect.commit()
+            self.conn.commit()
         else:
-            self.connect.rollback()
+            self.conn.rollback()
 
     def close(self):
         """
@@ -184,8 +184,8 @@ class MySQLConnection(object):
         """
         if self.cur:
             self.cur.close()
-        if self.connect:
-            self.connect.close()
+        if self.conn:
+            self.conn.close()
         print("释放数据库连接")
         return None
 

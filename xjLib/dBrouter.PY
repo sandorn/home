@@ -7,13 +7,21 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-14 22:56:12
+@LastEditTime : 2020-02-15 09:33:03
 '''
 # ！/usr/bin/env python
 # -*-coding:utf-8-*-
 
 dbconf = {
-    'tx': {
+    'TXbook': {
+        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
+        'port': 10014,
+        'user': 'sandorn',
+        'passwd': '123456',
+        'db': 'biqukan',
+        'charset': 'utf8mb4',
+    },
+    'TXbx': {
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
         'user': 'sandorn',
@@ -21,7 +29,7 @@ dbconf = {
         'db': 'bxflb',
         'charset': 'utf8mb4',
     },
-    'txSuper': {
+    'STXbx': {
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
         'user': 'root',
@@ -39,7 +47,7 @@ dbconf = {
     },
 }
 
-dbconf['master'] = dbconf['tx']
+dbconf['master'] = dbconf['TXbx']
 
 '''
 阿里已经欠费

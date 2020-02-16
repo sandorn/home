@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-14 23:51:34
+@LastEditTime : 2020-02-15 09:03:28
 '''
 
 from xjLib.dBrouter import dbconf
@@ -77,18 +77,18 @@ class MySQLConnection(object):
             print('\033[', error, ']\033', sep='')
             return False
 
-    def insert(self, dt):
+    def insert(self, dt, tb_name):
         # 以字典形式提交插入
         ls = [(k, dt[k]) for k in dt if dt[k] is not None]
-        sql = 'insert %s (' % self.tb + ','.join([i[0] for i in ls]) + ') values (' + ','.join(['%r' % i[1] for i in ls]) + ');'
+        sql = 'insert %s (' % tb_name + ','.join([i[0] for i in ls]) + ') values (' + ','.join(['%r' % i[1] for i in ls]) + ');'
         # print(sql)
         self.worKon(sql)
 
-    def update(self, dt_update, dt_condition, table):
+    def update(self, dt_update, dt_condition, tb_name):
         # dt_update,更新的数据
         # dt_condition，匹配的数据
-        # table,表名
-        sql = 'UPDATE %s SET ' % table + ','.join(['%s=%r' % (k, dt_update[k]) for k in dt_update]) + ' WHERE ' + ' AND '.join(['%s=%r' % (k, dt_condition[k]) for k in dt_condition]) + ';'
+        # tb_name,表名
+        sql = 'UPDATE %s SET ' % tb_name + ','.join(['%s=%r' % (k, dt_update[k]) for k in dt_update]) + ' WHERE ' + ' AND '.join(['%s=%r' % (k, dt_condition[k]) for k in dt_condition]) + ';'
         self.worKon(sql)
 
     def ver(self):

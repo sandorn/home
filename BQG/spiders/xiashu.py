@@ -9,10 +9,11 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-14 16:36:28
+@LastEditTime : 2020-02-16 23:31:24
 '''
 
 import scrapy
+from xjLib.mystr import multiple_replace
 from BQG.items import BqgItem
 from pyquery import PyQuery
 
@@ -33,26 +34,33 @@ class XiashuSpider(scrapy.Spider):
     # 设定域名
     allowed_domains = ['biqukan.com']
     # 填写爬取地址
-    start_urls = ['https://www.biqukan.com/2_2704/']
+    start_urls = [
+        'https://www.biqukan.com/2_2714/',
+        'https://www.biqukan.com/2_2704/'
+    ]
 
     # 编写爬取方法
     def parse(self, response):
         self.书名 = response.xpath('//meta[@property="og:title"]//@content').extract()[0]
+
         全部章节链接 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
 
-        for index in range(10):  # range(len(全部章节链接)):
+        for index in range(len(全部章节链接)):
             url = 'https://www.biqukan.com' + str(全部章节链接[index])
-            yield scrapy.Request(url=url, meta={'index': index}, callback=self.parse_info, dont_filter=True)
+            yield scrapy.Request(url=url, meta={'index': index, 'name': self.书名}, callback=self.parse_content, dont_filter=True)
 
-    def parse_info(self, response):
-        torrent = BqgItem()
-        torrent['书名'] = self.书名
-        torrent['index'] = response.meta['index']
-        torrent['章节名称'] = response.xpath('//h1/text()').extract()[0]
+    def parse_content(self, response):
+        Item = BqgItem()
+        Item['书名'] = response.meta['name']
+        Item['index'] = response.meta['index']
+        Item['章节名称'] = response.xpath('//h1/text()').extract()[0]
+
         _soup = PyQuery(response.text)
         _showtext = _soup('#content').text()  # '.showtxt'
-        torrent['章节正文'] = _showtext.replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
-        yield torrent
+        _showtext = _showtext.replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
+        Item['章节正文'] = multiple_replace(_showtext, {'\xa0': '', '&nbsp;': '', '\\b;': '', 'app2();': '', 'chaptererror();': '', '百度搜索“笔趣看小说网”手机阅读：m.biqukan.com': '', '请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：wap.biqukan.com': '', '[笔趣看www.biqukan.com]': '', '\n\n': '\n', '\n\n': '\n', '\n\n': '\n'}) + "\n"
+
+        yield Item
 
     def parse_detail(self, response):
         pass

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-14 23:54:36
+@LastEditTime : 2020-02-15 11:00:33
 '''
 import re
 
@@ -17,6 +17,7 @@ import re
 def cn2num(章节编号):
     # 实现了中文向阿拉伯数字转换
     # 用于从小说章节名提取id来排序
+    #!待调试
     chs_arabic_map = {'零': 0, '一': 1, '二': 2, '三': 3, '四': 4,
                       '五': 5, '六': 6, '七': 7, '八': 8, '九': 9,
                       '十': 10, '百': 100, '千': 10 ** 3, '万': 10 ** 4,

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors  : Even.Sand
-@LastEditTime : 2020-02-14 13:07:59
+@LastEditTime : 2020-02-16 23:31:33
 '''
 
 from scrapy.exporters import JsonLinesItemExporter  # 默认显示的中文是阅读性较差的Unicode字符
@@ -33,10 +33,15 @@ class CustomJsonLinesItemExporter(JsonLinesItemExporter):
 
 
 ROBOTSTXT_OBEY = False
-DOWNLOAD_DELAY = 0.5
+DOWNLOAD_DELAY = 0.1
 
 ITEM_PIPELINES = {
-    'BQG.pipelines.BqgPipeline': 300,
+    # 'BQG.pipelines.PipelineToJsonExp': 300,
+    # 'BQG.pipelines.PipelineToJson': 300,
+    'BQG.pipelines.PipelineToSql': 300,
+    'BQG.pipelines.PipelineToTxt': 300,
+    # 'BQG.pipelines.PipelineToSqlTwisted': 300
+
 }
 # 爬虫线程数量
 CONCURRENT_REQUESTS = 32
@@ -117,6 +122,8 @@ DEFAULT_REQUEST_HEADERS = {
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 # ITEM_PIPELINES = {
 #    'BQG.pipelines.BqgPipeline': 300,
+#    'BQG.pipelines.BqgJsonPipeline': 300,
+#    'BQG.pipelines.BqgSQLPipeline': 300,
 # }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
