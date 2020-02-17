@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-16 23:31:33
+@LastEditors: Even.Sand
+@LastEditTime : 2020-02-17 08:46:01
 '''
 
 from scrapy.exporters import JsonLinesItemExporter  # 默认显示的中文是阅读性较差的Unicode字符
@@ -21,6 +21,14 @@ NEWSPIDER_MODULE = 'BQG.spiders'
 # 修改默认的输出编码方式
 # 需要定义子类显示出原来的字符集（将父类的ensure_ascii属性设置为False即可）
 FEED_EXPORT_ENCODING = 'utf-8'
+
+#LOG_FILE = './scrapy.log'
+# CRITICAL - 严重错误(critical)
+# ERROR - 一般错误(regular errors)
+# WARNING - 警告信息(warning messages)
+# INFO - 一般信息(informational messages)
+# DEBUG - 调试信息(debugging messages)
+LOG_LEVEL = 'WARNING'
 
 
 class CustomJsonLinesItemExporter(JsonLinesItemExporter):
@@ -34,15 +42,6 @@ class CustomJsonLinesItemExporter(JsonLinesItemExporter):
 
 ROBOTSTXT_OBEY = False
 DOWNLOAD_DELAY = 0.1
-
-ITEM_PIPELINES = {
-    # 'BQG.pipelines.PipelineToJsonExp': 300,
-    # 'BQG.pipelines.PipelineToJson': 300,
-    'BQG.pipelines.PipelineToSql': 300,
-    'BQG.pipelines.PipelineToTxt': 300,
-    # 'BQG.pipelines.PipelineToSqlTwisted': 300
-
-}
 # 爬虫线程数量
 CONCURRENT_REQUESTS = 32
 
@@ -61,6 +60,31 @@ DEFAULT_REQUEST_HEADERS = {
     # 显示此HTTP连接的Keep-Alive时间    'Keep-Alive': '300',
     # 请求的web服务器域名地址    'Host': 'www.baidu.com',
 }
+
+
+'''
+ITEM_PIPELINES = {
+    'BQG.pipelines.PipelineCheck': 100,
+    # 'BQG.pipelines.PipelineToSql': 200,
+    'BQG.pipelines.PipelineToSqlTwisted': 200,
+    # 'BQG.pipelines.PipelineToJsonExp': 300,
+    # 'BQG.pipelines.PipelineToJson': 300,
+    # 'BQG.pipelines.PipelineToTxt': 300
+
+}
+
+#可在spider中扩展设置
+custom_settings = {
+        # 设置管道下载
+        'ITEM_PIPELINES': {
+            'autospider.pipelines.DcdAppPipeline': 300,
+        },
+        # 设置log日志
+        'LOG_LEVEL':'DEBUG',
+        'LOG_FILE':'./././Log/dcdapp_log.log'
+    }
+'''
+
 # Scrapy settings for BQG project
 #
 # For simplicity, this file contains only settings considered important or

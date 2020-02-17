@@ -8,14 +8,12 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-16 23:31:24
+@LastEditors: Even.Sand
+@LastEditTime : 2020-02-17 00:50:49
 '''
 
 import scrapy
-from xjLib.mystr import multiple_replace
 from BQG.items import BqgItem
-from pyquery import PyQuery
 
 
 class XiashuSpider(scrapy.Spider):
@@ -33,52 +31,53 @@ class XiashuSpider(scrapy.Spider):
     name = 'xiashu'
     # 设定域名
     allowed_domains = ['biqukan.com']
+    # 扩展设置
+    custom_settings = {
+        # 设置管道下载
+        'ITEM_PIPELINES': {
+            'BQG.pipelines.PipelineCheck': 100,
+            # 'BQG.pipelines.PipelineToSql': 200,
+            'BQG.pipelines.PipelineToSqlTwisted': 200,
+            # 'BQG.pipelines.PipelineToJsonExp': 300,
+            # 'BQG.pipelines.PipelineToJson': 300,
+            # 'BQG.pipelines.PipelineToTxt': 300
+        },
+    }
     # 填写爬取地址
     start_urls = [
-        'https://www.biqukan.com/2_2714/',
-        'https://www.biqukan.com/2_2704/'
+        # 'https://www.biqukan.com/2_2714/',
+        # 'https://www.biqukan.com/2_2704/',
+        'https://www.biqukan.com/27_27799/',
+        'https://www.biqukan.com/28_28547/',
+        'https://www.biqukan.com/3_3048/',
+        'https://www.biqukan.com/35_35210/',
+        'https://www.biqukan.com/13_13836/',
+        'https://www.biqukan.com/2_2765/',
+        'https://www.biqukan.com/1_1452/',
+        'https://www.biqukan.com/57_57178/'
     ]
 
     # 编写爬取方法
     def parse(self, response):
-        self.书名 = response.xpath('//meta[@property="og:title"]//@content').extract()[0]
+        self.书名 = response.xpath('//meta[@property="og:title"]//@content').extract_first()
 
         全部章节链接 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
-
+        #3):  #
         for index in range(len(全部章节链接)):
             url = 'https://www.biqukan.com' + str(全部章节链接[index])
-            yield scrapy.Request(url=url, meta={'index': index, 'name': self.书名}, callback=self.parse_content, dont_filter=True)
+            yield scrapy.Request(url=url, meta={'index': index}, callback=self.parse_content, dont_filter=True)
 
     def parse_content(self, response):
-        Item = BqgItem()
-        Item['书名'] = response.meta['name']
-        Item['index'] = response.meta['index']
-        Item['章节名称'] = response.xpath('//h1/text()').extract()[0]
-
-        _soup = PyQuery(response.text)
-        _showtext = _soup('#content').text()  # '.showtxt'
-        _showtext = _showtext.replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
-        Item['章节正文'] = multiple_replace(_showtext, {'\xa0': '', '&nbsp;': '', '\\b;': '', 'app2();': '', 'chaptererror();': '', '百度搜索“笔趣看小说网”手机阅读：m.biqukan.com': '', '请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：wap.biqukan.com': '', '[笔趣看www.biqukan.com]': '', '\n\n': '\n', '\n\n': '\n', '\n\n': '\n'}) + "\n"
-
-        yield Item
+        item = BqgItem()
+        item['BOOKNAME'] = response.xpath('//div[@class="p"]/a[2]/text()').extract_first()
+        item['INDEX'] = response.meta['index']
+        item['ZJNAME'] = response.xpath('//h1/text()').extract_first()
+        item['ZJTEXT'] = "".join(response.xpath('//*[@id="content"]/text()').extract())
+        yield item
 
     def parse_detail(self, response):
         pass
 
-
-'''
-# torrent['书名'] = response.xpath("//h2/text()").extract()
-# torrent['书名'] = response.xpath('//div[@class="listmain"]/dl/dt[2]/text()').extract()
-torrent['download_url'] = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
-torrent['章节名称'] = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
-zjs = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd')
-self.index = 0
-for zj in zjs:  # 一级页面的总父级
-    url = zj.xpath('//dd/a/@href').extract()
-    print('https://www.biqukan.com' + str(url) + '\n')
-    yield scrapy.Request('https://www.biqukan.com' + str(url), callback=self.parse_info, dont_filter=True)
-# torrent['章节正文'] = response.xpath('//div[@id="content"]//text()').extract()
-'''
 
 '''
 # 需要实例化ItemLoader， 注意第一个参数必须是实例化的对象...

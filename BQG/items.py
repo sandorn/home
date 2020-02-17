@@ -8,7 +8,7 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
-@LastEditors  : Even.Sand
+@LastEditors: Even.Sand
 @LastEditTime : 2020-02-16 12:05:17
 '''
 
@@ -21,16 +21,8 @@ import scrapy
 
 
 class BqgItem(scrapy.Item):
-    书名 = scrapy.Field()
-    index = scrapy.Field()
-    章节名称 = scrapy.Field()
-    章节正文 = scrapy.Field()
+    BOOKNAME = scrapy.Field()
+    INDEX = scrapy.Field()
+    ZJNAME = scrapy.Field()
+    ZJTEXT = scrapy.Field()
     pass
-
-    def get_insert_sql(self):
-        insert_sql = """
-                    insert into %s (BOOKNAME, INDEX, ZJNAME, ZJTEXT)
-                    VALUES (%s,%s, %d, %s, %s);
-                """
-        params = (self["书名"], self["书名"], self["index"], self["章节名称"], self["章节正文"])
-        return insert_sql, params
