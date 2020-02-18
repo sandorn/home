@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime : 2020-02-17 08:46:01
+@LastEditTime: 2020-02-19 01:43:14
 '''
 
 from scrapy.exporters import BaseItemExporter
@@ -31,7 +31,7 @@ FEED_EXPORT_ENCODING = 'utf-8'
 # WARNING - 警告信息(warning messages)
 # INFO - 一般信息(informational messages)
 # DEBUG - 调试信息(debugging messages)
-LOG_LEVEL = 'WARNING'
+LOG_LEVEL = 'ERROR'
 
 
 class CustomJsonLinesItemExporter(JsonLinesItemExporter):

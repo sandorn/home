@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-19 00:30:31
+@LastEditTime: 2020-02-19 02:15:18
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -39,7 +39,8 @@ class PipelineCheck(object):
 
     def process_item(self, item, spider):
         if item['ZJNAME'] in self.names_seen:
-            raise DropItem("Duplicate item found: %s|||%s|||%s" % (item['BOOKNAME'], item['INDEX'], item['ZJNAME']))
+            print("--《%s》%s|已爬过，丢弃" % ((item['BOOKNAME'], item['ZJNAME'])))
+            raise DropItem("PipelineCheck Duplicate item found: %s" % item)
         else:
             _showtext = item['ZJTEXT'].replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
             item['ZJTEXT'] = multiple_replace(_showtext, {'\xa0': '', '&nbsp;': '', '\\b;': '', 'app2();': '', 'chaptererror();': '', '百度搜索“笔趣看小说网”手机阅读:m.biqukan.com': '', '请记住本书首发域名:www.biqukan.com。笔趣阁手机版阅读网址:wap.biqukan.com': '', '[笔趣看www.biqukan.com]': '', '\r': '\n', '\n\n': '\n', '\n\n': '\n', '\n\n': '\n', '\n\n': '\n'}) + "\n"
@@ -77,7 +78,8 @@ class PipelineSqlCheck(object):
 
         if self.redis_db[_BOOKNAME].hexists(self.redis_dict[_BOOKNAME], _ZJNAME):
             # item和key字段对比，存在就丢掉item;不存在则添加到字典，返回item
-            raise DropItem("书籍:%s|章节:%s|已存在数据库，丢弃" % (_BOOKNAME, _ZJNAME))
+            print("--《%s》%s|数据库中存在，丢弃" % (_BOOKNAME, _ZJNAME))
+            raise DropItem("PipelineSqlCheck Duplicate item found: %s" % item)
         else:
             self.redis_db[_BOOKNAME].hset(self.redis_dict[_BOOKNAME], _ZJNAME, 0)
             return item
@@ -90,7 +92,6 @@ class PipelineSqlCheck(object):
         del self.redis_dict
         del self.redis_db
         del self.redb
-        self.connect.close()
 
 
 class PipelineToSql(object):
@@ -99,6 +100,27 @@ class PipelineToSql(object):
         self.db = set()
 
     def process_item(self, item, spider):
+        _BOOKNAME = item['BOOKNAME']
+        if _BOOKNAME not in self.db:
+            # 避免重复创建数据库
+            Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
+            self.connect.execute(Csql)
+            self.connect.commit()
+            self.db.add(_BOOKNAME)
+
+        _INDEX = item['INDEX']
+        _ZJNAME = item['ZJNAME']
+        _ZJTEXT = item['ZJTEXT']
+        _sql = """
+        Insert into %s (`BOOKNAME`,`INDEX`,`ZJNAME`,`ZJTEXT`) values ('%s',%d ,'%s','%s')
+        """ % (_BOOKNAME, _BOOKNAME, _INDEX, _ZJNAME, _ZJTEXT)
+        self.connect.insert(_sql)
+        self.connect.commit()
+
+        return item
+
+    def process_item0(self, item, spider):
+        # !数据库查重，备份
         _BOOKNAME = item['BOOKNAME']
         if _BOOKNAME not in self.db:
             # 避免重复创建数据库
@@ -133,8 +155,7 @@ class PipelineToSql(object):
         return item
 
     def close_spider(self, spider):
-        # del self.connect
-        self.connect.close()
+        del self.connect
 
 
 class PipelineToSqlTwisted(object):
@@ -155,7 +176,6 @@ class PipelineToSqlTwisted(object):
             Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
             self.connect.execute(Csql)
             self.connect.commit()
-            self.connect.close()
             self.db.add(_BOOKNAME)
 
             # 使用twisted将mysql插入变成异步执行
@@ -168,23 +188,17 @@ class PipelineToSqlTwisted(object):
         print(failure)
 
     def close_spider(self, spider):
-        self.connect.close()
+        pass
 
     def do_insert(self, cursor, item):
-        # 执行具体的插入
         # 根据不同的item 构建不同的sql语句并插入到mysql中
-        # insert_sql, params = item.get_insert_sql()
-        # cursor.execute(insert_sql, params)
         insert_sql = """
         Insert into % s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`) values('%s', %d, '%s', '%s')
         """ % (item['BOOKNAME'], item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT'])
         cursor.execute(insert_sql)
 
     def do_update(self, cursor, item):
-        # 执行具体的插入
         # 根据不同的item 构建不同的sql语句并插入到mysql中
-        # insert_sql, params = item.get_insert_sql()
-        # cursor.execute(insert_sql, params)
         update_sql = """
              UPDATE %s SET ZJTEXT = '%s' WHERE ZJNAME ='%s'
         """ % (item["BOOKNAME"], item['ZJTEXT'], item['ZJNAME'])

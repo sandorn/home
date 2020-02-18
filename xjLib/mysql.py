@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-15 09:03:28
+@LastEditors: Even.Sand
+@LastEditTime: 2020-02-19 00:36:01
 '''
 
 from xjLib.dBrouter import dbconf

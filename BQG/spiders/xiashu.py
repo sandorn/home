@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-18 23:52:28
+@LastEditTime: 2020-02-19 02:17:03
 '''
 
 import scrapy
@@ -37,8 +37,8 @@ class XiashuSpider(scrapy.Spider):
         'ITEM_PIPELINES': {
             'BQG.pipelines.PipelineCheck': 10,
             'BQG.pipelines.PipelineSqlCheck': 100,
-            # 'BQG.pipelines.PipelineToSql': 200,
-            'BQG.pipelines.PipelineToSqlTwisted': 200,
+            'BQG.pipelines.PipelineToSql': 200,
+            # 'BQG.pipelines.PipelineToSqlTwisted': 200,
             # 'BQG.pipelines.PipelineToJson': 300,
             # 'BQG.pipelines.PipelineToJsonExp': 300,
             # 'BQG.pipelines.PipelineToTxt': 300,

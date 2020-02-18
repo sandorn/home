@@ -6,13 +6,18 @@ import pymysql as pmysql
 
 class MySQLConnection(object):
     """
-    数据库连接池代理对象
-    查询参数主要有两种类型
-    第一种：传入元祖类型,如(12,13),这种方式主要是替代SQL语句中的%s展位符号
-    第二种: 传入字典类型,如{"id":13},SQL语句需要使用键来代替展位符,例如：%(name)s
+    数据库连接池代理对象,查询参数主要有两种类型
+    1、传入元祖类型,如(12,13),替代SQL语句中的%s展位符号
+    2、传入字典类型,如{"id":13},SQL语句需要使用键来代替展位符,例如：%(name)s
     """
+    def __new__(cls, *args, **kwargs):
+        # print("__new__方法被调用")
+        if not hasattr(cls, '_instance'):
+            # if not '_instance' in vars(cls):
+            cls._instance = super(MySQLConnection, cls).__new__(cls)
+        return cls._instance
 
-    def __init__(self, DBname='master', odbc='mysql'):
+    def __init__(self, DBname='master', odbc='pmysql'):
         if DBname not in dbconf:
             print('错误提示：检查数据库配置：' + DBname)
             # self.__del__()
@@ -28,6 +33,25 @@ class MySQLConnection(object):
         except Exception as error:
             print('\033[connect Error:\n', error, ']\033', sep='')  # repr(error)
             return None  # raise  # exit(1)
+
+    def __enter__(self):
+        print("In __enter__()")
+        return self
+
+    def __exit__(self, args):
+        self.__del__()
+        print("In __exit__()")
+
+    def __del__(self):
+        # print("__del__方法被调用")
+        if hasattr(self, 'cur'):
+            self.cur.close()
+        if hasattr(self, 'conn'):
+            self.conn.close()
+
+    def __str__(self):
+        """返回一个对象的描述信息"""
+        return 'pymysql数据库对象'
 
     def execute(self, sql, param=None):
         """
