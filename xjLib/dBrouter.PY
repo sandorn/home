@@ -6,7 +6,7 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
-@LastEditors  : Even.Sand
+@LastEditors: Even.Sand
 @LastEditTime : 2020-02-15 09:33:03
 '''
 # ！/usr/bin/env python

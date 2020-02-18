@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime : 2020-02-17 00:50:49
+@LastEditTime: 2020-02-18 23:52:28
 '''
 
 import scrapy
@@ -35,25 +35,21 @@ class XiashuSpider(scrapy.Spider):
     custom_settings = {
         # 设置管道下载
         'ITEM_PIPELINES': {
-            'BQG.pipelines.PipelineCheck': 100,
+            'BQG.pipelines.PipelineCheck': 10,
+            'BQG.pipelines.PipelineSqlCheck': 100,
             # 'BQG.pipelines.PipelineToSql': 200,
             'BQG.pipelines.PipelineToSqlTwisted': 200,
-            # 'BQG.pipelines.PipelineToJsonExp': 300,
             # 'BQG.pipelines.PipelineToJson': 300,
-            # 'BQG.pipelines.PipelineToTxt': 300
+            # 'BQG.pipelines.PipelineToJsonExp': 300,
+            # 'BQG.pipelines.PipelineToTxt': 300,
+            # 'BQG.pipelines.PipelineToCsv': 300,
+            # 'BQG.pipelines.Pipeline2Csv': 300
         },
     }
     # 填写爬取地址
     start_urls = [
-        # 'https://www.biqukan.com/2_2714/',
-        # 'https://www.biqukan.com/2_2704/',
-        'https://www.biqukan.com/27_27799/',
-        'https://www.biqukan.com/28_28547/',
-        'https://www.biqukan.com/3_3048/',
-        'https://www.biqukan.com/35_35210/',
-        'https://www.biqukan.com/13_13836/',
-        'https://www.biqukan.com/2_2765/',
-        'https://www.biqukan.com/1_1452/',
+        'https://www.biqukan.com/2_2704/',
+        'https://www.biqukan.com/2_2714/',
         'https://www.biqukan.com/57_57178/'
     ]
 
@@ -63,7 +59,7 @@ class XiashuSpider(scrapy.Spider):
 
         全部章节链接 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
         #3):  #
-        for index in range(len(全部章节链接)):
+        for index in range(3):  # len(全部章节链接)):
             url = 'https://www.biqukan.com' + str(全部章节链接[index])
             yield scrapy.Request(url=url, meta={'index': index}, callback=self.parse_content, dont_filter=True)
 

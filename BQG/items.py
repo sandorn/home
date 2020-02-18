@@ -18,11 +18,12 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
+#from scrapy.loader.processors import MapCompose, TakeFirst
 
 
 class BqgItem(scrapy.Item):
-    BOOKNAME = scrapy.Field()
+    BOOKNAME = scrapy.Field()  # output_processor=TakeFirst())
     INDEX = scrapy.Field()
-    ZJNAME = scrapy.Field()
+    ZJNAME = scrapy.Field()  # output_processor=TakeFirst())
     ZJTEXT = scrapy.Field()
     pass
