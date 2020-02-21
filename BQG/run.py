@@ -9,22 +9,33 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:30:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-19 18:36:36
+@LastEditTime: 2020-02-20 18:44:15
 '''
 
 from scrapy.cmdline import execute
 import sys
 import os
 
-# 获取当前脚本路径
-dirpath = os.path.dirname(os.path.abspath(__file__))
-# 运行文件绝对路径
-# print(os.path.abspath(__file__))
-# 运行文件父路径
-# print(dirpath)
-# 添加环境变量
-sys.path.append(dirpath)
-# 切换工作目录
-os.chdir(dirpath)
-# 启动爬虫,第三个参数为爬虫name
-execute(['scrapy', 'crawl', 'spiler'])
+
+def main():
+    # 获取当前脚本路径
+    dirpath = os.path.dirname(os.path.abspath(__file__))
+    # 运行文件绝对路径
+    # print(os.path.abspath(__file__))
+
+    # 添加环境变量
+    sys.path.append(dirpath)
+
+    # 切换工作目录
+    os.chdir(dirpath)
+    print(dirpath)
+
+    # 启动爬虫,第三个参数为爬虫name
+    execute(['scrapy', 'crawl', 'spiler'])
+
+
+if __name__ == '__main__':
+    import logging
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    # 调用调试输出
+    main()

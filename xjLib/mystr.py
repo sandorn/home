@@ -8,10 +8,35 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-15 11:00:33
+@LastEditors: Even.Sand
+@LastEditTime: 2020-02-20 19:38:10
 '''
 import re
+
+
+def myAlign(text, distance=0):
+    # #print打印对齐
+    if distance == 0:
+        return text
+    slen = distance - len(text.encode('GBK'))
+    text = text + ' ' * slen
+    return text
+
+
+def align(str1, distance, alignment='left'):
+    # #print打印对齐
+    length = len(str1.encode('gbk'))
+    slen = distance - length if distance > length else 0
+    if (slen % 2) == 1:
+        slen = slen + 1
+
+    if alignment == 'left':
+        str1 = str1 + ' ' * slen
+    elif alignment == 'right':
+        str1 = ' ' * slen + str1
+    elif alignment == 'center':
+        str1 = ' ' * (slen // 2) + str1 + ' ' * (slen // 2)
+    return str1
 
 
 def cn2num(章节编号):
@@ -96,7 +121,7 @@ def change2num(章节编号):
 
 '''
 批量替换字符,被替换字符串与替换字符串以字典形式存放
-#multiple_replace('章节正文', {"\xa0": "", "\n\n": "\n"}) + "\n"
+# multiple_replace('章节正文', {"\xa0": "", "\n\n": "\n"}) + "\n"
 '''
 
 

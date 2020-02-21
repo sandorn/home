@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 09:01:46
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-03 16:02:21
+@LastEditTime: 2020-02-20 13:53:52
 腾讯对象存储，可以储存文件
 '''
 
@@ -22,12 +22,12 @@ import sys
 
 class txCos:
     def __init__(self):
-        self.Bucket = 'san3-1253302746'
+        self.Bucket = 'snad-1253302746'
         self.secret_id = 'AKIDV0Xy0fpYzNeEh1SX8e6UipldkjrpgIn7'  # 替换为用户的secret_id
         self.secret_key = 'PyX0Ocv7bzDHA890ocGoiTfU9zqbBN9q'  # 替换为用户的secret_key
         self.region = 'ap-beijing'  # 替换为用户的region
         self.token = None  # 使用临时秘钥需要传入Token，默认为空,可不填
-        self.domain = 'https://san3-1253302746.cos.ap-beijing.myqcloud.com/'
+        self.domain = 'https://snad-1253302746.cos.ap-beijing.myqcloud.com'
         self.config = CosConfig(Region=self.region, SecretId=self.secret_id, SecretKey=self.secret_key, Token=self.token)  # 获取配置对象
         self.client = CosS3Client(self.config)
 
@@ -60,9 +60,5 @@ if __name__ == '__main__':
     # 创建UploadDownload对象，包含3个属性
     txcoses = txCos()
     # 调用txcoses对象的下载图片方法
-    res = txcoses.down('1557742130.jpg', 'd:/26.jpg')
-    print(res)
-    res = txcoses.up('d:/26.jpg')
-    print(res)
-    # image_name = 'd:/16.jpg'  # 图片上传
-    # res = txcoses.up(image_name)
+    print(txcoses.up('d:/26.png'))
+    print(txcoses.down('1582177854.png', 'd:/27.jpg'))

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-19 15:36:37
+@LastEditTime: 2020-02-20 19:19:29
 '''
 
 import scrapy
@@ -17,16 +17,6 @@ from BQG.items import BqgItem
 
 
 class XiashuSpider(scrapy.Spider):
-    '''
-    name:scrapy唯一定位实例的属性，必须唯一
-    allowed_domains：允许爬取的域名列表，不设置表示允许爬取所有
-    start_urls：起始爬取列表
-    start_requests：它就是从start_urls中读取链接，然后使用make_requests_from_url生成Request，这就意味我们可以在start_requests方法中根据我们自己的需求往start_urls中写入我们自定义的规律的链接。
-    parse：回调函数，处理response并返回处理后的数据和需要跟进的url
-    log：打印日志信息
-    closed：关闭spider
-    '''
-
     # 设置name
     name = 'xiashu'
     # 设定域名
@@ -56,6 +46,7 @@ class XiashuSpider(scrapy.Spider):
         self.书名 = response.xpath('//meta[@property="og:title"]//@content').extract_first()
 
         全部章节链接 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
+        #全部章节名称 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
         #3):  #
         for index in range(len(全部章节链接)):
             url = 'https://www.biqukan.com' + str(全部章节链接[index])

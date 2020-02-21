@@ -7,8 +7,8 @@
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-11 13:36:51
+@LastEditors: Even.Sand
+@LastEditTime: 2020-02-21 12:43:32
 '''
 import threading
 import time
@@ -47,8 +47,7 @@ def get_download_url(target):
             begin_flag = True
         # 爬取链接并下载链接内容
         if begin_flag and child.name == 'dd':
-            download_url = 'http://www.biqukan.com/' + child.find('a').get(
-                'href')
+            download_url = 'http://www.biqukan.com/' + child.find('a').get('href')
             urls.put(download_url)
     return _bookname
 
@@ -58,8 +57,12 @@ def get_contents(index):
     with semaphore:
         target = urls.get()
         _texts = ''
-        response = parse_url(target)
-        _response = BeautifulSoup(response.content, 'lxml')
+        _response = parse_url(target)
+        html_str = _response.content.decode('gbk', 'ignore')
+        html_str = html_str.split('<body')[-1]
+        html_str = '<body' + html_str
+
+        _response = BeautifulSoup(html_str, 'lxml')
         [s.extract() for s in _response(["script", "style"])]
         _name = _response.h1.get_text()  # 章节名
         _showtext = _response.select('.showtxt')[0]
@@ -95,7 +98,7 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
-    main_thread('https://www.biqukan.com/2_2704/')
+    main_thread('https://www.biqukan.com/0_790/')
     # '65_65593'  #章节少，测试用
     # '2_2704'  #231万字  #6239kb, 153秒
     # "2_2714"   #《武炼巅峰》664万字, 秒。

@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-11 13:36:59
+@LastEditors: Even.Sand
+@LastEditTime: 2020-02-21 14:58:56
 
 python--threading多线程总结 - 苍松 - 博客园
 http://www.cnblogs.com/tkqasn/p/5700281.html
@@ -67,10 +67,14 @@ class MyThread(threading.Thread):
             url = urls.get()
             _texts = ''
             _response = parse_url(url)
-            soup = PyQuery(_response.content)
-            _name = soup('h1').text()  # 章节名
+            html_str = _response.content.decode('gbk', 'ignore')
+            html_str = html_str.split('<body')[-1]
+            html_str = '<body' + html_str
+
+            soup = PyQuery(html_str)  # _response.content)
+            _name = soup('h1').text().replace('\xa0', ' ').replace('02', ' ')  # 章节名
             _showtext = soup('#content').text()  # '.showtxt'
-            _texts = _showtext.replace('\n\n', '\n')
+            _texts = _showtext.replace('\r', '\n').replace('\n\n', '\n').replace('\xa0', ' ')
 
             with lock:
                 texts.append([self.index, _name, _texts])
@@ -102,9 +106,9 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
-    #!from xjLib.log import log
-    #! log = log()
-    main_thread('https://www.biqukan.com/2_2704/')
+    # #from xjLib.log import log
+    # #log = log()
+    main_thread('https://www.biqukan.com/0_790/')
     # '65_65593'  #章节少，测试用 4秒
     # '2_2704'  #231万字  #6239kb, 132秒
     # "2_2714"   #《武炼巅峰》664万字, 秒。

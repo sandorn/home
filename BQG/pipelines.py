@@ -9,28 +9,21 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-19 18:49:13
+@LastEditTime: 2020-02-21 00:07:06
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 '''
 
-
-import codecs
-import csv
-import json
-
 import MySQLdb
+import numpy
 import pandas
-import redis
 from scrapy.exceptions import DropItem
-from scrapy.exporters import JsonItemExporter
 from twisted.enterprise import adbapi
 
 from xjLib.dBrouter import dbconf
-from xjLib.mssql import MySQLConnection as mysql
-from xjLib.mystr import multiple_replace
+from xjLib.mystr import multiple_replace, align
 
 
 class PipelineCheck(object):
@@ -43,64 +36,30 @@ class PipelineCheck(object):
             raise DropItem("PipelineCheck Duplicate item found: %s" % item)
         else:
             _showtext = item['ZJTEXT'].replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
-            item['ZJTEXT'] = multiple_replace(_showtext, {'\xa0': '', '&nbsp;': '', '\\b;': '', 'app2();': '', 'chaptererror();': '', '百度搜索“笔趣看小说网”手机阅读:m.biqukan.com': '', '请记住本书首发域名:www.biqukan.com。笔趣阁手机版阅读网址:wap.biqukan.com': '', '[笔趣看www.biqukan.com]': '', '\n\n': '\n', '\n\n': '\n', '请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：wap.biqukan.com': '', '\u3000': '', 'readtype!=2&&(\'vipchapter\n(\';\n\n}': ''})
+            item['ZJTEXT'] = multiple_replace(
+                _showtext, {
+                    '\xa0': ' ',
+                    '\'': '',
+                    '&nbsp;': '',
+                    '\\b;': '',
+                    'app2();': '',
+                    'chaptererror();': '',
+                    '百度搜索“笔趣看小说网”手机阅读:m.biqukan.com': '',
+                    '请记住本书首发域名:www.biqukan.com。笔趣阁手机版阅读网址:wap.biqukan.com': '',
+                    '[笔趣看www.biqukan.com]': '',
+                    '\\r': '\n',
+                    '\\n\\n': '\n',
+                    '请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：wap.biqukan.com': '',
+                    '\u3000': '',
+                    'readtype!=2&&(\'vipchapter\n(\';\n\n}': ''
+                }
+            )
 
             self.names_seen.add(item['ZJNAME'])
             return item
 
     def close_spider(self, spider):
         del self.names_seen
-
-
-class PipelineSqlCheck(object):
-    def __init__(self):
-        self.connect = MySQLdb.connect(**dbconf['TXbook'])
-        self.cur = self.connect.cursor()
-        self.redb = set()
-        self.redis_db = {}
-        self.redis_dict = {}
-
-    def process_item(self, item, spider):
-        _BOOKNAME = item['BOOKNAME']
-
-        if _BOOKNAME not in self.db:
-            # 避免重复创建数据库
-            Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
-            self.cur.execute(Csql)
-            self.connect.commit()
-            self.db.add(_BOOKNAME)
-
-            self.redis_db[_BOOKNAME] = redis.Redis(host='127.0.0.1', port=6379, db=4)
-            self.redis_dict[_BOOKNAME] = "ZJNAME"  # k相当于字典名称
-            # 删除全部key
-            self.redis_db[_BOOKNAME].flushdb()
-            sql = "SELECT ZJNAME FROM %s;" % _BOOKNAME  # 从MySQL里提数据
-            pandasData = pandas.read_sql(sql, self.connect)  # 读MySQL数据
-
-            for res in pandasData['ZJNAME']:
-                self.redis_db[_BOOKNAME].hset(self.redis_dict[_BOOKNAME], res, 0)
-            self.redb.add(_BOOKNAME)
-
-        _ZJNAME = item['ZJNAME']
-        if self.redis_db[_BOOKNAME].hexists(self.redis_dict[_BOOKNAME], _ZJNAME):
-            # item和key字段对比，存在就丢掉item;不存在则添加到字典，返回item
-            print("--《%s》%s|记录已入库" % (_BOOKNAME, _ZJNAME))
-            raise DropItem("PipelineSqlCheck Duplicate item found: %s" % item)
-        else:
-            self.redis_db[_BOOKNAME].hset(self.redis_dict[_BOOKNAME], _ZJNAME, 0)
-            return item
-
-    def open_spider(self, spider):
-        # 可选实现，当spider被开启时，这个方法被调用。
-        self.savetxt()
-        pass
-
-    def close_spider(self, spider):
-        del self.redis_dict
-        del self.redis_db
-        del self.redb
-        del self.cur
-        del self.connect
 
 
 class PipelineToSqlTwisted(object):
@@ -116,6 +75,7 @@ class PipelineToSqlTwisted(object):
     def process_item(self, item, spider):
         # 使用twisted将mysql插入变成异步执行
         query = self.dbpool.runInteraction(self.do_insert, item)
+        print('--《' + align(item['BOOKNAME'], 20, 'center') + '》\t' + align(item['ZJNAME'], 40) + '\t|记录入库')
         query.addErrback(self.handle_error, item, spider)  # 处理异常
         return item
 
@@ -141,44 +101,43 @@ class PipelineToSqlTwisted(object):
         cursor.execute(update_sql)
 
 
-class savetxt(object):
-
+class PipelineToTxt(object):
     def __init__(self):
-        self.content_list = []
+        self.file_dict = set()
+        self.content_list = {}
         self.file = {}
+        self.list_sorted = {}
 
     def process_item(self, item, spider):
         bookname = item['BOOKNAME']
-        self.file[bookname] = open(bookname + '.txt', 'w', encoding='utf-8')
-        self.file[bookname].write("-----------------------%s-----------------------\n" % (bookname))
-
-        self.content_list.append(item)
+        if bookname not in self.file_dict:
+            self.file_dict.add(bookname)
+            self.file[bookname] = open(bookname + '.txt', 'w', encoding='utf-8')
+            self.file[bookname].write("-----------------------%s-----------------------\n" % (bookname))
         return item
 
     def close_spider(self, spider):
-        list_sorted = sorted(self.content_list, key=lambda x: x['INDEX'])
-        for item in list_sorted:
-            # 首先从items里取出数据
-            _BOOKNAME = item['BOOKNAME']
-            _INDEX = item['INDEX']
-            _ZJNAME = item['ZJNAME']
-            _ZJTEXT = item['ZJTEXT']
+        self.connect = MySQLdb.connect(**dbconf['TXbook'])
 
-            self.file[_BOOKNAME].write("----------%s----------%d----------%s----------\n" % (_BOOKNAME, _INDEX, _ZJNAME))
-            self.file[_BOOKNAME].write(_ZJTEXT)
-        self.file[_BOOKNAME].close()
+        for bookname in self.file_dict:
+            # 从MySQL里提数据
+            sql = "SELECT * FROM %s;" % bookname
+            # 读MySQL数据到DataFrame
+            pDataFrame = pandas.read_sql(sql, self.connect)
+            # 将DataFrame转换为list
+            self.content_list[bookname] = numpy.array(pDataFrame).tolist()
+            # 将list排序
+            self.list_sorted[bookname] = sorted(self.content_list[bookname], key=lambda x: x[2])  # @'INDEX'
 
-    def __init__(self):
-        # csv文件的位置,无需事先创建
-        self.file = open('Items2.csv', 'w+', newline='')
-        # csv写法
-        self.writer = csv.writer(self.file, dialect="excel")
+            for item in self.list_sorted[bookname]:
+                self.file[item[1]].write("----------%s----------%d----------%s----------\n" % (item[1], item[2], item[3]))
+                self.file[item[1]].write(item[4] + '\n')
 
-    def process_item(self, item, spider):
-        # 判断字段值不为空再写入文件
-        self.writer.writerow([item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT']])
-        return item
+            print('--《%s》文本TEXT文件存储完毕！！\t' % bookname)
+            self.file[bookname].close()
+        self.connect.close()
 
-    def close_spider(self, spider):
-        # 关闭爬虫时顺便将文件保存退出
-        self.file.close()
+
+if __name__ == '__main__':
+    from BQG.run import main
+    main()
