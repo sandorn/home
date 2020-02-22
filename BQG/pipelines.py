@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-21 00:07:06
+@LastEditTime: 2020-02-22 13:56:35
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -23,7 +23,7 @@ from scrapy.exceptions import DropItem
 from twisted.enterprise import adbapi
 
 from xjLib.dBrouter import dbconf
-from xjLib.mystr import multiple_replace, align
+from xjLib.mystr import align, multiple_replace
 
 
 class PipelineCheck(object):
@@ -37,21 +37,24 @@ class PipelineCheck(object):
         else:
             _showtext = item['ZJTEXT'].replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
             item['ZJTEXT'] = multiple_replace(
-                _showtext, {
+                _showtext,
+                {
                     '\xa0': ' ',
                     '\'': '',
                     '&nbsp;': '',
                     '\\b;': '',
                     'app2();': '',
                     'chaptererror();': '',
+                    'readtype!=2&&(\'vipchapter\n(\';\n\n}': '',
                     '百度搜索“笔趣看小说网”手机阅读:m.biqukan.com': '',
-                    '请记住本书首发域名:www.biqukan.com。笔趣阁手机版阅读网址:wap.biqukan.com': '',
+                    '请记住本书首发域名:www.biqukan.com。': '',
+                    '请记住本书首发域名：www.biqukan.com。': '',
+                    '笔趣阁手机版阅读网址:wap.biqukan.com': '',
+                    '笔趣阁手机版阅读网址：wap.biqukan.com': '',
                     '[笔趣看www.biqukan.com]': '',
+                    '\u3000': '',
                     '\\r': '\n',
                     '\\n\\n': '\n',
-                    '请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：wap.biqukan.com': '',
-                    '\u3000': '',
-                    'readtype!=2&&(\'vipchapter\n(\';\n\n}': ''
                 }
             )
 
@@ -90,14 +93,24 @@ class PipelineToSqlTwisted(object):
         # 根据不同的item 构建不同的sql语句并插入到mysql中
         insert_sql = """
         Insert into % s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`) values('%s', %d, '%s', '%s')
-        """ % (item['BOOKNAME'], item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT'])
+        """ % (
+            item['BOOKNAME'],
+            item['BOOKNAME'],
+            item['INDEX'],
+            item['ZJNAME'],
+            item['ZJTEXT'],
+        )
         cursor.execute(insert_sql)
 
     def do_update(self, cursor, item):
         # 根据不同的item 构建不同的sql语句并插入到mysql中
         update_sql = """
              UPDATE %s SET ZJTEXT = '%s' WHERE ZJNAME ='%s'
-        """ % (item["BOOKNAME"], item['ZJTEXT'], item['ZJNAME'])
+        """ % (
+            item["BOOKNAME"],
+            item['ZJTEXT'],
+            item['ZJNAME'],
+        )
         cursor.execute(update_sql)
 
 

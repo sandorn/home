@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-20 19:38:10
+@LastEditTime: 2020-02-22 16:07:18
 '''
 import re
 
@@ -18,14 +18,14 @@ def myAlign(text, distance=0):
     # #print打印对齐
     if distance == 0:
         return text
-    slen = distance - len(text.encode('GBK'))
+    slen = distance - len(text.encode('gbk', 'ignore'))
     text = text + ' ' * slen
     return text
 
 
 def align(str1, distance, alignment='left'):
     # #print打印对齐
-    length = len(str1.encode('gbk'))
+    length = len(str1.encode('gbk', 'ignore'))
     slen = distance - length if distance > length else 0
     if (slen % 2) == 1:
         slen = slen + 1
