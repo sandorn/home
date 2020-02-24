@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-22 23:11:04
+@LastEditTime: 2020-02-22 23:46:36
 '''
 import re
 
@@ -44,6 +44,7 @@ class Spider(scrapy.Spider):
     ]
 
     db = set()
+    #resdb = set()
     connect = MySQLdb.connect(**dbconf['TXbook'])
     res_db = {}
     res_dict = {}
@@ -63,7 +64,7 @@ class Spider(scrapy.Spider):
         ).extract_first()
 
         if _BOOKNAME not in self.db:
-            # #创建数据库
+            # #创建数据库,用于储存爬取到的数据
             Csql = '''
             Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)
             ''' % _BOOKNAME
@@ -71,6 +72,7 @@ class Spider(scrapy.Spider):
             self.connect.commit()
             self.db.add(_BOOKNAME)
 
+        if _BOOKNAME not in self.res_db:
             # #构建redis字典，用于去重
             self.res_db[_BOOKNAME] = redis.Redis(
                 host='62.234.220.66', port=6379, db=4)  # '62.234.220.66'
@@ -84,6 +86,8 @@ class Spider(scrapy.Spider):
             for _ZJNAME in pandasData['ZJNAME']:
                 self.res_db[_BOOKNAME].hset(
                     self.res_dict[_BOOKNAME], _ZJNAME, 0)
+
+            # self.resdb.add(_BOOKNAME)
 
         全部章节节点 = response.xpath(
             '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a'
