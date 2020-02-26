@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime : 2020-02-16 12:05:17
+@LastEditTime: 2020-02-26 17:14:45
 '''
 
 # Define here the models for your scraped items
@@ -26,4 +26,5 @@ class BqgItem(scrapy.Item):
     INDEX = scrapy.Field()
     ZJNAME = scrapy.Field()  # output_processor=TakeFirst())
     ZJTEXT = scrapy.Field()
+    ZJHERF = scrapy.Field()
     pass

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-22 13:56:35
+@LastEditTime: 2020-02-26 17:11:48
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -19,7 +19,7 @@
 import MySQLdb
 import numpy
 import pandas
-from scrapy.exceptions import DropItem
+
 from twisted.enterprise import adbapi
 
 from xjLib.dBrouter import dbconf
@@ -28,41 +28,33 @@ from xjLib.mystr import align, multiple_replace
 
 class PipelineCheck(object):
     def __init__(self):
-        self.names_seen = set()
+        pass
 
     def process_item(self, item, spider):
-        if item['ZJNAME'] in self.names_seen:
-            print("--《%s》%s|章节重复" % ((item['BOOKNAME'], item['ZJNAME'])))
-            raise DropItem("PipelineCheck Duplicate item found: %s" % item)
-        else:
-            _showtext = item['ZJTEXT'].replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
-            item['ZJTEXT'] = multiple_replace(
-                _showtext,
-                {
-                    '\xa0': ' ',
-                    '\'': '',
-                    '&nbsp;': '',
-                    '\\b;': '',
-                    'app2();': '',
-                    'chaptererror();': '',
-                    'readtype!=2&&(\'vipchapter\n(\';\n\n}': '',
-                    '百度搜索“笔趣看小说网”手机阅读:m.biqukan.com': '',
-                    '请记住本书首发域名:www.biqukan.com。': '',
-                    '请记住本书首发域名：www.biqukan.com。': '',
-                    '笔趣阁手机版阅读网址:wap.biqukan.com': '',
-                    '笔趣阁手机版阅读网址：wap.biqukan.com': '',
-                    '[笔趣看www.biqukan.com]': '',
-                    '\u3000': '',
-                    '\\r': '\n',
-                    '\\n\\n': '\n',
-                }
-            )
+        _showtext = item['ZJTEXT'].replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
+        item['ZJTEXT'] = multiple_replace(
+            _showtext,
+            {
+                '\xa0': ' ',
+                '\'': '',
+                '&nbsp;': '',
+                '\\b;': '',
+                'app2();': '',
+                'chaptererror();': '',
+                'readtype!=2&&(\'vipchapter\n(\';\n\n}': '',
+                '百度搜索“笔趣看小说网”手机阅读:m.biqukan.com': '',
+                '请记住本书首发域名:www.biqukan.com。': '',
+                '请记住本书首发域名：www.biqukan.com。': '',
+                '笔趣阁手机版阅读网址:wap.biqukan.com': '',
+                '笔趣阁手机版阅读网址：wap.biqukan.com': '',
+                '[笔趣看www.biqukan.com]': '',
+                '\u3000': '',
+                '\\r': '\n',
+                '\\n\\n': '\n',
+            }
+        )
 
-            self.names_seen.add(item['ZJNAME'])
-            return item
-
-    def close_spider(self, spider):
-        del self.names_seen
+        return item
 
 
 class PipelineToSqlTwisted(object):
@@ -92,26 +84,16 @@ class PipelineToSqlTwisted(object):
     def do_insert(self, cursor, item):
         # 根据不同的item 构建不同的sql语句并插入到mysql中
         insert_sql = """
-        Insert into % s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`) values('%s', %d, '%s', '%s')
+        Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
         """ % (
             item['BOOKNAME'],
             item['BOOKNAME'],
             item['INDEX'],
             item['ZJNAME'],
             item['ZJTEXT'],
+            item['ZJHERF'],
         )
         cursor.execute(insert_sql)
-
-    def do_update(self, cursor, item):
-        # 根据不同的item 构建不同的sql语句并插入到mysql中
-        update_sql = """
-             UPDATE %s SET ZJTEXT = '%s' WHERE ZJNAME ='%s'
-        """ % (
-            item["BOOKNAME"],
-            item['ZJTEXT'],
-            item['ZJNAME'],
-        )
-        cursor.execute(update_sql)
 
 
 class PipelineToTxt(object):

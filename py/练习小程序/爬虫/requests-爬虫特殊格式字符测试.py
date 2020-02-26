@@ -10,7 +10,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-22 15:00:12
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-22 15:55:14
+@LastEditTime: 2020-02-26 11:38:43
 '''
 
 
@@ -23,29 +23,27 @@ from lxml import etree
 def get_page(url):
     response = parse_url(url=url)
     html = response.content.decode('gbk', "ignore")
-    print(response)
     return html
 
 
 def get_page0(url):
     response = parse_url(url=url)
     response.encoding = 'gbk'
-    print(response.text)
-
-    return html
+    return response.text
 
 
 def parse4data(html):
-    html = etree.HTML(html)
+    #html = etree.HTML(html)
     zjname = html.xpath('//*[@id="wrapper"]/div[4]/div[2]/h1/text()')
+    print(zjname)
     zjtext = html.xpath('//*[@id="content"]/text()')
     data = [zjname, zjtext]
     return data
 
 
 if __name__ == '__main__':
-    url = 'https://www.biqukan.com/0_790/70598695.html'
+    url = 'https://www.biqukan.com/0_790/70727308.html'
     html = get_page(url)
-    print(html)
     data = parse4data(html)
-    print(data)
+
+    #print('||||||||' + data[0])

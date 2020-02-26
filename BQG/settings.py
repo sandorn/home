@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-19 01:43:14
+@LastEditTime: 2020-02-24 23:55:05
 '''
 
 from scrapy.exporters import BaseItemExporter
@@ -93,6 +93,7 @@ DOWNLOAD_DELAY = 0.1
 CONCURRENT_REQUESTS = 32
 # 禁用cookies
 COOKIES_ENABLED = False
+
 USER_AGENTS = [
     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)",
     "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; Acoo Browser; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; .NET CLR 3.0.04506)",
@@ -115,6 +116,7 @@ USER_AGENTS = [
 PROXIES = [
     {'ip_port': '111.11.228.75:80', 'user_pass': ''}
 ]
+
 DEFAULT_REQUEST_HEADERS = {
     'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
@@ -155,6 +157,7 @@ custom_settings = {
         'LOG_FILE':'./././Log/dcdapp_log.log'
     }
 '''
+
 '''
 FEED_EXPORTERS_BASE = {
     'json': 'scrapy.exporters.JsonItemExporter',

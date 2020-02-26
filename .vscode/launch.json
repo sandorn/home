@@ -5,19 +5,70 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: 当前文件",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
+            "name": "Python3", // 配置名称，将会在启动配置的下拉菜单中显示
+            "type": "python", // 配置类型
+            "request": "launch", // 请求配置类型，可以为launch（启动）或attach（附加）
+            //"launchOptionType": "Local", // 调试器启动类型，这里只能为Local
+            "stopOnEntry": false, // 设为true时程序将暂停在程序入口处，一般设置为false
+            "program": "${file}", // 将要进行调试的程序的路径
+            "console": "integratedTerminal",
+            "cwd": "${workspaceRoot}", // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+            //"args": ["--quiet", "--norepeat"] // 程序调试时传递给程序的命令行参数，一般为空
         },
         {
-            "name": "Python",
+            "name": "Python:内置终端",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "${file}",
+            "cwd": "${workspaceRoot}",
+            "console": "integratedTerminal",
+            "env": {},
+            "envFile": "${workspaceFolder}/.env",
+            "args": [] // 程序调试时传递给程序的命令行参数，一般为空
+        },
+        {
+            "name": "Python:扩展终端",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "program": "${file}",
+            "cwd": "",
+            "console": "externalTerminal",
+            "env": {},
+            "envFile": "${workspaceFolder}/.env",
+            "debugOptions": ["RedirectOutput"],
+            "args": [
+                //"--quiet", "--norepeat"
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ]
+        },
+        {
+            "name": "Python: Django",
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
-            "program": "${file}",
-            "args": ["--quiet", "--norepeat"]
+            "program": "${workspaceFolder}/manage.py",
+            "cwd": "${workspaceFolder}",
+            "args": ["runserver", "--noreload", "--nothreading"],
+            "env": {},
+            "envFile": "${workspaceFolder}/.env",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput",
+                "DjangoDebugging"
+            ]
+        },
+        {
+            "name": "Python: Attach using Process Id",
+            "type": "python",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
         },
         {
             "name": "使用本机 Chrome 调试",

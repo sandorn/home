@@ -9,9 +9,17 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-22 16:07:18
+@LastEditTime: 2020-02-26 10:29:50
 '''
 import re
+
+import hashlib
+
+
+def md5(txt):
+    data = txt
+    m = hashlib.md5(data.encode("utf-8", 'ignore'))
+    return (m.hexdigest())
 
 
 def myAlign(text, distance=0):
