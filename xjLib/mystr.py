@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-26 10:29:50
+@LastEditTime: 2020-02-27 15:36:18
 '''
 import re
 
@@ -127,24 +127,9 @@ def change2num(章节编号):
     return m
 
 
-'''
-批量替换字符,被替换字符串与替换字符串以字典形式存放
-# multiple_replace('章节正文', {"\xa0": "", "\n\n": "\n"}) + "\n"
-'''
-
-
-def multiple_replace(text, adict):
-    rx = re.compile('|'.join(map(re.escape, adict)))
-
-    def one_xlat(match):
-        return adict[match.group(0)]
-    return rx.sub(one_xlat, text)
-
-
-def make_xlat(*args, **kwds):
+def Ex_Re_Sub(oldtext, *args, **kwds):
     '''
-    用法 a=make_xlat({'\n\n':'\n'}):
-    b=a(text)
+    用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'}):
     '''
     adict = dict(*args, **kwds)
     rx = re.compile('|'.join(map(re.escape, adict)))
@@ -152,6 +137,4 @@ def make_xlat(*args, **kwds):
     def one_xlat(match):
         return adict[match.group(0)]
 
-    def xlat(text):
-        return rx.sub(one_xlat, text)
-    return xlat
+    return rx.sub(one_xlat, oldtext)

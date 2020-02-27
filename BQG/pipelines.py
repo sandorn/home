@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-26 17:11:48
+@LastEditTime: 2020-02-27 16:56:26
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -23,7 +23,7 @@ import pandas
 from twisted.enterprise import adbapi
 
 from xjLib.dBrouter import dbconf
-from xjLib.mystr import align, multiple_replace
+from xjLib.mystr import align, Ex_Re_Sub
 
 
 class PipelineCheck(object):
@@ -31,29 +31,45 @@ class PipelineCheck(object):
         pass
 
     def process_item(self, item, spider):
-        _showtext = item['ZJTEXT'].replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
-        item['ZJTEXT'] = multiple_replace(
-            _showtext,
+        #_showtext = item['ZJTEXT']
+        item['ZJTEXT'] = Ex_Re_Sub(
+            item['ZJTEXT'],
             {
-                '\xa0': ' ',
                 '\'': '',
-                '&nbsp;': '',
-                '\\b;': '',
+                ' ': ' ',
+                '\xa0': ' ',
+                '\x0a': '\n',
+                # '\b;': '\n',
+                '&nbsp;': ' ',
                 'app2();': '',
+                '笔趣看;': '',
+                '\u3000': '',
                 'chaptererror();': '',
                 'readtype!=2&&(\'vipchapter\n(\';\n\n}': '',
-                '百度搜索“笔趣看小说网”手机阅读:m.biqukan.com': '',
-                '请记住本书首发域名:www.biqukan.com。': '',
-                '请记住本书首发域名：www.biqukan.com。': '',
-                '笔趣阁手机版阅读网址:wap.biqukan.com': '',
-                '笔趣阁手机版阅读网址：wap.biqukan.com': '',
-                '[笔趣看www.biqukan.com]': '',
-                '\u3000': '',
-                '\\r': '\n',
-                '\\n\\n': '\n',
+                'm.biqukan.com': '',
+                'wap.biqukan.com': '',
+                'www.biqukan.com': '',
+                'www.biqukan.com。': '',
+                '百度搜索“笔趣看小说网”手机阅读:': '',
+                '请记住本书首发域名:': '',
+                '请记住本书首发域名：': '',
+                '笔趣阁手机版阅读网址:': '',
+                '笔趣阁手机版阅读网址：': '',
+                '[]': '',
+                '\r': '\n',
+                '\n\n': '\n',
+                '\n\n': '\n',
             }
         )
-
+        item['ZJNAME'] = Ex_Re_Sub(
+            item['ZJNAME'],
+            {
+                '\'': '',
+                ' ': ' ',
+                '\xa0': ' ',
+                '\x0a': '\n',
+            }
+        )
         return item
 
 
@@ -131,8 +147,3 @@ class PipelineToTxt(object):
             print('--《%s》文本TEXT文件存储完毕！！\t' % bookname)
             self.file[bookname].close()
         self.connect.close()
-
-
-if __name__ == '__main__':
-    from BQG.run import main
-    main()

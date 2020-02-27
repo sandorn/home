@@ -9,10 +9,10 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-27 10:47:53
+@LastEditTime: 2020-02-27 17:01:35
 '''
 import re
-
+import os
 import MySQLdb
 import pandas
 import redis
@@ -42,7 +42,6 @@ class Spider(scrapy.Spider):
         # 填写爬取地址
         'https://www.biqukan.com/38_38836/',
         'https://www.biqukan.com/0_790/',
-        'https://www.biqukan.com/25_25963/',
     ]
 
     db = set()
@@ -56,7 +55,6 @@ class Spider(scrapy.Spider):
             # dont_filter=True 表示不过滤
 
     def parse(self, response):
-
         # 编写爬取方法
         # #获取书籍名称，判断是否需要创建数据库
         _BOOKNAME = response.xpath(
@@ -121,7 +119,7 @@ class Spider(scrapy.Spider):
             '//div[@class="p"]/a[2]/text()').extract_first()
         item['INDEX'] = response.meta['index']
         item['ZJNAME'] = response.xpath(
-            '//h1/text()').extract_first().replace('\xa0', ' ')  # '�0�2 '
+            '//h1/text()').extract_first()
         item['ZJTEXT'] = "".join(response.xpath(
             '//*[@id="content"]/text()').extract())
         item['ZJHERF'] = response.url
@@ -129,8 +127,10 @@ class Spider(scrapy.Spider):
 
 
 if __name__ == '__main__':
-    from BQG.run import main
-    main()
+    from xjLib.ScrapyRun import ScrapyRun
+    # 获取当前脚本路径
+    filepath = os.path.abspath(__file__)
+    ScrapyRun(filepath, 'spiler')
 
 
 '''
