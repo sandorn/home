@@ -4,14 +4,13 @@ import os
 import subprocess
 import time  # 引入time模块
 
-mypath = os.path.split(os.path.realpath(__file__))[0] + "/"
+mypath = os.path.split(os.path.realpath(__file__))[0] + "\\"
 
 
 def PIP_list_备份():
-    print("PIP_list_备份:\n检查已经安装库:")
+    print("PIP_list_备份:")
     # pip显示需要更新的python列表
-    com_list = 'pip list '
-    print("执行命令并返回结果")
+    com_list = 'pip3 list '
     p = subprocess.Popen(
         com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # 取命令返回结果，结果是一个二进制字符串，包含了我们上面执行pip list -o后展现的所有内容
@@ -38,9 +37,8 @@ def PIP_list_备份():
 
 
 def CONDA_list_备份():
-    print("CONDA_list_备份:\n检查已经安装库:")
+    print("CONDA_list_备份:")
     com_list = 'conda list '
-    print("执行命令并返回结果")
     p = subprocess.Popen(
         com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # 取命令返回结果，结果是一个二进制字符串，包含了我们上面执行conda list后展现的所有内容
@@ -78,7 +76,8 @@ def PIP_freeze备份():
     conda install --yes --file requirements.txt'''
     ticks = time.strftime("%Y%m%d%H%M%S", time.localtime())
     filename = mypath + 'PIP-requirements-%s.txt' % (ticks)
-    subprocess.call("pip freeze > " + filename, shell=True)
+    filename.replace('\\', '/')
+    subprocess.call("pip3 freeze > " + filename, shell=True)
     print("PIP_freeze备份完成！")
 
 
@@ -91,7 +90,7 @@ def CONDA_list_e备份():
 
 
 class switch(object):
-
+    # !不好用，待学习
     def __init__(self, value):
         self.value = value
         self.fall = False
@@ -113,29 +112,25 @@ class switch(object):
 
 
 if __name__ == '__main__':
-    NO = input("PIP_list_备份(0);\n\
-CONDA_list_备份(1);\n\
-PIP_freeze备份(2);\n\
-CONDA_list_e备份(3);\n\
-执行所有备份(9);\n\
-please input:")
+    expression = True
+    while expression:
+        NO = input('''PIP_list_备份(1);\nCONDA_list_备份(2);\nPIP_freeze备份(3);\nCONDA_list_e备份(4);\n执行所有备份(9);\n退出备份程序(0);\n输入选项:''')
 
-    for case in switch(NO):
-        if case('0'):
+        if NO == '1':
             PIP_list_备份()
-            break
-        if case('1'):
+        elif NO == '2':
             CONDA_list_备份()
-            break
-        if case('2'):
+        elif NO == '3':
             PIP_freeze备份()
-            break
-        if case('3'):
+        elif NO == '4':
             CONDA_list_e备份()
-            break
-        if case('9'):
+        elif NO == '9':
             PIP_list_备份()
             CONDA_list_备份()
             PIP_freeze备份()
             CONDA_list_e备份()
-            break
+        elif NO == '0':
+            print('退出备份')
+            expression = False
+        else:
+            print('输入选项错误，请重新输入')

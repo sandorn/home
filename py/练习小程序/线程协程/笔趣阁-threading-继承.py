@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-21 14:58:56
+@LastEditTime: 2020-02-29 18:02:05
 
 python--threading多线程总结 - 苍松 - 博客园
 http://www.cnblogs.com/tkqasn/p/5700281.html
@@ -22,11 +22,11 @@ import time
 from queue import Queue
 import threading
 from xjLib.req import parse_get as parse_url
-from xjLib.req import savefile as writer
-from xjLib.req import get_stime
+from xjLib.mystr import savefile as writer
+from xjLib.mystr import get_stime
 from pyquery import PyQuery
 
-SemaphoreNum = 30
+SemaphoreNum = 100
 Semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线程数，其他等待执行
 lock = threading.Lock()
 urls = Queue()  # 存放章节链接
@@ -78,8 +78,8 @@ class MyThread(threading.Thread):
 
             with lock:
                 texts.append([self.index, _name, _texts])
-                # @ print('下载进度{}%......\n'.format((self.count - threading.activeCount()) / self.count * 100), end='', flush=True)
-                print('下载进度\t' + str(round(((self.count - threading.activeCount()) / self.count * 100), 2)), '%\t......\n', end='', flush=True)
+                # @进度错误，暂停使用
+                #print('下载进度\t' + str(round(((self.count - threading.activeCount()) / self.count * 100), 2)), '%\t......\n', end='', flush=True)
                 print('{}\tdone\twith\t{}\tat\t{}'.format(self.name, self.index, get_stime()), flush=True)
             urls.task_done()
 
@@ -108,7 +108,9 @@ def main_thread(target):
 if __name__ == '__main__':
     # #from xjLib.log import log
     # #log = log()
-    main_thread('https://www.biqukan.com/0_790/')
-    # '65_65593'  #章节少，测试用 4秒
-    # '2_2704'  #231万字  #6239kb, 132秒
-    # "2_2714"   #《武炼巅峰》664万字, 秒。
+    main_thread('https://www.biqukan.com/2_2714/')
+    # '65_65593'  #章节少134万字，3573kb,, 22秒
+    # '2_2704'  #77万字, 2018kb, 34秒
+    # "2_2714"   #《武炼巅峰》1724万字,47839kb, 211秒。30线程
+    # @"2_2714"   #《武炼巅峰》1724万字,47839kb, 113秒。100线程
+    # '0_790'    #《元尊》328万字， 8988KB， 45秒钟

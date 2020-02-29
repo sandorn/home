@@ -11,7 +11,7 @@
             //"launchOptionType": "Local", // 调试器启动类型，这里只能为Local
             "stopOnEntry": false, // 设为true时程序将暂停在程序入口处，一般设置为false
             "program": "${file}", // 将要进行调试的程序的路径
-            "console": "integratedTerminal",
+            "console": "none",
             "cwd": "${workspaceRoot}", // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
             "env": {},
             "envFile": "${workspaceRoot}/.env"

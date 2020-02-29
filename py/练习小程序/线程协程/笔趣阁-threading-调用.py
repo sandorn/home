@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-11 13:37:16
+@LastEditors: Even.Sand
+@LastEditTime: 2020-02-29 18:18:42
 '''
 import threading
 import time
@@ -17,13 +17,12 @@ from queue import Queue
 
 from bs4 import BeautifulSoup
 from xjLib.req import parse_get as parse_url
-from xjLib.req import savefile as writer
-from xjLib.req import get_stime
+from xjLib.mystr import savefile as writer
 
 lock = threading.RLock()
 urls = Queue()  # 存放章节链接
 texts = []  # 将爬下来的小说都存在里面，做最后排序
-SemaphoreNum = 30
+SemaphoreNum = 100
 semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线程数，其他等待执行
 
 
@@ -90,7 +89,8 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
-    main_thread('https://www.biqukan.com/2_2704/')
+    main_thread('https://www.biqukan.com/2_2714/')
     # '65_65593'  #章节少，测试用
     # '2_2704'  #231万字  #6239kb, 153秒
-    # "2_2714"   #《武炼巅峰》664万字, 秒。
+    # "2_2714"   #《武炼巅峰》1724万字,47839kb, 250秒。100线程
+    #!为什么调用明显慢于继承

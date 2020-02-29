@@ -9,13 +9,12 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-22 16:03:51
+@LastEditTime: 2020-02-29 17:42:11
 requests 简化调用
 '''
 from __future__ import absolute_import, unicode_literals
 from retrying import retry
 import requests
-import re
 
 myhead = {
     'User-Agent':
@@ -166,83 +165,3 @@ def session_url(
         print('Unfortunitely Unknow Error:', e, url, flush=True)
         response = None
     return response
-
-
-def list2file(_filename, _list_texts, br='\t'):
-    # 函数说明:将爬取的文章内容写入文件,只能1层
-    print('[' + _filename + ']开始保存......', end='', flush=True)
-    _list_texts.sort()
-    with open(_filename, 'w', encoding='utf-8') as f:
-        f.write('   key   \tpage\tindex\ttitle\turl\t\n')
-        for key in _list_texts:  # 区分关键字
-            for index in key:  # 区分记录index
-                [f.write(str(v) + br) for v in index]
-                f.write('\n')
-
-    print('[' + _filename + ']保存完成。', flush=True)
-    # # 下面换行问题
-    # #[f.write(str(v) + '\t') for key in lists for index in key for v in index]
-
-
-def savefile(_filename, _list_texts, br='\t'):
-    # 函数说明:将爬取的文章内容写入文件,迭代多层
-    # #多层次的list 或 tuple写入文件
-    print('[' + _filename + ']开始保存......', end='', flush=True)
-    with open(_filename, 'w', encoding='utf-8') as f:
-
-        def each(data):
-            for index, value in enumerate(data):
-                if isinstance(value, list) or isinstance(value, tuple):
-                    each(value)
-                else:
-                    f.write(str(value) + br)
-                    if index == len(data) - 1:
-                        f.write('\n')
-
-        each(_list_texts)
-
-    print('[' + _filename + ']保存完成。', flush=True)
-
-
-def flatten(nested):
-    try:
-        # 不要迭代类似字符串的对象：
-        # if isinstance(variate,list) or isinstance(variate,tuple):
-        try:
-            nested + ''
-        except TypeError:
-            pass
-        else:
-            raise TypeError
-
-        for sublist in nested:
-            for element in flatten(sublist):
-                yield element
-    except TypeError:
-        yield nested
-
-
-def get_stime():
-    import datetime
-
-    time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-    return time_now
-
-
-def get_litetime():
-    import datetime
-
-    time_now = datetime.datetime.now().strftime('%H:%M:%S.%f')
-    return time_now
-
-
-if __name__ == "__main__":
-    res = ([1, 2, 3, 4, 5], [11, 46,
-                             87], [125232], [5667, 2356, 26, 6215, 9741, 23525])
-    res2 = [
-        'and', 'B', ['not', 'A'], [1, 2, 1, [2, 1], [1, 1, [2, 2, 1]]],
-        ['not', 'A', 'A'], ['or', 'A', 'B', 'A'], 'B'
-    ]
-    savefile('d:/1.txt', res2)
-    # for i in flatten(12141.98792):
-    #   print(i)

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-31 10:44:47
+@LastEditTime: 2020-02-29 17:45:26
 '''
 
 import threading
@@ -17,9 +17,10 @@ import time
 from queue import Queue
 
 from bs4 import BeautifulSoup
-from xjLib.req import get_stime
+
+from xjLib.mystr import get_stime
+from xjLib.mystr import savefile as writer
 from xjLib.req import parse_get
-from xjLib.req import savefile as writer
 
 lock = threading.RLock()
 

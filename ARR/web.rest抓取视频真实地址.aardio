@@ -1,0 +1,28 @@
+import crypt;
+import console; 
+import web.rest.jsonLiteClient; 
+
+console.open()
+//创建HTTP客户端
+var http = web.rest.jsonLiteClient();
+
+//第一步、声明获取视频基本信息的接口
+var id = http.api("http://www.boosj.com/drama_43355_29.html",, '<@vid:"@>([0-9]+)' ).get();
+
+//第二步、找到分段视频配置文件m3u8 
+var t = crypt.md5(id+"01136c5948d353b1bg2",false); 
+console.log(t)
+
+var hls = "http://gslb.boosj.com/f_hls/?_id="+id+"&t="+t;
+
+var res  = http.api(hls).get();
+console.log(res)
+
+//第三步、提取分段视频网址 
+if( res["error"] == 200 ){
+    var m3u8Urls = http.api(res.url ++ "?" ++ res.t,"GET",{"(http.*?\.ts)"})
+    var urls = m3u8Urls.get();
+    console.dumpJson( urls )
+}
+
+console.pause(true);
