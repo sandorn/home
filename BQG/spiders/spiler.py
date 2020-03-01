@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-27 17:01:35
+@LastEditTime: 2020-03-01 15:39:46
 '''
 import re
 import os
@@ -89,25 +89,25 @@ class Spider(scrapy.Spider):
             pandasData = pandas.read_sql(sql, self.connect)  # 读MySQL数据
 
             # #redis字典填充数据
-            for _ZJHERF in pandasData['ZJHERF']:
-                self.res_db[self.res_key].hset(self.res_key, md5(_ZJHERF), 0)
+            for _ZJHREF in pandasData['ZJHERF']:
+                self.res_db[self.res_key].hset(self.res_key, md5(_ZJHREF), 0)
 
         全部章节节点 = response.xpath(
             '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a'
         ).extract()
 
         for index in range(len(全部章节节点)):
-            _ZJHERF = re.match('<a href="(.*?)">', 全部章节节点[index]).group(1)
-            _ZJHERF = response.urljoin(_ZJHERF)
+            _ZJHREF = re.match('<a href="(.*?)">', 全部章节节点[index]).group(1)
+            _ZJHREF = response.urljoin(_ZJHREF)
 
             _ZJNAME = re.match('<a href=".*?">(.*?)</a>', 全部章节节点[index]).group(1)
 
-            if not self.res_db[self.res_key].hexists(self.res_key, md5(_ZJHERF)):
+            if not self.res_db[self.res_key].hexists(self.res_key, md5(_ZJHREF)):
                 self.res_db[self.res_key].hset(
-                    self.res_key, md5(_ZJHERF), 0)
+                    self.res_key, md5(_ZJHREF), 0)
 
                 request = scrapy.Request(
-                    _ZJHERF, meta={'index': index}, callback=self.parse_content)
+                    _ZJHREF, meta={'index': index}, callback=self.parse_content)
                 yield request
             else:
                 print('--《' + align(_BOOKNAME, 20, 'center') + '》\t' + align(_ZJNAME, 40) + '\t|记录重复入库！')

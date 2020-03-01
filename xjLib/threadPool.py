@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-29 17:45:26
+@LastEditTime: 2020-02-29 23:42:29
 '''
 
 import threading
@@ -26,17 +26,17 @@ lock = threading.RLock()
 
 
 class WorkManager(object):
-    def __init__(self, do_job, works, thread_num=25):
+    def __init__(self, do_job, items, thread_num=30):
         self.job = do_job
         self.work_queue = Queue()  # 任务队列
         self.result_queue = Queue()  # 结果队列
         self.threads = []
-        self.__init_work_queue(works)
+        self.__init_work_queue(items)
         self.__init_thread_pool(thread_num)
 
     # #初始化工作队列,添加工作入队
-    def __init_work_queue(self, works):
-        for item in works:
+    def __init_work_queue(self, items):
+        for item in items:
             # print('__init_work_queue item:', item)  # 参数tupe
             self.work_queue.put((self.job, item))  # 将任务函数和参数传入任务队列
 
@@ -126,11 +126,12 @@ if __name__ == "__main__":
     start = time.time()
     _name, urls = get_download_url('http://www.biqukan.com//2_2704/')
     args = [(i, urls[i]) for i in range(len(urls))]
-    work_manager = WorkManager(get_contents, args)  # 调用函数,参数:list内tupe,线程数量
-    texts = work_manager.wait_allcomplete()
+    myworkman = WorkManager(get_contents, args)  # 调用函数,参数:list内tupe,线程数量
+    texts = myworkman.wait_allcomplete()
     writer(_name + '.txt', texts)
     print("threadPool cost all time: %s" % (time.time() - start), flush=True)
     # '65_65593/'  #章节少，测试用
     # '2_2704'  #231万字  #6239kb,141秒钟
     # "2_2714"   #《武炼巅峰》664万字
     # [武炼巅峰.txt]150W, 用时: 947.34 秒。
+    # @出现错误提示，待调试

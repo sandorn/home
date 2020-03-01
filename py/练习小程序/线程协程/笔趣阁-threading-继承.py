@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-29 18:02:05
+@LastEditTime: 2020-03-01 17:57:00
 
 python--threading多线程总结 - 苍松 - 博客园
 http://www.cnblogs.com/tkqasn/p/5700281.html
@@ -55,14 +55,14 @@ def get_download_url(url):
 
 class MyThread(threading.Thread):
 
-    def __init__(self, sph, index, count):
+    def __init__(self, Semaphore, index, count):
         super(MyThread, self).__init__()  # 注意：一定要显式的调用父类的初始化函数。
         self.count = count
         self.index = index
-        self.sph = sph
+        self.Semaphore = Semaphore
 
     def run(self):  # 定义每个线程要运行的函数
-        with self.sph:  # 同时并行线程数量
+        with self.Semaphore:  # 同时并行线程数量
             # 以下为需要重复的单次函数操作
             url = urls.get()
             _texts = ''

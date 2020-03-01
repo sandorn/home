@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-29 18:18:42
+@LastEditTime: 2020-02-29 22:50:12
 '''
 import threading
 import time
@@ -64,7 +64,7 @@ def get_contents(index):
             _texts += text + '\n'
         with lock:
             texts.append([index, _name, _texts])
-            print('线程 #{} 号  has done。\n'.format(index), end='', flush=True)
+            print(threading.current_thread().name + '线程 #{} 号  has done。\n'.format(index), end='', flush=True)
         urls.task_done()  # 发出此队列完成信号
 
 
@@ -74,7 +74,7 @@ def main_thread(target):
     thread_list = []
     print('threading-调用，开始下载：《' + bookname + '》', flush=True)
     for index in range(urls.qsize()):
-        res = threading.Thread(target=get_contents, args=(index,))
+        res = threading.Thread(target=get_contents, name='抓取章节文字', args=(index,))
         res.start()
         thread_list.append(res)
 
