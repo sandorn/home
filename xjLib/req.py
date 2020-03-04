@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-29 17:42:11
+@LastEditTime: 2020-03-04 12:19:32
 requests 简化调用
 '''
 from __future__ import absolute_import, unicode_literals

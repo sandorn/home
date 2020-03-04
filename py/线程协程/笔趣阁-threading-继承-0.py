@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-02-29 23:00:26
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-01 18:55:14
+@LastEditTime: 2020-03-03 23:03:07
 https://blog.csdn.net/ksws0393238aa/article/details/20286405?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task
 '''
 
@@ -19,7 +19,8 @@ from threading import Thread
 from lxml import etree
 from xjLib.mystr import Ex_Re_Sub, get_stime, savefile
 from xjLib.req import parse_get
-
+import ahttp
+sess = ahttp.Session()
 texts = []  # 将爬下来的小说存列表list，做最后排序
 
 
@@ -123,7 +124,7 @@ def main_thread(target):
     bookname, urls = get_download_url(target)
     thread_list = []
     print('threading-继承，开始下载：《' + bookname + '》', flush=True)
-
+    print(urls)
     for index in range(len(urls)):
         res = myThread("线程名:get_text", (index, urls[index]))
         res.start()
@@ -144,7 +145,7 @@ def main_thread(target):
 if __name__ == '__main__':
     # #from xjLib.log import log
     # #log = log()
-    main_thread('https://www.biqukan.com/2_2714/')
+    main_thread('https://www.biqukan.com/76_76572/')
     # '65_65593'  #章节少134万字，3573kb,, 22秒
     # '2_2704'  #77万字, 2018kb, 34秒
     # "2_2714"   #《武炼巅峰》1724万字,47839kb, 211秒。30线程

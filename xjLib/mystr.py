@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-29 17:41:14
+@LastEditTime: 2020-03-02 12:32:42
 '''
 import re
 
@@ -142,7 +142,7 @@ def Ex_Re_Sub(oldtext, *args, **kwds):
 
 def list2file(_filename, _list_texts, br='\t'):
     # 函数说明:将爬取的文章内容写入文件,只能1层
-    print('[' + _filename + ']开始保存......', end='', flush=True)
+    print('[' + _filename + ']开始保存......', flush=True)
     _list_texts.sort()
     with open(_filename, 'w', encoding='utf-8') as f:
         f.write('   key   \tpage\tindex\ttitle\turl\t\n')
@@ -173,7 +173,7 @@ def savefile(_filename, _list_texts, br='\t'):
 
         each(_list_texts)
 
-    print('[' + _filename + ']保存完成。', flush=True)
+    print('保存完成。', flush=True)
 
 
 def flatten(nested):

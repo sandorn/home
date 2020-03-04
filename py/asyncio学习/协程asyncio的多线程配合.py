@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-01 15:59:38
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-01 16:12:48
+@LastEditTime: 2020-03-02 18:39:38
 '''
 import asyncio
 
@@ -42,6 +42,6 @@ async def mainbypool():
 
 
 if __name__ == "__main__":
-    asyncio.run(mainbypool())
+    asyncio.run(mainbyworker())
     # If you want to get results back from that coroutine, Worker makes that available:
     # If you want a managed pool of worker processes, then use Pool:

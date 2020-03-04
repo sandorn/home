@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-01 16:33:59
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-01 16:35:58
+@LastEditTime: 2020-03-02 22:07:31
 '''
 import asyncio
 import aiofiles
@@ -18,19 +18,19 @@ import aiofiles
 async def myopen():
     async with aiofiles.open('README.md', encoding='utf8') as file:
         contents = await file.read()
-        print('my read done, file size is {}'.format(len(contents)))
+        print('myopen done, file size is {}'.format(len(contents)))
 
 
 async def test_read():
-    print('begin readfile')
+    print('begin test_read')
     await myopen()
-    print('end readfile')
+    print('end test_read')
 
 
 async def test_cumpute(x, y):
-    print("begin cumpute")
+    print("begin test_cumpute")
     await asyncio.sleep(0.2)
-    print('end cumpute')
+    print('end test_cumpute')
     return x + y
 
 

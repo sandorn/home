@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-01 14:55:18
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-01 18:56:13
+@LastEditTime: 2020-03-02 18:09:40
 https://blog.csdn.net/Magicapprentice/article/details/71597475?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task
 '''
 
@@ -20,22 +20,13 @@ from multiprocessing import Pool
 
 
 class MyTMultithread(threading.Thread):
-    '''
-    自定义的线程函数,
-    功能:使用多线程运行函数,函数的参数只有一个file,并且未实现结果值的返回
-    args:
-        filelist   函数的参数为列表格式，
-        funname    函数的名字为字符串，函数仅有一个参数为file
-        delay      每个线程之间的延迟，
-        max_threads 线程的最大值
-    '''
-
     def __init__(self, filelist, delay, funname, max_threads=50):
         threading.Thread.__init__(self)
         self.funname = funname
         self.filelist = filelist[:]
         self.delay = delay
         self.max_threads = max_threads
+        self.startrun()
 
     def startrun(self):
         def runs():
@@ -62,16 +53,6 @@ class MyTMultithread(threading.Thread):
 
 
 class Mymultiprocessing (MyTMultithread):
-    '''
-    多进程运行函数，多进程多线程运行函数
-    args:
-        filelist   函数的参数为列表格式，
-        funname    函数的名字为字符串，函数仅有一个参数为file
-        delay      每个线程\\进程之间的延迟，
-        max_threads 最大的线程数
-        max_multiprocess 最大的进程数
-    '''
-
     def __init__(self, filelist, delay, funname, max_multiprocess=1, max_threads=1):
         self.funname = funname
         self.filelist = filelist[:]
@@ -135,28 +116,27 @@ def func1(file):
 
 
 if __name__ == '__main__':
-    a = list(range(0, 97))
+    a = list(range(0, 5))
     '''
     测试使用5线程
     '''
-    st = time.clock()
-    asc = MyTMultithread(a, 0, 'func1', 5)
-    asc.startrun()
-    end = time.clock()
+    st = time.time()
+    asc = MyTMultithread(a, 0, func1, 5)
+    end = time.time()
     print('*' * 50)
     print('多线程使用时间:', end - st)
     # 测试使用5个进程
-    st = time.clock()
-    asd = Mymultiprocessing(a, 0, 'func1', 5)
+    st = time.time()
+    asd = Mymultiprocessing(a, 0, func1, 5)
     asd.multiprocessingOnly()
-    end = time.clock()
+    end = time.time()
     print('*' * 50)
     print('多进程使用时间:', end - st)
 
     # 测试使用5进程10线程
-    st = time.clock()
-    multiPT = Mymultiprocessing(a, 0, 'func1', 5, 10)
+    st = time.time()
+    multiPT = Mymultiprocessing(a, 0, func1, 5, 10)
     multiPT.multiprocessingThreads()
-    end = time.clock()
+    end = time.time()
     print('*' * 50)
     print('多进程多线程使用时间:', end - st)

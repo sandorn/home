@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-29 17:46:18
+@LastEditTime: 2020-03-04 19:23:20
 '''
 # package
 # __init__.py
@@ -28,10 +28,15 @@ from . import mysql
 from . import mssql
 from . import mystr
 from . import dBrouter
+from . import CustomThread
+from . import ahttp
+
 '''
 xjLib_VERSION = __version__ = '0.1.2'
 
 __all__ = [
+    'ahttp',
+    "CustomThread",
     "dBrouter",
     "mystr",
     "mssql",

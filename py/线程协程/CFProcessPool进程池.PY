@@ -7,7 +7,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-18 05:28:03
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-01 17:51:43
+@LastEditTime: 2020-03-02 16:04:59
 '''
 
 
@@ -85,7 +85,7 @@ def main_Pool(target):
     bookname, urls = get_download_url(target)
     print('CFProcessPool,开始下载：《' + bookname + '》', flush=True)
     # 创建多进程队列
-    with Pool(100) as pool:
+    with Pool(10) as pool:
         _ = [
             pool.submit(get_contents, i, urls[i]).add_done_callback(callback)
             for i in range(len(urls))

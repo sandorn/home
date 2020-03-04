@@ -7,7 +7,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors: Even.Sand
-@LastEditTime : 2020-02-15 09:33:03
+@LastEditTime: 2020-03-03 23:08:53
 '''
 # ！/usr/bin/env python
 # -*-coding:utf-8-*-
@@ -26,6 +26,7 @@ dbconf = {
         'port': 10014,
         'user': 'sandorn',
         'passwd': '123456',
+        # 'password': '123456',
         'db': 'bxflb',
         'charset': 'utf8mb4',
     },
