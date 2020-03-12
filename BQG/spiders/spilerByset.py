@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-27 16:44:56
+@LastEditTime: 2020-03-10 14:17:45
 '''
 import os
 import re
@@ -39,8 +39,9 @@ class Spider(scrapy.Spider):
 
     start_urls = [
         # 填写爬取地址
+        # 'https://www.biqukan.com/2_2714/',
+        # 'https://www.biqukan.com/76_76519/',
         'https://www.biqukan.com/38_38836/',
-        'https://www.biqukan.com/0_790/',
     ]
 
     db = set()

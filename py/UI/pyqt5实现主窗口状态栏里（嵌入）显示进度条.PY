@@ -9,11 +9,9 @@ https://blog.csdn.net/higher80/article/details/82703532
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-23 16:27:43
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-24 15:11:36
+@LastEditTime: 2020-03-05 19:33:01
 '''
-from PyQt5.QtWidgets import QMainWindow, QProgressBar, QApplication, QLabel, \
-    QStatusBar, QPushButton
-from PyQt5.QtWidgets import QMainWindow, QProgressBar, QApplication, QLabel
+from PyQt5.QtWidgets import QMainWindow, QProgressBar, QApplication, QLabel, QStatusBar
 import sys
 
 

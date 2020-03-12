@@ -124,11 +124,11 @@ class AhttpResponse():
         return f"<AhttpResponse status[{self.status}] url=[{self.url}]>"
 
 
-def run(tasks, pool=2, max_try=3, callback=None, order=False):
+def run(tasks, pool=10, max_try=3, callback=None, order=False):
+    # #改为无回调则排序
     order = True if callback is None else False
     if not isinstance(tasks, list):
-        tasks = [tasks]
-        #raise "the tasks of run must be a list object"
+        raise "the tasks of run must be a list object"
 
     conn = aiohttp.TCPConnector(use_dns_cache=True, loop=asyncio.get_event_loop(), ssl=False)
     sem = asyncio.Semaphore(pool)

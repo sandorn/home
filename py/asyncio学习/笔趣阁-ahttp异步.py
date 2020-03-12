@@ -9,22 +9,26 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-04 20:34:00
+@LastEditTime: 2020-03-12 17:09:48
 变更requests为ahttp
 '''
 
 import time
 
-from xjLib.ahttp import ahttpGet, ahttpGetAll
+from lxml import etree
 
+from xjLib.ahttp import ahttpGet, ahttpGetAll
 from xjLib.mystr import Ex_Re_Sub, get_stime, savefile
 
 
 def get_download_url(target):
     urls = []  # 存放章节链接
     resp = ahttpGet(target)
-    response = resp.html
-    _bookname = response.xpath('//h2', first=True).text
+    # response = resp.html
+    # 指定解析器
+    response = etree.HTML(resp.text)
+
+    _bookname = response.xpath('//h2/text()', first=True)[0]
     全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
     for item in 全部章节节点:
@@ -37,11 +41,13 @@ texts = []
 
 
 def 结果处理(resps):
-    for item in resps:
-        response = item.html
-        _name = response.xpath('//h1', first=True).text
-        _showtext = "".join(response.xpath('//*[@id="content"]', first=True).text)
+    for resp in resps:
+        index = resp.index
+        response = etree.HTML(resp.text)
 
+        _name = response.xpath('//h1/text()', first=True)[0]
+        _showtext = "".join(response.xpath('//*[@id="content"]/text()', first=True))
+        # '''
         name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' ', })
         text = Ex_Re_Sub(
             _showtext,
@@ -49,8 +55,8 @@ def 结果处理(resps):
                 '\'': '',
                 ' ': ' ',
                 '\xa0': ' ',
-                '\x0a': '\n',
-                # '\b;': '\n',
+                # '\x0a': '\n', #!错误所在，可能导致\n\n查找不到
+                '\b;': '\n',
                 '&nbsp;': ' ',
                 'app2();': '',
                 '笔趣看;': '',
@@ -69,22 +75,20 @@ def 结果处理(resps):
                 '[]': '',
                 '\r': '\n',
                 '\n\n': '\n',
-                '\n\n': '\n',
             }
         )
-
-        texts.append([name, text])
+        texts.append([index, name, '    ' + text])
 
 
 def callback(future):
-    resps = future.result()  # 回调函数取得返回值
-    if resps is None:
-        return False
+    resp = future
+    if resp is None: return
 
-    response = resps.html
+    index = resp.index
+    response = etree.HTML(resp.text)
 
-    _name = response.xpath('//h1', first=True).text
-    _showtext = "".join(response.xpath('//*[@id="content"]', first=True).text)
+    _name = response.xpath('//h1/text()', first=True)[0]
+    _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
 
     name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' ', })
     text = Ex_Re_Sub(
@@ -93,8 +97,8 @@ def callback(future):
             '\'': '',
             ' ': ' ',
             '\xa0': ' ',
-            '\x0a': '\n',
-            # '\b;': '\n',
+            # '\x0a': '\n', #!错误所在，可能导致\n\n查找不到
+            '\b;': '\n',
             '&nbsp;': ' ',
             'app2();': '',
             '笔趣看;': '',
@@ -113,32 +117,56 @@ def callback(future):
             '[]': '',
             '\r': '\n',
             '\n\n': '\n',
-            '\n\n': '\n',
         }
     )
 
-    texts.append([name, text])
+    texts.append([index, name, '    ' + text])
+
+
+def main(url):
+    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_stime()), flush=True)
+    bookname, urls = get_download_url(url)
+    print('AHTTP,开始下载：《' + bookname + '》', flush=True)
+
+    # 方法2：不回调，获取最终结果，自动排序
+    resps = ahttpGetAll(urls, pool=200)
+    print('小说爬取完成，开始整理数据\t time:{} 。'.format(get_stime()))
+
+    结果处理(resps)
+    print('AHTTP，书籍《' + bookname + '》数据整理完成，time:{}'.format(get_stime()), flush=True)
+
+    texts.sort(key=lambda x: x[0])  # #排序
+    # @重新梳理数据，剔除序号
+    aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
+    savefile(bookname + '.txt', aftertexts, br='\n')
+    print('{} 结束，\t用时:{} 秒。'.format(get_stime(), round(time.time() - _stime, 2)), flush=True)
+
+
+def mainbycall(url):
+    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_stime()), flush=True)
+    bookname, urls = get_download_url(url)
+    print('AHTTP,开始下载：《' + bookname + '》', flush=True)
+
+    # 方法1：使用回调，不排序
+    ahttpGetAll(urls, pool=100, callback=callback)
+    print('AHTTP，书籍《' + bookname + '》完成下载')
+
+    texts.sort(key=lambda x: x[0])  # #排序
+    # @重新梳理数据，剔除序号
+    aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
+    savefile(bookname + '.txt', aftertexts, br='\n')
+    print('{} 结束，\t用时:{} 秒。'.format(get_stime(), round(time.time() - _stime, 2)))
 
 
 if __name__ == '__main__':
-    url = 'https://www.biqukan.com/2_2714/'
+    url = 'https://www.biqukan.com/38_38836/'
     _stime = time.time()
+    # mainbycall(url)
+    #texts = []
+    main(url)
 
-    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_stime()), flush=True)
-    bookname, urls = get_download_url(url)
-
-    print('AHTTP,开始下载：《' + bookname + '》', flush=True)
-    # 方法1：使用回调，不排序
-    resps = ahttpGetAll(urls, pool=50, callback=callback)
-    '''
-    # 方法2：不回调，获取最终结果，自动排序
-    resps = ahttpGetAll(urls, pool=100)
-    结果处理(resps)
-    '''
-    print('AHTTP，书籍《' + bookname + '》完成下载', flush=True)
-
-    savefile(bookname + '.txt', texts)
-    print('{} 结束，\t用时:{} 秒。'.format(get_stime(), round(time.time() - _stime, 2)), flush=True)
-
-    # '76_76519'  #章节少，测试用#!4.3秒
-    # "2_2714"   #武炼巅峰,#!173.8秒
+    # '76_76519'  #章节少，#@  4秒
+    # '38_38836'  #2676KB，#@  9秒
+    # '0_790'     #8977KB，#@  13秒
+    # "10_10736"    #34712KB，#@  24秒
+    # "2_2714"    #武炼巅峰，#@  36秒

@@ -7,14 +7,15 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 19:23:06
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-14 19:46:09
+@LastEditTime: 2020-03-12 18:19:41
 
 Python爬虫进阶六之多进程的用法 - 周小董 - CSDN博客
 https://blog.csdn.net/xc_zhou/article/details/80823878
 另外你还可以通过 cpu_count() 方法还有 active_children() 方法获取当前机器的 CPU 核心数量以及得到目前所有的运行的进程。
 '''
-from multiprocessing import Process, Lock
+import multiprocessing
 import time
+from multiprocessing import Lock, Process
 
 
 def process(num):
@@ -61,4 +62,3 @@ def main_daemon():
 if __name__ == '__main__':
     # main()
     main_daemon()
-

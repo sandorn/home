@@ -9,32 +9,33 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 17:04:07
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-03 17:07:40
+@LastEditTime: 2020-03-09 10:58:59
 '''
-from multiprocessing import Pool
-import time
-from lxml import etree
-import aiohttp
 import asyncio
+import time
+from multiprocessing import Pool
+
+import aiohttp
+from lxml import etree
+
 urls = [
-    'https://aaai.org/ocs/index.php/AAAI/AAAI18/paper/viewPaper/16488',
-    'https://aaai.org/ocs/index.php/AAAI/AAAI18/paper/viewPaper/16583',
+    'https://www.sina.com.cn',
+    'https://www.163.com',
     # 省略后面8个url...
 ]
 htmls = []
 titles = []
-sem = asyncio.Semaphore(10)  # 信号量，控制协程数，防止爬的过快
+# sem = asyncio.Semaphore(10)  # 信号量，控制协程数，防止爬的过快
 
 
 async def get_html(url):
     '''提交请求获取AAAI网页html'''
-    with(await sem):
-        # async with是异步上下文管理器
-        async with aiohttp.ClientSession() as session:  # 获取session
-            async with session.request('GET', url) as resp:  # 提出请求
-                html = await resp.read()  # 直接获取到bytes
-                htmls.append(html)
-                print('异步获取%s下的html.' % url)
+    # async with是异步上下文管理器
+    async with aiohttp.ClientSession() as session:  # 获取session
+        async with session.request('GET', url) as resp:  # 提出请求
+            html = await resp.read()  # 直接获取到bytes
+            htmls.append(html)
+            print('异步获取%s下的html.' % url)
 
 
 def main_get_html():
@@ -47,7 +48,7 @@ def main_get_html():
 
 def multi_parse_html(html, cnt):
     '''使用多进程解析html'''
-    title = etree.HTML(html).xpath('//*[@id="title"]/text()')
+    title = etree.HTML(html).xpath('//title/text()')
     titles.append(''.join(title))
     print('第%d个html完成解析－title:%s' % (cnt, ''.join(title)))
 

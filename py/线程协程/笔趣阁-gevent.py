@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-06-03 10:10:51
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-01 17:40:04
+@LastEditTime: 2020-03-12 10:20:48
 '''
 import time
 
@@ -53,7 +53,7 @@ def get_contents(index, target):
             '\'': '',
             ' ': ' ',
             '\xa0': ' ',
-            '\x0a': '\n',
+            #'\x0a': '\n',
             # '\b;': '\n',
             '&nbsp;': ' ',
             'app2();': '',

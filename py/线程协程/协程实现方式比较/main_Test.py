@@ -9,16 +9,17 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-22 11:18:34
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-02 16:09:24
+@LastEditTime: 2020-03-12 11:15:50
 '''
+import matplotlib.pyplot as plt
+
 import asyncio_Test
 import gevent_Test
-import matplotlib.pyplot as plt
 
 asyncio_list = []
 gevent_list = []
 
-N = 10
+N = 100
 Begin = 1
 url = 'http://www.python.org'
 for i in range(N):

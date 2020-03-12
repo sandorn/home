@@ -8,16 +8,16 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-21 12:43:32
+@LastEditTime: 2020-03-08 10:22:28
 '''
 import threading
 import time
 from queue import Queue
 
 from bs4 import BeautifulSoup
-from xjLib.req import parse_get as parse_url
-from xjLib.req import savefile as writer
-from xjLib.req import get_stime
+
+from xjLib.mystr import get_stime, savefile
+from xjLib.req import parse_get
 
 lock = threading.RLock()
 urls = Queue()  # 存放章节链接
@@ -29,7 +29,7 @@ semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线
 
 
 def get_download_url(target):
-    response = parse_url(target)
+    response = parse_get(target)
     _response = BeautifulSoup(response.content, 'lxml')
     [s.extract() for s in _response(["script", "style"])]
     _bookname = _response.find('h2').get_text()
@@ -57,7 +57,7 @@ def get_contents(index):
     with semaphore:
         target = urls.get()
         _texts = ''
-        _response = parse_url(target)
+        _response = parse_get(target)
         html_str = _response.content.decode('gbk', 'ignore')
         html_str = html_str.split('<body')[-1]
         html_str = '<body' + html_str
@@ -92,7 +92,7 @@ def main_thread(target):
 
     print('threading-调用，书籍《' + bookname + '》完成下载', flush=True)
     texts.sort(key=lambda x: x[0])
-    writer(bookname + '.txt', texts)
+    savefile(bookname + '.txt', texts)
     print('下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)),
           flush=True)
 

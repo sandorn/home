@@ -58,10 +58,6 @@ cloudpickle
 clyent
 colorama
 comtypes
-conda
-conda-build
-conda-package-handling
-conda-verify
 configobj
 configparser
 constantly

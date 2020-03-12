@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-27 16:56:26
+@LastEditTime: 2020-03-11 23:00:24
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -19,11 +19,10 @@
 import MySQLdb
 import numpy
 import pandas
-
 from twisted.enterprise import adbapi
 
 from xjLib.dBrouter import dbconf
-from xjLib.mystr import align, Ex_Re_Sub
+from xjLib.mystr import Ex_Re_Sub, align
 
 
 class PipelineCheck(object):
@@ -78,8 +77,13 @@ class PipelineToSqlTwisted(object):
         self.dbpool = dbpool
         self.db = set()
 
+    def open_spider(self, spider):
+        # #当spider被开启时调用该方法。
+        pass
+
     @classmethod
     def from_settings(cls, settings):
+        # #用于获取settings配置文件中的信息
         dbpool = adbapi.ConnectionPool("MySQLdb", **dbconf['TXbook'])
         return cls(dbpool)
 
@@ -95,6 +99,7 @@ class PipelineToSqlTwisted(object):
         print(failure)
 
     def close_spider(self, spider):
+        # #当spider被关闭时，这个方法被调用
         pass
 
     def do_insert(self, cursor, item):

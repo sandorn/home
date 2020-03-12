@@ -9,10 +9,11 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-03 23:18:10
+@LastEditTime: 2020-03-10 14:16:50
 '''
-import re
 import os
+import re
+
 import MySQLdb
 import pandas
 import redis
@@ -20,8 +21,7 @@ import scrapy
 
 from BQG.items import BqgItem
 from xjLib.dBrouter import dbconf
-from xjLib.mystr import align
-from xjLib.mystr import md5
+from xjLib.mystr import align, md5
 
 
 class Spider(scrapy.Spider):
@@ -40,8 +40,9 @@ class Spider(scrapy.Spider):
 
     start_urls = [
         # 填写爬取地址
+        # 'https://www.biqukan.com/2_2714/',
+        # 'https://www.biqukan.com/76_76519/',
         'https://www.biqukan.com/38_38836/',
-        'https://www.biqukan.com/0_790/',
     ]
 
     db = set()
@@ -56,7 +57,17 @@ class Spider(scrapy.Spider):
 
     def parse(self, response):
         # 编写爬取方法
+        '''
+        response.xpath(),response.css()
+        Scrapy Selector内置XPath和CSS Selector表达式机制
+        Selector有四个基本的方法，最常用的还XPath
+        xpath()：传入xpath表达式，返回该表达式所对应的所有节点的Selector list列表。
+        ectract()：序列化该节点为Unicode字符串，并返回list。
+        css()：传入CSS表达式，返回该表达式所对应的所有节点的selector list列表，语法同BeautifulSoup4。
+        re()：根据传入的正则表达式对数据进行提取，返回Unicode字符串list列表。
+        '''
         # #获取书籍名称，判断是否需要创建数据库
+        print(response.headers)
         _BOOKNAME = response.xpath(
             '//meta[@property="og:title"]//@content'
         ).extract_first()

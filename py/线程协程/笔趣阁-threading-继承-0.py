@@ -9,18 +9,22 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-02-29 23:00:26
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-03 23:03:07
+@LastEditTime: 2020-03-08 09:41:22
 https://blog.csdn.net/ksws0393238aa/article/details/20286405?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task
 '''
 
+import threading
 import time
 from threading import Thread
 
 from lxml import etree
+
+from xjLib.ahttp import ahttpGet, ahttpGetAll
 from xjLib.mystr import Ex_Re_Sub, get_stime, savefile
 from xjLib.req import parse_get
-import ahttp
-sess = ahttp.Session()
+
+SemaphoreNum = 100
+Semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线程数，其他等待执行
 texts = []  # 将爬下来的小说存列表list，做最后排序
 
 
@@ -29,18 +33,20 @@ class myThread(Thread):
     all_Thread = []
     # 初始化线程，可以将function函数所需要的参数在初始化thread过程中加入到thread属性
 
-    def __init__(self, thread_name, parameter):
+    def __init__(self, Semaphore, parameter, thread_name='mythread'):
         Thread.__init__(self, name=thread_name)
         # 暂时将function所需要的参数放在thread属性中
         self.parameter = parameter
         # 添加一个标识符，指示线程是否在进行
         self.isRunning = True
+        self.Semaphore = Semaphore
         myThread.all_Thread.append(self)
 
     def run(self):
         # 重写run函数，function为想要调用的函数
         # 此时function的参数可以从self.parameter中拿出来使用
-        self.res = function(self.parameter)
+        with self.Semaphore:  # 同时并行线程数量
+            self.res = function(self.parameter)
 
     def getResult(self):
         try:
@@ -73,7 +79,9 @@ def function(parameter):
 
 def get_download_url(target):
     urls = []  # 存放章节链接
-    response = etree.HTML(parse_get(target).content)
+    #response = etree.HTML(parse_get(target).content)
+    resp = ahttpGet(target)
+    response = resp.html
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
     全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
@@ -126,7 +134,7 @@ def main_thread(target):
     print('threading-继承，开始下载：《' + bookname + '》', flush=True)
     print(urls)
     for index in range(len(urls)):
-        res = myThread("线程名:get_text", (index, urls[index]))
+        res = myThread(Semaphore, (index, urls[index]))
         res.start()
         thread_list.append(res)
 
@@ -145,9 +153,9 @@ def main_thread(target):
 if __name__ == '__main__':
     # #from xjLib.log import log
     # #log = log()
-    main_thread('https://www.biqukan.com/76_76572/')
+    main_thread('https://www.biqukan.com/2_2714/')
     # '65_65593'  #章节少134万字，3573kb,, 22秒
     # '2_2704'  #77万字, 2018kb, 34秒
-    # "2_2714"   #《武炼巅峰》1724万字,47839kb, 211秒。30线程
-    # "2_2714"   #《武炼巅峰》1724万字,47839kb, #!77秒。100线程
+    # "2_2714"   #《武炼巅峰》1724万字,47839kb, 211秒。
+    # "2_2714"   #《武炼巅峰》1724万字,47839kb, #!77秒。无线程限制
     # '0_790'    #《元尊》328万字， 8988KB， 45秒钟

@@ -14,9 +14,10 @@
 
 import threading
 import time
-from xjLib.CustomThread import CustomThread
 
 from lxml import etree
+
+from xjLib.CustomThread import CustomThread
 from xjLib.mystr import Ex_Re_Sub, get_stime, savefile
 from xjLib.req import parse_get
 

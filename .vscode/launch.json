@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python3", // 配置名称，将会在启动配置的下拉菜单中显示
+            "name": "Python38", // 配置名称，将会在启动配置的下拉菜单中显示
             "type": "python", // 配置类型
             "request": "launch", // 请求配置类型，可以为launch（启动）或attach（附加）
             //"launchOptionType": "Local", // 调试器启动类型，这里只能为Local
@@ -39,7 +39,9 @@
             "console": "externalTerminal",
             "env": {},
             "envFile": "${workspaceFolder}/.env",
-            "debugOptions": ["RedirectOutput"],
+            "debugOptions": [
+                "RedirectOutput"
+            ],
             "args": [
                 //"--quiet", "--norepeat"
                 "run",
@@ -54,7 +56,12 @@
             "stopOnEntry": true,
             "program": "${workspaceFolder}/manage.py",
             "cwd": "${workspaceFolder}",
-            "args": ["runserver", "--noreload", "--nothreading"],
+            "args": [
+                "runserver",
+                "0.0.0.0:8080",
+                "--noreload",
+                "--nothreading"
+            ],
             "env": {},
             "envFile": "${workspaceFolder}/.env",
             "debugOptions": [

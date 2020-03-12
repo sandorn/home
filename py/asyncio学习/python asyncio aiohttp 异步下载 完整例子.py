@@ -9,14 +9,16 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 21:50:30
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-03 21:50:36
+@LastEditTime: 2020-03-09 16:44:02
 '''
+import asyncio
 import os
 import sys
 import time
-import asyncio
+
 import aiohttp
 import tqdm
+
 FLAGS = ('CN IN US ID BR PK NG BD RU JP '
          'MX PH VN ET EG DE IR TR CD FR').split()
 BASE_URL = 'http://flupy.org/data/flags'  # 下载url
@@ -66,7 +68,7 @@ os.makedirs(DEST_DIR, exist_ok=True)
 lp = asyncio.get_event_loop()
 start = time.time()
 # 创建一个信号量以防止DDos
-sem = asyncio.Semaphore(4)
+sem = asyncio.Semaphore(20)
 lp.run_until_complete(download(sem))
 end = time.time()
 lp.close()

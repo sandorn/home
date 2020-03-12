@@ -7,10 +7,11 @@
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-04 09:01:10
+@Date: 2020-03-11 12:34:56
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-12 15:29:27
+@LastEditTime: 2020-03-11 12:35:02
 '''
+
 import asyncio
 import ctypes
 import json
@@ -74,24 +75,14 @@ class AsyncRequestTask:
         return self
 
     def run(self):
-        future = asyncio.ensure_future(single_task(self))
+        future = asyncio.ensure_future(single_req(self))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(future)
-        new_res = AhttpResponse(id(self.session), self.result, self.content, self)
+        new_res = AhttpResponse(self.result, self.content, self)
         return [new_res, self.callback and self.callback(new_res)][0]
 
 
-def wrap_headers(headers):
-    ua = UserAgent()
-    new_headers = {}
-    for k, v in headers.items():
-        new_headers[k] = str(v)
-
-    new_headers['User-Agent'] = ua.random
-    return new_headers
-
-
-async def single_task(self):
+async def single_req(self):
     # #单个任务，从task.run()调用
     # 创建会话对象
     async with aiohttp.ClientSession(cookies=self.cookies) as session:
@@ -101,22 +92,21 @@ async def single_task(self):
                 self.url,
                 *self.args,
                 verify_ssl=False,
-                timeout=9,
+                timeout=20,
                 headers=wrap_headers(self.headers or self.session.headers),
                 **self.kw) as resp:
             # 读取响应
-            content = await resp.read()
+            res = await resp.read()
             # 将相应结果保存
-            self.result, self.content = resp, content
+            self.result, self.content = resp, res
 
 
 class AhttpResponse:
     # 结构化返回结果
-    def __init__(self, index, sessReq, content, task, *args, **kwargs):
-        self.index = index
+    def __init__(self, res, content, req, *args, **kwargs):
         self.content = content
-        self.task = task
-        self.raw = self.clientResponse = sessReq
+        self.req = req
+        self.raw = self.clientResponse = res
 
     @property
     def text(self):
@@ -167,83 +157,97 @@ class AhttpResponse:
         return f"<AhttpResponse status[{self.status}] url=[{self.url}]>"
 
 
-def run(tasks, pool=20, max_try=5, callback=None, log=True):
+def run(tasks, pool=20, max_try=3, callback=None, order=False):
+    # #改为无回调则排序
+    order = True if callback is None else False
     if not isinstance(tasks, list):
         raise "the tasks of run must be a list object"
 
-    conn = aiohttp.TCPConnector(use_dns_cache=True, loop=asyncio.get_event_loop(), ssl=False)
     # 并发量限制
     sem = asyncio.Semaphore(pool)
     result = []  # #存放返回结果集合
     loop = asyncio.get_event_loop()
     # 执行任务
-    loop.run_until_complete(multi_req(tasks, conn, sem, callback, log, max_try, result))
+    loop.run_until_complete(multi_req(tasks, sem, callback, max_try, result))
 
-    # #不排序直接返回结果
-    return result
+    # #不排序则直接返回结果
+    if not order:
+        return result
+
+    # #排序
+    rid = [*map(lambda x: id(x), tasks)]
+    new_res = [*rid]
+    for res in result:
+        index = rid.index(id(res.req))
+        rid[index] = 0
+        new_res[index] = res
+    return new_res
 
 
-@asyncio.coroutine
-async def multi_req(tasks, conn, sem, callback, log, max_try, result):
+def wrap_headers(headers):
+    ua = UserAgent()
+    new_headers = {}
+    for k, v in headers.items():
+        new_headers[k] = str(v)
+
+    new_headers['User-Agent'] = ua.random
+    return new_headers
+
+
+async def multi_req(tasks, sem, callback, max_try, result):
     new_tasks = []
     # 创建会话对象,，使用单一session对象
-    sessions_list = {}
-    new_tasks = []
-    for index in range(len(tasks)):
-        task = tasks[index]
-        if id(task.session) not in sessions_list:
-            sessions_list[id(task.session)] = aiohttp.ClientSession(
-                connector_owner=False,
-                connector=conn,
-                cookies=task.session.cookies
-            )
+    conn = aiohttp.TCPConnector(
+        # limit=100, limit_per_host=100,
+        loop=asyncio.get_event_loop(),
+        verify_ssl=False
+    )
+    session = aiohttp.ClientSession(connector_owner=False, connector=conn)
 
-        new_tasks.append(
-            asyncio.ensure_future(
-                control_sem(
-                    sem, index, task, callback, log, max_try, result, sessions_list[id(task.session)])
-            )
+    for task in tasks:
+        new_task = asyncio.ensure_future(
+            control_sem(sem, task, callback, max_try, result, session)
         )
 
+        # if callback: # 如果有回调则在这里绑定
+        #    new_task.add_done_callback(callback)
+        new_tasks.append(new_task)
+
     await asyncio.wait(new_tasks)
-    await asyncio.wait([asyncio.ensure_future(v.close()) for k, v in sessions_list.items()])
+    await session.close()  # 关闭session连接器
     await conn.close()  # 关闭tcp连接器
 
 
-@asyncio.coroutine
-async def control_sem(sem, index, task, callback, log, max_try, result, session):
+async def control_sem(sem, task, callback, max_try, result, session):
     # 限制信号量
     async with sem:
-        await fetch(index, task, callback, log, max_try, result, session)
+        return await fetch(task, callback, max_try, result, session)
 
 
-@asyncio.coroutine
-async def fetch(index, task, callback, log, max_try, result, session):
+async def fetch(task, callback, max_try, result, session):
     headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
-    Err = ''  # 错误标示
     while max_try > 0:
         try:
-            async with session.request(task.method, task.url, *task.args, headers=headers, timeout=9, **task.kw) as sessReq:
-
-                if sessReq.status != 200:
-                    max_try = max_try - 1
-                    Err = 'status!=200'
-                    if log: print(task.url, 'Error:', Err)
-                    await asyncio.sleep(0.1)
-                    continue
-
-                content = await sessReq.read()
-                new_res = AhttpResponse(index, sessReq, content, task)
-                result.append(new_res)
-
-                if log and Err: print(task.url, 'result get OK')
-                if callback: callback(new_res)  # 有回调则调用
-                break  # @status=200,完全退出循环
-        except Exception as err:
+            async with session.request(task.method, task.url, *task.args, headers=headers, **task.kw) as resp:
+                res = await resp.read()
+                rResp = AhttpResponse(resp, res, task)
+                if rResp.status == 200:
+                    result.append(rResp)
+                    print(task.url, 'result.append')
+                    if callback:
+                        print(task.url, 'callback')
+                        callback(rResp)
+                    break  # 完全退出循环
+        except (
+            asyncio.TimeoutError,
+            aiohttp.ClientOSError,
+            aiohttp.ClientResponseError,
+            aiohttp.ClientPayloadError,
+            aiohttp.ServerDisconnectedError,
+        ) as err:
+            print(task.url, 'Err:', err)
             max_try = max_try - 1
-            Err = repr(err)
-            if log: print(task.url, 'Error:', Err)
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.2)
             continue  # 跳过此轮，继续下一轮循环
 
 
@@ -258,7 +262,6 @@ def create_session(method, *args, **kw):
             "delete": sess.delete}[method](*args, **kw)
 
 
-# #使用偏函数 Partial，快速构建多个函数
 get = partial(create_session, "get")
 post = partial(create_session, "post")
 options = partial(create_session, "options")
@@ -266,15 +269,16 @@ head = partial(create_session, "head")
 put = partial(create_session, "put")
 patch = partial(create_session, "patch")
 delete = partial(create_session, "delete")
+# #使用偏函数 Partial，快速构建多个函数
 
 
-def ahttpGet(url, callback=None, params=None, **kwargs):
+def ahttpGet(url, params=None, **kwargs):
     task = get(url, params=params, **kwargs)
     res = task.run()
     return res
 
 
-def ahttpGetAll(urls, pool=20, callback=None, max_try=5, log=True, params=None, **kwargs):
+def ahttpGetAll(urls, pool=20, callback=None, params=None, **kwargs):
     tasks = [get(url, params=params, **kwargs) for url in urls]
-    resps = run(tasks, pool=pool, callback=callback, log=log)
+    resps = run(tasks, pool=pool, callback=callback)
     return resps

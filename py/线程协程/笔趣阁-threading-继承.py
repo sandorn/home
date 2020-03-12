@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-01 17:57:00
+@LastEditTime: 2020-03-07 23:44:33
 
 python--threading多线程总结 - 苍松 - 博客园
 http://www.cnblogs.com/tkqasn/p/5700281.html
@@ -18,13 +18,15 @@ threading.enumerate(): 返回一个包含正在运行的线程的list。正在�
 threading.activeCount(): 返回正在运行的线程数量，与len(threading.enumerate())有相同的结果。
 '''
 
+import threading
 import time
 from queue import Queue
-import threading
-from xjLib.req import parse_get as parse_url
-from xjLib.mystr import savefile as writer
-from xjLib.mystr import get_stime
+
 from pyquery import PyQuery
+
+from xjLib.mystr import get_stime
+from xjLib.mystr import savefile as writer
+from xjLib.req import parse_get as parse_url
 
 SemaphoreNum = 100
 Semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线程数，其他等待执行

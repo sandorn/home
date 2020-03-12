@@ -25,7 +25,7 @@ def 获取文件路径():
     return filename
 
 
-def 执行安装(filename, comm_1="conda"):
+def 执行安装(filename, comm_1="pip3"):
     list1 = []
     with open(filename, "r") as file:
         list1 = file.readlines()
@@ -41,7 +41,7 @@ def 执行安装(filename, comm_1="conda"):
         com_ins = comm_1 + " install {py}".format(py=nu)
         print("共有{}个库，正在安装第{}个库{}，\n执行命令：{}，请耐心等待.......".format(
             s, n, nu, com_ins))
-        subprocess.Popen(
+        subprocess.call(
             com_ins,
             shell=True,
             stdout=subprocess.PIPE,

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-20 10:50:39
+@LastEditTime: 2020-03-05 19:20:31
 '''
 import os
 from PyQt5.QtCore import *
@@ -70,8 +70,8 @@ class Ui_MainWindow(object):
         (_weith, _height) = (760, 540)
         screen = QDesktopWidget().screenGeometry()
         self.setMinimumSize(_weith, _height)
-        self.setGeometry((screen.width() - _weith) / 2,
-                         (screen.height() - _height) / 2, _weith, _height)
+        self.setGeometry(int((screen.width() - _weith) / 2),
+                         int((screen.height() - _height) / 2), _weith, _height)
 
         self.retranslateUi()  # 这个函数用于关联转化空间名字
         QMetaObject.connectSlotsByName(MainWindow)  # @  关键，用于自动绑定信号和函数

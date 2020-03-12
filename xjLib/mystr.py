@@ -9,11 +9,23 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-02 12:32:42
+@LastEditTime: 2020-03-12 15:34:46
 '''
+import hashlib
+import os
 import re
 
-import hashlib
+
+def txt2List(filepath):
+    res_list = []
+    with open(filepath, 'r') as file_to_read:
+        while True:
+            line = file_to_read.readline()
+            if not line:
+                break
+            line = line.strip('\n')
+            res_list.append(line)
+    return res_list
 
 
 def md5(txt):
@@ -127,9 +139,18 @@ def change2num(章节编号):
     return m
 
 
+def get_FileSize(filePath):
+
+    fsize = os.path.getsize(filePath)
+    fsize = fsize / float(1024 * 1024)
+
+    return round(fsize, 2)
+
+
 def Ex_Re_Sub(oldtext, *args, **kwds):
     '''
-    用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'}):
+    用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'})
+    不需要用转义符号
     '''
     adict = dict(*args, **kwds)
     rx = re.compile('|'.join(map(re.escape, adict)))
@@ -142,38 +163,43 @@ def Ex_Re_Sub(oldtext, *args, **kwds):
 
 def list2file(_filename, _list_texts, br='\t'):
     # 函数说明:将爬取的文章内容写入文件,只能1层
-    print('[' + _filename + ']开始保存......', flush=True)
+    print('[' + _filename + ']开始保存......')
     _list_texts.sort()
-    with open(_filename, 'w', encoding='utf-8') as f:
-        f.write('   key   \tpage\tindex\ttitle\turl\t\n')
+    with open(_filename, 'w', encoding='utf-8') as file:
+        file.write(_filename + '\n')
+        file.write('   key   \tpage\tindex\ttitle\turl\t\n')
         for key in _list_texts:  # 区分关键字
             for index in key:  # 区分记录index
-                [f.write(str(v) + br) for v in index]
-                f.write('\n')
+                [file.write(str(v) + br) for v in index]
+                file.write('\n')
 
-    print('[' + _filename + ']保存完成。', flush=True)
+    size = "文件大小：%.2f MB" % (get_FileSize(_filename))
+    print('[{}]保存完成\t文件{}\ttime:{}。'.format(_filename, size, get_stime()))
     # # 下面换行问题
     # #[f.write(str(v) + '\t') for key in lists for index in key for v in index]
 
 
-def savefile(_filename, _list_texts, br='\t'):
+def savefile(_filename, _list_texts, br=''):
     # 函数说明:将爬取的文章内容写入文件,迭代多层
+    # br为标题换行标志，可以用'\t'
     # #多层次的list 或 tuple写入文件
-    print('[' + _filename + ']开始保存......', end='', flush=True)
-    with open(_filename, 'w', encoding='utf-8') as f:
+    print('[{}]开始保存......@{}。'.format(_filename, get_stime()))
+    with open(_filename, 'w', encoding='utf-8') as file:
+        file.write(_filename + '\n')
 
         def each(data):
             for index, value in enumerate(data):
                 if isinstance(value, list) or isinstance(value, tuple):
                     each(value)
                 else:
-                    f.write(str(value) + br)
+                    file.write(str(value) + br)
                     if index == len(data) - 1:
-                        f.write('\n')
+                        file.write('\n')
 
         each(_list_texts)
 
-    print('保存完成。', flush=True)
+    size = "文件大小：%.2f MB" % (get_FileSize(_filename))
+    print('[{}]保存完成\t文件{}\ttime:{}。'.format(_filename, size, get_stime()))
 
 
 def flatten(nested):

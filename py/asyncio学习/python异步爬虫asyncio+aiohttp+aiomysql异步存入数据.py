@@ -7,19 +7,26 @@
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-03 23:01:29
+@Date: 2020-03-09 16:42:14
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-03 23:09:17
-python异步爬虫asyncio + aiohttp + aiomysql异步存入数据
+@LastEditTime: 2020-03-09 16:51:53
+author: KK
+url: http://github.com/PythonerKK
+copyright: © 2019 KK <705555262@qq.com.com>
 https://www.cnblogs.com/PyKK2019/articles/aiohttp_spider.html
 '''
 
+
 import asyncio
 import re
+
 import aiohttp
-from pyquery import PyQuery
 import aiomysql
 from lxml import etree
+from pyquery import PyQuery
+
+from xjLib.dBrouter import dbconf
+
 pool = ''
 # sem = asyncio.Semaphore(4)  用来控制并发数，不指定会全速运行
 stop = False
@@ -142,13 +149,13 @@ async def consumer():
 async def main(loop):
     global pool
     pool = await aiomysql.create_pool(
-        host='cdb-lfp74hz4.bj.tencentcdb.com',
-        port=10014,
-        user='sandorn',
-        password='123456',
-        db='bxflb',
+        host=dbconf['TXbook']['host'],
+        port=dbconf['TXbook']['port'],
+        user=dbconf['TXbook']['user'],
+        password=dbconf['TXbook']['passwd'],
+        db=dbconf['TXbook']['db'],
         loop=loop,
-        charset='utf8mb4',
+        charset=dbconf['TXbook']['charset'],
         autocommit=True
     )
 
@@ -160,4 +167,3 @@ async def main(loop):
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     asyncio.ensure_future(main(loop))
-    loop.run_forever()

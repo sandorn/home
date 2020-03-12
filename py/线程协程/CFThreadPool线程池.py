@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 00:20:05
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-03 23:38:49
+@LastEditTime: 2020-03-05 12:30:12
 获取元素
 request-html支持CSS选择器和XPATH两种语法来选取HTML元素。首先先来看看CSS选择器语法，它需要使用HTML的find函数，该函数有5个参数，作用如下：
 - selector，要用的CSS选择器；
@@ -107,7 +107,7 @@ if __name__ == '__main__':
     print('CFThreadPool,开始下载：《' + bookname + '》', flush=True)
 
     # 创建多进程队列, 回调方式
-    with Pool(50) as p:
+    with Pool(100) as p:
         future_tasks = [
             p.submit(get_contents, i, urls[i]).add_done_callback(callback)for i in range(len(urls))
         ]
