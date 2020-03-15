@@ -9,15 +9,16 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 11:45:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-04 11:46:00
+@LastEditTime: 2020-03-13 17:22:41
 https://www.cnblogs.com/c-x-a/p/9507153.html
 '''
 
 
-from functools import partial, wraps
-from random import random
 import asyncio
 import os
+from functools import partial, wraps
+from random import random
+
 from cchardet import detect
 
 try:
@@ -31,7 +32,7 @@ result, all_tasks, connector, sessiondict = [], [], [], {}
 
 class AhttpRequest():
     def __init__(self, method, url, timeout=None, session=False, headers=None, cookies=None, unsafe=None,
-                 mark='1111111111', **kwargs):
+                 mark='***mark***', **kwargs):
         self.method, self.session, self.url, self.mark, self.timeout = method, session, url, mark, timeout
         callback = kwargs.pop('callback', None)
         self.callback = callback

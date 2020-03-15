@@ -9,14 +9,14 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-03 15:51:03
+@LastEditTime: 2020-03-13 11:47:47
 # author:      he.zhiming
 '''
 
 import logging
+import logging.config
 import os
 from datetime import datetime
-import logging.config
 
 standard_format = '[%(asctime)s][%(threadName)s:%(thread)d][task_id:%(name)s][%(filename)s->%(funcName)s:%(lineno)d]' \
     '[%(levelname)s][%(message)s]'  # 其中name为getlogger指定的名字
@@ -58,7 +58,7 @@ def _make_filename(filename='.log', log_level=10):
         _level = result
     else:
         _level = log_level
-    # _level = _levelToName[log_level]
+
     date_str = datetime.today().strftime('%Y%m%d')
     pidstr = '-' or str(os.getpid())
     return ''.join((date_str, '-', pidstr, '-', _level, '', filename,))

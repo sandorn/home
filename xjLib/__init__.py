@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-04 19:23:20
+@LastEditTime: 2020-03-13 16:58:48
 '''
 # package
 # __init__.py
@@ -20,7 +20,6 @@ __license__ = 'NewSea'
 from . import log
 from . import UI
 from . import req
-from . import threadPool
 from . import qiniuCos
 from . import txCos
 from . import sqlorm
@@ -30,6 +29,7 @@ from . import mystr
 from . import dBrouter
 from . import CustomThread
 from . import ahttp
+
 
 '''
 xjLib_VERSION = __version__ = '0.1.2'
@@ -44,7 +44,6 @@ __all__ = [
     "sqlorm",
     "txCos",
     "qiniuCos",
-    "threadPool",
     "req",
     "UI",
     "log"

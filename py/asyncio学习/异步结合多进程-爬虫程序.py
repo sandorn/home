@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 17:04:07
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-09 10:58:59
+@LastEditTime: 2020-03-13 13:43:14
 '''
 import asyncio
 import time
@@ -38,7 +38,7 @@ async def get_html(url):
             print('异步获取%s下的html.' % url)
 
 
-def main_get_html():
+def loop_get_html():
     '''协程调用方，请求网页'''
     loop = asyncio.get_event_loop()           # 获取事件循环
     tasks = [get_html(url) for url in urls]  # 把所有任务放到一个列表中
@@ -53,7 +53,7 @@ def multi_parse_html(html, cnt):
     print('第%d个html完成解析－title:%s' % (cnt, ''.join(title)))
 
 
-def main_parse_html():
+def parses():
     '''多进程调用总函数，解析html'''
     p = Pool(4)
     for index in range(len(htmls)):
@@ -64,6 +64,6 @@ def main_parse_html():
 
 if __name__ == '__main__':
     start = time.time()
-    main_get_html()   # 调用方
-    main_parse_html()  # 解析html
+    loop_get_html()   # 调用方
+    parses()  # 解析html
     print('总耗时：%.5f秒' % float(time.time() - start))

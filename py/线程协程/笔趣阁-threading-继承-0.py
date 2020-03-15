@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-02-29 23:00:26
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-08 09:41:22
+@LastEditTime: 2020-03-15 17:35:30
 https://blog.csdn.net/ksws0393238aa/article/details/20286405?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task
 '''
 
@@ -17,10 +17,8 @@ import threading
 import time
 from threading import Thread
 
-from lxml import etree
-
-from xjLib.ahttp import ahttpGet, ahttpGetAll
-from xjLib.mystr import Ex_Re_Sub, get_stime, savefile
+from xjLib.ahttp import ahttpGet
+from xjLib.mystr import Ex_Re_Sub, savefile
 from xjLib.req import parse_get
 
 SemaphoreNum = 100
@@ -62,24 +60,15 @@ class myThread(Thread):
 def function(parameter):
     """以下为需要重复的单次函数操作"""
     (index, target) = parameter
-    response = etree.HTML(parse_get(target).content)
+    response = parse_get(target).html
     _name = response.xpath('//h1/text()')[0]
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
-    print('{}\tdone\tat\t{}'.format(index, get_stime()))
     return [index, _name, _showtext]
-    '''
-    # 以下为可选内容，通常线程会自动结束
-    for thread in myThread.all_Thread:
-        if thread.name == name:
-            print(name)
-            thread.stop()
-            myThread.all_Thread.remove(thread)
-    '''
 
 
 def get_download_url(target):
     urls = []  # 存放章节链接
-    #response = etree.HTML(parse_get(target).content)
+    # response = etree.HTML(parse_get(target).content)
     resp = ahttpGet(target)
     response = resp.html
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
@@ -93,7 +82,7 @@ def get_download_url(target):
 
 def callback(future):
     index, _name, _showtext = future  # 回调函数取得返回值
-    name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' ', })
+    name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' '})
 
     text = Ex_Re_Sub(
         _showtext,
@@ -122,9 +111,9 @@ def callback(future):
             '\r': '\n',
             '\n\n': '\n',
             '\n\n': '\n',
-        }
+        },
     )
-    texts.append([index, name, text])
+    texts.append([index, name, '    ' + text])
 
 
 def main_thread(target):
@@ -132,7 +121,7 @@ def main_thread(target):
     bookname, urls = get_download_url(target)
     thread_list = []
     print('threading-继承，开始下载：《' + bookname + '》', flush=True)
-    print(urls)
+
     for index in range(len(urls)):
         res = myThread(Semaphore, (index, urls[index]))
         res.start()
@@ -146,16 +135,13 @@ def main_thread(target):
     print('threading-继承，书籍《' + bookname + '》完成下载', flush=True)
 
     texts.sort(key=lambda x: x[0])
-    savefile(bookname + '.txt', texts)
+    savefile(bookname + '.txt', texts, br='\n')
     print('下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)), flush=True)
 
 
 if __name__ == '__main__':
-    # #from xjLib.log import log
-    # #log = log()
     main_thread('https://www.biqukan.com/2_2714/')
     # '65_65593'  #章节少134万字，3573kb,, 22秒
-    # '2_2704'  #77万字, 2018kb, 34秒
-    # "2_2714"   #《武炼巅峰》1724万字,47839kb, 211秒。
+    # '38_38836'  #34秒
     # "2_2714"   #《武炼巅峰》1724万字,47839kb, #!77秒。无线程限制
     # '0_790'    #《元尊》328万字， 8988KB， 45秒钟

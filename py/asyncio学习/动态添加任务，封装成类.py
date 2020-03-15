@@ -9,15 +9,15 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 19:16:05
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-04 19:20:19
+@LastEditTime: 2020-03-13 17:27:58
 https://www.cnblogs.com/haoabcd2010/p/10615364.html
 '''
 import asyncio
 import logging
 import time
 from threading import Thread
-from aiohttp import ClientSession, ClientTimeout, TCPConnector
 
+from aiohttp import ClientSession, ClientTimeout, TCPConnector
 
 # 默认请求头
 HEADERS = {

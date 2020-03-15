@@ -1,61 +1,53 @@
-# ！/usr/bin/env python
-# -*- coding:utf -8-*-
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Descripttion: 使用multiprocessing.pool多进程
+@Descripttion: 头部注释None
 @Develop: VSCode
 @Author: Even.Sand
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
+@License: (C)Copyright 2009-2020, NewSea
+@Date: 2020-03-13 11:34:00
 @LastEditors: Even.Sand
-@Date: 2019-05-08 18:31:14
-@LastEditTime: 2020-03-13 11:29:13
-努努书坊 - 小说在线阅读   https://www.kanunu8.com/
+@LastEditTime: 2020-03-13 11:53:43
 '''
 
 import multiprocessing
 import time
 
-from bs4 import BeautifulSoup
+from lxml import etree
 
+from xjLib.ahttp import ahttpGet, ahttpGetAll
 from xjLib.mystr import get_stime, savefile
-from xjLib.req import parse_get
 
 
 def get_download_url(target):
-    url_list = []
-    response = parse_get(target)
-    _response = BeautifulSoup(response.content, 'lxml')
-    [s.extract() for s in _response(["script", "style"])]
-    _bookname = _response.find('h2').get_text()
-    # 搜索文档树,找出div标签中class为listmain的所有子标签
-    _div = str(_response.find_all('div', class_='listmain')[0])
-    download_soup = BeautifulSoup(_div, features="html5lib")
+    urls = []  # 存放章节链接
+    resp = ahttpGet(target)
+    # response = resp.html
+    # 指定解析器
+    response = etree.HTML(resp.text)
 
-    # 开始记录内容标志位,只要正文卷下面的链接,最新章节列表链接剔除
-    begin_flag = False
+    _bookname = response.xpath('//h2/text()', first=True)[0]
+    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
-    # 遍历 dl 标签下所有子节点
-    for child in download_soup.dl.children:
-        # 找到正文卷,使能标志位
-        if child.string.strip() == '《' + _bookname + '》正文卷':
-            begin_flag = True
-        # 爬取链接并下载链接内容
-        if begin_flag and child.name == 'dd':
-            download_url = 'http://www.biqukan.com/' + child.find('a').get('href')
-            url_list.append(download_url)
-    return _bookname, url_list
+    for item in 全部章节节点:
+        _ZJHERF = 'https://www.biqukan.com' + item
+        urls.append(_ZJHERF)
+    return _bookname, urls
 
 
 def get_contents(lock, index, target):
     _texts = ''
-    response = parse_get(target)
-    _response = BeautifulSoup(response.content, 'lxml')
-    [s.extract() for s in _response(["script", "style"])]
-    _name = _response.h1.get_text()  # 章节名
-    _showtext = _response.select('.showtxt')[0]
+    resp = ahttpGet(target)
+    # response = resp.html
+    # 指定解析器
+    response = etree.HTML(resp.text)
+
+    _name = response.xpath('//h1/text()', first=True)[0]
+    _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
     for text in _showtext.stripped_strings:
-        _texts += text + '\n'
+        _texts = text + '\n'
 
     with lock:
         print('{} done with {} at {}'.format(multiprocessing.current_process().name, index, get_stime()), flush=True)
@@ -81,7 +73,7 @@ def main_Pool(target):
     mypool.join()  # 等待进程池中的事件执行完毕，回收进程池
 
     texts = []  # 将爬下来的小说都存在里面
-    for i, item in enumerate(future_tasks):
+    for item in future_tasks:
         _text = item.get()  # join后获取进程返回值
         texts.append(_text)
 
@@ -91,8 +83,6 @@ def main_Pool(target):
 
 
 if __name__ == '__main__':
-    from xjLib.log import log
-    log = log()
     main_Pool('https://www.biqukan.com/65_65593/')
     # '65_65593'  #章节少，测试用 26秒
     # '2_2704'  #231万字  #6239kb, 420.94 秒

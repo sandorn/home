@@ -9,13 +9,11 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-12 17:09:48
+@LastEditTime: 2020-03-15 17:56:47
 变更requests为ahttp
 '''
 
 import time
-
-from lxml import etree
 
 from xjLib.ahttp import ahttpGet, ahttpGetAll
 from xjLib.mystr import Ex_Re_Sub, get_stime, savefile
@@ -26,7 +24,7 @@ def get_download_url(target):
     resp = ahttpGet(target)
     # response = resp.html
     # 指定解析器
-    response = etree.HTML(resp.text)
+    response = resp.html
 
     _bookname = response.xpath('//h2/text()', first=True)[0]
     全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
@@ -43,12 +41,12 @@ texts = []
 def 结果处理(resps):
     for resp in resps:
         index = resp.index
-        response = etree.HTML(resp.text)
+        response = resp.html
 
-        _name = response.xpath('//h1/text()', first=True)[0]
-        _showtext = "".join(response.xpath('//*[@id="content"]/text()', first=True))
-        # '''
-        name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' ', })
+        _name = "".join(response.xpath('//h1/text()'))
+        _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
+
+        name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' '})
         text = Ex_Re_Sub(
             _showtext,
             {
@@ -75,22 +73,24 @@ def 结果处理(resps):
                 '[]': '',
                 '\r': '\n',
                 '\n\n': '\n',
-            }
+                '\n\n': '\n',
+            },
         )
         texts.append([index, name, '    ' + text])
 
 
 def callback(future):
     resp = future
-    if resp is None: return
+    if resp is None:
+        return
 
     index = resp.index
-    response = etree.HTML(resp.text)
+    response = resp.html
 
-    _name = response.xpath('//h1/text()', first=True)[0]
+    _name = "".join(response.xpath('//h1/text()'))
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
 
-    name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' ', })
+    name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' '})
     text = Ex_Re_Sub(
         _showtext,
         {
@@ -117,7 +117,8 @@ def callback(future):
             '[]': '',
             '\r': '\n',
             '\n\n': '\n',
-        }
+            '\n\n': '\n',
+        },
     )
 
     texts.append([index, name, '    ' + text])
@@ -159,10 +160,10 @@ def mainbycall(url):
 
 
 if __name__ == '__main__':
-    url = 'https://www.biqukan.com/38_38836/'
+    url = 'https://www.biqukan.com/2_2714/'
     _stime = time.time()
     # mainbycall(url)
-    #texts = []
+    # texts = []
     main(url)
 
     # '76_76519'  #章节少，#@  4秒

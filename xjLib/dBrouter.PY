@@ -7,7 +7,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-09 16:52:53
+@LastEditTime: 2020-03-13 15:51:09
 '''
 # ！/usr/bin/env python
 # -*-coding:utf-8-*-
@@ -45,6 +45,11 @@ dbconf = {
         'passwd': 'eeM3sh4KPkp4sJ8A',
         'db': 'baoxianjihuashu',
         'charset': 'utf8mb4',
+    },
+    'redis': {
+        'host': '127.0.0.1',
+        'port': 6379,
+        'db': 4
     },
 }
 

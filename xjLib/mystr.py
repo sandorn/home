@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-12 15:34:46
+@LastEditTime: 2020-03-13 12:31:15
 '''
 import hashlib
 import os
@@ -183,7 +183,7 @@ def savefile(_filename, _list_texts, br=''):
     # 函数说明:将爬取的文章内容写入文件,迭代多层
     # br为标题换行标志，可以用'\t'
     # #多层次的list 或 tuple写入文件
-    print('[{}]开始保存......@{}。'.format(_filename, get_stime()))
+    print('[{}]开始保存......time:{}。'.format(_filename, get_stime()))
     with open(_filename, 'w', encoding='utf-8') as file:
         file.write(_filename + '\n')
 
@@ -198,8 +198,8 @@ def savefile(_filename, _list_texts, br=''):
 
         each(_list_texts)
 
-    size = "文件大小：%.2f MB" % (get_FileSize(_filename))
-    print('[{}]保存完成\t文件{}\ttime:{}。'.format(_filename, size, get_stime()))
+    size = "size：%.2f MB" % (get_FileSize(_filename))
+    print('[{}]保存完成\t{}\ttime:{}。'.format(_filename, size, get_stime()))
 
 
 def flatten(nested):

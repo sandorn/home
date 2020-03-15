@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-09 10:56:41
+@LastEditTime: 2020-03-13 17:20:32
 顺讯，单独，速度慢
 '''
 
@@ -26,19 +26,17 @@ texts = []  # 将爬下来的小说都存在里面，做最后排序
 async def fetch(url):
     async with aiohttp.ClientSession() as sess:
         resp = sess.get(url=url)
-        status = resp.status
         html = await resp.read()
         encoding = resp.get_encoding()
         if encoding == 'gb2312':
             encoding = 'gbk'
-        html = html.decode(encoding, errors='ignore')
-        redirected_url = str(resp.url)
-    return status, html, redirected_url
+        await asyncio.sleep(0.1)
+    return html
 
 
 def get_download_url(url):
     urls = []  # 存放章节链接
-    _, html, _ = fetch(url)
+    html = fetch(url)
     _bookname = html.xpath('//meta[@property="og:title"]//@content')[0]
     全部章节节点 = html.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
@@ -51,7 +49,7 @@ def get_download_url(url):
 async def get_contents(index, url):
     # #async def get_contents(index, count):
     # #使用async关键字定义一个协程，协程是一种对象，不能直接运行，需要加入事件循环loop。
-    _, html, _ = await fetch(url)  # !阻塞了
+    html = await fetch(url)  # !阻塞了
 
     _name = html.xpath('//h1/text()')[0]
 
