@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:30:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-27 13:18:01
+@LastEditTime: 2020-03-18 02:27:28
 '''
 
 import os
@@ -18,9 +18,7 @@ import sys
 from scrapy.cmdline import execute
 
 
-def ScrapyRun(filepath, spilername):
-    # 获取文件父级目录
-    dirpath = os.path.dirname(os.path.dirname(filepath))
+def ScrapyRun(dirpath, spilername):
     # 添加环境变量
     sys.path.append(dirpath)
     # 切换工作目录

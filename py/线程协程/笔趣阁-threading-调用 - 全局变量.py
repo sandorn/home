@@ -8,7 +8,7 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-08 10:22:28
+@LastEditTime: 2020-03-15 18:18:27
 '''
 import threading
 import time
@@ -83,7 +83,7 @@ def main_thread(target):
     print('threading-调用，开始下载：《' + bookname + '》', flush=True)
     总章节 = urls.qsize()
     for index in range(总章节):
-        res = threading.Thread(target=get_contents, args=(index, ))
+        res = threading.Thread(target=get_contents, args=(index,))
         res.start()
         thread_list.append(res)
 
@@ -93,12 +93,12 @@ def main_thread(target):
     print('threading-调用，书籍《' + bookname + '》完成下载', flush=True)
     texts.sort(key=lambda x: x[0])
     savefile(bookname + '.txt', texts)
-    print('下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)),
-          flush=True)
+    print('下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)), flush=True)
 
 
 if __name__ == '__main__':
-    main_thread('https://www.biqukan.com/0_790/')
+    main_thread('https://www.biqukan.com/2_2714/')
     # '65_65593'  #章节少，测试用
     # '2_2704'  #231万字  #6239kb, 153秒
+    # "0_790"   # 60秒。
     # "2_2714"   #《武炼巅峰》664万字, 秒。

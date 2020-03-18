@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-13 12:31:15
+@LastEditTime: 2020-03-18 01:24:31
 '''
 import hashlib
 import os
@@ -150,7 +150,7 @@ def get_FileSize(filePath):
 def Ex_Re_Sub(oldtext, *args, **kwds):
     '''
     用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'})
-    不需要用转义符号
+    author = author.strip("\n\r    \xa0")
     '''
     adict = dict(*args, **kwds)
     rx = re.compile('|'.join(map(re.escape, adict)))
@@ -159,6 +159,18 @@ def Ex_Re_Sub(oldtext, *args, **kwds):
         return adict[match.group(0)]
 
     return rx.sub(one_xlat, oldtext)
+
+
+def Ex_Replace(oldtext, adict):
+    '''
+    用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'})
+    '''
+    def _run(oldtext, key, value):
+        return oldtext.replace(key, value)
+
+    for key in adict:
+        oldtext = _run(oldtext, key, adict[key])
+    return oldtext
 
 
 def list2file(_filename, _list_texts, br='\t'):
@@ -241,6 +253,6 @@ if __name__ == "__main__":
         'and', 'B', ['not', 'A'], [1, 2, 1, [2, 1], [1, 1, [2, 2, 1]]],
         ['not', 'A', 'A'], ['or', 'A', 'B', 'A'], 'B'
     ]
-    savefile('d:/1.txt', res2)
+    # savefile('d:/1.txt', res2)
     # for i in flatten(12141.98792):
     #   print(i)

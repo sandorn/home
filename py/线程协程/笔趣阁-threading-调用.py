@@ -9,15 +9,15 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-02 11:34:18
+@LastEditTime: 2020-03-15 19:10:02
 '''
 import threading
 import time
 from queue import Queue
 
-from bs4 import BeautifulSoup
-from xjLib.req import parse_get as parse_url
-from xjLib.mystr import savefile as writer
+from xjLib.ahttp import ahttpGet
+from xjLib.mystr import Ex_Re_Sub, savefile
+from xjLib.req import parse_get
 
 lock = threading.RLock()
 urls = Queue()  # 存放章节链接
@@ -27,43 +27,57 @@ semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线
 
 
 def get_download_url(target):
-    response = parse_url(target)
-    _response = BeautifulSoup(response.content, 'lxml')
-    [s.extract() for s in _response(["script", "style"])]
-    _bookname = _response.find('h2').get_text()
-    # 搜索文档树,找出div标签中class为listmain的所有子标签
-    _div = str(_response.find_all('div', class_='listmain')[0])
-    download_soup = BeautifulSoup(_div, features="html5lib")
+    resp = ahttpGet(target)
+    response = resp.html
+    _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
+    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
-    # 开始记录内容标志位,只要正文卷下面的链接,最新章节列表链接剔除
-    begin_flag = False
-
-    # 遍历 dl 标签下所有子节点
-    for child in download_soup.dl.children:
-        # 找到正文卷,使能标志位
-        if child.string.strip() == '《' + _bookname + '》正文卷':
-            begin_flag = True
-        # 爬取链接并下载链接内容
-        if begin_flag and child.name == 'dd':
-            download_url = 'http://www.biqukan.com/' + child.find('a').get(
-                'href')
-            urls.put(download_url)
+    for item in 全部章节节点:
+        _ZJHERF = 'https://www.biqukan.com' + item
+        urls.put(_ZJHERF)
     return _bookname
 
 
 def get_contents(index):
     with semaphore:
         target = urls.get()
-        _texts = ''
-        response = parse_url(target)
-        _response = BeautifulSoup(response.content, 'lxml')
-        [s.extract() for s in _response(["script", "style"])]
-        _name = _response.h1.get_text()  # 章节名
-        _showtext = _response.select('.showtxt')[0]
-        for text in _showtext.stripped_strings:
-            _texts += text + '\n'
+        response = parse_get(target).html
+        _name = response.xpath('//h1/text()')[0]
+        _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
+
+        name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' '})
+        text = Ex_Re_Sub(
+            _showtext,
+            {
+                '\'': '',
+                ' ': ' ',
+                '\xa0': ' ',
+                '\x0a': '\n',
+                # '\b;': '\n',
+                '&nbsp;': ' ',
+                'app2();': '',
+                '笔趣看;': '',
+                '\u3000': '',
+                'chaptererror();': '',
+                'readtype!=2&&(\'vipchapter\n(\';\n\n}': '',
+                'm.biqukan.com': '',
+                'wap.biqukan.com': '',
+                'www.biqukan.com': '',
+                'www.biqukan.com。': '',
+                '百度搜索“笔趣看小说网”手机阅读:': '',
+                '请记住本书首发域名:': '',
+                '请记住本书首发域名：': '',
+                '笔趣阁手机版阅读网址:': '',
+                '笔趣阁手机版阅读网址：': '',
+                '[]': '',
+                '\r': '\n',
+                '\n\n': '\n',
+                '\n\n': '\n',
+            },
+        )
+
         with lock:
-            texts.append([index, _name, _texts])
+            texts.append([index, name, text])
             print(threading.current_thread().name + '线程 #{} 号  has done。\n'.format(index), end='', flush=True)
         urls.task_done()  # 发出此队列完成信号
 
@@ -83,9 +97,8 @@ def main_thread(target):
 
     print('threading-调用，书籍《' + bookname + '》完成下载', flush=True)
     texts.sort(key=lambda x: x[0])
-    writer(bookname + '.txt', texts)
-    print('下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)),
-          flush=True)
+    savefile(bookname + '.txt', texts)
+    print('下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)), flush=True)
 
 
 if __name__ == '__main__':

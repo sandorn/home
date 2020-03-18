@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-11 23:00:24
+@LastEditTime: 2020-03-18 02:50:57
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -22,7 +22,7 @@ import pandas
 from twisted.enterprise import adbapi
 
 from xjLib.dBrouter import dbconf
-from xjLib.mystr import Ex_Re_Sub, align
+from xjLib.mystr import Ex_Re_Sub, align, Ex_Replace
 
 
 class PipelineCheck(object):
@@ -30,45 +30,40 @@ class PipelineCheck(object):
         pass
 
     def process_item(self, item, spider):
-        #_showtext = item['ZJTEXT']
-        item['ZJTEXT'] = Ex_Re_Sub(
-            item['ZJTEXT'],
+        item['ZJNAME'] = Ex_Re_Sub(
+            item['ZJNAME'],
             {
-                '\'': '',
                 ' ': ' ',
                 '\xa0': ' ',
-                '\x0a': '\n',
-                # '\b;': '\n',
-                '&nbsp;': ' ',
-                'app2();': '',
-                '笔趣看;': '',
-                '\u3000': '',
-                'chaptererror();': '',
-                'readtype!=2&&(\'vipchapter\n(\';\n\n}': '',
+            }
+        )
+        item['ZJTEXT'] = Ex_Replace(
+            item['ZJTEXT'].strip("\n\r　  \xa0"),
+            {
+                '　　': '\n',
+                ' ': ' ',
+                '\', \'': '',
+                '\xa0': '',  # 表示空格  &nbsp;
+                '\u3000': '',  # 全角空格
+                'www.biqukan.com。': '',
                 'm.biqukan.com': '',
                 'wap.biqukan.com': '',
                 'www.biqukan.com': '',
-                'www.biqukan.com。': '',
+                '笔趣看;': '',
                 '百度搜索“笔趣看小说网”手机阅读:': '',
                 '请记住本书首发域名:': '',
                 '请记住本书首发域名：': '',
                 '笔趣阁手机版阅读网址:': '',
                 '笔趣阁手机版阅读网址：': '',
                 '[]': '',
+                '<br />': '',
+                '\r\r': '\n',
                 '\r': '\n',
                 '\n\n': '\n',
                 '\n\n': '\n',
-            }
+            },
         )
-        item['ZJNAME'] = Ex_Re_Sub(
-            item['ZJNAME'],
-            {
-                '\'': '',
-                ' ': ' ',
-                '\xa0': ' ',
-                '\x0a': '\n',
-            }
-        )
+
         return item
 
 
@@ -152,3 +147,12 @@ class PipelineToTxt(object):
             print('--《%s》文本TEXT文件存储完毕！！\t' % bookname)
             self.file[bookname].close()
         self.connect.close()
+
+
+if __name__ == '__main__':
+    from xjLib.ScrapyRun import ScrapyRun
+    import os
+    # 获取当前脚本路径
+    filepath = os.path.abspath(__file__)
+    dirpath = os.path.dirname(filepath)
+    ScrapyRun(dirpath, 'spiler')

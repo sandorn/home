@@ -9,12 +9,13 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-15 17:35:49
+@LastEditTime: 2020-03-18 01:56:51
 requests 简化调用
 '''
 from __future__ import absolute_import, unicode_literals
 
 import json
+from html import unescape
 
 import requests
 from cchardet import detect
@@ -72,8 +73,15 @@ class sResponse:
 
     @property
     def html(self):
-        # @html.setter  #def html用于设置
-        html = etree.HTML(self.text)
+        def clean(html, filter):
+            data = etree.HTML(html)
+            trashs = data.xpath(filter)
+            for item in trashs:
+                item.getparent().remove(item)
+            return data
+        # #去除节点clean # #解码html:unescape
+        html = clean(unescape(self.text), '//script')
+        #html = etree.HTML(self.text)
         return html
 
     def __repr__(self):
@@ -81,9 +89,16 @@ class sResponse:
 
 
 def parse_get(url, params=None, **kwargs):
-    @retry(wait_random_min=20, wait_random_max=1000, stop_max_attempt_number=10)
-    def _parse_url(url, params=params, **kwargs):
-        response = requests.get(url, params=params, **kwargs)
+    @retry(
+        wait_random_min=20,
+        wait_random_max=1000,
+        stop_max_attempt_number=10,
+        retry_on_exception=lambda x: True,
+        retry_on_result=lambda ret: not ret
+    )
+    def _run(url, params=params, **kwargs):
+        response = requests.get(url, timeout=10, params=params, **kwargs)
+        assert (response.status_code == 200) or (response.status_code == 302)
         return response
 
     kwargs.setdefault('headers', myhead)
@@ -91,13 +106,20 @@ def parse_get(url, params=None, **kwargs):
 
     try:
         # 以下except捕获当requests请求异常
-        response = _parse_url(url, params=params, **kwargs)
-        # soup = BeautifulSoup(response.content.decode('utf-8'), 'lxml')
-        # [s.extract() for s in soup(["script", "style"])]
+        response = _run(url, params=params, **kwargs)
     except Exception as err:
-        print(url, 'parse_get Error:' + repr(err), flush=True)
-        # raise err
+        print(url, 'parse_get Error:', repr(err), flush=True)
+        raise err
 
+    return sResponse(response)
+
+
+@retry(wait_random_min=20, wait_random_max=1000, stop_max_attempt_number=10)
+def parse_get_0(url, params=None, **kwargs):
+    kwargs.setdefault('headers', myhead)
+    kwargs.setdefault('allow_redirects', True)  # @启动重定向
+    response = requests.get(url, params=params, **kwargs)
+    assert (response.status_code == 200) or (response.status_code == 302)
     return sResponse(response)
 
 

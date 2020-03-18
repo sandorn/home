@@ -9,9 +9,8 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-15 17:40:33
+@LastEditTime: 2020-03-18 02:51:11
 '''
-import os
 import re
 
 import MySQLdb
@@ -30,7 +29,11 @@ class Spider(scrapy.Spider):
     # 扩展设置
     custom_settings = {
         # 设置管道下载
-        'ITEM_PIPELINES': {'BQG.pipelines.PipelineCheck': 20, 'BQG.pipelines.PipelineToSqlTwisted': 100, 'BQG.pipelines.PipelineToTxt': 200}
+        'ITEM_PIPELINES': {
+            'BQG.pipelines.PipelineCheck': 20,
+            'BQG.pipelines.PipelineToSqlTwisted': 100,
+            'BQG.pipelines.PipelineToTxt': 200
+        }
     }
 
     start_urls = [
@@ -38,7 +41,7 @@ class Spider(scrapy.Spider):
         'https://www.biqukan.com/2_2714/',
         # 'https://www.biqukan.com/76_76519/',
         # 'https://www.biqukan.com/38_38836/',
-        #'https://www.biqukan.com/0_790/',
+        # 'https://www.biqukan.com/0_790/',
     ]
 
     db = set()
@@ -52,18 +55,7 @@ class Spider(scrapy.Spider):
             # dont_filter=True 表示不过滤
 
     def parse(self, response):
-        # 编写爬取方法
-        '''
-        response.xpath(),response.css()
-        Scrapy Selector内置XPath和CSS Selector表达式机制
-        Selector有四个基本的方法，最常用的还XPath
-        xpath()：传入xpath表达式，返回该表达式所对应的所有节点的Selector list列表。
-        ectract()：序列化该节点为Unicode字符串，并返回list。
-        css()：传入CSS表达式，返回该表达式所对应的所有节点的selector list列表，语法同BeautifulSoup4。
-        re()：根据传入的正则表达式对数据进行提取，返回Unicode字符串list列表。
-        '''
-        # #获取书籍名称，判断是否需要创建数据库
-        print(response.headers)
+        # 爬取方法
         _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
 
         self.res_key = md5(_BOOKNAME)  # k相当于字典名称
@@ -129,10 +121,11 @@ class Spider(scrapy.Spider):
 
 if __name__ == '__main__':
     from xjLib.ScrapyRun import ScrapyRun
-
+    import os
     # 获取当前脚本路径
     filepath = os.path.abspath(__file__)
-    ScrapyRun(filepath, 'spiler')
+    dirpath = os.path.dirname(os.path.dirname(filepath))
+    ScrapyRun(dirpath, 'spiler')
 
 
 '''
