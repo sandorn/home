@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-18 02:31:42
+@LastEditTime: 2020-03-24 09:15:03
 '''
 import asyncio
 import ctypes
@@ -21,11 +21,8 @@ import aiohttp
 from cchardet import detect
 from fake_useragent import UserAgent
 from lxml import etree
-from retrying import retry
-from tenacity import RetryError, TryAgain
-from tenacity import retry as retrys
-from tenacity import (retry_if_exception_type, retry_if_result,
-                      stop_after_attempt, stop_after_delay, wait_random)
+from opnieuw import RetryException, retry
+# from retrying import retry
 
 __all__ = ('map', 'Session', 'get', 'options', 'head', 'post', 'put', 'patch', 'delete')
 
@@ -58,6 +55,49 @@ class Session:
         return f"<Ahttp Session [id:{id(self.session)} client]>"
 
 
+class AsyncRequestTask:
+    def __init__(self, *args, session=None, headers=None, **kwargs):
+        self.session = session
+        self.headers = headers
+        self.cookies = None
+        self.kw = kwargs
+        self.method = None
+
+    def __iter__(self):
+        for attr, value in self.__dict__.iteritems():
+            yield attr, value
+
+    def __getattr__(self, name):
+        if name in ['get', 'options', 'head', 'post', 'put', 'patch', 'delete']:
+            self.method = name
+            return self.get_params
+
+    def __repr__(self):
+        return f"<AsyncTask session:[{id(self.session)}]\t{self.method.upper()}:{self.url}>"
+
+    def get_params(self, *args, **kw):
+        self.url = args[0]
+        self.args = args[1:]
+        if "callback" in kw:
+            self.callback = kw['callback']
+            kw.pop("callback")
+        else:
+            self.callback = None
+
+        if "headers" in kw:
+            self.headers = kw['headers']
+            kw.pop("headers")
+        self.kw = kw
+        return self
+
+    def run(self):
+        future = asyncio.ensure_future(ArTask_run(self))
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(future)
+        new_res = AhttpResponse(self.result, self.content, self)
+        return [new_res, self.callback and self.callback(new_res)][0]
+
+
 def wrap_headers(headers):
     ua = UserAgent()
     new_headers = {}
@@ -83,63 +123,26 @@ patch = partial(create_session, "patch")
 delete = partial(create_session, "delete")
 
 
-class AsyncRequestTask:
-    def __init__(self, *args, session=None, headers=None, **kwargs):
-        self.session = session
-        self.headers = headers
-        self.cookies = None
-        self.kw = kwargs
-        self.method = None
-
-    def __getattr__(self, name):
-        if name in ['get', 'options', 'head', 'post', 'put', 'patch', 'delete']:
-            self.method = name
-            return self.get_params
-
-    def __repr__(self):
-        return f"<AsyncRequestTask session:[{id(self.session)}] req:[{self.method.upper()}:{self.url}]>"
-
-    def get_params(self, *args, **kw):
-        self.url = args[0]
-        self.args = args[1:]
-        if "callback" in kw:
-            self.callback = kw['callback']
-            kw.pop("callback")
-        else:
-            self.callback = None
-
-        if "headers" in kw:
-            self.headers = kw['headers']
-            kw.pop("headers")
-        self.kw = kw
-        return self
-
-    def run(self):
-        future = asyncio.ensure_future(ArTask_run(self))
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(future)
-        new_res = AhttpResponse(self.result, self.content, self)
-        return [new_res, self.callback and self.callback(new_res)][0]
-
-
 async def ArTask_run(self):
     # #单个任务，从task.run()调用
     async def _run():
         async with aiohttp.ClientSession(cookies=self.cookies) as session:
-            async with session.request(self.method, self.url, *self.args, verify_ssl=False, headers=wrap_headers(self.headers or self.session.headers), timeout=20, **self.kw) as sessReq:
+            async with session.request(self.method, self.url, *self.args, verify_ssl=False, headers=wrap_headers(self.headers or self.session.headers), **self.kw) as sessReq:
                 content = await sessReq.read()
                 self.result, self.content, self.index = sessReq, content, id(self.result)
 
     max_try = 10
+    index = 0
     while max_try > 0:
         try:
             await _run()
+            print(self, index, 'ArTask_run done')
             break
         except Exception as err:
+            print(self, index, 'ArTask_run err:', repr(err))
             max_try -= 1
-            print(self.url, 'ArTask_run err:', repr(err))
-            # time.sleep(0.1)
-            asyncio.sleep(0.1)
+            index += 1
+            await asyncio.sleep(0.1)
             continue  # 继续下一轮循环
 
 
@@ -189,37 +192,38 @@ class AhttpResponse:
             return data
         # #去除节点clean # #解码html:unescape
         html = clean(unescape(self.text), '//script')
-        #html = etree.HTML(self.text)
+        # html = etree.HTML(self.text)
         return html
 
     def __repr__(self):
         return f"<AhttpResponse status[{self.status}] url=[{self.url}]>"
 
 
-def run(tasks, pool=20):
+def run(tasks, pool=100):
     if not isinstance(tasks, list):
         raise "the tasks of run must be a list object"
 
-    conn = aiohttp.TCPConnector(use_dns_cache=True, loop=asyncio.get_event_loop(), ssl=False)
-    # 并发量限制
-    maxsem = asyncio.Semaphore(pool)
+    conn = aiohttp.TCPConnector(
+        use_dns_cache=True,
+        loop=asyncio.get_event_loop(),
+        ssl=False,
+        # limit=100,  # 限制并行连接的总量,0无限制
+    )
     result = []  # #存放返回结果集合
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(multi_req(tasks, conn, maxsem, result))
+    loop.run_until_complete(multi_req(tasks, conn, pool, result))
 
-    # #不排序直接返回结果
+    # 返回结果集合
     return result
 
 
-async def multi_req(tasks, conn, maxsem, result):
+async def multi_req(tasks, conn, pool, result):
     new_tasks = []
-    # 创建会话对象,，使用单一session对象
     sion_list = {}
-    new_tasks = []
     for index in range(len(tasks)):
         task = tasks[index]
         task.index = index  # #将任务序号分配给每个任务
-        task.maxsem = maxsem  # #将并发限制赋值给每个任务
+        task.pool = pool  # #将并发限制赋值给每个任务
         if id(task.session) not in sion_list:
             sion_list[id(task.session)] = aiohttp.ClientSession(
                 connector_owner=False,
@@ -240,56 +244,24 @@ async def multi_req(tasks, conn, maxsem, result):
 
 
 async def control_sem(task, result, session):
-    # 限制信号量
-    async with task.maxsem:
+    # !适用信号量限制并发数
+    maxsem = asyncio.Semaphore(task.pool)
+    async with maxsem:
         await fetch(task, result, session)
 
 
-async def fetch_tenacity(task, result, session):
-    # # fetch_tenacity  #不能有效重试timeout错误
-    @retrys(
-        stop=(stop_after_delay(10) | stop_after_attempt(10)),
-        retry=(
-            retry_if_result(lambda ret: not ret) |
-            retry_if_exception_type()
-        ),
-        wait=wait_random(min=0.01, max=1)
-    )
-    async def _run():
-        headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
-        async with session.request(task.method, task.url, *task.args, headers=headers, timeout=10, **task.kw) as sessReq:
-            if (sessReq.status != 200) and (sessReq.status != 302):
-                raise TryAgain
-            content = await sessReq.read()
-            #assert Exception
-            new_res = AhttpResponse(sessReq, content, task)
-            result.append(new_res)
-            if task.callback:
-                task.callback(new_res)  # 有回调则调用
-            return new_res
-
-    try:
-        await _run()
-    except RetryError as err:
-        print(task.url, 'fetch err:', repr(err), flush=True)
-        await _run()  # !累赘
-
-
-async def fetch_retrying(task, result, session):
-    # #fetch_retrying  #不能有效重试timeout错误
+async def fetch_Opnieuw(task, result, session):
+    # # fetch_Opnieuw  #最终解决：增加timeout为300
     @retry(
-        wait_random_min=20,
-        wait_random_max=1000,
-        stop_max_attempt_number=10,
-        retry_on_exception=lambda x: True,
-        retry_on_result=lambda ret: not ret
-    )
+        retry_on_exceptions=(asyncio.exceptions.TimeoutError, asyncio.exceptions.CancelledError, asyncio.TimeoutError, RetryException),
+        max_calls_total=10,
+        retry_window_after_first_call_in_seconds=5,)
     async def _run():
+        print(task, 'fetch start...')
         headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
-        async with session.request(task.method, task.url, *task.args, headers=headers, timeout=10, **task.kw) as sessReq:
+        async with session.request(task.method, task.url, *task.args, headers=headers, timeout=20, **task.kw) as sessReq:
             assert (sessReq.status == 200) or (sessReq.status == 302)
             content = await sessReq.read()
-            assert asyncio.TimeoutError
             new_res = AhttpResponse(sessReq, content, task)
             result.append(new_res)
 
@@ -299,33 +271,38 @@ async def fetch_retrying(task, result, session):
 
     try:
         await _run()
+        print(task, 'fetch done。')
     except Exception as err:
-        print(task.url, 'fetch err:', repr(err), flush=True)
-        raise err
+        print(task, 'fetch err:', repr(err), flush=True)
+        #raise err
 
 
 async def fetch(task, result, session):
-    # # fetch_while    #完美重试，利用while循环
-    async def _run():
+    async def _run(index):
+        print(task, index, 'fetch start...')
         headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
-        async with session.request(task.method, task.url, *task.args, headers=headers, timeout=20, **task.kw) as sessReq:
-            assert sessReq.status == 200
+        async with session.request(task.method, task.url, headers=headers, *task.args, **task.kw) as sessReq:
+            assert sessReq.status in [200, 201, 302]
             content = await sessReq.read()
             new_res = AhttpResponse(sessReq, content, task)
             result.append(new_res)
+
+            if task.callback:
+                task.callback(new_res)  # 有回调则调用
             return new_res
 
     max_try = 10
+    index = 0
     while max_try > 0:
         try:
-            new_res = await _run()
-            if task.callback:
-                task.callback(new_res)  # 有回调则调用
+            await _run(index)
+            print(task, index, 'fetch done。')
             break
         except Exception as err:
+            print(task, index, 'fetch err:', repr(err))
+            index += 1
             max_try -= 1
-            print(task.url, 'fetch err:', repr(err))
-            asyncio.sleep(0.1)
+            await asyncio.sleep(0.1)
             continue  # 继续下一轮循环
 
 
@@ -335,7 +312,7 @@ def ahttpGet(url, params=None, **kwargs):
     return res
 
 
-def ahttpGetAll(urls, pool=20, params=None, **kwargs):
+def ahttpGetAll(urls, pool=100, params=None, **kwargs):
     tasks = [get(url, params=params, **kwargs) for url in urls]
     resps = run(tasks, pool=pool)
     return resps

@@ -9,18 +9,15 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-12 15:21:22
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-12 15:21:38
+@LastEditTime: 2020-03-20 18:12:34
 异步爬虫: async/await 与 aiohttp的使用，以及例子_Python_Multiangle's Notepad-CSDN博客
 https://blog.csdn.net/u014595019/article/details/52295642
 '''
 import asyncio
-import urllib.request as request
-
 import aiohttp
 from bs4 import BeautifulSoup as bs
 
 
-@asyncio.coroutine
 async def getPage(url, res_list):
     print(url)
     headers = {'User-Agent': 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'}

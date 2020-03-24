@@ -9,13 +9,14 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-18 01:56:51
+@LastEditTime: 2020-03-24 09:27:25
 requests 简化调用
 '''
 from __future__ import absolute_import, unicode_literals
 
 import json
 from html import unescape
+from fake_useragent import UserAgent
 
 import requests
 from cchardet import detect
@@ -23,16 +24,14 @@ from lxml import etree
 from retrying import retry
 
 myhead = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
+    'User-Agent': UserAgent().random,
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-    # 指定客户端浏览器可以支持的web服务器返回内容压缩编码类型
-    'Accept-Encoding': 'gzip, deflate, sdch',
-    # 指定HTTP客户端浏览器用来展示返回信息所优先选择的语言。
+    'Accept-Encoding': 'gzip,deflate,sdch',
+    'Content-Encoding': 'gzip,deflate,compress',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
-    # 浏览器可以接受的字符编码集
     'Accept-Charset': 'gb2312,utf-8;q=0.7,*;q=0.7',
-    # 表示是否需要持久连接  'keep-alive','close'
     'Connection': 'close',
+    # 'Connection': 'keep-alive',
     # 显示此HTTP连接的Keep-Alive时间    'Keep-Alive': '300',
     # 请求的web服务器域名地址    'Host': 'www.baidu.com',
 }
@@ -105,10 +104,9 @@ def parse_get(url, params=None, **kwargs):
     kwargs.setdefault('allow_redirects', True)  # @启动重定向
 
     try:
-        # 以下except捕获当requests请求异常
         response = _run(url, params=params, **kwargs)
     except Exception as err:
-        print(url, 'parse_get Error:', repr(err), flush=True)
+        print(url, '_parse err:', repr(err), flush=True)
         raise err
 
     return sResponse(response)

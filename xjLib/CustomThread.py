@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-02 13:51:37
+@LastEditTime: 2020-03-22 22:46:46
 高CPU占用
 '''
 
@@ -44,8 +44,8 @@ class CustomThread(threading.Thread):
             time.sleep(2)
         '''
 
-    def setMaxcs(self, args):  # 外部修改最大线程数
-        self.maxcs = args
+    def setMaxcs(self, arg):  # 外部修改最大线程数
+        self.maxcs = arg
         self.semlock = threading.BoundedSemaphore(self.maxcs)  # 设置线程数
 
     def getMaxcs(self):  # 外部获得最大线程数

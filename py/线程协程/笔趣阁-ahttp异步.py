@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-18 02:39:25
+@LastEditTime: 2020-03-20 18:37:12
 变更requests为ahttp
 '''
 import os
@@ -111,7 +111,7 @@ def callback(resp):
             '\n\n': '\n',
         },
     )
-    print(str(index) + '\t号任务,has done。', flush=True)
+    #print(resp.task, 'index:',index,',has done。', flush=True)
     texts.append([index, name, '    ' + text])
 
 
@@ -138,9 +138,8 @@ def mainbycall(url):
     print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_stime()), flush=True)
     bookname, urls = get_download_url(url)
     print('AHTTP,开始下载：《' + bookname + '》', flush=True)
-
     # 方法1：使用回调，不排序
-    ahttpGetAll(urls, pool=500, callback=callback)
+    ahttpGetAll(urls, pool=500, timeout=60, callback=callback)
     print('AHTTP，书籍《' + bookname + '》完成下载')
 
     texts.sort(key=lambda x: x[0])  # #排序
@@ -152,7 +151,7 @@ def mainbycall(url):
 
 
 if __name__ == '__main__':
-    url = 'https://www.biqukan.com/2_2714/'
+    url = 'https://www.biqukan.com/0_790/'
     _stime = time.time()
     mainbycall(url)
     # texts = []
@@ -162,4 +161,4 @@ if __name__ == '__main__':
     # '38_38836'  #2676KB，#@  9秒
     # '0_790'     #8977KB，#@  13秒
     # "10_10736"    #34712KB，#@  24秒
-    # "2_2714"    #武炼巅峰，#@  36秒
+    # "2_2714"    #武炼巅峰，#@  38秒

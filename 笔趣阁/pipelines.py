@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-19 16:46:35
+@LastEditTime: 2020-03-23 15:00:51
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -43,7 +43,7 @@ class PipelineCheck(object):
             raise DropItem("PipelineCheck Duplicate item found: %s" % item)
         else:
             _showtext = item['ZJTEXT'].replace('[笔趣看\xa0\xa0www.biqukan.com]', '')
-            item['ZJTEXT'] = multiple_replace(_showtext, {'\xa0': '', '&nbsp;': '', '\\b;': '', 'app2();': '', 'chaptererror();': '', '百度搜索“笔趣看小说网”手机阅读:m.biqukan.com': '', '请记住本书首发域名:www.biqukan.com。笔趣阁手机版阅读网址:wap.biqukan.com': '', '[笔趣看www.biqukan.com]': '', '\n\n': '\n', '\n\n': '\n', '请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：wap.biqukan.com':'','\u3000': '', 'readtype!=2&&(\'vipchapter\n(\';\n\n}': ''})
+            item['ZJTEXT'] = multiple_replace(_showtext, {'\xa0': '', '&nbsp;': '', '\\b;': '', 'app2();': '', 'chaptererror();': '', '百度搜索“笔趣看小说网”手机阅读:m.biqukan.com': '', '请记住本书首发域名:www.biqukan.com。笔趣阁手机版阅读网址:wap.biqukan.com': '', '[笔趣看www.biqukan.com]': '', '\n\n': '\n', '\n\n': '\n', '请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：wap.biqukan.com': '', '\u3000': '', 'readtype!=2&&(\'vipchapter\n(\';\n\n}': ''})
 
             self.names_seen.add(item['ZJNAME'])
             return item

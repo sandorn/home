@@ -13,9 +13,12 @@
             "program": "${file}", // 将要进行调试的程序的路径
             "console": "internalConsole",
             "cwd": "${workspaceRoot}", // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
-            "env": {},
-            "envFile": "${workspaceRoot}/.env"
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            },
+            "envFile": "${workspaceFolder}/.env",
             //"args": ["--quiet", "--norepeat"] // 程序调试时传递给程序的命令行参数，一般为空
+            //"envFile":  "${workspaceRoot}/.env"
         },
         {
             "name": "Python:内置终端",
@@ -25,7 +28,9 @@
             "program": "${file}",
             "cwd": "${workspaceRoot}",
             "console": "integratedTerminal",
-            "env": {},
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            },
             "envFile": "${workspaceFolder}/.env",
             "args": [] // 程序调试时传递给程序的命令行参数，一般为空
         },
@@ -37,7 +42,9 @@
             "program": "${file}",
             "cwd": "",
             "console": "externalTerminal",
-            "env": {},
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            },
             "envFile": "${workspaceFolder}/.env",
             "debugOptions": [
                 "RedirectOutput"
@@ -62,7 +69,9 @@
                 "--noreload",
                 "--nothreading"
             ],
-            "env": {},
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}"
+            },
             "envFile": "${workspaceFolder}/.env",
             "debugOptions": [
                 "WaitOnAbnormalExit",

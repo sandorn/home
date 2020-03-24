@@ -11,7 +11,7 @@ https://blog.csdn.net/broadview2006/article/details/80132757
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-23 19:42:42
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-22 19:30:13
+@LastEditTime: 2020-03-20 18:32:39
 '''
 
 import sys
@@ -33,11 +33,13 @@ class CustWidget(QWidget):
         layout.addWidget(self.okButton)
         self.setLayout(layout)
         QtCore.QMetaObject.connectSlotsByName(self)
+        # #将控件操作绑定到函数
         self.okButton.clicked.connect(self.okButton_clicked)
 
     def okButton_clicked(self):
         print("单击了OK按钮")
 
+    # #利用控件名称传递信号
     @QtCore.pyqtSlot()
     def on_noButton_clicked(self):
         print("单击了NO按钮")

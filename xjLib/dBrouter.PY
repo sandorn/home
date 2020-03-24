@@ -7,7 +7,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-13 15:51:09
+@LastEditTime: 2020-03-23 14:53:41
 '''
 # ！/usr/bin/env python
 # -*-coding:utf-8-*-
@@ -50,6 +50,14 @@ dbconf = {
         'host': '127.0.0.1',
         'port': 6379,
         'db': 4
+    },
+    'proxy': {
+        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
+        'port': 10014,
+        'user': 'sandorn',
+        'passwd': '123456',
+        'db': 'proxy',
+        'charset': 'utf8mb4',
     },
 }
 
