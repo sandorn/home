@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "go Launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "remotePath": "",
+            //"port": 2345,
+            //"host": "127.0.0.1",
+            "program": "${fileDirname}", //workspaceRoot
+            "env": {},
+            "args": [],
+            "showLog": true
+        },
+        {
             "name": "Python38", // 配置名称，将会在启动配置的下拉菜单中显示
             "type": "python", // 配置类型
             "request": "launch", // 请求配置类型，可以为launch（启动）或attach（附加）
