@@ -1,22 +1,28 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
+@Descripttion: 头部注释
 @Develop: VSCode
 @Author: Even.Sand
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-02-29 23:00:26
+@Date: 2020-03-25 20:55:55
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-30 14:20:48
+@LastEditTime: 2020-03-26 19:18:14
+
 https://blog.csdn.net/ksws0393238aa/article/details/20286405?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task
 '''
 
 import os
-from xjLib.mystr import Ex_Re_Sub, savefile, Ex_Replace
+from threading import currentThread, enumerate
+import time
+
+from xjLib.ahttp import ahttpGet
+from xjLib.CustomThread import SingletonThread
+from xjLib.mystr import Ex_Re_Sub, Ex_Replace, savefile
 from xjLib.req import parse_get
-from xjLib.CustomThread import CustomThread
+
 texts = []  # 将爬下来的小说存列表list，做最后排序
 
 
@@ -53,22 +59,22 @@ def get_contents(lock, index, target):
             '\n\n': '\n',
         },
     )
+
     texts.append([index, name, '    ' + text])
 
-    # with lock:
-    #    print(threading.currentThread().name, '\tindex:', index, '\tdone。', flush=True)
+    with lock:
+        print(currentThread().name, '\tindex:', index, '\tdone。', flush=True)
 
     return [index, name, '    ' + text]
 
 
 def get_download_url(target):
-    urls = []  # 存放章节链接
-    # response = etree.HTML(parse_get(target).content)
-    resp = parse_get(target)
+    resp = ahttpGet(target)
     response = resp.html
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
     全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
+    urls = []  # 存放章节链接
     for item in 全部章节节点:
         _ZJHERF = 'https://www.biqukan.com' + item
         urls.append(_ZJHERF)
@@ -78,18 +84,21 @@ def get_download_url(target):
 def main_thread(target):
     bookname, urls = get_download_url(target)
     print('threading-继承，开始下载：《' + bookname + '》', flush=True)
-    MaxSem = 200
-    # 设置同时执行的线程数，其他等待执行
-    _ = [CustomThread(get_contents, (index, urls[index]), MaxSem) for index in range(len(urls))]
 
-    for task in CustomThread.all_Thread:
-        task.join()  # join等待线程执行结束
-        # callback(task.getResult()) # 获取线程结果,并回调
+    _ = [SingletonThread(get_contents, (index, urls[index]), 200) for index in range(len(urls))]
+
+    # 循环等待线程数量，降低到2
+    while True:
+        thread_num = len(enumerate())
+        # print("线程数量是%d" % thread_num)
+        if thread_num <= 2:  # #单例多线程较一般多线程多一个
+            break
+        time.sleep(0.2)
+
     print('threading-继承，书籍《' + bookname + '》完成下载', flush=True)
 
     texts.sort(key=lambda x: x[0])
-    # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
-    files = os.path.split(__file__)[-1].split(".")[0]
+    files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + '.txt', texts, br='\n')
 
 
@@ -97,5 +106,5 @@ if __name__ == '__main__':
     main_thread('https://www.biqukan.com/2_2714/')
     # '38_38836'  #34秒
     # '10_10736'  #
-    # "2_2714"   #《武炼巅峰》1724万字,47839kb, #!77秒。无线程限制
-    # '0_790'    #《元尊》328万字， 8988KB， 45秒钟
+    # "2_2714"   #
+    # '0_790'    #

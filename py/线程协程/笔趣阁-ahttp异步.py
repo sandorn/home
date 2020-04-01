@@ -9,14 +9,14 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-20 18:37:12
+@LastEditTime: 2020-03-27 11:38:30
 变更requests为ahttp
 '''
 import os
 import time
 
 from xjLib.ahttp import ahttpGet, ahttpGetAll
-from xjLib.mystr import Ex_Re_Sub, get_stime, savefile, Ex_Replace
+from xjLib.mystr import Ex_Re_Sub, get_time, savefile, Ex_Replace
 
 
 def get_download_url(target):
@@ -77,7 +77,8 @@ def 结果处理(resps):
 
 
 def callback(resp):
-    if resp is None: return
+    if resp is None:
+        return
 
     index = resp.index
     response = resp.html
@@ -116,42 +117,42 @@ def callback(resp):
 
 
 def main(url):
-    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_stime()), flush=True)
+    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_time()), flush=True)
     bookname, urls = get_download_url(url)
     print('AHTTP,开始下载：《' + bookname + '》', flush=True)
 
     # 方法2：不回调，获取最终结果，自动排序
     resps = ahttpGetAll(urls, pool=200)
-    print('小说爬取完成，开始整理数据\t time:{} 。'.format(get_stime()))
+    print('小说爬取完成，开始整理数据\t time:{} 。'.format(get_time()))
 
     结果处理(resps)
-    print('AHTTP，书籍《' + bookname + '》数据整理完成，time:{}'.format(get_stime()), flush=True)
+    print('AHTTP，书籍《' + bookname + '》数据整理完成，time:{}'.format(get_time()), flush=True)
 
     texts.sort(key=lambda x: x[0])  # #排序
     # @重新梳理数据，剔除序号
     aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
     savefile(bookname + '.txt', aftertexts, br='\n')
-    print('{} 结束，\t用时:{} 秒。'.format(get_stime(), round(time.time() - _stime, 2)), flush=True)
+    print('{} 结束，\t用时:{} 秒。'.format(get_time(), round(time.time() - _stime, 2)), flush=True)
 
 
 def mainbycall(url):
-    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_stime()), flush=True)
+    print('打开：《{}》\t{}\t获取下载链接......'.format(url, get_time()), flush=True)
     bookname, urls = get_download_url(url)
-    print('AHTTP,开始下载：《' + bookname + '》', flush=True)
+    print('ahttp，开始下载：《' + bookname + '》', flush=True)
     # 方法1：使用回调，不排序
     ahttpGetAll(urls, pool=500, timeout=60, callback=callback)
-    print('AHTTP，书籍《' + bookname + '》完成下载')
+    print('ahttp，书籍《' + bookname + '》完成下载')
 
     texts.sort(key=lambda x: x[0])  # #排序
     # @重新梳理数据，剔除序号
     aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
-    files = os.path.split(__file__)[-1].split(".")[0]
+    files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + '.txt', aftertexts, br='\n')
-    print('{} 结束，\t用时:{} 秒。'.format(get_stime(), round(time.time() - _stime, 2)))
+    print('{} 结束，\t用时:{} 秒。'.format(get_time(), round(time.time() - _stime, 2)))
 
 
 if __name__ == '__main__':
-    url = 'https://www.biqukan.com/0_790/'
+    url = 'https://www.biqukan.com/2_2714/'
     _stime = time.time()
     mainbycall(url)
     # texts = []

@@ -8,11 +8,13 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-14 23:47:26
+@LastEditors: Even.Sand
+@LastEditTime: 2020-03-25 16:07:21
 __Author__ = 'Even.Sand'
+
+#!无效，保留一份
 '''
-from xjLib.dBrouter import dbconf
+from xjLib.dbRouter import db_conf
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 import pandas
@@ -24,13 +26,12 @@ class MySQLConnection(object):
             cls._instance = super(MySQLConnection, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, DBname='master'):
-        if DBname not in dbconf:
-            print('错误提示：检查数据库配置：' + DBname)
-            # self.__del__()
-            exit(1)
+    def __init__(self, dbName='master'):
+        if dbName not in db_conf:
+            print('错误提示：检查数据库配置：' + dbName)
+            exit(1)  # self.__del__()
 
-        _connect_info = 'mysql://{}:{}@{}:{}/{}?charset={}'.format(dbconf[DBname]['user'], dbconf[DBname]['passwd'], dbconf[DBname]['host'], dbconf[DBname]['port'], dbconf[DBname]['db'], dbconf[DBname]['charset'])
+        _connect_info = 'mysql://{}:{}@{}:{}/{}?charset={}'.format(db_conf[dbName]['user'], db_bconf[dbName]['passwd'], db_conf[dbName]['host'], db_conf[dbName]['port'], db_conf[dbName]['db'], db_conf[dbName]['charset'])
         try:
             self.engine = create_engine(_connect_info, encoding="utf-8", echo=True)
             self.metadata = MetaData(self.engine)  # 绑定元信息

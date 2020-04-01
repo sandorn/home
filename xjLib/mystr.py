@@ -9,11 +9,54 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-18 01:24:31
+@LastEditTime: 2020-03-31 19:22:21
 '''
 import hashlib
 import os
 import re
+import threading
+import time
+from functools import wraps
+
+
+def Singleton_warp(cls):
+    """单例装饰器"""
+    _instance = {}
+
+    def _singleton(*args, **kargs):
+        if cls not in _instance:
+            _instance[cls] = cls(*args, **kargs)
+        return _instance[cls]
+
+    return _singleton
+
+
+class Singleton(object):
+    """单例类"""
+    """实例化 obj = Singleton()"""
+    _instance_lock = threading.Lock()
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(Singleton, "_instance"):
+            with Singleton._instance_lock:
+                if not hasattr(Singleton, "_instance"):
+                    Singleton._instance = super().__new__(cls, *args, **kwargs)
+        return Singleton._instance
+
+    def __init__(self):
+        pass
+
+
+def fn_timer(function):
+    '''定义一个装饰器来测量函数的执行时间'''
+    @wraps(function)
+    def function_timer(*args, **kwargs):
+        t0 = time.time()
+        result = function(*args, **kwargs)
+        t1 = time.time()
+        print("Total time running with [%s]: %.2f seconds" % (function.__name__, t1 - t0))
+        return result
+    return function_timer
 
 
 def txt2List(filepath):
@@ -73,8 +116,7 @@ def cn2num(章节编号):
                       '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5,
                       '7': 7, '8': 8, '9': 9}
 
-    num_list = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '零', '千',
-                '百', ]
+    num_list = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '零', '千', '百', ]
 
     def get_tit_num(title):
         result = ''
@@ -139,11 +181,9 @@ def change2num(章节编号):
     return m
 
 
-def get_FileSize(filePath):
-
-    fsize = os.path.getsize(filePath)
-    fsize = fsize / float(1024 * 1024)
-
+def get_file_size(filePath):
+    _fsize = os.path.getsize(filePath)
+    fsize = _fsize / float(1024 * 1024)
     return round(fsize, 2)
 
 
@@ -162,9 +202,7 @@ def Ex_Re_Sub(oldtext, *args, **kwds):
 
 
 def Ex_Replace(oldtext, adict):
-    '''
-    用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'})
-    '''
+    '''用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'})'''
     def _run(oldtext, key, value):
         return oldtext.replace(key, value)
 
@@ -185,17 +223,17 @@ def list2file(_filename, _list_texts, br='\t'):
                 [file.write(str(v) + br) for v in index]
                 file.write('\n')
 
-    size = "文件大小：%.2f MB" % (get_FileSize(_filename))
-    print('[{}]保存完成\t文件{}\ttime:{}。'.format(_filename, size, get_stime()))
-    # # 下面换行问题
-    # #[f.write(str(v) + '\t') for key in lists for index in key for v in index]
+    size = "文件大小：%.2f MB" % (get_file_size(_filename))
+    print('[{}]保存完成\t文件{}\ttime:{}。'.format(_filename, size, get_time()))
+
+    # #换行有问题[f.write(str(v) + '\t') for key in lists for index in key for v in index]
 
 
 def savefile(_filename, _list_texts, br=''):
-    # 函数说明:将爬取的文章内容写入文件,迭代多层
-    # br为标题换行标志，可以用'\t'
-    # #多层次的list 或 tuple写入文件
-    print('[{}]开始保存......time:{}。'.format(_filename, get_stime()))
+    '''   函数说明:将爬取的文章内容写入文件,迭代多层   '''
+    '''   br为标题换行标志，可以用'\t'   '''
+    '''   多层次的list 或 tuple写入文件   '''
+
     with open(_filename, 'w', encoding='utf-8') as file:
         file.write(_filename + '\n')
 
@@ -210,8 +248,8 @@ def savefile(_filename, _list_texts, br=''):
 
         each(_list_texts)
 
-    size = "size：%.2f MB" % (get_FileSize(_filename))
-    print('[{}]保存完成\t{}\ttime:{}。'.format(_filename, size, get_stime()))
+    size = "size：%.2f MB" % (get_file_size(_filename))
+    print('[{}]保存完成\t{}\ttime:{}。'.format(_filename, size, get_time()))
 
 
 def flatten(nested):
@@ -234,19 +272,25 @@ def flatten(nested):
 
 def get_stime():
     import datetime
-
     time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
     return time_now
 
 
-def get_litetime():
+def get_time():
     import datetime
-
     time_now = datetime.datetime.now().strftime('%H:%M:%S.%f')
     return time_now
 
 
 if __name__ == "__main__":
+    a = Singleton()
+    b = Singleton()
+    c = Singleton()
+    print(id(a), type(a))
+    print(id(b), type(b))
+    print(id(c), type(c))
+
+    '''
     res = ([1, 2, 3, 4, 5], [11, 46,
                              87], [125232], [5667, 2356, 26, 6215, 9741, 23525])
     res2 = [
@@ -256,3 +300,4 @@ if __name__ == "__main__":
     # savefile('d:/1.txt', res2)
     # for i in flatten(12141.98792):
     #   print(i)
+    '''

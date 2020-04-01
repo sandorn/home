@@ -9,11 +9,12 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-24 21:40:14
+@LastEditTime: 2020-04-01 11:07:10
 '''
 import asyncio
 import ctypes
 import json
+import random
 from functools import partial
 from html import unescape
 
@@ -21,7 +22,7 @@ import aiohttp
 from cchardet import detect
 from fake_useragent import UserAgent
 from lxml import etree
-from opnieuw import RetryException, retry
+
 # from retrying import retry
 
 __all__ = ('map', 'Session', 'get', 'options', 'head', 'post', 'put', 'patch', 'delete')
@@ -91,7 +92,7 @@ class AsyncRequestTask:
         return self
 
     def run(self):
-        future = asyncio.ensure_future(ArTask_run(self))
+        future = asyncio.ensure_future(AyTask_run(self))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(future)
         new_res = AhttpResponse(self.result, self.content, self)
@@ -123,7 +124,7 @@ patch = partial(create_session, "patch")
 delete = partial(create_session, "delete")
 
 
-async def ArTask_run(self):
+async def AyTask_run(self):
     # #单个任务，从task.run()调用
     async def _run():
         async with aiohttp.ClientSession(cookies=self.cookies) as session:
@@ -136,10 +137,10 @@ async def ArTask_run(self):
     while max_try > 0:
         try:
             await _run()
-            print(self, index, 'ArTask_run done')
+            print(self, f'times:{index}', 'AyTask ok')
             break
         except Exception as err:
-            print(self, index, 'ArTask_run err:', repr(err))
+            print(self, f'times:{index}', 'AyTask err:', repr(err))
             max_try -= 1
             index += 1
             await asyncio.sleep(0.1)
@@ -250,36 +251,9 @@ async def control_sem(task, result, session):
         await fetch(task, result, session)
 
 
-async def fetch_Opnieuw(task, result, session):
-    # # fetch_Opnieuw  #最终解决：增加timeout为300
-    @retry(
-        retry_on_exceptions=(asyncio.exceptions.TimeoutError, asyncio.exceptions.CancelledError, asyncio.TimeoutError, RetryException),
-        max_calls_total=10,
-        retry_window_after_first_call_in_seconds=5,)
-    async def _run():
-        print(task, 'fetch start...')
-        headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
-        async with session.request(task.method, task.url, *task.args, headers=headers, timeout=20, **task.kw) as sessReq:
-            assert (sessReq.status == 200) or (sessReq.status == 302)
-            content = await sessReq.read()
-            new_res = AhttpResponse(sessReq, content, task)
-            result.append(new_res)
-
-            if task.callback:
-                task.callback(new_res)  # 有回调则调用
-            return new_res
-
-    try:
-        await _run()
-        print(task, 'fetch done。')
-    except Exception as err:
-        print(task, 'fetch err:', repr(err), flush=True)
-        #raise err
-
-
 async def fetch(task, result, session):
     async def _run(index):
-        print(task, index, 'fetch start...')
+        # print(task, index, 'fetch start...')
         headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
         async with session.request(task.method, task.url, headers=headers, *task.args, **task.kw) as sessReq:
             assert sessReq.status in [200, 201, 302]
@@ -296,13 +270,13 @@ async def fetch(task, result, session):
     while max_try > 0:
         try:
             await _run(index)
-            print(task, index, 'fetch done。')
+            print(task, f'times:{index}', 'fetch ok。')
             break
         except Exception as err:
-            print(task, index, 'fetch err:', repr(err))
+            print(task, f'times:{index}', 'fetch err:', repr(err))
             index += 1
             max_try -= 1
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(random.random())
             continue  # 继续下一轮循环
 
 
@@ -316,3 +290,36 @@ def ahttpGetAll(urls, pool=100, params=None, **kwargs):
     tasks = [get(url, params=params, **kwargs) for url in urls]
     resps = run(tasks, pool=pool)
     return resps
+
+
+'''
+from opnieuw import RetryException, retry
+
+async def fetch_Opnieuw(task, result, session):
+    # # fetch_Opnieuw  #最终解决：增加timeout为300
+    @retry(
+        retry_on_exceptions=(asyncio.exceptions.TimeoutError, asyncio.exceptions.CancelledError, asyncio.TimeoutError, RetryException),
+        max_calls_total=10,
+        retry_window_after_first_call_in_seconds=5,)
+    async def _run():
+        # print(task, 'fetch_Opnieuw start...')
+        headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
+        async with session.request(task.method, task.url, *task.args, headers=headers, timeout=20, **task.kw) as sessReq:
+            assert (sessReq.status == 200) or (sessReq.status == 302)
+            content = await sessReq.read()
+            new_res = AhttpResponse(sessReq, content, task)
+            result.append(new_res)
+
+            if task.callback:
+                task.callback(new_res)  # 有回调则调用
+            return new_res
+
+    try:
+        await _run()
+        print(task, 'fetch_Opnieuw ok。')
+    except Exception as err:
+        print(task, 'fetch_Opnieuw err:', repr(err), flush=True)
+        #raise err
+
+
+'''

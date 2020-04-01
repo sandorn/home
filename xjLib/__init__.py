@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-24 08:12:45
+@LastEditTime: 2020-03-26 14:13:05
 '''
 # package
 # __init__.py
@@ -17,16 +17,12 @@
 __author__ = 'Even.Sand'
 __license__ = 'NewSea'
 
-xjLib_VERSION = __version__ = '0.1.2'
+xjLib_VERSION = __version__ = '0.1.9'
 
 __all__ = [
     'ahttp',
     "CustomThread",
-    "dBrouter",
     "mystr",
-    "mssql",
-    "mysql",
-    "sqlorm",
     "txCos",
     "qiniuCos",
     "req",

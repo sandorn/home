@@ -9,34 +9,45 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors: Even.Sand
-@LastEditTime: 2020-02-19 00:36:01
+@LastEditTime: 2020-03-25 20:35:52
 '''
 
-from xjLib.dBrouter import dbconf
-import MySQLdb as mysql
-import pymysql as pmysql
+from dbRouter import db_conf
+import MySQLdb  # mysqlclient
+import pymysql
 import pandas
+import mysql.connector
 
 
-class MySQLConnection(object):
+class SqlHelper(object):
+    '''
     def __new__(cls, *args, **kwargs):
-        # print("__new__方法被调用")
+        print("In __new__()")
+        # #单实例模式
         if not hasattr(cls, '_instance'):
-            # if not '_instance' in vars(cls):
-            cls._instance = super(MySQLConnection, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
+    '''
 
-    def __init__(self, DBname='master', odbc='mysql'):
-        if DBname not in dbconf:
-            print('错误提示：检查数据库配置：' + DBname)
-            # self.__del__()
-            exit(1)
+    def __init__(self, dbName='default', odbc='mysqlclient'):
+        self.dbName = dbName
+        self.odbc = odbc
+
+        if dbName not in db_conf:
+            raise('错误提示：检查数据库配置：' + dbName)
+
+        _dbconf = db_conf[dbName]
+        if 'type' in _dbconf:
+            _dbconf.pop('type')
 
         try:
-            if odbc == 'mysql':
-                self.conn = mysql.connect(**dbconf[DBname])
-            else:
-                self.conn = pmysql.connect(**dbconf[DBname])
+            if odbc == 'connector':
+                self.conn = mysql.connector.connect(**_dbconf)
+            elif odbc == 'pymysql':
+                self.conn = pymysql.connect(**_dbconf)
+            else:   # mysqlclient
+                self.conn = MySQLdb.connect(**_dbconf)
+
             self.cur = self.conn.cursor()
             print("获取数据库连接对象成功,连接池:{}".format(str(self.conn)))
         except Exception as error:
@@ -49,23 +60,30 @@ class MySQLConnection(object):
     '''
 
     def __enter__(self):
-        print("In __enter__()")
+        print(self.dbName, self.odbc, "In __enter__()")
         return self
 
-    def __exit__(self, args):
+    def __exit__(self):
         self.__del__()
-        print("In __exit__()")
+        print(self.dbName, self.odbc, "In __exit__()")
 
     def __del__(self):
-        # print("__del__方法被调用")
-        if hasattr(self, 'cur'):
+        print(self.dbName, self.odbc, "In __del__()")
+        if hasattr(self, 'cur') and (self.odbc != 'connector'):
             self.cur.close()
         if hasattr(self, 'conn'):
             self.conn.close()
 
     def __str__(self):
         """返回一个对象的描述信息"""
-        return 'MySQLdb数据库对象'
+        return f'mysql数据库对象，<dbName：[{self.dbName}] , odbc：[{self.odbc}]>\n可选驱动：[mysql.connector]；[pymysql]；[mysqlclient]；\n默认驱动[mysqlclient：MySQLdb]。'
+
+    def init_db(self):
+        self.db = self.client.proxy
+        self.proxys = self.db.proxys
+
+    def close(self):
+        pass
 
     def worKon(self, sql, args=[]):
         try:
@@ -81,7 +99,7 @@ class MySQLConnection(object):
         # 以字典形式提交插入
         ls = [(k, dt[k]) for k in dt if dt[k] is not None]
         sql = 'insert %s (' % tb_name + ','.join([i[0] for i in ls]) + ') values (' + ','.join(['%r' % i[1] for i in ls]) + ');'
-        # print(sql)
+        print(sql)
         self.worKon(sql)
 
     def update(self, dt_update, dt_condition, tb_name):
@@ -131,18 +149,23 @@ class MySQLConnection(object):
 
 
 if __name__ == '__main__':
-    db = MySQLConnection()
-    # 使用execute方法执行SQL语句
+    db = SqlHelper('TXbook', 'connector')
     db.cur.execute("SELECT VERSION()")
-    # 使用 fetchone() 方法获取一条数据库。
-    print("数据库版本：", db.cur.fetchone())
+    print("1数据库版本：", db.cur.fetchone())
 
-    db2 = MySQLConnection('db4', 'pmysql')
-    # 使用execute方法执行SQL语句
+    db2 = SqlHelper('TXbook', 'pymysql')  # 'mysqlclient' ; 'pymysql' ; 'connector'
     db2.cur.execute("SELECT VERSION()")
-    # 使用 fetchone() 方法获取一条数据库。
-    print("数据库版本：", db2.cur.fetchone())
+    print("2数据库版本：", db2.cur.fetchone())
 
+    print(id(db))
+    print(id(db2))
+
+'''
+    db3 = SqlHelper('TXbook')
+    db3.cur.execute("SELECT VERSION()")
+    print("3数据库版本：", db3.cur.fetchone())
+    db3.conn.close()
+'''
 
 '''
     if myDb:
