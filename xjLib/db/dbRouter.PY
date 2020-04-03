@@ -7,7 +7,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-26 15:01:10
+@LastEditTime: 2020-04-03 15:33:34
 '''
 # ！/usr/bin/env python
 # -*-coding:utf-8-*-
@@ -31,7 +31,7 @@ db_conf = {
         'db': 'bxflb',
         'charset': 'utf8mb4',
     },
-    'STXbx': {
+    'TX_Root': {
         'type': 'mysql',
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
@@ -55,13 +55,13 @@ db_conf = {
         'port': 6379,
         'db': 4
     },
-    'proxy': {
+    'Jkdoc': {
         'type': 'mysql',
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
         'user': 'sandorn',
         'passwd': '123456',
-        'db': 'proxy',
+        'db': 'Jkdoc',
         'charset': 'utf8mb4',
     },
 }

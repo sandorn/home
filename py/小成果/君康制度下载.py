@@ -9,8 +9,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 00:20:05
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-04 16:53:36
+@LastEditors: Even.Sand
+@LastEditTime: 2020-04-03 19:32:03
 
 使用beautifulsoup和pyquery爬小说 - 坚强的小蚂蚁 - 博客园
 https://www.cnblogs.com/regit/p/8529222.html
@@ -20,6 +20,10 @@ from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
 from pyquery import PyQuery
 import requests
 import json
+
+from xjLib.log import log
+
+log = log()
 
 head = {
     'Accept': '*/*',
@@ -38,18 +42,20 @@ cookies = {'avatarImageUrl': '7597432631771349600',  # 与用户名对应
            'loginPageURL': '',
            'login_locale': 'zh_CN'}
 session = requests.session()
+# log.print(41, session)
 session.keep_alive = False
 # 设置请求头信息
 session.headers = head
 requests.utils.add_dict_to_cookiejar(session.cookies, cookies)
+log.print(46, session.cookies)
 
 
 def login():
 
     response = session.get('http://oa.jklife.com/')
-    #log.p(response.headers, response.cookies)
+    log.print(50, response.cookies)
     session.cookies = set_cookies(response.cookies)
-    # log.p(session.cookies)
+    log.print(54, session.cookies)
 
     payload = {
         'authorization': None,
@@ -64,7 +70,7 @@ def login():
     }
     response = session.post('http://oa.jklife.com/seeyon/main.do?method=login', data=payload, allow_redirects=False)
     session.cookies = set_cookies(response.cookies)
-    # log.p(session.cookies)
+    log.print(73, session.cookies)
 
 
 def set_cookies(cookies):
@@ -78,24 +84,24 @@ def set_cookies(cookies):
 
 def get_download_url(stop=None):
     _urls = []
-    payload = {"managerMethod": "findBulDatas",
-               "arguments": json.dumps([{"pageSize": "20", "pageNo": 1, "spaceType": "", "spaceId": "", "typeId": "", "condition": "", "textfield1": "", "textfield2": "", "myBul": ""}])}
+    payload = {"managerName": "bulDataManager",
+               "method": "ajaxAction",
+               "rnd": "66666",
+               "managerMethod": "findBulDatas",
+               "arguments": json.dumps([{"pageSize": "9999", "pageNo": 1}])}
 
-    _response = session.post("http://oa.jklife.com/seeyon/ajax.do?method=ajaxAction&managerName=bulDataManager&rnd=97013",
-                             data=payload)
-    # log.p(_response.text)
+    _response = session.post("http://oa.jklife.com/seeyon/ajax.do", data=payload)
 
     _dic = _response.json()
     pages = int(_dic['pages'])  # 总页数
     size = _dic['size']  # 总项目数量
-    log.p('总页数：' + str(pages) + '\t总size数：' + str(size))
+    log.print('总页数：' + str(pages) + '\t总size数：' + str(size))
 
     for i in range(pages):
         pageNo = i + 1
         payload = {"managerMethod": "findBulDatas",
                    "arguments": json.dumps([{"pageSize": "20", "pageNo": pageNo, "spaceType": "", "spaceId": "", "typeId": "", "condition": "", "textfield1": "", "textfield2": "", "myBul": ""}])}
-        _response = session.post("http://oa.jklife.com/seeyon/ajax.do?method=ajaxAction&managerName=bulDataManager&rnd=40592",
-                                 data=payload)
+        _response = session.post("http://oa.jklife.com/seeyon/ajax.do?method=ajaxAction&managerName=bulDataManager&rnd=40592", data=payload)
 
         _dic = _response.json()
         _itlist = _dic['list']  # 当前页面项目列表
@@ -110,21 +116,19 @@ def get_download_url(stop=None):
 def mkdir(path):
     # 引入模块
     import os
-    # 去除首位空格
-    path = path.strip()
-    # 去除尾部 \ 符号
-    path = path.rstrip("\\")
+    # 去除首位空格   # 去除尾部 \ 符号
+    path = path.strip().rstrip("\\")
     # 判断路径是否存在{存在:True;不存在:False}
     isExists = os.path.exists(path)
     # 判断结果
     if not isExists:
         # 如果不存在则创建目录
         os.makedirs(path)
-        log.p(path + ' 创建成功')
+        log.print(path + ' 创建成功')
         return True
     else:
         # 如果目录存在则不创建，并提示目录已存在
-        log.p(path + ' 目录已存在')
+        log.print(path + ' 目录已存在')
         return False
 
 
@@ -134,12 +138,12 @@ def getdown(title, url):
         return
 
     _res = session.get(url)
-    # log.p(_res.headers)
+    # log.print(_res.headers)
     with open(path + '/' + title + '.html', 'w', encoding='utf-8') as f:
         f.write(_res.content.decode('utf-8'))
     soup = PyQuery(_res.content.decode('utf-8'))
     _公告正文 = soup('tr').text()
-    # log.p(_公告正文)
+    # log.print(_公告正文)
     with open(path + '/' + title + '.txt', 'w', encoding='utf-8') as f:
         f.write(title + '\n\n' + _公告正文)
 
@@ -150,7 +154,7 @@ def getdown(title, url):
     附件跳转列表 = []
     _url = 'http://oa.jklife.com/seeyon/fileDownload.do'
     for item in json.loads(_附件下载):  # list
-        # log.p(item)
+        # log.print(item)
         formdata = {
             'method': 'download',
             'fileId': item['fileUrl'],
@@ -161,39 +165,41 @@ def getdown(title, url):
         _res = session.get(url=_url, params=formdata, allow_redirects=False)
         # requests.get(url=_url, params=formdata, headers=head, allow_redirects=False)
         real_url = _res.headers['Location']  # 得到网页原始地址
-        log.p(real_url)
+        log.print(real_url)
         附件跳转列表.append((item['filename'], real_url))
 
     _t = 'http://oa.jklife.com'
     for item in 附件跳转列表:
         _res = session.get(url=_t + item[1], allow_redirects=False)
-        # log.p(_res.text)
+        # log.print(_res.text)
         with open(path + '/' + item[0], 'wb') as f:
             f.write(_res.content)
 
 
 def main():
-    log.p('开始下载公告，获取列表信息......')
+    log.print('开始下载公告，获取列表信息......')
     login()
     # @上一次下载到的文件位置，停止标志
     stop = '18号关于李飞等职务任免的通知'
 
     urls = get_download_url(stop)
-    log.p('总项目：' + str(len(urls)))
-    log.p('获取列表信息完成，开始下载正文及附件......')
+    log.print('总项目：' + str(len(urls)))
+    log.print('获取列表信息完成，开始下载正文及附件......')
     t = 'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId='
     # 创建多进程队列
     with Pool(25) as p:
-        _ = [
-            p.submit(getdown, item[0], t + item[1])for item in urls]
+        _ = [p.submit(getdown, item[0], t + item[1])for item in urls]
     '''
     for index, item in enumerate(urls):
-        log.p('项目序号：' + str(index))
+        log.print('项目序号：' + str(index))
         getdown(item[0], t + item[1])'''
-    log.p('公告正文及附件下载完成，请检查。')
+    log.print('公告正文及附件下载完成，请检查。')
 
 
 if __name__ == '__main__':
-    from xjLib.log import log
-    log = log()
-    main()
+
+    # main()
+    log.print('开始下载公告，获取列表信息......')
+    login()
+    urls = get_download_url(None)
+    print(len(urls))

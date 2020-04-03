@@ -9,30 +9,15 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-27 11:38:30
+@LastEditTime: 2020-04-02 10:06:34
 变更requests为ahttp
 '''
 import os
 import time
 
 from xjLib.ahttp import ahttpGet, ahttpGetAll
-from xjLib.mystr import Ex_Re_Sub, get_time, savefile, Ex_Replace
-
-
-def get_download_url(target):
-    urls = []  # 存放章节链接
-    resp = ahttpGet(target)
-    # response = resp.html
-    # 指定解析器
-    response = resp.html
-
-    _bookname = response.xpath('//h2/text()', first=True)[0]
-    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
-
-    for item in 全部章节节点:
-        _ZJHERF = 'https://www.biqukan.com' + item
-        urls.append(_ZJHERF)
-    return _bookname, urls
+from xjLib.mystr import Ex_Re_Sub, savefile, Ex_Replace, fn_timer
+from xjLib.ls import get_download_url
 
 
 texts = []
@@ -112,54 +97,41 @@ def callback(resp):
             '\n\n': '\n',
         },
     )
-    #print(resp.task, 'index:',index,',has done。', flush=True)
     texts.append([index, name, '    ' + text])
 
 
+@fn_timer
 def main(url):
-    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_time()), flush=True)
     bookname, urls = get_download_url(url)
-    print('AHTTP,开始下载：《' + bookname + '》', flush=True)
-
-    # 方法2：不回调，获取最终结果，自动排序
     resps = ahttpGetAll(urls, pool=200)
-    print('小说爬取完成，开始整理数据\t time:{} 。'.format(get_time()))
 
     结果处理(resps)
-    print('AHTTP，书籍《' + bookname + '》数据整理完成，time:{}'.format(get_time()), flush=True)
 
     texts.sort(key=lambda x: x[0])  # #排序
-    # @重新梳理数据，剔除序号
-    aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
-    savefile(bookname + '.txt', aftertexts, br='\n')
-    print('{} 结束，\t用时:{} 秒。'.format(get_time(), round(time.time() - _stime, 2)), flush=True)
-
-
-def mainbycall(url):
-    print('打开：《{}》\t{}\t获取下载链接......'.format(url, get_time()), flush=True)
-    bookname, urls = get_download_url(url)
-    print('ahttp，开始下载：《' + bookname + '》', flush=True)
-    # 方法1：使用回调，不排序
-    ahttpGetAll(urls, pool=500, timeout=60, callback=callback)
-    print('ahttp，书籍《' + bookname + '》完成下载')
-
-    texts.sort(key=lambda x: x[0])  # #排序
-    # @重新梳理数据，剔除序号
-    aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
+    aftertexts = [[row[i] for i in range(1, 3)] for row in texts]  # @重新梳理数据，剔除序号
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + '.txt', aftertexts, br='\n')
-    print('{} 结束，\t用时:{} 秒。'.format(get_time(), round(time.time() - _stime, 2)))
+    savefile(files + '＆' + bookname + 'main.txt', aftertexts, br='\n')
+
+
+@fn_timer
+def mainbycall(url):
+    bookname, urls = get_download_url(url)
+    ahttpGetAll(urls, pool=500, timeout=60, callback=callback)
+
+    texts.sort(key=lambda x: x[0])  # #排序
+    aftertexts = [[row[i] for i in range(1, 3)] for row in texts]  # @重新梳理数据，剔除序号
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'mainbycall.txt', aftertexts, br='\n')
 
 
 if __name__ == '__main__':
+    from xjLib.log import log
+    mylog = log()
     url = 'https://www.biqukan.com/2_2714/'
     _stime = time.time()
     mainbycall(url)
-    # texts = []
-    # main(url)
+    texts = []
+    main(url)
 
-    # '76_76519'  #章节少，#@  4秒
-    # '38_38836'  #2676KB，#@  9秒
-    # '0_790'     #8977KB，#@  13秒
-    # "10_10736"    #34712KB，#@  24秒
+    # '38_38836'  #2676KB，#@  6秒
     # "2_2714"    #武炼巅峰，#@  38秒

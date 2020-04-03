@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-01 11:07:10
+@LastEditTime: 2020-04-02 17:13:42
 '''
 import asyncio
 import ctypes
@@ -110,8 +110,15 @@ def wrap_headers(headers):
 
 
 def create_session(method, *args, **kw):
-    sess = Session()
-    return {"get": sess.get, "post": sess.post, "options": sess.options, "head": sess.head, "put": sess.put, "patch": sess.patch, "delete": sess.delete}[method](*args, **kw)
+    session = Session()
+    _dict = {"get": session.get,
+             "post": session.post,
+             "options": session.options,
+             "head": session.head,
+             "put": session.put,
+             "patch": session.patch,
+             "delete": session.delete}
+    return _dict[method](*args, **kw)
 
 
 # #使用偏函数 Partial，快速构建多个函数
@@ -137,10 +144,10 @@ async def AyTask_run(self):
     while max_try > 0:
         try:
             await _run()
-            print(self, f'times:{index}', 'AyTask ok')
+            print(f'{self}\ttimes:{index}\tAyTask Done.')
             break
         except Exception as err:
-            print(self, f'times:{index}', 'AyTask err:', repr(err))
+            print(f'{self}\ttimes:{index}\tAyTask Err:', repr(err))
             max_try -= 1
             index += 1
             await asyncio.sleep(0.1)
@@ -167,6 +174,10 @@ class AhttpResponse:
     @property
     def cookies(self):
         return self.clientResponse.cookies
+
+    @property
+    def session(self):
+        return self.task.session
 
     @property
     def headers(self):
@@ -245,15 +256,14 @@ async def multi_req(tasks, conn, pool, result):
 
 
 async def control_sem(task, result, session):
-    # !适用信号量限制并发数
+    # !使用信号量限制并发数
     maxsem = asyncio.Semaphore(task.pool)
     async with maxsem:
-        await fetch(task, result, session)
+        await fetch_async(task, result, session)
 
 
-async def fetch(task, result, session):
-    async def _run(index):
-        # print(task, index, 'fetch start...')
+async def fetch_async(task, result, session):
+    async def _run():
         headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
         async with session.request(task.method, task.url, headers=headers, *task.args, **task.kw) as sessReq:
             assert sessReq.status in [200, 201, 302]
@@ -266,15 +276,14 @@ async def fetch(task, result, session):
             return new_res
 
     max_try = 10
-    index = 0
+    maxsave = max_try
     while max_try > 0:
         try:
-            await _run(index)
-            print(task, f'times:{index}', 'fetch ok。')
+            await _run()
+            print(f'{task}\ttimes:{maxsave - max_try}\tFetch_async Done.')
             break
         except Exception as err:
-            print(task, f'times:{index}', 'fetch err:', repr(err))
-            index += 1
+            print(f'{task}\ttimes:{maxsave - max_try}\tFetch_async Err:', repr(err))
             max_try -= 1
             await asyncio.sleep(random.random())
             continue  # 继续下一轮循环

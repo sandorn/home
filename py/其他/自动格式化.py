@@ -1,3 +1,18 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+@Descripttion: 头部注释
+@Develop: VSCode
+@Author: Even.Sand
+@Contact: sandorn@163.com
+@Github: https://github.com/sandorn/home
+@License: (C)Copyright 2009-2020, NewSea
+@Date: 2019-05-03 23:26:06
+@LastEditors: Even.Sand
+@LastEditTime: 2020-04-03 11:02:56
+'''
+
+
 def example1():
     some_tuple = (1, 2, 3, 'a')
     some_variable = {
@@ -28,4 +43,4 @@ class Example3(object):
         else:
             some_string = """
                        Indentation in multiline strings should not be touched.Only actual code should be reindented.
-"""
+                        """

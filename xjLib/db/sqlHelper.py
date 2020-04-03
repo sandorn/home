@@ -9,10 +9,10 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-25 20:35:52
+@LastEditTime: 2020-04-03 19:33:12
 '''
 
-from dbRouter import db_conf
+from .dbRouter import db_conf
 import MySQLdb  # mysqlclient
 import pymysql
 import pandas
@@ -49,6 +49,7 @@ class SqlHelper(object):
                 self.conn = MySQLdb.connect(**_dbconf)
 
             self.cur = self.conn.cursor()
+            #! pandasData = pandas.read_sql(sql, connect.conn)  # 读MySQL数据,connect.conn
             print("获取数据库连接对象成功,连接池:{}".format(str(self.conn)))
         except Exception as error:
             print('\033[connect Error:\n', error, ']\033', sep='')  # repr(error)
@@ -77,6 +78,16 @@ class SqlHelper(object):
     def __str__(self):
         """返回一个对象的描述信息"""
         return f'mysql数据库对象，<dbName：[{self.dbName}] , odbc：[{self.odbc}]>\n可选驱动：[mysql.connector]；[pymysql]；[mysqlclient]；\n默认驱动[mysqlclient：MySQLdb]。'
+
+    def has_tables(self, table_name):
+        """判断数据库是否包含某个表,包含返回True"""
+        self.cur.execute("show tables")
+        tablerows = self.cur.fetchall()
+        if len(tablerows) == 0:
+            return False
+        if table_name in tablerows[0]:
+            return True
+        return False
 
     def init_db(self):
         self.db = self.client.proxy

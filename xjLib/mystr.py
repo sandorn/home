@@ -9,10 +9,11 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-31 19:22:21
+@LastEditTime: 2020-04-03 17:53:27
 '''
 import hashlib
 import os
+import random
 import re
 import threading
 import time
@@ -280,6 +281,25 @@ def get_time():
     import datetime
     time_now = datetime.datetime.now().strftime('%H:%M:%S.%f')
     return time_now
+
+
+def random_20char(length, string=[]):
+    """实现指定长度的随机数"""
+    for i in range(length):
+        x = random.randint(1, 2)
+        if x == 1:
+            y = str(random.randint(0, 9))
+        else:
+            y = chr(random.randint(97, 122))
+        string.append(y)
+    string = ''.join(string)
+    return string
+
+
+def toMysqlDateTime():
+    import datetime
+    dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return dt
 
 
 if __name__ == "__main__":

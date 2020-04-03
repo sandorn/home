@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-10 14:17:45
+@LastEditTime: 2020-04-03 16:21:49
 '''
 import os
 import re
@@ -79,12 +79,12 @@ class Spider(scrapy.Spider):
             self.db.add(_BOOKNAME)
 
         if _BOOKNAME not in self.zjurls:
-            # #构建redis字典，用于去重
+            # #构建set字典，用于去重
             self.zjurls[_BOOKNAME] = set()
             sql = "SELECT ZJHERF FROM %s;" % _BOOKNAME  # 从MySQL里提数据
             pandasData = pandas.read_sql(sql, self.connect)  # 读MySQL数据
 
-            # #redis字典填充数据
+            # #set字典填充数据
             for _ZJHERF in pandasData['ZJHERF']:
                 self.zjurls[_BOOKNAME].add(md5(_ZJHERF))
 

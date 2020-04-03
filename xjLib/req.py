@@ -9,17 +9,18 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-24 09:27:25
+@LastEditTime: 2020-04-03 10:44:07
 requests 简化调用
 '''
 from __future__ import absolute_import, unicode_literals
 
 import json
+from functools import partial
 from html import unescape
-from fake_useragent import UserAgent
 
 import requests
 from cchardet import detect
+from fake_useragent import UserAgent
 from lxml import etree
 from retrying import retry
 
@@ -189,3 +190,67 @@ def session_url(url, params=None, **kwargs):
         print('xjLib.req.parse_get Exception:', e, url, flush=True)
         response = None
     return response
+
+
+class HttpClient(object):
+    def __init__(self):
+        pass
+
+    def __post(self, url, data=None, json=None, **kargs):
+        return requests.post(url=url, data=data, json=json, **kargs)
+
+    def __get(self, url, params=None, **kargs):
+        return requests.get(url=url, params=params, **kargs)
+
+    def request(self, requestMethod, requestUrl, paramsType="params", requestData=None, headers=None, cookies=None):
+        if requestMethod.lower() == "post":
+            if paramsType == "form":
+                response = self.__post(url=requestUrl, data=json.dumps(eval(requestData)), headers=headers, cookies=cookies)
+                return response
+            elif paramsType == 'json':
+                response = self.__post(url=requestUrl, json=json.dumps(eval(requestData)), headers=headers, cookies=cookies)
+                return response
+        elif requestMethod == "get":
+            if paramsType == "url":
+                request_url = "%s%s" % (requestUrl, requestData)
+                response = self.__get(url=request_url, headers=headers, cookies=cookies)
+                return response
+            elif paramsType == "params":
+                response = self.__get(url=requestUrl, params=requestData, headers=headers, cookies=cookies)
+                return response
+
+
+class FakeRequests(object):
+    """
+    经常到处找请求头用户代理，这下一次解决完
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:64.0) Gecko/20100101 Firefox/64.0"
+    }
+
+    @classmethod
+    def request(cls, method, url, **kwargs):
+        kwargs.setdefault("headers", cls.headers)
+        response = requests.request(method, url, **kwargs)
+        response.encoding = response.apparent_encoding
+        return response
+
+    @classmethod
+    def get(cls, url, params=None, **kwargs):
+        kwargs.setdefault('allow_redirects', True)
+        return cls.request('get', url, params=params, **kwargs)
+
+    @classmethod
+    def post(cls, url, data=None, json=None, **kwargs):
+        return cls.request('post', url, data=data, json=json, **kwargs)
+
+
+if __name__ == '__main__':
+    r = FakeRequests.get(url="https://httpbin.org/get")
+    print(r.text)
+
+    hc = HttpClient()
+    response = hc.request("get", "https://www.163.com")
+    print(response)
+
+    # response=hc.request("post","http://39.106.41.11:8080/register/","form",'{"username":"xufengchai6","password":"xufengchai121","email":"xufengchai@qq.com"}')

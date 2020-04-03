@@ -9,27 +9,27 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 20:42:26
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-25 20:47:46
+@LastEditTime: 2020-04-02 00:20:40
 '''
 
 
-import time
 import threading
+import time
 
 
 class Singleton(object):
     _instance_lock = threading.Lock()
 
     def __init__(self):
-        time.sleep(1)
+        time.sleep(0.001)
 
     @classmethod
     def instance(cls, *args, **kwargs):
-        if not hasattr(Singleton, "_instance"):
-            with Singleton._instance_lock:
-                if not hasattr(Singleton, "_instance"):
-                    Singleton._instance = Singleton(*args, **kwargs)
-        return Singleton._instance
+        if not hasattr(cls, "_instance"):
+            with cls._instance_lock:
+                if not hasattr(cls, "_instance"):
+                    cls._instance = cls(*args, **kwargs)
+        return cls._instance
 
 
 def task(arg):
@@ -41,12 +41,10 @@ def main0():
     for i in range(10):
         t = threading.Thread(target=task, args=[i, ])
         t.start()
-    time.sleep(20)
+    time.sleep(2)
     obj = Singleton.instance()
     print(obj)
-
-
-import threading
+    print('#' * 60)
 
 
 class Singleton2(object):
@@ -56,16 +54,11 @@ class Singleton2(object):
         pass
 
     def __new__(cls, *args, **kwargs):
-        if not hasattr(Singleton2, "_instance"):
-            with Singleton2._instance_lock:
-                if not hasattr(Singleton2, "_instance"):
-                    Singleton2._instance = object.__new__(cls)
-        return Singleton2._instance
-
-
-obj1 = Singleton2()
-obj2 = Singleton2()
-print(obj1, obj2)
+        if not hasattr(cls, "_instance"):
+            with cls._instance_lock:
+                if not hasattr(cls, "_instance"):
+                    cls._instance = object.__new__(cls)
+        return cls._instance
 
 
 def task2(arg):
@@ -73,6 +66,16 @@ def task2(arg):
     print(obj)
 
 
-for i in range(10):
-    t = threading.Thread(target=task2, args=[i, ])
-    t.start()
+def main():
+    obj1 = Singleton2()
+    obj2 = Singleton2()
+    print(obj1, obj2)
+
+    for i in range(10):
+        t = threading.Thread(target=task2, args=[i, ])
+        t.start()
+
+
+if __name__ == "__main__":
+    main0()
+    main()

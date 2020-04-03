@@ -8,7 +8,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-18 05:28:03
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-30 21:24:21
+@LastEditTime: 2020-04-02 09:28:37
 
 python线程池ThreadPoolExecutor与进程池ProcessPoolExecutor - Harvard_Fly - 博客园
 https://www.cnblogs.com/FG123/p/9704233.html
@@ -192,12 +192,14 @@ def main_map(max, bookname, urls):
 
 
 if __name__ == '__main__':
-    bookname, urls = get_download_url('https://www.biqukan.com/2_2714/')
+    bookname, urls = get_download_url('https://www.biqukan.com/38_38836/')
 
-    main_map(99, bookname, urls)
-    main_wait(99, bookname, urls)
-    main_as_completed(99, bookname, urls)
-    main_add_done_callback(99, bookname, urls)
+    main_map(32, bookname, urls)
+    main_wait(32, bookname, urls)
+    main_as_completed(32, bookname, urls)
+    main_add_done_callback(32, bookname, urls)
+
+    # 38_38836     34.84 seconds
 
     '''
     # "2_2714"   #《武炼巅峰》664万字 99线程。
@@ -209,6 +211,17 @@ if __name__ == '__main__':
     Total time running with [main_as_completed]: 69.79 seconds
     [笔趣阁-CF-Pool进程池＆武炼巅峰add_done_callback.txt]保存完成	size：46.46 MB	time:21:21:39.551876。
     Total time running with [main_add_done_callback]: 71.97 seconds
+
+
+    # "38_38836"   #32进程
+    [笔趣阁-CF-Pool进程池＆沧元图main_map.txt]保存完成	size：2.84 MB	time:09:26:53.054173。
+    Total time running with [main_map]: 17.59 seconds
+    [笔趣阁-CF-Pool进程池＆沧元图main_wait.txt]保存完成	size：2.84 MB	time:09:27:10.542284。
+    Total time running with [main_wait]: 17.49 seconds
+    [笔趣阁-CF-Pool进程池＆沧元图main_as_completed.txt]保存完成	size：2.84 MB	time:09:27:29.953939。
+    Total time running with [main_as_completed]: 19.41 seconds
+    [笔趣阁-CF-Pool进程池＆沧元图add_done_callback.txt]保存完成	size：2.84 MB	time:09:27:49.634125。
+    Total time running with [main_add_done_callback]: 19.68 seconds
     '''
 
 '''

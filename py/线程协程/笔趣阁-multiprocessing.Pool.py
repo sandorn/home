@@ -9,91 +9,97 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-08 18:31:14
-@LastEditTime: 2020-03-13 11:29:13
+@LastEditTime: 2020-04-02 09:17:31
 努努书坊 - 小说在线阅读   https://www.kanunu8.com/
 '''
 
 import multiprocessing
 import time
+import os
 
-from bs4 import BeautifulSoup
-
-from xjLib.mystr import get_stime, savefile
+from xjLib.mystr import (Ex_Re_Sub, Ex_Replace, fn_timer, savefile)
 from xjLib.req import parse_get
+from xjLib.ahttp import ahttpGet
 
 
 def get_download_url(target):
-    url_list = []
-    response = parse_get(target)
-    _response = BeautifulSoup(response.content, 'lxml')
-    [s.extract() for s in _response(["script", "style"])]
-    _bookname = _response.find('h2').get_text()
-    # 搜索文档树,找出div标签中class为listmain的所有子标签
-    _div = str(_response.find_all('div', class_='listmain')[0])
-    download_soup = BeautifulSoup(_div, features="html5lib")
+    urls = []  # 存放章节链接
+    # response = etree.HTML(parse_get(target).content)
+    resp = ahttpGet(target)
+    response = resp.html
+    _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
+    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
-    # 开始记录内容标志位,只要正文卷下面的链接,最新章节列表链接剔除
-    begin_flag = False
-
-    # 遍历 dl 标签下所有子节点
-    for child in download_soup.dl.children:
-        # 找到正文卷,使能标志位
-        if child.string.strip() == '《' + _bookname + '》正文卷':
-            begin_flag = True
-        # 爬取链接并下载链接内容
-        if begin_flag and child.name == 'dd':
-            download_url = 'http://www.biqukan.com/' + child.find('a').get('href')
-            url_list.append(download_url)
-    return _bookname, url_list
+    for item in 全部章节节点:
+        _ZJHERF = 'https://www.biqukan.com' + item
+        urls.append(_ZJHERF)
+    return _bookname, urls
 
 
 def get_contents(lock, index, target):
-    _texts = ''
-    response = parse_get(target)
-    _response = BeautifulSoup(response.content, 'lxml')
-    [s.extract() for s in _response(["script", "style"])]
-    _name = _response.h1.get_text()  # 章节名
-    _showtext = _response.select('.showtxt')[0]
-    for text in _showtext.stripped_strings:
-        _texts += text + '\n'
+    response = parse_get(target).html
 
-    with lock:
-        print('{} done with {} at {}'.format(multiprocessing.current_process().name, index, get_stime()), flush=True)
-    return [index, _name, _texts]
+    _name = "".join(response.xpath('//h1/text()'))
+    _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
+    name = Ex_Re_Sub(_name, {' ': ' ', '\xa0': ' '})
+    text = Ex_Replace(
+        _showtext.strip("\n\r　  \xa0"),
+        {
+            '　　': '\n',
+            ' ': ' ',
+            '\', \'': '',
+            '\xa0': '',  # 表示空格  &nbsp;
+            '\u3000': '',  # 全角空格
+            'www.biqukan.com。': '',
+            'm.biqukan.com': '',
+            'wap.biqukan.com': '',
+            'www.biqukan.com': '',
+            '笔趣看;': '',
+            '百度搜索“笔趣看小说网”手机阅读:': '',
+            '请记住本书首发域名:': '',
+            '请记住本书首发域名：': '',
+            '笔趣阁手机版阅读网址:': '',
+            '笔趣阁手机版阅读网址：': '',
+            '[]': '',
+            '<br />': '',
+            '\r\r': '\n',
+            '\r': '\n',
+            '\n\n': '\n',
+            '\n\n': '\n',
+        },
+    )
+
+    return [index, name, '    ' + text]
 
 
+@fn_timer
 def main_Pool(target):
-    _stime = time.time()
-    # 父进程创建Queue\lock，传给个子进程：
     lock = multiprocessing.Manager().Lock()
 
-    print('开始下载：《{}》\t{}\t获取下载链接......'.format(target, get_stime()), flush=True)
     bookname, urls = get_download_url(target)
+
     print('multiprocessing.pool，开始下载：《' + bookname + '》', flush=True)
-    mypool = multiprocessing.Pool(25)  # !进程数
-    # 创建多进程队列
+    mypool = multiprocessing.Pool(32)   # !进程数,不能超过61
+
     future_tasks = []
     for i in range(len(urls)):
         item = mypool.apply_async(get_contents, args=(lock, i, urls[i]))
-        # pool.apply_async(func=task,callback=_callba)
+        # mypool.apply_async(func=task,callback=_callba)
         future_tasks.append(item)
     mypool.close()  # 关闭进程池,不再接受请求
     mypool.join()  # 等待进程池中的事件执行完毕，回收进程池
 
     texts = []  # 将爬下来的小说都存在里面
-    for i, item in enumerate(future_tasks):
-        _text = item.get()  # join后获取进程返回值
-        texts.append(_text)
+    for task in future_tasks:
+        res = task.get()  # join后获取进程返回值
+        texts.append(res)
 
-    print('\n multiprocessing.pool，书籍《' + bookname + '》完成下载', flush=True)
-    savefile(bookname + '.txt', texts)
-    print('{} 结束，\t用时:{} 秒。'.format(get_stime(), round(time.time() - _stime, 2)), flush=True)
+    texts.sort(key=lambda x: x[0])
+    files = os.path.split(__file__)[-1].split(".")[0]
+    savefile(files + '＆' + bookname + 'multiprocessing.txt', texts, br='\n')
 
 
 if __name__ == '__main__':
-    from xjLib.log import log
-    log = log()
-    main_Pool('https://www.biqukan.com/65_65593/')
-    # '65_65593'  #章节少，测试用 26秒
-    # '2_2704'  #231万字  #6239kb, 420.94 秒
-    # "2_2714"   #《武炼巅峰》664万字, 秒。
+    main_Pool('https://www.biqukan.com/38_38836/')
+    # 38_38836     34.84 seconds
+    # 2_2714      215.40 seconds

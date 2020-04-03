@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-13 11:47:47
+@LastEditTime: 2020-04-02 10:54:38
 # author:      he.zhiming
 '''
 
@@ -122,7 +122,7 @@ class _logDic(object):
         logging.config.dictConfig(self.DIC)  # 导入上面定义的logging配置
         self.logger = logging.getLogger(logger)
 
-    def p(self, *args):
+    def print(self, *args):
         #listargs = (list(args))
         commad = getattr(self.logger, _levelToName.get(self.level))
         [commad(item)for item in list(args)]
@@ -135,4 +135,8 @@ def log(level=logging.DEBUG, logger=__name__):
 
 def logs():
     logging.basicConfig(level=logging.DEBUG, format=simple_format)
-    # logging.basicConfig函数对日志的输出格式及方式做相关配置
+
+
+if __name__ == "__main__":
+    mylog = log()
+    mylog.print(999)
