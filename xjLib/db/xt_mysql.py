@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-13 18:10:33
+@LastEditTime: 2020-04-13 18:18:38
 '''
 
 import mysql.connector
@@ -184,7 +184,7 @@ if __name__ == '__main__':
             dic = myDb.get_dict(sql)
             print(type(dic[0]))
             for i in dic[0]:
-                print(33333, i, type(dic[0][i]))  #  .decode('utf-8'))
+                print(33333, i, type(dic[0][i]))  # .decode('utf-8'))
 '''
         # 查询语句，选出 users 表中的所有数据
         sql = "select * from users;"

@@ -10,7 +10,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 01:37:18
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-13 11:35:49
+@LastEditTime: 2020-04-13 18:18:47
 '''
 
 db_conf = {
@@ -128,26 +128,3 @@ def make_connect_string(key, odbc=None):
         else:
             drver = 'monetdb'
         return f"{drver}:///{db_conf[key]['host']}"
-
-
-if __name__ == "__main__":
-
-    def case1():  # 第一种情况执行的函数
-        print('This is the case1')
-
-    def case2():  # 第二种情况执行的函数
-        print('This is the case2')
-
-    def case3():  # 第三种情况执行的函数
-        print('This is the case3')
-
-    def default():  # 默认情况下执行的函数
-        print('No such case')
-
-    switch = {
-        'case1': case1,  # 注意此处不要加括号
-        'case2': case2,  # 注意此处不要加括号
-        'case3': case3,  # 注意此处不要加括号
-    }
-    choice = 'case2'  # 获取选择
-    switch.get(choice, default)()  # 执行对应的函数，如果没有就执行默认的函数

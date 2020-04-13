@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-13 10:21:51
+@LastEditTime: 2020-04-13 18:17:19
 '''
 import hashlib
 import os
@@ -50,6 +50,7 @@ class Singleton(object):
 
 def fn_timer(function):
     '''定义一个装饰器来测量函数的执行时间'''
+
     @wraps(function)
     def function_timer(*args, **kwargs):
         t0 = time.time()
@@ -273,6 +274,7 @@ def Ex_Re_Sub(oldtext, *args, **kwds):
 
 def Ex_Replace(oldtext, adict):
     '''用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'})'''
+
     def _run(oldtext, key, value):
         return oldtext.replace(key, value)
 
@@ -408,6 +410,27 @@ class _x:
 
 
 if __name__ == "__main__":
+
+    def case1():  # 第一种情况执行的函数
+        print('This is the case1')
+
+    def case2():  # 第二种情况执行的函数
+        print('This is the case2')
+
+    def case3():  # 第三种情况执行的函数
+        print('This is the case3')
+
+    def default():  # 默认情况下执行的函数
+        print('No such case')
+
+    switch = {
+        'case1': case1,  # 注意此处不要加括号
+        'case2': case2,  # 注意此处不要加括号
+        'case3': case3,  # 注意此处不要加括号
+    }
+    choice = 'case2'  # 获取选择
+    switch.get(choice, default)()  # 执行对应的函数，如果没有就执行默认的函数
+
     frog = {
         'name': 'scott',
         'age': 2,
