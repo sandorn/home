@@ -9,50 +9,51 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-03 19:33:12
+@LastEditTime: 2020-04-13 18:10:33
 '''
 
-from .dbRouter import db_conf
-import MySQLdb  # mysqlclient
-import pymysql
-import pandas
 import mysql.connector
+import MySQLdb  # mysqlclient
+import pandas
+import pymysql
+
+from xjLib.db.dbconf import db_conf
 
 
-class SqlHelper(object):
-    '''
-    def __new__(cls, *args, **kwargs):
-        print("In __new__()")
-        # #单实例模式
-        if not hasattr(cls, '_instance'):
-            cls._instance = super().__new__(cls)
-        return cls._instance
-    '''
+class engine(object):
+    """
+    mysql数据库对象，参数：db_name , odbc
+    可选驱动：[mysql.connector]、[pymysql]、[mysqlclient]，
+    默认驱动[mysqlclient：MySQLdb]
+    """
 
-    def __init__(self, dbName='default', odbc='mysqlclient'):
-        self.dbName = dbName
+    def __init__(self, key='default', odbc='mysqlclient'):
+        self.db_name = key
         self.odbc = odbc
+        if key not in db_conf:
+            raise ('错误提示：检查数据库配置：' + self.db_name)
+        db_conf[key].pop('type')
 
-        if dbName not in db_conf:
-            raise('错误提示：检查数据库配置：' + dbName)
-
-        _dbconf = db_conf[dbName]
-        if 'type' in _dbconf:
-            _dbconf.pop('type')
+        self.conf = db_conf[self.db_name]
 
         try:
             if odbc == 'connector':
-                self.conn = mysql.connector.connect(**_dbconf)
+                self.conn = mysql.connector.connect(**self.conf)
+                self.DictCursor = None
             elif odbc == 'pymysql':
-                self.conn = pymysql.connect(**_dbconf)
-            else:   # mysqlclient
-                self.conn = MySQLdb.connect(**_dbconf)
+                self.conn = pymysql.connect(**self.conf)
+                self.DictCursor = pymysql.cursors.DictCursor
+            else:  # mysqlclient
+                self.conn = MySQLdb.connect(**self.conf)
+                self.DictCursor = MySQLdb.cursors.DictCursor
 
+            # self.conn.autocommit(True)
             self.cur = self.conn.cursor()
-            #! pandasData = pandas.read_sql(sql, connect.conn)  # 读MySQL数据,connect.conn
-            print("获取数据库连接对象成功,连接池:{}".format(str(self.conn)))
+            print(f'connect({self.db_name}) by [{ self.odbc}] as {self.conn}.')
         except Exception as error:
-            print('\033[connect Error:\n', error, ']\033', sep='')  # repr(error)
+            print(
+                f'\033[connect({self.db_name}) by [{ self.odbc}] error:{error}]\033'
+            )  # repr(error)
             return None  # raise  # exit(1)
 
     '''
@@ -61,23 +62,25 @@ class SqlHelper(object):
     '''
 
     def __enter__(self):
-        print(self.dbName, self.odbc, "In __enter__()")
+        print(f"{self.db_name}\t{ self.odbc}\tIn __enter__()")
         return self
 
-    def __exit__(self):
-        self.__del__()
-        print(self.dbName, self.odbc, "In __exit__()")
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """with自动调用,不必调用del"""
+        print(f"{self.db_name}\t{ self.odbc}\tIn __exit__()")
+        if exc_tb is not None:
+            print('has error %s' % exc_tb)
 
     def __del__(self):
-        print(self.dbName, self.odbc, "In __del__()")
-        if hasattr(self, 'cur') and (self.odbc != 'connector'):
+        print(f"{self.db_name}\t{ self.odbc}\tIn __del__()")
+        '''hasattr(self, 'conn')'''
+        if self.odbc != 'connector':
             self.cur.close()
-        if hasattr(self, 'conn'):
-            self.conn.close()
+        self.conn.close()
 
     def __str__(self):
         """返回一个对象的描述信息"""
-        return f'mysql数据库对象，<dbName：[{self.dbName}] , odbc：[{self.odbc}]>\n可选驱动：[mysql.connector]；[pymysql]；[mysqlclient]；\n默认驱动[mysqlclient：MySQLdb]。'
+        return f'mysql数据库对象，<db_name:[{self.db_name}] , odbc：[{self.odbc}]>\n可选驱动：[mysql.connector]；[pymysql]；[mysqlclient]；\n默认驱动[mysqlclient：MySQLdb]。'
 
     def has_tables(self, table_name):
         """判断数据库是否包含某个表,包含返回True"""
@@ -85,13 +88,10 @@ class SqlHelper(object):
         tablerows = self.cur.fetchall()
         if len(tablerows) == 0:
             return False
-        if table_name in tablerows[0]:
-            return True
+        for rows in tablerows:
+            if table_name == rows[0]:
+                return True
         return False
-
-    def init_db(self):
-        self.db = self.client.proxy
-        self.proxys = self.db.proxys
 
     def close(self):
         pass
@@ -109,15 +109,20 @@ class SqlHelper(object):
     def insert(self, dt, tb_name):
         # 以字典形式提交插入
         ls = [(k, dt[k]) for k in dt if dt[k] is not None]
-        sql = 'insert %s (' % tb_name + ','.join([i[0] for i in ls]) + ') values (' + ','.join(['%r' % i[1] for i in ls]) + ');'
-        print(sql)
+        sql = 'insert into %s (' % tb_name + ','.join([
+            i[0] for i in ls
+        ]) + ') values (' + ','.join(['%r' % i[1] for i in ls]) + ');'
+        # print(sql)  # .replace('%', '%%')
         self.worKon(sql)
 
     def update(self, dt_update, dt_condition, tb_name):
         # dt_update,更新的数据
         # dt_condition，匹配的数据
         # tb_name,表名
-        sql = 'UPDATE %s SET ' % tb_name + ','.join(['%s=%r' % (k, dt_update[k]) for k in dt_update]) + ' WHERE ' + ' AND '.join(['%s=%r' % (k, dt_condition[k]) for k in dt_condition]) + ';'
+        sql = 'UPDATE %s SET ' % tb_name + ','.join([
+            '%s=%r' % (k, dt_update[k]) for k in dt_update
+        ]) + ' WHERE ' + ' AND '.join(
+            ['%s=%r' % (k, dt_condition[k]) for k in dt_condition]) + ';'
         self.worKon(sql)
 
     def ver(self):
@@ -127,11 +132,12 @@ class SqlHelper(object):
         #  使用 fetchone() 方法获取一条数据库。
         _版本号 = self.cur.fetchone()
         if _版本号:
-            return _版本号
+            return _版本号[0]
         else:
             return False
 
-    def getAll(self, sql, args=[]):
+    def get_all_from_db(self, form_name, args=[]):
+        sql = f" select * from {form_name}"
         try:
             self.cur.execute(sql, args)
             data = self.cur.fetchall()
@@ -139,69 +145,72 @@ class SqlHelper(object):
             print(e)
         return data
 
-    def getPt(self, sql):
-        #  read_sql的两个参数: sql语句， 数据库连接
-        pdtable = pandas.read_sql(sql, self.conn)
+    def get_pd_table(self, sql):
+        sql = "select * from " + sql
+        pdtable = pandas.read_sql(sql, self.conn)  # !第二个参数为数据库连接
         if len(pdtable):
             return pdtable
         else:
             return False
 
-    def getDic(self, sql):
+    def get_dict(self, sql):
         # 重新定义游标格式
-        self.cur = self.conn.cursor(cursorclass=mysql.cursors.DictCursor)
-        self.cur.execute(sql)
-        dic = self.cur.fetchall()
-        self.cur = self.conn.cursor(cursorclass=None)
-        if len(dic):
+        if self.DictCursor is None:
+            self.cursorDict = self.conn.cursor(dictionary=True)
+            # #mysql.connector独有
+        else:
+            self.cursorDict = self.conn.cursor(self.DictCursor)
+
+        self.cursorDict.execute(sql)
+        dic = self.cursorDict.fetchall()
+        if dic:
             return dic
         else:
             return False
 
 
 if __name__ == '__main__':
-    db = SqlHelper('TXbook', 'connector')
-    db.cur.execute("SELECT VERSION()")
-    print("1数据库版本：", db.cur.fetchone())
+    # db = SqlHelper('TXbook', 'mysqlclient')  # 'mysqlclient' ; 'pymysql' ; 'connector'
+    # db2 = SqlHelper('TXbook', 'pymysql')
+    # db3 = engine('TXbx', 'connector')
 
-    db2 = SqlHelper('TXbook', 'pymysql')  # 'mysqlclient' ; 'pymysql' ; 'connector'
-    db2.cur.execute("SELECT VERSION()")
-    print("2数据库版本：", db2.cur.fetchone())
-
-    print(id(db))
-    print(id(db2))
-
+    with engine('Jkdoc', 'connector') as myDb:
+        a = myDb.has_tables('jkdoc')
+        print(11111, a)
+        sql = "select * from jkdoc;"
+        if a:
+            df = pandas.read_sql_query(sql, myDb.conn)
+            print(22222, df)
+            dic = myDb.get_dict(sql)
+            print(type(dic[0]))
+            for i in dic[0]:
+                print(33333, i, type(dic[0][i]))  #  .decode('utf-8'))
 '''
-    db3 = SqlHelper('TXbook')
-    db3.cur.execute("SELECT VERSION()")
-    print("3数据库版本：", db3.cur.fetchone())
-    db3.conn.close()
-'''
+        # 查询语句，选出 users 表中的所有数据
+        sql = "select * from users;"
+        # read_sql_query的两个参数: sql语句， 数据库连接
+        df = pandas.read_sql_query(sql, myDb.conn)
+        # 输出 users 表的查询结果
+        print(df)
 
-'''
-    if myDb:
-        print("ver:", myDb.ver())
-        sql = " select * from users ;"
-        pdtable = myDb.getPt(sql)
-        print("pdtable.values[1][1]:", pdtable.values[1][1])
-        print("pdtable[1:2]:", pdtable[1:2])
-        print("pdtable.iloc[0]:", pdtable.iloc[0])
-        dic = myDb.getDic(sql)
-        print('dic:', dic)
-        data = myDb.getAll(sql)
-        print('data:', data)
+
+        data = myDb.get_all_from_db("users")
         print("data[0]:", data[0], "++++++++++data[1][1]:", data[1][1])
-        del myDb
-'''
+        table = myDb.get_pd_table("users")
+        print("table.values[1][1]:", table.values[1][1])
+        print("table[1:2]:", table[1:2])
+        print("table.iloc[0]:", table.iloc[0])
 
+        dic = myDb.get_dict( " select * from users ;")
+        for d in dic:
+            print(d)
 
-'''
-# 查询语句，选出 users 表中的所有数据
-sql =  "select * from users;"
-# read_sql_query的两个参数: sql语句， 数据库连接
-df = pd.read_sql_query(sql, engine)
-# 输出 users 表的查询结果
-print(df)
+        # 查询语句，选出 users 表中的所有数据
+        sql = "select * from users;"
+        # read_sql_query的两个参数: sql语句， 数据库连接
+        df = pandas.read_sql_query(sql, myDb.conn)
+        # 输出 users 表的查询结果
+        print(df)
 
 # 新建pandas中的DataFrame, 只有id,num两列
 df = pd.DataFrame({'id': [1, 2, 3, 4], 'name': ['zhangsan', 'lisi', 'wangwu', 'zhuliu']})
@@ -216,7 +225,7 @@ cursor = conn.cursor()
 
 # 插入单条数据
 sql = 'INSERT INTO user values("%d","%s")' %(1,"jack")
-#复制一条记录
+# 复制一条记录
 sql = 'INSERT INTO user selcet * from user where id=16'
 # 不建议直接拼接sql，占位符方面可能会出问题，execute提供了直接传值
 value = [2,'John']

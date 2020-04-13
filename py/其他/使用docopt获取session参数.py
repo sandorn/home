@@ -75,10 +75,10 @@ async def run(url, jsessionId, inputfile, outputfile):
 
 if __name__ == '__main__':
     # 将绑定交互参数
-    arguments = docopt(__doc__)
-    session = arguments['<session>']
-    inputfile = arguments['<inputfile>']
-    outputfile = arguments['<outputfile>']
+    miguQuery = docopt(__doc__)
+    session = miguQuery['<session>']
+    inputfile = miguQuery['<inputfile>']
+    outputfile = miguQuery['<outputfile>']
     url = "http://xxx?msisdn={}"
 
     if not os.path.isfile(inputfile):

@@ -1,47 +1,38 @@
-# ！/usr/bin/env python
-# -*-coding:utf-8-*-
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Software:   VSCode
-@File    :   db.py
-@Time    :   2019/04/16 13:06:42
-@Author  :   Even Sand
-@Version :   1.0
-@Contact :   sandorn@163.com
-@License :   (C)Copyright 2019-2019, NewSea
-@Desc    :   None
+@Descripttion: 头部注释
+@Develop: VSCode
+@Author: Even.Sand
+@Contact: sandorn@163.com
+@Github: https://github.com/sandorn/home
+@License: (C)Copyright 2009-2020, NewSea
+@Date: 2019-05-03 23:26:06
+@LastEditors: Even.Sand
+@LastEditTime: 2020-04-07 11:17:20
 '''
+
 import pymysql as mys
-#  import MySQLdb as mys  # 与  pymysql 相同
+
 import pandas
+
+from xjLib.db.dbRouter import db_conf
+from xjLib.db.xt_mysql import engine
+
+config = db_conf['TXbx']
 
 
 class MysqlHelp:
+    def __init__(self):
 
-    def __init__(
-            self,
-            database='baoxianjihuashu',
-            host='localhost',
-            #  host='db4free.net',
-            user='root',
-            password='root',
-            #  'eeM3sh4KPkp4sJ8A',
-            charset='utf8mb4',
-            port=3306):
+        self.port = config['port']
+        self.charset = config['charset']
+        self.user = config['user']
+        self.host = config['host']
+        self.passwd = config['passwd']
+        self.db = config['db']
 
-        self.port = port
-        self.charset = charset
-        self.user = user
-        self.host = host
-        self.password = password
-        self.database = database
-
-        self.conn = mys.connect(
-            host=self.host,
-            user=self.user,
-            password=self.password,
-            charset=self.charset,
-            port=self.port,
-            database=self.database)
+        self.conn = mys.connect(**config)
         #  使用cursor()获取操作游标
         self.cur = self.conn.cursor()
 
@@ -54,8 +45,8 @@ class MysqlHelp:
         self.cur.execute(sql)
         #  使用 fetchone() 方法获取一条数据库。
         版本号 = self.cur.fetchone()
-        if 版本号 == ('8.0.15',):
-            return True
+        if 版本号:
+            return 版本号[0]
         else:
             return False
 
@@ -92,28 +83,35 @@ class MysqlHelp:
             return False
 
 
-def getver(db_name):
-    #  使用execute执行SQL语句
-    db_name.cur.execute("SELECT VERSION()")
-    #  使用 fetchone() 方法获取一条数据库。
-    版本号 = db_name.cur.fetchone()
-    if 版本号:
-        return 版本号[0]
-    else:
-        return False
-
-
-if __name__ == '__main__':
-    myDb = MysqlHelp('baoxianjihuashu')
-    print("getver:", getver(myDb))
-    sql = " select * from users ;"
+def main():
+    myDb = MysqlHelp()
     print("ver:", myDb.ver())
+    sql = " select * from users ;"
     data = myDb.getall(sql)
     print("data[0]:", data[0], "++++++++++data[1][1]:", data[1][1])
     table = myDb.getable("users")
     print("table.values[1][1]:", table.values[1][1])
     print("table[1:2]:", table[1:2])
     print("table.iloc[0]:", table.iloc[0])
+
+
+def main9():
+    with engine('TXbx', 'mysqlclient') as myDb:
+        formname = "users"
+        data = myDb.get_all_from_db(formname)
+        print("data[0]:", data[0], "++++++++++data[1][1]:", data[1][1])
+        table = myDb.get_pd_table("users")
+        print("table.values[1][1]:", table.values[1][1])
+        print("table[1:2]:", table[1:2])
+        print("table.iloc[0]:", table.iloc[0])
+        sql = " select * from users2 ;"
+        dic = myDb.get_dict(sql)
+        for d in dic:
+            print(d)
+
+
+if __name__ == '__main__':
+    main9()
     '''
     myDb.workon(
         # "ALTER TABLE  users DEFAULT CHARACTER SET UTF8MB4 COLLATE utf8mb4_0900_ai_ci"  # 设置默认编码

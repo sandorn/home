@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-03 17:53:27
+@LastEditTime: 2020-04-13 10:21:51
 '''
 import hashlib
 import os
@@ -55,8 +55,10 @@ def fn_timer(function):
         t0 = time.time()
         result = function(*args, **kwargs)
         t1 = time.time()
-        print("Total time running with [%s]: %.2f seconds" % (function.__name__, t1 - t0))
+        print("Total time running with [%s]: %.2f seconds" %
+              (function.__name__, t1 - t0))
         return result
+
     return function_timer
 
 
@@ -106,18 +108,75 @@ def align(str1, distance, alignment='left'):
 def cn2num(章节编号):
     # 实现了中文向阿拉伯数字转换
     # 用于从小说章节名提取id来排序
-    #!待调试
-    chs_arabic_map = {'零': 0, '一': 1, '二': 2, '三': 3, '四': 4,
-                      '五': 5, '六': 6, '七': 7, '八': 8, '九': 9,
-                      '十': 10, '百': 100, '千': 10 ** 3, '万': 10 ** 4,
-                      '〇': 0, '壹': 1, '贰': 2, '叁': 3, '肆': 4,
-                      '伍': 5, '陆': 6, '柒': 7, '捌': 8, '玖': 9,
-                      '拾': 10, '佰': 100, '仟': 10 ** 3, '萬': 10 ** 4,
-                      '亿': 10 ** 8, '億': 10 ** 8, '幺': 1,
-                      '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5,
-                      '7': 7, '8': 8, '9': 9}
+    # !待调试
+    chs_arabic_map = {
+        '零': 0,
+        '一': 1,
+        '二': 2,
+        '三': 3,
+        '四': 4,
+        '五': 5,
+        '六': 6,
+        '七': 7,
+        '八': 8,
+        '九': 9,
+        '十': 10,
+        '百': 100,
+        '千': 10**3,
+        '万': 10**4,
+        '〇': 0,
+        '壹': 1,
+        '贰': 2,
+        '叁': 3,
+        '肆': 4,
+        '伍': 5,
+        '陆': 6,
+        '柒': 7,
+        '捌': 8,
+        '玖': 9,
+        '拾': 10,
+        '佰': 100,
+        '仟': 10**3,
+        '萬': 10**4,
+        '亿': 10**8,
+        '億': 10**8,
+        '幺': 1,
+        '0': 0,
+        '1': 1,
+        '2': 2,
+        '3': 3,
+        '4': 4,
+        '5': 5,
+        '7': 7,
+        '8': 8,
+        '9': 9
+    }
 
-    num_list = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '零', '千', '百', ]
+    num_list = [
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7',
+        '8',
+        '9',
+        '0',
+        '一',
+        '二',
+        '三',
+        '四',
+        '五',
+        '六',
+        '七',
+        '八',
+        '九',
+        '十',
+        '零',
+        '千',
+        '百',
+    ]
 
     def get_tit_num(title):
         result = ''
@@ -134,16 +193,16 @@ def cn2num(章节编号):
         curr_char = chinese_digits[count]
         curr_digit = chs_arabic_map[curr_char]
         # meet 「亿」 or 「億」
-        if curr_digit == 10 ** 8:
+        if curr_digit == 10**8:
             result = result + tmp
             result = result * curr_digit
             # get result before 「亿」 and store it into hnd_mln
             # reset `result`
-            hnd_mln = hnd_mln * 10 ** 8 + result
+            hnd_mln = hnd_mln * 10**8 + result
             result = 0
             tmp = 0
         # meet 「万」 or 「萬」
-        elif curr_digit == 10 ** 4:
+        elif curr_digit == 10**4:
             result = result + tmp
             result = result * curr_digit
             tmp = 0
@@ -165,7 +224,17 @@ def cn2num(章节编号):
 # 章节数字转换
 def change2num(章节编号):
     num_enum = {
-        '零': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '两': 2
+        '零': 0,
+        '一': 1,
+        '二': 2,
+        '三': 3,
+        '四': 4,
+        '五': 5,
+        '六': 6,
+        '七': 7,
+        '八': 8,
+        '九': 9,
+        '两': 2
     }
     multi_cov = {'百': 100, '十': 10}
     m = 0
@@ -302,14 +371,55 @@ def toMysqlDateTime():
     return dt
 
 
-if __name__ == "__main__":
-    a = Singleton()
-    b = Singleton()
-    c = Singleton()
-    print(id(a), type(a))
-    print(id(b), type(b))
-    print(id(c), type(c))
+class _x:
+    """
+     从简单数据类型转换成python对象
 
+     p = _x({'name':'boob','body':{'color':'black'},'toys':[1,2,3,],'age':100})
+     print p['toys'][1]
+     print len(p.toys)
+     print p.body.colors
+     """
+
+    def __init__(self, primitive):
+        self.data = primitive
+
+    def __getattr__(self, item):
+        value = self.data.get(item, None)
+        if isinstance(value, dict):
+            value = _x(value)
+        return value
+
+    def __len__(self):
+        return len(self.data)
+
+    def __str__(self):
+        return str(self.data)
+
+    def __getitem__(self, item):
+        value = None
+        if type(self.data) in (list, tuple):
+            value = self.data[item]
+            if type(value) in (dict, list, tuple):
+                value = _x(value)
+        elif isinstance(self.data, dict):
+            value = self.__getattr__(item)
+        return value
+
+
+if __name__ == "__main__":
+    frog = {
+        'name': 'scott',
+        'age': 2,
+        'parts': {
+            'eye': 'green',
+            'leg': 85
+        },
+        "friend": ['moee', 'wee'],
+        "hometown": 'affica'
+    }
+    drr = _x(frog)
+    print()
     '''
     res = ([1, 2, 3, 4, 5], [11, 46,
                              87], [125232], [5667, 2356, 26, 6215, 9741, 23525])

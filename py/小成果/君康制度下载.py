@@ -1,8 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion:
-自动登陆，利用账号及密码，下载公告
+@Descripttion:自动登陆，利用账号及密码，下载公告
 @Develop: VSCode
 @Author: Even.Sand
 @Contact: sandorn@163.com
@@ -10,151 +9,146 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 00:20:05
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-03 19:32:03
+@LastEditTime: 2020-04-13 18:12:59
 
-使用beautifulsoup和pyquery爬小说 - 坚强的小蚂蚁 - 博客园
-https://www.cnblogs.com/regit/p/8529222.html
+大幅度修改：
+1.修改Session，保留cookies
+2.修改post数据，将每页默认20项改为9999，不用循环获取；
+3.找到公文分类标识  "typeId": "1"
+4.get修改为允许跳转，直接获取网页信息
+5.使用mysql存储下载进度，利用set去重
+6.xpath().get获取属性字符串，json.loads为包含字典的list
+7.pandas.read_sql参数为db.conn，而不是db
+8.完善sqlHelper.has_tables,判断数据库是否包含某个表
+
+9.数据库存储公告内容
 '''
-
-from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
-from pyquery import PyQuery
-import requests
 import json
+import os
+from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
+from threading import Lock
 
-from xjLib.log import log
+import pandas
+import requests
 
-log = log()
+from xjLib.db.xt_mysql import engine
+from xjLib.mystr import random_20char, toMysqlDateTime
+from xjLib.req import sResponse
 
-head = {
-    'Accept': '*/*',
-    'Accept-Encoding': 'gzip, deflate',
-    'Accept-Language': 'zh-CN,zh;q=0.9',
-    'Connection': 'keep-alive',
-    'Host': 'oa.jklife.com',
-    'Origin': 'http://oa.jklife.com',
-    'RequestType': 'AJAX',
-    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-    'Referer': 'http://oa.jklife.com/seeyon/bulData.do?method=bulIndex&typeId=&boardId=&_isModalDialog=true&openFrom=',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
-}
-
-cookies = {'avatarImageUrl': '7597432631771349600',  # 与用户名对应
-           'loginPageURL': '',
-           'login_locale': 'zh_CN'}
-session = requests.session()
-# log.print(41, session)
-session.keep_alive = False
-# 设置请求头信息
-session.headers = head
-requests.utils.add_dict_to_cookiejar(session.cookies, cookies)
-log.print(46, session.cookies)
+mutexA = Lock()
 
 
 def login():
-
-    response = session.get('http://oa.jklife.com/')
-    log.print(50, response.cookies)
-    session.cookies = set_cookies(response.cookies)
-    log.print(54, session.cookies)
+    Session = requests.session()
+    Session.get('http://oa.jklife.com/')
 
     payload = {
-        'authorization': None,
-        'login.timezone': 'GMT+8:00',
         'login_username': 'liuxinjun',
         'login_password': 'sand2808',
-        'login_validatePwdStrength': 2,
-        'random': None,
-        'fontSize': 12,
-        'screenWidth': 1920,
-        'screenHeight': 1080,
     }
-    response = session.post('http://oa.jklife.com/seeyon/main.do?method=login', data=payload, allow_redirects=False)
-    session.cookies = set_cookies(response.cookies)
-    log.print(73, session.cookies)
+    response = Session.post(
+        'http://oa.jklife.com/seeyon/main.do?method=login',
+        data=payload,
+        allow_redirects=True)
+    if response.status_code == 200:
+        return Session
 
 
-def set_cookies(cookies):
-    # 将CookieJar转为字典：
-    res_cookies_dic = requests.utils.dict_from_cookiejar(cookies)
-    # 将新的cookies信息更新到手动cookies字典
-    for i in res_cookies_dic.keys():
-        cookies[i] = res_cookies_dic[i]
-    return cookies
+def get_download_url(Session, stop=None):
+    connect = engine('Jkdoc')
+    db_set = set()
+    if not connect.has_tables('jkdoc'):
+        # #创建数据库,用于储存爬取到的数据
+        creat_sql = '''
+            CREATE TABLE `jkdoc` (
+                `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                `TITLE` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+                `URL` varchar(255) COLLATE utf8mb4_bin NOT NULL,
+                `content` LONGTEXT COLLATE utf8mb4_bin,
+                `update_TIME` datetime NOT NULL,
+                PRIMARY KEY (`ID`)
+            ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+        '''
+        connect.cur.execute(creat_sql)
+        connect.conn.commit()
 
+    def _run():
+        payload = {
+            "managerMethod": "findBulDatas",
+            "method": "ajaxAction",
+            "managerName": "bulDataManager",
+            "rnd": random_20char(5),
+            "arguments": json.dumps([{
+                "pageSize": "9999",
+                "pageNo": 1
+            }])
+        }
+        # "typeId": "1" 区分类别，1为公告
+        _response = Session.post(
+            "http://oa.jklife.com/seeyon/ajax.do", data=payload)
+        return _response
 
-def get_download_url(stop=None):
+    # #利用set去重
+    sql = "SELECT * FROM jkdoc;"  # 从MySQL里提数据
+    pandasData = pandas.read_sql(sql, connect.conn)  # !connect.conn  读MySQL数据
+    # #redis字典填充数据
+    for _url in pandasData['URL']:
+        db_set.add(_url)
+    pandasData = None
+    # print(2222, len(db_set))
+
+    # #开始获取页面内容
     _urls = []
-    payload = {"managerName": "bulDataManager",
-               "method": "ajaxAction",
-               "rnd": "66666",
-               "managerMethod": "findBulDatas",
-               "arguments": json.dumps([{"pageSize": "9999", "pageNo": 1}])}
-
-    _response = session.post("http://oa.jklife.com/seeyon/ajax.do", data=payload)
-
+    _response = _run()
     _dic = _response.json()
-    pages = int(_dic['pages'])  # 总页数
-    size = _dic['size']  # 总项目数量
-    log.print('总页数：' + str(pages) + '\t总size数：' + str(size))
+    _itlist = _dic['list']  # 当前页面项目列表
+    for item in _itlist:
+        if item['id'] not in db_set:
+            _urls.append([item['title'].strip(), item['id']])
+            db_set.add(item['id'])
 
-    for i in range(pages):
-        pageNo = i + 1
-        payload = {"managerMethod": "findBulDatas",
-                   "arguments": json.dumps([{"pageSize": "20", "pageNo": pageNo, "spaceType": "", "spaceId": "", "typeId": "", "condition": "", "textfield1": "", "textfield2": "", "myBul": ""}])}
-        _response = session.post("http://oa.jklife.com/seeyon/ajax.do?method=ajaxAction&managerName=bulDataManager&rnd=40592", data=payload)
-
-        _dic = _response.json()
-        _itlist = _dic['list']  # 当前页面项目列表
-        for item in _itlist:
-            if item['title'].strip() == stop:
-                return _urls  # !匹配到停止标志，break
-            _urls.append((item['title'].strip(), item['id']))
-
-    return _urls
+    return _urls, connect
 
 
-def mkdir(path):
-    # 引入模块
-    import os
-    # 去除首位空格   # 去除尾部 \ 符号
+def down_content(Session, connect, title, url):
+    path = 'd:/2/' + title
     path = path.strip().rstrip("\\")
     # 判断路径是否存在{存在:True;不存在:False}
-    isExists = os.path.exists(path)
-    # 判断结果
-    if not isExists:
+    if not os.path.exists(path):
         # 如果不存在则创建目录
         os.makedirs(path)
-        log.print(path + ' 创建成功')
-        return True
-    else:
-        # 如果目录存在则不创建，并提示目录已存在
-        log.print(path + ' 目录已存在')
-        return False
 
+    url_head = 'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId='
 
-def getdown(title, url):
-    path = 'd:/1/' + title
-    if not mkdir(path):
-        return
+    _res = sResponse(Session.get(url_head + url))
+    # 写html文件 # @二进制文件模式上加'b'
+    with open(path + '/' + title + '.html', 'wb') as f:
+        f.write(_res.content)
 
-    _res = session.get(url)
-    # log.print(_res.headers)
-    with open(path + '/' + title + '.html', 'w', encoding='utf-8') as f:
-        f.write(_res.content.decode('utf-8'))
-    soup = PyQuery(_res.content.decode('utf-8'))
-    _公告正文 = soup('tr').text()
-    # log.print(_公告正文)
+    # #写txt文件
+    公告正文 = ''.join(
+        _res.html.xpath('//div[@class="contentText"]//text()')).replace(
+            'xa0', ' ').replace(' ', ' ').replace('%', '%%')
     with open(path + '/' + title + '.txt', 'w', encoding='utf-8') as f:
-        f.write(title + '\n\n' + _公告正文)
+        f.write(title + '\n\n' + 公告正文)
 
-    soup = PyQuery(_res.content.decode('utf-8'))
-    _附件下载 = soup('#attFileDomain').attr('attsdata')  # str
-    if _附件下载 == '' or _附件下载 is None:
+    with mutexA:
+        connect.insert(
+            {
+                'TITLE': title,
+                'URL': url,
+                'content': 公告正文,
+                'update_TIME': toMysqlDateTime()
+            }, 'jkdoc')
+
+    # #下载附件
+    _附件下载 = _res.html.xpath('//div[@id="attFileDomain"]')[0].get('attsdata')
+    # !关键get字符串str
+    if not _附件下载:
         return
-    附件跳转列表 = []
+
     _url = 'http://oa.jklife.com/seeyon/fileDownload.do'
-    for item in json.loads(_附件下载):  # list
-        # log.print(item)
+    for item in json.loads(_附件下载):  # 转dict
         formdata = {
             'method': 'download',
             'fileId': item['fileUrl'],
@@ -162,44 +156,27 @@ def getdown(title, url):
             'createDate': item['createdate'].split(' ')[0],
             'filename': item['filename'],
         }
-        _res = session.get(url=_url, params=formdata, allow_redirects=False)
-        # requests.get(url=_url, params=formdata, headers=head, allow_redirects=False)
-        real_url = _res.headers['Location']  # 得到网页原始地址
-        log.print(real_url)
-        附件跳转列表.append((item['filename'], real_url))
-
-    _t = 'http://oa.jklife.com'
-    for item in 附件跳转列表:
-        _res = session.get(url=_t + item[1], allow_redirects=False)
-        # log.print(_res.text)
-        with open(path + '/' + item[0], 'wb') as f:
+        _res = Session.get(url=_url, params=formdata, allow_redirects=True)
+        with open(path + '/' + item['filename'], 'wb') as f:
             f.write(_res.content)
+    return
 
 
 def main():
-    log.print('开始下载公告，获取列表信息......')
-    login()
-    # @上一次下载到的文件位置，停止标志
-    stop = '18号关于李飞等职务任免的通知'
-
-    urls = get_download_url(stop)
-    log.print('总项目：' + str(len(urls)))
-    log.print('获取列表信息完成，开始下载正文及附件......')
-    t = 'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId='
+    Session = login()
+    urls, connect = get_download_url(Session, None)
+    print(f'需要下载的公文数量为：{len(urls)}')
     # 创建多进程队列
-    with Pool(25) as p:
-        _ = [p.submit(getdown, item[0], t + item[1])for item in urls]
-    '''
-    for index, item in enumerate(urls):
-        log.print('项目序号：' + str(index))
-        getdown(item[0], t + item[1])'''
-    log.print('公告正文及附件下载完成，请检查。')
+    pool = Pool(25)
+    _ = [
+        pool.submit(down_content, Session, connect, item[0], item[1])
+        for item in urls
+    ]
+    pool.shutdown(wait=True)
 
 
 if __name__ == '__main__':
-
-    # main()
-    log.print('开始下载公告，获取列表信息......')
-    login()
-    urls = get_download_url(None)
-    print(len(urls))
+    from xjLib.log import log
+    # mylog = log()
+    # print = mylog.print
+    main()

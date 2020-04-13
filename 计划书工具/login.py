@@ -13,9 +13,9 @@ pip install pyqt5   #不要加--user,会放到用户文件目录下
 
 import sys
 import os
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QMainWindow, QApplication, qApp, QAction, QGridLayout, QDesktopWidget
+from PyQt5.QtCore import QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 
@@ -75,8 +75,8 @@ class MainWindow(QMainWindow):
         # self.setMaximumSize(1080, 720)  # 设置窗口最大尺寸
         # 设置窗口位置和大小
         screen = QDesktopWidget().screenGeometry()
-        self.setGeometry((screen.width() - weith) / 2,
-                         (screen.height() - height) / 2, weith, height)
+        self.setGeometry((screen.width() - weith) // 2,
+                         (screen.height() - height) // 2, weith, height)
 
         self.setWindowTitle('代宝宝')
         self.setWindowIcon(
@@ -84,9 +84,9 @@ class MainWindow(QMainWindow):
         self.show()
 
     def __del__(self):
-        self.webview.deleteLater()
+        # self.webview.deleteLater()
         # 程序退出
-        #app = QApplication.instance()
+        # app = QApplication.instance()
         qApp.quit()  # qApp就相当于 QCoreApplication.instance()
 
 

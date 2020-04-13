@@ -7,9 +7,9 @@
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
-@LastEditors  : Even.Sand
+@LastEditors: Even.Sand
 @Date: 2019-05-09 17:05:09
-@LastEditTime : 2020-02-12 17:08:35
+@LastEditTime: 2020-04-04 17:34:36
 '''
 
 
@@ -28,4 +28,5 @@ def prg(*args, **kwargs):
     print(*args, **kwargs)
 
 
-prg(2222222222222, 34, {1, 2, 3})
+if __name__ == "__main__":
+    prg(2222222222222, 34, {1, 2, 3})

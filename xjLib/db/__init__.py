@@ -7,12 +7,16 @@
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-03 23:26:06
+@Date: 2019-05-14 08:40:32
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-04 13:28:51
+@LastEditTime: 2020-04-10 10:54:33
 '''
+# package
+# __init__.py
 
-import login
+__author__ = 'Even.Sand'
+__license__ = 'NewSea'
 
-if __name__ == '__main__':
-    login.L()
+xjLib_VERSION = __version__ = '0.0.2'
+
+__all__ = ['dbStore', "dbRouter", "xt_mysql", "xt_sqlalchemy", "xt_peewee"]

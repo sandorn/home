@@ -9,17 +9,20 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-01 18:09:33
+@LastEditTime: 2020-04-04 17:52:45
 '''
 
 
 __all__ = [
     'SingletonThread',  # 单例
+    'SingletonThread_Queue',
     'CustomThread',  # 继承线程
+    'Custom_Thread_Queue',
     'NoResultsPending',  # 任务均已处理
     'NoWorkersAvailable',  # 无工作线程可用
     'WorkManager',  # 线程池管理，参照htreadpool编写的自定义库
-    'WorkTask',  # 线程池任务结构，参照htreadpool编写的自定义库
+    'Work',  # 线程池任务结构，参照htreadpool编写的自定义库
+    'thread_pool_maneger',
     'WorkThread'  # 继承线程,利用queue；参照htreadpool编写的自定义库
 ]
 
