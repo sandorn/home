@@ -14,7 +14,7 @@ https://blog.csdn.net/weixin_37426504/article/details/88657260
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-23 09:13:38
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-23 12:47:48
+@LastEditTime: 2020-04-17 21:16:42
 '''
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -28,6 +28,7 @@ def Bysubmit():
     初始状态4个task都是未完成状态，2.5秒后task1和task2执行完成，
     task3和task由于是sleep(3) sleep(4)所以仍然是未完成的sleep状态
     '''
+
     def get_thread_time(times):
         time.sleep(times)
         return times
@@ -66,16 +67,16 @@ def Bywait():
     return_when表示wait返回结果的条件，默认为ALL_COMPLETED全部执行完成再返回：
     可以看到在timeout 2.5时，task1和task2执行完毕，task3和task4仍在执行中
     '''
-    from concurrent.futures import (
-        ThreadPoolExecutor, wait
-    )
+    from concurrent.futures import (ThreadPoolExecutor, wait)
 
     def get_thread_time(times):
         time.sleep(times)
         return times
 
     executor = ThreadPoolExecutor(max_workers=4)
-    task_list = [executor.submit(get_thread_time, times) for times in [1, 2, 3, 4]]
+    task_list = [
+        executor.submit(get_thread_time, times) for times in [1, 2, 3, 4]
+    ]
     i = 1
     for task in task_list:
         print("Bywait task{}:{}".format(i, task))
@@ -92,6 +93,7 @@ def Bymap():
     但由于map是返回线程执行的结果，如果timeout小于线程执行时间会抛异常TimeoutError。
     # @map的返回是有序的，它会根据第二个参数的顺序返回执行的结果：
     '''
+
     def get_thread_time(times):
         time.sleep(times)
         return times
@@ -106,25 +108,28 @@ def Bymap():
 
 def Byas_completed():
     from collections import OrderedDict
-    from concurrent.futures import (
-        ThreadPoolExecutor, as_completed
-    )
+    from concurrent.futures import (ThreadPoolExecutor, as_completed)
 
     def get_thread_time(times):
         time.sleep(times)
         return times
 
     executor = ThreadPoolExecutor(max_workers=4)
-    task_list = [executor.submit(get_thread_time, times) for times in [2, 3, 1, 4]]
-    task_to_time = OrderedDict(zip(["task1", "task2", "task3", "task4"], [2, 3, 1, 4]))
+    task_list = [
+        executor.submit(get_thread_time, times) for times in [2, 3, 1, 4]
+    ]
+    task_to_time = OrderedDict(
+        zip(["task1", "task2", "task3", "task4"], [2, 3, 1, 4]))
     task_map = OrderedDict(zip(task_list, ["task1", "task2", "task3", "task4"]))
 
     for result in as_completed(task_list):
         task_name = task_map.get(result)
-        print("Byas_completed {}:{}".format(task_name, task_to_time.get(task_name)))
+        print("Byas_completed {}:{}".format(task_name,
+                                            task_to_time.get(task_name)))
 
 
 def fibBythread():
+
     def fib(n):
         if n < 3:
             return 1
@@ -133,7 +138,8 @@ def fibBythread():
     start_time = time.time()
     executor = ThreadPoolExecutor(max_workers=4)
     task_list = [executor.submit(fib, n) for n in range(3, 35)]
-    thread_results = [task.result() for task in as_completed(task_list)]  # @简化结果获取
+    thread_results = [task.result() for task in as_completed(task_list)
+                     ]  # @简化结果获取
     print(thread_results)
     print("ThreadPoolExecutor fib time is: {}".format(time.time() - start_time))
 
@@ -150,6 +156,7 @@ ProcessPoolExecutor在使用上和ThreadPoolExecutor大致是一样的，它们�
 
 
 def as_completed2():
+
     def get_html(times):
         time.sleep(times)
         print("as_completed2 get page {}s finished".format(times))
@@ -165,6 +172,7 @@ def as_completed2():
 
 
 def map2():
+
     def get_html(times):
         time.sleep(times)
         print("map2 get page {}s finished".format(times))

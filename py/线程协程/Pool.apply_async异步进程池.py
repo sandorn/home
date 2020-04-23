@@ -9,7 +9,7 @@ https://www.cnblogs.com/huangjm263/p/8418200.html
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:38:19
 @LastEditors: Even.Sand
-@LastEditTime: 2019-05-14 11:21:25
+@LastEditTime: 2020-04-17 20:39:19
 '''
 
 from multiprocess import Pool
@@ -20,13 +20,13 @@ def work(n):
     import random
 
     _time = time.time()
-    time.sleep(random.randint(0, 20))
+    time.sleep(random.randint(0, 6))
     print(n, time.time() - _time, flush=True)
     return
 
 
 if __name__ == '__main__':
-    p = Pool(10)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
+    p = Pool(3)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
     res_l = []
     for i in range(10):
         res = p.apply_async(work, args=(i,))  # 异步运行，根据进程池中有的进程数，每次最多3个子进程在异步执行

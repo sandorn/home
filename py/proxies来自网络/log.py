@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-23 11:51:00
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-23 13:13:11
+@LastEditTime: 2020-04-17 18:22:16
 '''
 import logging
 import sys
@@ -21,7 +21,8 @@ class Logger(object):
     def __init__(self):
         self._logger = logging.getLogger()  # 得到一个日志处理对象
         # 传参数，告诉它写入日志内容格式
-        self.formatter = logging.Formatter(fmt=settings.LOG_FMT, datefmt=settings.LOG_DATEFMT)
+        self.formatter = logging.Formatter(
+            fmt=settings.LOG_FMT, datefmt=settings.LOG_DATEFMT)
         # 把要写入的日志加入句柄里面，到时候会输出到文件内保存
         self._logger.addHandler(self._get_file_handler(settings.LOG_FILENAME))
         # 把要写入的日志加入句柄里面，到时候会输出到控制台查看
@@ -44,9 +45,8 @@ class Logger(object):
         return self._logger
 
 
-logger = Logger()._logger
-
 if __name__ == '__main__':  # 下面的是用来测试这个模块
+    logger = Logger()._logger
     logger.debug("1")
     logger.info("2")
     logger.warning("3")

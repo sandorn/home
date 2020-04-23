@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-13 18:17:19
+@LastEditTime: 2020-04-15 12:01:39
 '''
 import hashlib
 import os
@@ -399,6 +399,7 @@ class _x:
         return str(self.data)
 
     def __getitem__(self, item):
+        # value = self.__getattribute__(item)
         value = None
         if type(self.data) in (list, tuple):
             value = self.data[item]
@@ -411,6 +412,30 @@ class _x:
 
 if __name__ == "__main__":
 
+    frog = {
+        'name': 'scott',
+        'age': 2,
+        'parts': {
+            'eye': 'green',
+            'leg': 85
+        },
+        "friend": ['moee', 'wee'],
+        "hometown": 'affica'
+    }
+    drr = _x(frog)
+    print(drr['name'])
+    '''
+    res = ([1, 2, 3, 4, 5], [11, 46,
+                             87], [125232], [5667, 2356, 26, 6215, 9741, 23525])
+    res2 = [
+        'and', 'B', ['not', 'A'], [1, 2, 1, [2, 1], [1, 1, [2, 2, 1]]],
+        ['not', 'A', 'A'], ['or', 'A', 'B', 'A'], 'B'
+    ]
+    # savefile('d:/1.txt', res2)
+    # for i in flatten(12141.98792):
+    #   print(i)
+    '''
+    '''
     def case1():  # 第一种情况执行的函数
         print('This is the case1')
 
@@ -431,26 +456,6 @@ if __name__ == "__main__":
     choice = 'case2'  # 获取选择
     switch.get(choice, default)()  # 执行对应的函数，如果没有就执行默认的函数
 
-    frog = {
-        'name': 'scott',
-        'age': 2,
-        'parts': {
-            'eye': 'green',
-            'leg': 85
-        },
-        "friend": ['moee', 'wee'],
-        "hometown": 'affica'
-    }
-    drr = _x(frog)
-    print()
-    '''
-    res = ([1, 2, 3, 4, 5], [11, 46,
-                             87], [125232], [5667, 2356, 26, 6215, 9741, 23525])
-    res2 = [
-        'and', 'B', ['not', 'A'], [1, 2, 1, [2, 1], [1, 1, [2, 2, 1]]],
-        ['not', 'A', 'A'], ['or', 'A', 'B', 'A'], 'B'
-    ]
-    # savefile('d:/1.txt', res2)
-    # for i in flatten(12141.98792):
-    #   print(i)
+    # !判断python版本
+    PY3 = sys.version_info[0] == 3
     '''

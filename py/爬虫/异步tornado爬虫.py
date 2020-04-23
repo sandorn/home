@@ -9,9 +9,8 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-13 10:20:18
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-13 10:24:54
+@LastEditTime: 2020-04-16 10:26:23
 '''
-
 
 import time
 from datetime import timedelta
@@ -35,7 +34,9 @@ async def get_links_from_url(url):
     print("fetched %s" % url)
 
     html = response.body.decode(errors="ignore")
-    return [urljoin(url, remove_fragment(new_url)) for new_url in get_links(html)]
+    return [
+        urljoin(url, remove_fragment(new_url)) for new_url in get_links(html)
+    ]
 
 
 def remove_fragment(url):
@@ -44,7 +45,9 @@ def remove_fragment(url):
 
 
 def get_links(html):
+
     class URLSeeker(HTMLParser):
+
         def __init__(self):
             HTMLParser.__init__(self)
             self.urls = []
@@ -79,15 +82,13 @@ async def main():
                 await q.put(new_url)
 
     async def worker():
-        for url in q:
-            if url is None:
-                return
-            try:
-                await fetch_url(url)
-            except Exception as e:
-                print("Exception: %s %s" % (e, url))
-            finally:
-                q.task_done()
+        url = q.get()
+        try:
+            await fetch_url(url)
+        except Exception as e:
+            print("Exception: %s %s" % (e, url))
+        # finally:
+        #    q.task_done()
 
     await q.put(base_url)
 
@@ -95,7 +96,8 @@ async def main():
     workers = gen.multi([worker() for _ in range(concurrency)])
     await q.join(timeout=timedelta(seconds=300))
     assert fetching == fetched
-    print("Done in %d seconds, fetched %s URLs." % (time.time() - start, len(fetched)))
+    print("Done in %d seconds, fetched %s URLs." %
+          (time.time() - start, len(fetched)))
 
     # Signal all the workers to exit.
     for _ in range(concurrency):

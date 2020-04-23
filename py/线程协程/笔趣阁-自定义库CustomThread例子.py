@@ -9,19 +9,19 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-01 21:49:20
+@LastEditTime: 2020-04-15 12:23:45
 根据网络资料，写的threadpool
 '''
 
 import os
 
 from xjLib.ahttp import ahttpGet
-from xjLib.CustomThread import (SingletonThread, SingletonThread_Queue, CustomThread, Custom_Thread_Queue, WorkManager, thread_pool_maneger)
+from xjLib.CustomThread import (SingletonThread, SingletonThread_Queue,
+                                CustomThread, Custom_Thread_Queue, WorkManager,
+                                thread_pool_maneger)
 from xjLib.mystr import (Ex_Re_Sub, Ex_Replace, fn_timer, savefile)
 from xjLib.req import parse_get
-import threading
 from queue import Queue
-import time
 
 
 def get_download_url(target):
@@ -30,7 +30,8 @@ def get_download_url(target):
     resp = ahttpGet(target)
     response = resp.html
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
-    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
+    全部章节节点 = response.xpath(
+        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
     for item in 全部章节节点:
         _ZJHERF = 'https://www.biqukan.com' + item
@@ -76,7 +77,10 @@ def get_contents(lock, index, target):
 
 @fn_timer
 def st(bookname, urls):
-    _ = [SingletonThread(get_contents, (index, url)) for index, url in enumerate(urls)]
+    _ = [
+        SingletonThread(get_contents, (index, url))
+        for index, url in enumerate(urls)
+    ]
     texts = SingletonThread.wait_completed()
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
@@ -95,12 +99,16 @@ def sq(bookname, urls):
 
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'SingletonThread_Queue.txt', texts, br='\n')
+    savefile(
+        files + '＆' + bookname + 'SingletonThread_Queue.txt', texts, br='\n')
 
 
 @fn_timer
 def ct(bookname, args):
-    _ = [CustomThread(get_contents, [index, url])for index, url in enumerate(urls)]
+    _ = [
+        CustomThread(get_contents, [index, url])
+        for index, url in enumerate(urls)
+    ]
     texts = CustomThread.wait_completed()
     texts.sort(key=lambda x: x[0])
     # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
@@ -125,7 +133,9 @@ def cq(bookname, args):
 
 @fn_timer
 def wm(bookname, urls):
-    mywork = WorkManager([[get_contents, index, url] for index, url in enumerate(urls)])  # 调用函数,参数:list内tupe,线程数量
+    mywork = WorkManager([
+        [get_contents, index, url] for index, url in enumerate(urls)
+    ])  # 调用函数,参数:list内tupe,线程数量
     # texts = mywork.wait_allcomplete()
     texts = mywork.queue_join()
 
@@ -143,7 +153,9 @@ def tp(bookname, urls, MaxSem=99):
         tasks.append(task)
     mywork = thread_pool_maneger(tasks)
     '''
-    mywork = thread_pool_maneger([[get_contents, index, url] for index, url in enumerate(urls)], MaxSem=MaxSem)
+    mywork = thread_pool_maneger(
+        [[get_contents, index, url] for index, url in enumerate(urls)],
+        MaxSem=MaxSem)
     texts = mywork.getAllResult()
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
@@ -151,15 +163,14 @@ def tp(bookname, urls, MaxSem=99):
 
 
 if __name__ == "__main__":
-    bookname, urls = get_download_url('http://www.biqukan.com/2_2714/')  # 38_38836  #2_2714
-    tp(bookname, urls)
+    bookname, urls = get_download_url(
+        'http://www.biqukan.com/2_2714/')  # 38_38836  #2_2714
+
     for func in ['st', 'sq', 'ct', 'cq', 'wm', 'tp']:
         eval(func)(bookname, urls)
         # print('#' * 33, threading.active_count(), threading.enumerate())
         # locals()[func](bookname, urls)
         # globals()[func](bookname, urls)
-
-
 '''
 # 默认线程数量
 [笔趣阁-自定义库CustomThread例子＆武炼巅峰SingletonThread.txt]保存完成	size：46.47 MB

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-06-03 10:10:51
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-02 11:13:11
+@LastEditTime: 2020-04-17 22:59:36
 '''
 import os
 
@@ -24,7 +24,10 @@ def main(target):
     bookname, urls = get_download_url(target)
     print('gevent，开始下载：《' + bookname + '》', flush=True)
     gpool = pool.Pool(100)
-    task_list = [gpool.spawn(get_contents, None, index, urls[index]) for index in range(len(urls))]
+    task_list = [
+        gpool.spawn(get_contents, None, index, urls[index])
+        for index in range(len(urls))
+    ]
     gpool.join()  # join等待线程执行结束
 
     texts = []
@@ -41,7 +44,7 @@ if __name__ == '__main__':
     from xjLib.log import log
     mylog = log()
 
-    main('https://www.biqukan.com/76_76519/')
+    main('https://www.biqukan.com/38_38836/')
 
     # '76_76519'  #章节少，测试用 20秒
     # '38_38836'  420.94 秒

@@ -1,16 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
+@Descripttion: None
 @Develop: VSCode
 @Author: Even.Sand
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-12 18:09:33
+@Date: 2020-04-21 16:34:23
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-21 16:31:00
+@LastEditTime: 2020-04-21 16:34:34
 '''
+
 import time
 from datetime import timedelta
 from multiprocessing import Pool

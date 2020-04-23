@@ -9,9 +9,8 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-04 17:52:45
+@LastEditTime: 2020-04-15 12:10:23
 '''
-
 
 __all__ = [
     'SingletonThread',  # 单例
@@ -26,7 +25,6 @@ __all__ = [
     'WorkThread'  # 继承线程,利用queue；参照htreadpool编写的自定义库
 ]
 
-
 import ctypes
 import inspect
 import sys
@@ -40,12 +38,12 @@ class SingletonThread(threading.Thread):
     """单例多线程，继承自threading.Thread"""
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
-    _instance_lock = threading.Lock()
+    __instance_lock = threading.Lock()
     rlock = threading.RLock()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "_instance"):
-            with cls._instance_lock:
+            with cls.__instance_lock:
                 if not hasattr(cls, "_instance"):
                     cls._instance = super().__new__(cls)
         return cls._instance
@@ -75,17 +73,17 @@ class SingletonThread(threading.Thread):
     @classmethod
     def wait_completed(cls):
         """利用enumerate,根据类名判断线程结束，返回结果"""
-        cls.stop_all(cls)   # !向stop_all函数传入self 或cls ,三处保持一致
+        cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
         finished = True
         while finished:
             nowlist = threading.enumerate()
             for index, item in enumerate(nowlist):
-                if(type(item).__name__ == 'SingletonThread'):
+                if (type(item).__name__ == 'SingletonThread'):
                     sleep(0.1)
                     finished = True  # 继续while
                     break  # 跳出for
-                elif(index + 1 == len(nowlist)):
-                    finished = False   # 结束while
+                elif (index + 1 == len(nowlist)):
+                    finished = False  # 结束while
                     break  # 跳出for
                 else:
                     continue  # 继续for
@@ -105,12 +103,12 @@ class SingletonThread_Queue(threading.Thread):
     """采用queue传递工作任务，queue不能超出线程数量"""
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
-    _instance_lock = threading.Lock()
+    __instance_lock = threading.Lock()
     rlock = threading.RLock()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "_instance"):
-            with cls._instance_lock:
+            with cls.__instance_lock:
                 if not hasattr(cls, "_instance"):
                     cls._instance = super().__new__(cls)
         return cls._instance
@@ -128,7 +126,7 @@ class SingletonThread_Queue(threading.Thread):
             return
         else:
             target = args.pop(0)
-            self.Result = target(SingletonThread_Queue.rlock, *args)   # 获取结果
+            self.Result = target(SingletonThread_Queue.rlock, *args)  # 获取结果
             # with SingletonThread_Queue.rlock:
             #    print(self.name, '\targs:', *args, '\tdone。', flush=True)
             SingletonThread_Queue.queue.task_done()  # 发出此队列完成信号
@@ -148,7 +146,8 @@ class SingletonThread_Queue(threading.Thread):
             while SingletonThread_Queue.queue.unfinished_tasks:
                 remaining = endtime - time()
                 if remaining <= 0.0:
-                    print('unfinished_tasks in queue : ', SingletonThread_Queue.queue.unfinished_tasks)
+                    print('unfinished_tasks in queue : ',
+                          SingletonThread_Queue.queue.unfinished_tasks)
                     break
                 SingletonThread_Queue.queue.all_tasks_done.wait(0.2)
         finally:
@@ -165,7 +164,7 @@ class SingletonThread_Queue(threading.Thread):
     def wait_completed(cls):
         """等待全部线程结束，返回结果"""
         try:
-            cls.stop_all(cls)   # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
             res, SingletonThread_Queue.result_list = SingletonThread_Queue.result_list, []
             return res
         except Exception:
@@ -212,7 +211,7 @@ class CustomThread(threading.Thread):
     def wait_completed(cls):
         """等待全部线程结束，返回结果"""
         try:
-            cls.stop_all(cls)   # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
             res, CustomThread.result_list = CustomThread.result_list, []
             return res
         except Exception:
@@ -246,7 +245,7 @@ class Custom_Thread_Queue(threading.Thread):
             return
         else:
             target = args.pop(0)
-            self.Result = target(Custom_Thread_Queue.rlock, *args)   # 获取结果
+            self.Result = target(Custom_Thread_Queue.rlock, *args)  # 获取结果
             # with Custom_Thread_Queue.rlock:
             #    print(self.name, '\targs:', *args, '\tdone。', flush=True)
             Custom_Thread_Queue.queue.task_done()  # 发出此队列完成信号
@@ -266,7 +265,8 @@ class Custom_Thread_Queue(threading.Thread):
             while Custom_Thread_Queue.queue.unfinished_tasks:
                 remaining = endtime - time()
                 if remaining <= 0.0:
-                    print('unfinished_tasks in queue : ', Custom_Thread_Queue.queue.unfinished_tasks)
+                    print('unfinished_tasks in queue : ',
+                          Custom_Thread_Queue.queue.unfinished_tasks)
                     break
                 Custom_Thread_Queue.queue.all_tasks_done.wait(0.2)
         finally:
@@ -283,7 +283,7 @@ class Custom_Thread_Queue(threading.Thread):
     def wait_completed(cls):
         """等待全部线程结束，返回结果"""
         try:
-            cls.stop_all(cls)   # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
             res, Custom_Thread_Queue.result_list = Custom_Thread_Queue.result_list, []
             return res
         except Exception:
@@ -312,22 +312,28 @@ def _handle_thread_exception(request, exc_info):
     traceback.print_exception(*exc_info)
 
 
-def make_task_object(args_list, callback=None, exc_callback=_handle_thread_exception):
+def make_task_object(args_list,
+                     callback=None,
+                     exc_callback=_handle_thread_exception):
     tasks = []
     for args in args_list:
         assert isinstance(args, list)
         func = args.pop(0)
         tasks.append(
-            task_object(func, args, callback=callback,
-                        exc_callback=exc_callback)
-        )
+            task_object(
+                func, args, callback=callback, exc_callback=exc_callback))
     return tasks
 
 
 class task_object:
     '''任务处理的对象类'''
 
-    def __init__(self, func, args=None, kwds=None, callback=None, exc_callback=_handle_thread_exception):
+    def __init__(self,
+                 func,
+                 args=None,
+                 kwds=None,
+                 callback=None,
+                 exc_callback=_handle_thread_exception):
         self.requestID = id(self)
         self.exception = False
         self.callback = callback
@@ -343,7 +349,12 @@ class task_object:
 class WorkManager(object):
     '''简单线程池，不能再次添加任务'''
 
-    def __init__(self, items, MaxSem=99, callback=None, exc_callback=_handle_thread_exception, kwds={}):
+    def __init__(self,
+                 items,
+                 MaxSem=99,
+                 callback=None,
+                 exc_callback=_handle_thread_exception,
+                 kwds={}):
         self.lock = threading.RLock()
         self.work_queue = Queue()  # 任务队列
         self.result_queue = Queue()  # 结果队列
@@ -352,9 +363,13 @@ class WorkManager(object):
         self.MaxSem = MaxSem
         self.create_thread(**kwds)
 
-    def add_work_queue(self, items, callback=None, exc_callback=_handle_thread_exception):
+    def add_work_queue(self,
+                       items,
+                       callback=None,
+                       exc_callback=_handle_thread_exception):
         # #初始化工作队列,添加工作入队
-        tasks = make_task_object(items, callback=callback, exc_callback=exc_callback)
+        tasks = make_task_object(
+            items, callback=callback, exc_callback=exc_callback)
         for task in tasks:
             assert isinstance(task, task_object)
             assert not getattr(task, 'exception', None)
@@ -363,7 +378,8 @@ class WorkManager(object):
     def create_thread(self, **kwds):
         # #初始化线程,同时运行线程数量
         for i in range(self.MaxSem):
-            self.all_Thread.append(Work(self.lock, self.work_queue, self.result_queue, **kwds))
+            self.all_Thread.append(
+                Work(self.lock, self.work_queue, self.result_queue, **kwds))
 
     def wait_allcomplete(self):
         # #等待所有线程运行完毕
@@ -393,6 +409,7 @@ class WorkManager(object):
 
 
 class Work(threading.Thread):
+
     def __init__(self, lock, work_queue, result_queue, kwds={}):
         super().__init__(**kwds)
         self.lock = lock
@@ -404,11 +421,12 @@ class Work(threading.Thread):
     def run(self):
         while True:
             try:
-                task = self.work_queue.get(False)   # !任务异步出队 get_nowait()
+                task = self.work_queue.get(False)  # !任务异步出队 get_nowait()
             except Empty:
                 break
             else:
-                result = task.func(self.lock, *task.args, **task.kwds)  # 传递 list 各元素
+                result = task.func(self.lock, *task.args,
+                                   **task.kwds)  # 传递 list 各元素
                 self.result_queue.put(result)  # 取得函数返回值
                 self.work_queue.task_done()  # 通知系统任务完成
 
@@ -416,7 +434,13 @@ class Work(threading.Thread):
 class thread_pool_maneger(object):
     '''参照htreadpool编写的自定义库 '''
 
-    def __init__(self, items, MaxSem=99, callback=None, exc_callback=_handle_thread_exception, poll_timeout=5, kwds={}):
+    def __init__(self,
+                 items,
+                 MaxSem=99,
+                 callback=None,
+                 exc_callback=_handle_thread_exception,
+                 poll_timeout=5,
+                 kwds={}):
         self.lock = threading.RLock()
         self.work_queue = Queue()  # 任务队列
         self.result_queue = Queue()  # 结果队列
@@ -427,7 +451,11 @@ class thread_pool_maneger(object):
 
         if MaxSem is not None:
             self.setMaxcs(MaxSem, poll_timeout=5, **kwds)
-        self.add_work_queue(items, callback=callback, exc_callback=exc_callback, poll_timeout=poll_timeout)
+        self.add_work_queue(
+            items,
+            callback=callback,
+            exc_callback=exc_callback,
+            poll_timeout=poll_timeout)
 
     def setMaxcs(self, MaxSem, poll_timeout=5, **kwds):  # 外部修改最大线程数
         self.MaxSem = MaxSem
@@ -441,12 +469,22 @@ class thread_pool_maneger(object):
         """初始化线程,同时运行线程数量"""
         for i in range(MaxSem):
             self.all_Thread.append(
-                WorkThread(self.lock, self.work_queue, self.result_queue, poll_timeout=poll_timeout, **kwds)
-            )
+                WorkThread(
+                    self.lock,
+                    self.work_queue,
+                    self.result_queue,
+                    poll_timeout=poll_timeout,
+                    **kwds))
 
-    def add_work_queue(self, items, callback=None, exc_callback=_handle_thread_exception, block=True, poll_timeout=5):
+    def add_work_queue(self,
+                       items,
+                       callback=None,
+                       exc_callback=_handle_thread_exception,
+                       block=True,
+                       poll_timeout=5):
         """初始化工作队列,添加工作入队"""
-        tasks = make_task_object(items, callback=callback, exc_callback=exc_callback)
+        tasks = make_task_object(
+            items, callback=callback, exc_callback=exc_callback)
         for task in tasks:
             assert isinstance(task, task_object)
             assert not getattr(task, 'exception', None)
@@ -514,6 +552,7 @@ class thread_pool_maneger(object):
 
 
 class WorkThread(threading.Thread):
+
     def __init__(self, lock, work_queue, result_queue, poll_timeout=5, kwds={}):
         super().__init__(**kwds)
         self.lock = lock
@@ -557,12 +596,14 @@ class WorkThread(threading.Thread):
 
 def stop_thread(thread):
     '''外部停止线程'''
+
     def _async_raise(tid, exctype):
         """raises the exception, performs cleanup if needed"""
         tid = ctypes.c_long(tid)
         if not inspect.isclass(exctype):
             exctype = type(exctype)
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+            tid, ctypes.py_object(exctype))
         if res == 0:
             raise ValueError("invalid thread id")
         elif res != 1:
@@ -600,7 +641,6 @@ def stop_thread(thread):
     print('threading-继承，书籍《' + bookname + '》完成下载', flush=True)
 
 '''
-
 '''
 对象	描述
 Thread	表示一个执行线程的对象

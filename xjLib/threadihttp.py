@@ -1,16 +1,18 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
+@Descripttion: None
 @Develop: VSCode
 @Author: Even.Sand
 @Contact: sandorn@163.com
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-04 09:01:10
+@Date: 2020-04-16 13:57:50
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-21 23:55:26
+@LastEditTime: 2020-04-23 18:41:08
 '''
+
+import os
 import asyncio
 import ctypes
 import json
@@ -22,6 +24,8 @@ import aiohttp
 from cchardet import detect
 from fake_useragent import UserAgent
 from lxml import etree
+
+from xjLib.mystr import Ex_Re_Sub, Ex_Replace, savefile
 
 # from retrying import retry
 
@@ -150,7 +154,6 @@ async def AyTask_run(self):
                     self.method,
                     self.url,
                     *self.args,
-                    timeout=10,
                     verify_ssl=False,
                     headers=wrap_headers(self.headers or self.session.headers),
                     **self.kw) as sessReq:
@@ -287,11 +290,7 @@ async def fetch_async(task, result, session):
             task.headers or
             ctypes.cast(task.session, ctypes.py_object).value.headers)
         async with session.request(
-                task.method,
-                task.url,
-                timeout=10,
-                headers=headers,
-                *task.args,
+                task.method, task.url, headers=headers, *task.args,
                 **task.kw) as sessReq:
             assert sessReq.status in [200, 201, 302]
             content = await sessReq.read()
@@ -330,38 +329,90 @@ def ahttpGetAll(urls, pool=100, params=None, **kwargs):
     return resps
 
 
+def get_download_url(target):
+    urls = []  # 存放章节链接
+    # response = etree.HTML(parse_get(target).content)
+    resp = ahttpGet(target)
+    response = resp.html
+    _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
+    全部章节节点 = response.xpath(
+        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
+
+    for item in 全部章节节点:
+        _ZJHERF = 'https://www.biqukan.com' + item
+        urls.append(_ZJHERF)
+    return _bookname, urls
+
+
+def 结果处理(resps):
+    texts = []
+    for resp in resps:
+        index = resp.index
+        response = resp.html
+
+        _name = "".join(response.xpath('//h1/text()'))
+        _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
+        name = Ex_Re_Sub(_name, {' ': ' ', '\xa0': ' '})
+        text = Ex_Replace(
+            _showtext.strip("\n\r　  "),
+            {
+                '　　': '\n',
+                ' ': ' ',
+                '\', \'': '',
+                # '\xa0': '',  # 表示空格  &nbsp;
+                '\u3000': '',  # 全角空格
+                'www.biqukan.com。': '',
+                'm.biqukan.com': '',
+                'wap.biqukan.com': '',
+                'www.biqukan.com': '',
+                '笔趣看;': '',
+                '百度搜索“笔趣看小说网”手机阅读:': '',
+                '请记住本书首发域名:': '',
+                '请记住本书首发域名：': '',
+                '笔趣阁手机版阅读网址:': '',
+                '笔趣阁手机版阅读网址：': '',
+                '[]': '',
+                '<br />': '',
+                '\r\r': '\n',
+                '\r': '\n',
+                '\n\n': '\n',
+                '\n\n': '\n',
+            },
+        )
+        texts.append([index, name, '    ' + text])
+
+    return texts
+
+
+def main(url):
+    bookname, urls = get_download_url(url)
+    resps = ahttpGetAll(urls, pool=200)
+
+    texts = 结果处理(resps)
+
+    texts.sort(key=lambda x: x[0])  # #排序
+    aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
+    # @重新梳理数据，剔除序号
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'main.txt', aftertexts, br='\n')
+
+
+def threadpool(urls):
+    from concurrent.futures import ThreadPoolExecutor
+    executor = ThreadPoolExecutor(max_workers=3)
+    for data in executor.map(main, urls):
+        print("map2 in main: get page {}s success".format(data))
+
+
 from xjLib.log import MyLog
 log = MyLog(__name__)
 print = log.print
 warn = log.warn
-'''
-from opnieuw import RetryException, retry
 
-async def fetch_Opnieuw(task, result, session):
-    # # fetch_Opnieuw  #最终解决：增加timeout为300
-    @retry(
-        retry_on_exceptions=(asyncio.exceptions.TimeoutError, asyncio.exceptions.CancelledError, asyncio.TimeoutError, RetryException),
-        max_calls_total=10,
-        retry_window_after_first_call_in_seconds=5,)
-    async def _run():
-        # print(task, 'fetch_Opnieuw start...')
-        headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
-        async with session.request(task.method, task.url, *task.args, headers=headers, timeout=20, **task.kw) as sessReq:
-            assert (sessReq.status == 200) or (sessReq.status == 302)
-            content = await sessReq.read()
-            new_res = AhttpResponse(sessReq, content, task)
-            result.append(new_res)
+if __name__ == "__main__":
+    urls = [
+        'https://www.biqukan.com/38_38836/',
+        'https://www.biqukan.com/2_2714/',
+    ]
 
-            if task.callback:
-                task.callback(new_res)  # 有回调则调用
-            return new_res
-
-    try:
-        await _run()
-        print(task, 'fetch_Opnieuw ok。')
-    except Exception as err:
-        print(task, 'fetch_Opnieuw err:', repr(err), flush=True)
-        #raise err
-
-
-'''
+    threadpool(urls)

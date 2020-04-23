@@ -9,8 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-16 23:13:37
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-18 07:30:12
-别人已经开发好了一个库叫做：aiomultiprocess
+@LastEditTime: 2020-04-17 20:29:54
 '''
 # 与多进程的结合
 

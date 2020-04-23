@@ -8,105 +8,20 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-18 05:28:03
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-02 09:28:37
+@LastEditTime: 2020-04-21 18:19:32
 
 python线程池ThreadPoolExecutor与进程池ProcessPoolExecutor - Harvard_Fly - 博客园
 https://www.cnblogs.com/FG123/p/9704233.html
 '''
 
 
-# from concurrent.futures import ProcessPoolExecutor as Pool  # 进程池模块
-from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
+from concurrent.futures import ProcessPoolExecutor as Pool  # 进程池模块
+# from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
 from concurrent.futures import as_completed, wait
 import os
 
-from xjLib.mystr import Ex_Re_Sub, savefile, Ex_Replace, fn_timer
-from xjLib.req import parse_get
-
-
-def get_download_url(target):
-    urls = []  # 存放章节链接
-    response = parse_get(target).html
-    _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
-    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
-
-    for item in 全部章节节点:
-        _ZJHERF = 'https://www.biqukan.com' + item
-        urls.append(_ZJHERF)
-    return _bookname, urls
-
-
-def get_contents(index, target):
-    response = parse_get(target).html
-
-    _name = "".join(response.xpath('//h1/text()'))
-    _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
-    name = Ex_Re_Sub(_name, {' ': ' ', '\xa0': ' '})
-    text = Ex_Replace(
-        _showtext.strip("\n\r　  \xa0"),
-        {
-            '　　': '\n',
-            ' ': ' ',
-            '\', \'': '',
-            '\xa0': '',  # 表示空格  &nbsp;
-            '\u3000': '',  # 全角空格
-            'www.biqukan.com。': '',
-            'm.biqukan.com': '',
-            'wap.biqukan.com': '',
-            'www.biqukan.com': '',
-            '笔趣看;': '',
-            '百度搜索“笔趣看小说网”手机阅读:': '',
-            '请记住本书首发域名:': '',
-            '请记住本书首发域名：': '',
-            '笔趣阁手机版阅读网址:': '',
-            '笔趣阁手机版阅读网址：': '',
-            '[]': '',
-            '<br />': '',
-            '\r\r': '\n',
-            '\r': '\n',
-            '\n\n': '\n',
-            '\n\n': '\n',
-        },
-    )
-
-    return [index, name, '    ' + text]
-
-
-def map_get_contents(args):
-    [index, target] = args
-    response = parse_get(target).html
-
-    _name = "".join(response.xpath('//h1/text()'))
-    _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
-    name = Ex_Re_Sub(_name, {' ': ' ', '\xa0': ' '})
-    text = Ex_Replace(
-        _showtext.strip("\n\r　  \xa0"),
-        {
-            '　　': '\n',
-            ' ': ' ',
-            '\', \'': '',
-            '\xa0': '',  # 表示空格  &nbsp;
-            '\u3000': '',  # 全角空格
-            'www.biqukan.com。': '',
-            'm.biqukan.com': '',
-            'wap.biqukan.com': '',
-            'www.biqukan.com': '',
-            '笔趣看;': '',
-            '百度搜索“笔趣看小说网”手机阅读:': '',
-            '请记住本书首发域名:': '',
-            '请记住本书首发域名：': '',
-            '笔趣阁手机版阅读网址:': '',
-            '笔趣阁手机版阅读网址：': '',
-            '[]': '',
-            '<br />': '',
-            '\r\r': '\n',
-            '\r': '\n',
-            '\n\n': '\n',
-            '\n\n': '\n',
-        },
-    )
-
-    return [index, name, '    ' + text]
+from xjLib.mystr import savefile, fn_timer
+from xjLib.ls import get_download_url, get_contents_byahttp, map_get_contents_byahttp
 
 
 texts = []
@@ -123,7 +38,7 @@ def main_add_done_callback(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
         _ = [
-            pool.submit(get_contents, index, urls[index]).add_done_callback(callback)
+            pool.submit(map_get_contents_byahttp, (index, urls[index])).add_done_callback(callback)
             for index in range(len(urls))
         ]
 
@@ -136,7 +51,7 @@ def main_add_done_callback(max, bookname, urls):
 def main_as_completed(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = [pool.submit(get_contents, index, urls[index]) for index in range(len(urls))]
+        future_tasks = [pool.submit(map_get_contents_byahttp, (index, urls[index])) for index in range(len(urls))]
 
     texts = []
     for future in as_completed(future_tasks):  # 迭代生成器
@@ -155,7 +70,7 @@ def main_as_completed(max, bookname, urls):
 def main_wait(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = [pool.submit(get_contents, index, urls[index]) for index in range(len(urls))]
+        future_tasks = [pool.submit(map_get_contents_byahttp, (index, urls[index])) for index in range(len(urls))]
 
     texts = []
 
@@ -180,7 +95,7 @@ def main_map(max, bookname, urls):
         args.append([index, url])
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = pool.map(map_get_contents, args)
+        future_tasks = pool.map(map_get_contents_byahttp, args)
 
     texts = []
     for resp in future_tasks:  # 此时将阻塞 , 直到线程完成或异常

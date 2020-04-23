@@ -9,20 +9,8 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-23 12:04:45
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-23 20:19:30
-'''
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-23 12:04:45
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-23 16:42:07
+@LastEditTime: 2020-04-17 16:09:11
+
 
 实现代理池的数据库模块
 ●作用:用于对proxies 集合进行数据库的相关操作

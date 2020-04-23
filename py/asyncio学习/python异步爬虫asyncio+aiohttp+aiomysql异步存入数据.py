@@ -9,13 +9,12 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-09 16:42:14
 @LastEditors: Even.Sand
-@LastEditTime: 2020-03-09 16:51:53
+@LastEditTime: 2020-04-21 22:07:34
 author: KK
 url: http://github.com/PythonerKK
 copyright: © 2019 KK <705555262@qq.com.com>
 https://www.cnblogs.com/PyKK2019/articles/aiohttp_spider.html
 '''
-
 
 import asyncio
 import re
@@ -25,13 +24,14 @@ import aiomysql
 from lxml import etree
 from pyquery import PyQuery
 
-from xjLib.dBrouter import dbconf
+from xjLib.db.dbconf import db_conf
 
 pool = ''
 # sem = asyncio.Semaphore(4)  用来控制并发数，不指定会全速运行
 stop = False
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36'
+    'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36'
 }
 MAX_PAGE = 10
 TABLE_NAME = 'data'  # 数据表名
@@ -63,7 +63,8 @@ def extract_links(source):
     pq = PyQuery(source)
     for link in pq.items("a"):
         _url = link.attr("href")
-        if _url and re.match(r'https://.*?/\d+.html', _url) and _url.find('{}.lianjia.com'.format(city)):
+        if _url and re.match(r'https://.*?/\d+.html', _url) and _url.find(
+                '{}.lianjia.com'.format(city)):
             links_detail.add(_url)
 
     print(links_detail)
@@ -78,13 +79,15 @@ def extract_elements(source):
         id = dom.xpath('//link[@rel="canonical"]/@href')[0]
         title = dom.xpath('//title/text()')[0]
         price = dom.xpath('//span[@class="unitPriceValue"]/text()')[0]
-        information = dict(re.compile('<li><span class="label">(.*?)</span>(.*?)</li>').findall(source))
+        information = dict(
+            re.compile('<li><span class="label">(.*?)</span>(.*?)</li>')
+            .findall(source))
         information.update(title=title, price=price, url=id)
         print(information)
         asyncio.ensure_future(save_to_database(information, pool=pool))
 
     except Exception as e:
-        print('解析详情页出错！')
+        print('解析详情页出错！', e)
         pass
 
 
@@ -104,11 +107,14 @@ async def save_to_database(information, pool):
         async with conn.cursor() as cur:
             try:
                 await cur.execute("SELECT * FROM  %s" % (TABLE_NAME))
-                await cur.execute("INSERT INTO %s VALUES (%s)" % (TABLE_NAME, ROWstr[:-1]))
+                await cur.execute("INSERT INTO %s VALUES (%s)" %
+                                  (TABLE_NAME, ROWstr[:-1]))
                 print('插入数据成功')
-            except aiomysql.Error as e:
-                await cur.execute("CREATE TABLE %s (%s)" % (TABLE_NAME, COLstr[:-1]))
-                await cur.execute("INSERT INTO %s VALUES (%s)" % (TABLE_NAME, ROWstr[:-1]))
+            except aiomysql.Error:
+                await cur.execute("CREATE TABLE %s (%s)" %
+                                  (TABLE_NAME, COLstr[:-1]))
+                await cur.execute("INSERT INTO %s VALUES (%s)" %
+                                  (TABLE_NAME, ROWstr[:-1]))
             except aiomysql.Error as e:
                 print('mysql error %d: %s' % (e.args[0], e.args[1]))
 
@@ -149,20 +155,20 @@ async def consumer():
 async def main(loop):
     global pool
     pool = await aiomysql.create_pool(
-        host=dbconf['TXbook']['host'],
-        port=dbconf['TXbook']['port'],
-        user=dbconf['TXbook']['user'],
-        password=dbconf['TXbook']['passwd'],
-        db=dbconf['TXbook']['db'],
+        host=db_conf['TXbook']['host'],
+        port=db_conf['TXbook']['port'],
+        user=db_conf['TXbook']['user'],
+        password=db_conf['TXbook']['passwd'],
+        db=db_conf['TXbook']['db'],
         loop=loop,
-        charset=dbconf['TXbook']['charset'],
-        autocommit=True
-    )
+        charset=db_conf['TXbook']['charset'],
+        autocommit=True)
 
     for i in range(1, MAX_PAGE):
         urls.append(url.format(city, str(i)))
     print('爬取总页数：{} 任务开始...'.format(str(MAX_PAGE)))
     asyncio.ensure_future(consumer())
+
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-06-18 11:06:57
 @LastEditors: Even.Sand
-@LastEditTime: 2019-06-18 12:49:22
+@LastEditTime: 2020-04-17 22:58:24
 '''
 from xjLib.req import parse_get
 from xjLib.log import log
@@ -58,8 +58,8 @@ def main(user, pwd):
     response = session.post(
         "https://aq.yy.com/p/wklogin.do?callbackURL=https://aq.yy.com/welcome.do"
     )
-    #log.p(response.text)
-    #log.p(response.cookies)
+    #log.print(response.text)
+    #log.print(response.cookies)
     session.cookies = set_cookies(response.cookies)
 
     _sp = json.loads(response.text)
@@ -71,7 +71,7 @@ def main(user, pwd):
     url = "https://lgn.yy.com/lgn/oauth/x2/s/login_asyn.do"
     data = "username=" + user + "&pwdencrypt=105bb78ffda9c8abd57ffda9d6085b39b518510a9bf849e37ce6d5ddab49600e9d8a128814458e93de4ab820f12e0fff4ce323daedb41dadd4cf37d4a4a955ac987aaacc7f26daa0f39cd8037116933f9efd18facf824d71e21c74aaeaa28f944fd63ce56f77a09891c4d2e90d105cfd5ddd4494136cf9ac897b053203beaa86&oauth_token=" + oauth_token + "&denyCallbackURL=&UIStyle=xelogin&appid=1&mxc=&vk=&isRemMe=0&mmc=&vv=&hiido=1"
     response = session.post(url, data)
-    log.p(response.text)
+    log.print(response.text)
 
 
 if __name__ == "__main__":

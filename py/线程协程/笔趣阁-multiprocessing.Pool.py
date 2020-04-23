@@ -9,17 +9,15 @@
 @License: (C)Copyright 2009-2019, NewSea
 @LastEditors: Even.Sand
 @Date: 2019-05-08 18:31:14
-@LastEditTime: 2020-04-02 09:17:31
+@LastEditTime: 2020-04-21 23:34:56
 努努书坊 - 小说在线阅读   https://www.kanunu8.com/
 '''
 
 import multiprocessing
-import time
 import os
 
-from xjLib.mystr import (Ex_Re_Sub, Ex_Replace, fn_timer, savefile)
-from xjLib.req import parse_get
 from xjLib.ahttp import ahttpGet
+from xjLib.mystr import Ex_Re_Sub, Ex_Replace, fn_timer, savefile
 
 
 def get_download_url(target):
@@ -28,7 +26,8 @@ def get_download_url(target):
     resp = ahttpGet(target)
     response = resp.html
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
-    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
+    全部章节节点 = response.xpath(
+        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
     for item in 全部章节节点:
         _ZJHERF = 'https://www.biqukan.com' + item
@@ -36,8 +35,9 @@ def get_download_url(target):
     return _bookname, urls
 
 
-def get_contents(lock, index, target):
-    response = parse_get(target).html
+def get_contents(args):
+    (index, target) = args
+    response = ahttpGet(target).html
 
     _name = "".join(response.xpath('//h1/text()'))
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
@@ -74,25 +74,18 @@ def get_contents(lock, index, target):
 
 @fn_timer
 def main_Pool(target):
-    lock = multiprocessing.Manager().Lock()
-
+    texts = []
     bookname, urls = get_download_url(target)
 
     print('multiprocessing.pool，开始下载：《' + bookname + '》', flush=True)
-    mypool = multiprocessing.Pool(32)   # !进程数,不能超过61
-
-    future_tasks = []
-    for i in range(len(urls)):
-        item = mypool.apply_async(get_contents, args=(lock, i, urls[i]))
-        # mypool.apply_async(func=task,callback=_callba)
-        future_tasks.append(item)
+    mypool = multiprocessing.Pool(32)  # !进程数,不能超过61
+    mypool.map_async(
+        func=get_contents,
+        iterable=[(i, urls[i]) for i in range(len(urls))],
+        callback=lambda res: texts.append(res))
+    # mypool.apply_async(func=get_contents,callback=_callba)
     mypool.close()  # 关闭进程池,不再接受请求
     mypool.join()  # 等待进程池中的事件执行完毕，回收进程池
-
-    texts = []  # 将爬下来的小说都存在里面
-    for task in future_tasks:
-        res = task.get()  # join后获取进程返回值
-        texts.append(res)
 
     texts.sort(key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
@@ -101,5 +94,7 @@ def main_Pool(target):
 
 if __name__ == '__main__':
     main_Pool('https://www.biqukan.com/38_38836/')
+    # main_Pool('https://www.biqukan.com/2_2714/')
     # 38_38836     34.84 seconds
     # 2_2714      215.40 seconds
+    # 81840_81840703

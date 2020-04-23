@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-02 10:54:38
+@LastEditTime: 2020-04-17 20:14:59
 # author:      he.zhiming
 '''
 
@@ -18,8 +18,7 @@ import logging.config
 import os
 from datetime import datetime
 
-standard_format = '[%(asctime)s][%(threadName)s:%(thread)d][task_id:%(name)s][%(filename)s->%(funcName)s:%(lineno)d]' \
-    '[%(levelname)s][%(message)s]'  # 其中name为getlogger指定的名字
+standard_format = '[%(asctime)s][%(threadName)s:%(thread)d][%(name)s][%(filename)s->%(funcName)s:%(lineno)d]\t[%(levelname)s]\t[%(message)s]'  # 其中name为getlogger指定的名字
 simple_format = '[%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
 
 CRITICAL = 50
@@ -61,15 +60,24 @@ def _make_filename(filename='.log', log_level=10):
 
     date_str = datetime.today().strftime('%Y%m%d')
     pidstr = '-' or str(os.getpid())
-    return ''.join((date_str, '-', pidstr, '-', _level, '', filename,))
+    return ''.join((
+        date_str,
+        '-',
+        pidstr,
+        '-',
+        _level,
+        '',
+        filename,
+    ))
 
 
-class _logDic(object):
+class _logger(object):
+
     def __init__(self, level=logging.DEBUG, logger=__name__):
         self.level = level
         self.log_name = _make_filename(log_level=self.level)
         # #定义字典
-        self.DIC = {
+        self.conf_dic = {
             'version': 1,
             'disable_existing_loggers': False,
             'formatters': {
@@ -106,12 +114,12 @@ class _logDic(object):
                     'level': self.level,
                     'propagate': True,  # 向上（更高level的logger）传递
                 },
-                'def': {
+                'default': {
                     'handlers': ['default'],
                     'level': self.level,
                     'propagate': True,
                 },
-                'con': {
+                'console': {
                     'handlers': ['console'],
                     'level': self.level,
                     'propagate': True,
@@ -119,17 +127,17 @@ class _logDic(object):
             }
         }
         # #定义字典完毕
-        logging.config.dictConfig(self.DIC)  # 导入上面定义的logging配置
+        logging.config.dictConfig(self.conf_dic)  # 导入上面定义的logging配置
         self.logger = logging.getLogger(logger)
 
     def print(self, *args):
-        #listargs = (list(args))
+        # listargs = (list(args))
         commad = getattr(self.logger, _levelToName.get(self.level))
-        [commad(item)for item in list(args)]
+        [commad(item) for item in list(args)]
 
 
 def log(level=logging.DEBUG, logger=__name__):
-    newlog = _logDic(level=level, logger=logger)
+    newlog = _logger(level=level, logger=logger)
     return newlog
 
 
@@ -137,6 +145,56 @@ def logs():
     logging.basicConfig(level=logging.DEBUG, format=simple_format)
 
 
+class MyLog(object):
+
+    def __init__(self,
+                 name=__name__,
+                 showlevel=logging.DEBUG,
+                 writelevel=logging.WARNING):  # 类MyLog的构造函数
+        self.logger = logging.getLogger(name)  # 返回一个特定名字的日志
+        self.logger.setLevel(showlevel)  # 对显示的日志信息设置一个阈值低于DEBUG级别的不显示
+        logFile = _make_filename(log_level=writelevel)  # 日志文件名
+        std_formatter = logging.Formatter(standard_format)
+        smp_formatter = logging.Formatter(simple_format)
+        '''日志显示到屏幕上并输出到日志文件内'''
+        logHand = logging.FileHandler(logFile)  # 输出日志文件，文件名是logFile
+        logHand.setFormatter(std_formatter)  # 为logHand以formatter设置格式
+        logHand.setLevel(writelevel)  # 只有错误才被记录到logfile中
+
+        logHandSt = logging.StreamHandler(
+        )  # class logging.StreamHandler(stream=None)
+        # 返回StreamHandler类的实例，如果stream被确定，使用该stream作为日志输出，反之，使用
+        # sys.stderr
+        logHandSt.setFormatter(smp_formatter)  # 为logHandSt以formatter设置格式
+
+        self.logger.addHandler(logHand)  # 添加特定的handler logHand到日志文件logger中
+        self.logger.addHandler(logHandSt)  # 添加特定的handler logHandSt到日志文件logger中
+        '''日志的5个级别对应以下的五个函数'''
+
+    def debug(self, msg):
+        self.logger.debug(msg)
+
+    def print(self, msg):
+        self.logger.debug(msg)
+
+    def info(self, msg):
+        self.logger.info(msg)
+
+    def warn(self, msg):
+        self.logger.warning(msg)
+
+    def error(self, msg):
+        self.logger.error(msg)
+
+    def critical(self, msg):
+        self.logger.critical(msg)
+
+    def setlevel(self, name, level):
+        logging.getLogger(name).setLevel(level)
+
+
 if __name__ == "__main__":
-    mylog = log()
-    mylog.print(999)
+    log = log()
+    log.print(999)
+    mylog = MyLog()
+    mylog.print(888)

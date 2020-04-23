@@ -9,18 +9,26 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 10:13:07
 @LastEditors: Even.Sand
-@LastEditTime: 2020-04-13 18:22:53
+@LastEditTime: 2020-04-15 12:36:15
 '''
 
+import subprocess
+
 from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
+
 from xjLib.db.dbconf import make_connect_string
 from xjLib.db.sqlbase import SqlBase
 
+Base = declarative_base()  # 生成一个SQLORM基类
+metadata = Base.metadata
+
 
 class engine(SqlBase):
-
+    # #sqlhelper = engine(Users, 'TXbx')
+    # # Users为继承base的数据表类
     def __init__(self, baseclass, key='default'):
         self.baseclass = baseclass  # 父类定义表格类
         self._set_params()  # 设置self.params参数
@@ -232,20 +240,60 @@ class engine(SqlBase):
         pass
 
 
-if __name__ == '__main__':
+class model():
 
-    from sqlalchemy.ext.declarative import declarative_base
+    # #用与支持下标引用和赋值
+    def __getitem__(self, attr):
+        # return  self.__getattribute__(attr)
+        return getattr(self, attr)
+
+    def __setitem__(self, attr, value):
+        # return  self.__getattribute__(attr)
+        return setattr(self, attr, value)
+
+    # #生成一个字段名的list
+    def ColumnList(self):
+        list = [
+            attr for attr in dir(self) if not callable(getattr(self, attr)) and
+            not attr.startswith("__") and not attr == '_sa_class_manager' and
+            not attr == '_decl_class_registry' and
+            not attr == '_sa_instance_state' and not attr == 'metadata'
+        ]
+        return list
+
+    # #用于打印显示
+    def __repr__(self):
+        return str({
+            attr: getattr(self, attr)
+            for attr in dir(self)
+            if not callable(getattr(self, attr)) and
+            not attr.startswith("__") and not attr == '_sa_class_manager' and
+            not attr == '_decl_class_registry' and
+            not attr == '_sa_instance_state' and not attr == 'metadata'
+        })
+
+
+def creat_sqlalchemy_db_class(tablename, key='default'):
+    # #根据已有数据库生成模型
+    # # sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf8
+    com_list = f'sqlacodegen --tables {tablename} --outfile {tablename}_db.py {make_connect_string(key)}'
+    subprocess.Popen(
+        com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+if __name__ == '__main__':
     from sqlalchemy.orm import validates
     from sqlalchemy import Column, DateTime, String, Enum  # Integer, Numeric, TIMESTAMP
     from sqlalchemy.dialects.mysql import INTEGER
-    BaseModel = declarative_base()  # 生成一个SQLORM基类
 
-    class Users(BaseModel):
+    class Users(Base, model):
+        # #多个父类，继承model的一些方法
+        # #解决下标取值赋值、打印显示、生成字段列表
         __tablename__ = 'users2'
 
         ID = Column(INTEGER(6), primary_key=True)
         username = Column(String(24), nullable=False)
-        password = Column(String(16), nullable=False, default='123456')
+        password = Column(String(16), nullable=False, server_default='123456')
         手机 = Column(String(11), nullable=False)
         代理人编码 = Column(String(8))
         会员级别 = Column(
@@ -258,9 +306,6 @@ if __name__ == '__main__':
         def validate_手机(self, key, 手机):
             assert len(手机) == 11
             return 手机
-
-        def __repr__(self):
-            return f'<Event id={self.ID} username={self.username} 手机={self.手机}>'
 
     sqlhelper = engine(Users, 'TXbx')
     user2 = [{
@@ -280,11 +325,16 @@ if __name__ == '__main__':
     res = sqlhelper.from_statement(
         "SELECT username,ID FROM users2 where username=:username limit 2",
         {"username": "刘澈"})
-    print(1111, res)
-    '''
-    # !根据已有数据库生成模型
-    # ! sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf8
+    print(1111, res[0])
+    # print(1111, res[0].username)
+    # print(1111, res[0]['username'])
+    res[0]['username'] = '刘澈88'
+    sqlhelper.session.commit()
 
+    print(res[0].username)
+    print(res[0].ColumnList())
+    '''
+    creat_sqlalchemy_db_class('users2')
 
     a = Users()
     params = {attr: eval(f'a.ID.{attr}') for attr in dir(a.ID)}
@@ -317,6 +367,12 @@ if __name__ == '__main__':
         "SELECT username,ID FROM users2 where username=:username limit 2",
         {"username": "刘澈"}, True)
     print(5555, res)
+    print(1111, res[0].username)
+    print(1111, res[0]['username'])
+    res[0]['username'] = '刘澈88'
+    sqlhelper.session.commit()
+    print( res[0].ColumnList())
+
 
     fiter举例：
     query(User.name).filter(User.fullname==’Ed Jones’)
