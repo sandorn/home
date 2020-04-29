@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-29 17:33:01
+#LastEditTime : 2020-04-29 17:58:01
 requests 简化调用
 '''
 # from __future__ import absolute_import, unicode_literals
@@ -110,7 +110,7 @@ class RequestsSession(object):
         self.cookies = requests.cookies.RequestsCookieJar()
 
     @retry(wait_random_min=20, wait_random_max=1000, stop_max_attempt_number=10)
-    def post(self, url, data):
+    def post(self, url, data=None, **kwargs):
         try:
             response = self.session.post(
                 url,
@@ -118,9 +118,11 @@ class RequestsSession(object):
                 allow_redirects=True,
                 headers=self.header,
                 timeout=self.timeout,
-                cookies=self.cookies)  # 传递cookie
+                cookies=self.cookies,  # 传递cookie
+                **kwargs)
             self.cookies.update(response.cookies)  # 保存cookie
-            # print(self.cookies)
+            self.session.cookies.update(response.cookies)  # 保存cookie
+            # print(self.cookies, self.session.cookies)
 
             response.raise_for_status()
         except Exception as e:
@@ -128,7 +130,7 @@ class RequestsSession(object):
         return sResponse(response)
 
     @retry(wait_random_min=20, wait_random_max=1000, stop_max_attempt_number=10)
-    def get(self, url, params=None):
+    def get(self, url, params=None, **kwargs):
         try:
             response = self.session.get(
                 url,
@@ -136,9 +138,11 @@ class RequestsSession(object):
                 allow_redirects=True,
                 headers=self.header,
                 timeout=self.timeout,
-                cookies=self.cookies)  # 传递cookie
+                cookies=self.cookies,  # 传递cookie
+                **kwargs)
             self.cookies.update(response.cookies)  # 保存cookie
-            # print(self.cookies)
+            self.session.cookies.update(response.cookies)  # 保存cookie
+            # print(self.cookies, self.session.cookies)
 
             response.raise_for_status()
         except Exception as e:
@@ -168,15 +172,6 @@ def parse_get(url, params=None, **kwargs):
         print(url, '_parse err:', repr(err), flush=True)
         raise err
 
-    return sResponse(response)
-
-
-@retry(wait_random_min=20, wait_random_max=1000, stop_max_attempt_number=10)
-def parse_get_0(url, params=None, **kwargs):
-    kwargs.setdefault('headers', myhead)
-    kwargs.setdefault('allow_redirects', True)  # @启动重定向
-    response = requests.get(url, params=params, **kwargs)
-    assert (response.status_code == 200) or (response.status_code == 302)
     return sResponse(response)
 
 
@@ -212,19 +207,20 @@ def set_cookies(cookies):
     '''
     #将CookieJar转为字典：
     cookies = requests.utils.dict_from_cookiejar(r.cookies)
+    session.cookies = set_cookies(response.cookies)
+
     #将字典转为CookieJar：
     cookies = requests.utils.cookiejar_from_dict(cookie_dict, cookiejar=None, overwrite=True)
-
-    可以把headers这个请求头直接转成cookiejar类型放入cookies里面，尝试了成功执行
+    可以把headers这个请求头直接转成cookiejar类型放入cookies里面
     cookies = requests.utils.cookiejar_from_dict(headers, cookiejar=None, overwrite=True)
 
-    #关于requests的session方法无法保持cookie的问题。_Python_falseen的博客-CSDN博客
     #https://blog.csdn.net/falseen/article/details/46962011
     用cookies属性的update方法更新cookie
     cookie_dict = {"a":1}
-    s = requests.Session()
-    s.cookies.update(cookie_dict)
-    s.get(url)
+    session = requests.Session()
+    session.cookies.update(cookie_dict)
+    session.get(url)
+
     '''
     # 将CookieJar转为字典：
     res_cookies_dic = requests.utils.dict_from_cookiejar(cookies)
@@ -232,44 +228,6 @@ def set_cookies(cookies):
     for i in res_cookies_dic.keys():
         cookies[i] = res_cookies_dic[i]
     return cookies
-
-
-def session_url(url, params=None, **kwargs):
-    '''
-    session可以跨越很多页面,session的生命周期也是针对一个客户端
-    在网站设置的会话周期内(一般是20-30分钟)，session里边的内容将一直存在
-    即便关闭了这个客户端浏览器 session也不一定会马上释放掉的。
-    可以理解是客户端同一个IE窗口发出的多个请求，之间可以传递参数，比如用户登录
-    '''
-
-    @retry(
-        wait_random_min=50, wait_random_max=1000, stop_max_attempt_number=100)
-    def _parse_url(url, params=params, **kwargs):
-        # 开启一个session会话
-        session = requests.session()
-        session.keep_alive = False
-        # 设置请求头信息
-        session.headers = myhead
-        # 将cookiesJar赋值给会话
-        # session.cookies = self.read_cookies()
-        # 向目标网站发起请求
-        response = session.get(url, params=params, **kwargs)
-        if kwargs['allow_redirects']:
-            assert response.status_code == 200
-            session.cookies = set_cookies(response.cookies)
-        else:
-            assert (response.status_code == 200) or (
-                response.status_code == 302)
-        # # response.content.decode('utf-8')   # # response.text
-        return response
-
-    try:
-        # 以下except捕获当requests请求异常
-        response = _parse_url(url, params=params, **kwargs)
-    except Exception as e:
-        print('xjLib.req.parse_get Exception:', e, url, flush=True)
-        response = None
-    return response
 
 
 class HttpClient(object):
@@ -321,13 +279,7 @@ class HttpClient(object):
 
 
 class FakeRequests(object):
-    """
-    经常到处找请求头用户代理，这下一次解决完
-    """
-    headers = {
-        "User-Agent":
-            "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:64.0) Gecko/20100101 Firefox/64.0"
-    }
+    headers = myhead
 
     @classmethod
     def request(cls, method, url, **kwargs):
@@ -349,9 +301,3 @@ class FakeRequests(object):
 if __name__ == '__main__':
     r = FakeRequests.get(url="https://httpbin.org/get")
     print(r.text)
-
-    hc = HttpClient()
-    response = hc.request("get", "https://www.163.com")
-    print(response)
-
-    # response=hc.request("post","http://39.106.41.11:8080/register/","form",'{"username":"xufengchai6","password":"xufengchai121","email":"xufengchai@qq.com"}')

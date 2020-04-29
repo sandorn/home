@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-04-28 19:10:26
-#LastEditTime : 2020-04-29 17:27:38
+#LastEditTime : 2020-04-29 17:56:28
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -90,16 +90,9 @@ def down_content(connect, title, url):
     _res = Session.get(
         f'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId={url}')
 
-    # # 写html文件,二进制文件模式加b
-    open(path + '/' + title + '.html', 'wb').write(_res.content)
-
-    # #写txt文件
     公告正文 = ''.join(
         _res.html.xpath('//div[@class="contentText"]//text()')).replace(
             'xa0', ' ').replace(' ', ' ').replace('%', '%%')
-    open(
-        path + '/' + title + '.txt', 'w',
-        encoding='utf-8').write(title + '\n\n' + 公告正文)
 
     # #写数据库
     connect.insert({
@@ -107,6 +100,13 @@ def down_content(connect, title, url):
         'URL': url,
         'content': 公告正文,
     })
+
+    # # 写html文件,二进制文件模式加b
+    open(path + '/' + title + '.html', 'wb').write(_res.content)
+    # #写txt文件
+    open(
+        path + '/' + title + '.txt', 'w',
+        encoding='utf-8').write(title + '\n\n' + 公告正文)
 
     # #下载附件
     _附件下载 = _res.html.xpath('//div[@id="attFileDomain"]')[0].get('attsdata')

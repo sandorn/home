@@ -8,39 +8,73 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-31 12:12:40
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-02 09:54:32
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-04-29 17:57:24
 '''
-
 
 import os
 
-
-from xjLib.mystr import (fn_timer, savefile)
-import threading
-from xjLib.CustomThread import (SingletonThread, SingletonThread_Queue, CustomThread, Custom_Thread_Queue, WorkManager, thread_pool_maneger)
-from xjLib.ls import get_download_url, get_contents
-# from multiprocessing import Queue
-from queue import Queue
-import time
-'''
-import pdb
-pdb.set_trace()  # 运行到这里会自动暂停
-'''
+from xjLib.mystr import savefile
+from xjLib.CustomThread import CustomThread
+from xjLib.mystr import Ex_Re_Sub, Ex_Replace
+from xjLib.req import RequestsSession
+Session = RequestsSession()
 
 
-@fn_timer
-def st(bookname, urls):
-    _ = [SingletonThread(get_contents, (index, url)) for index, url in enumerate(urls)]
-    texts = SingletonThread.wait_completed()
-    texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'SingletonThread.txt', texts, br='\n')
+def get_download_url(target):
+    urls = []  # 存放章节链接
+    response = Session.get(target).html
+    _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
+    全部章节节点 = response.xpath(
+        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
+
+    for item in 全部章节节点:
+        _ZJHERF = 'https://www.biqukan.com' + item
+        urls.append(_ZJHERF)
+    return _bookname, urls
 
 
-@fn_timer
-def ct(bookname, args):
-    _ = [CustomThread(get_contents, [index, url])for index, url in enumerate(urls)]
+def get_contents(lock, index, target):
+    response = Session.get(target).html
+
+    _name = "".join(response.xpath('//h1/text()'))
+    _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
+    name = Ex_Re_Sub(_name, {' ': ' '})
+    text = Ex_Replace(
+        _showtext.strip("\n\r　  "),
+        {
+            '　　': '\n',
+            ' ': ' ',
+            '\', \'': '',
+            # '\xa0': '',  # 表示空格  &nbsp;  dictionary key '\xa0' repeated with different values
+            '\u3000': '',  # 全角空格
+            'www.biqukan.com。': '',
+            'm.biqukan.com': '',
+            'wap.biqukan.com': '',
+            'www.biqukan.com': '',
+            '笔趣看;': '',
+            '百度搜索“笔趣看小说网”手机阅读:': '',
+            '请记住本书首发域名:': '',
+            '请记住本书首发域名：': '',
+            '笔趣阁手机版阅读网址:': '',
+            '笔趣阁手机版阅读网址：': '',
+            '[]': '',
+            '<br />': '',
+            '\r\r': '\n',
+            '\r': '\n',
+            '\n\n': '\n',
+            '\n\n': '\n',
+        },
+    )
+
+    return [index, name, '    ' + text]
+
+
+def main(bookname, args):
+    _ = [
+        CustomThread(get_contents, [index, url])
+        for index, url in enumerate(urls)
+    ]
     texts = CustomThread.wait_completed()
     texts.sort(key=lambda x: x[0])
     # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
@@ -49,9 +83,7 @@ def ct(bookname, args):
 
 
 if __name__ == "__main__":
-    bookname, urls = get_download_url('http://www.biqukan.com/2_2714/')  # 38_38836  #2_2714
+    bookname, urls = get_download_url(
+        'http://www.biqukan.com/38_38836/')  # 38_38836  #2_2714
 
-    st(bookname, urls)
-    ct(bookname, urls)
-
-    print('#' * 33, 'threading.active_count():', threading.active_count(), threading.enumerate())
+    main(bookname, urls)

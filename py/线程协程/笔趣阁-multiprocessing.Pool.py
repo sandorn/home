@@ -9,11 +9,11 @@
 @License: (C)Copyright 2009-2019, NewSea
 #LastEditors  : Please set LastEditors
 @Date: 2019-05-08 18:31:14
-#LastEditTime : 2020-04-28 16:21:08
+#LastEditTime : 2020-04-29 18:08:58
 努努书坊 - 小说在线阅读   https://www.kanunu8.com/
 '''
 
-import multiprocessing
+from multiprocessing import Pool
 import os
 
 from xjLib.ahttp import ahttpGet
@@ -78,7 +78,7 @@ def main_Pool(target):
     bookname, urls = get_download_url(target)
 
     print('multiprocessing.pool，开始下载：《' + bookname + '》', flush=True)
-    mypool = multiprocessing.Pool(32)  # !进程数,不能超过61
+    mypool = Pool(32)  # !进程数,不能超过61
     mypool.map_async(
         func=get_contents,
         iterable=[(i, urls[i]) for i in range(len(urls))],

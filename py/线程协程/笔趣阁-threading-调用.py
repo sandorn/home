@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-15 19:10:02
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-04-29 18:18:14
 '''
 import threading
 import time
@@ -30,7 +30,8 @@ def get_download_url(target):
     resp = ahttpGet(target)
     response = resp.html
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
-    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
+    全部章节节点 = response.xpath(
+        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
     for item in 全部章节节点:
         _ZJHERF = 'https://www.biqukan.com' + item
@@ -78,7 +79,11 @@ def get_contents(index):
 
         with lock:
             texts.append([index, name, text])
-            print(threading.current_thread().name + '线程 #{} 号  has done。\n'.format(index), end='', flush=True)
+            print(
+                threading.current_thread().name +
+                '线程 #{} 号  has done。\n'.format(index),
+                end='',
+                flush=True)
         urls.task_done()  # 发出此队列完成信号
 
 
@@ -98,12 +103,14 @@ def main_thread(target):
     print('threading-调用，书籍《' + bookname + '》完成下载', flush=True)
     texts.sort(key=lambda x: x[0])
     savefile(bookname + '.txt', texts)
-    print('下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)), flush=True)
+    print(
+        '下载《{}》完成，用时:{} 秒。'.format(bookname, round(time.time() - _stime, 2)),
+        flush=True)
 
 
 if __name__ == '__main__':
-    main_thread('https://www.biqukan.com/2_2714/')
+    main_thread('https://www.biqukan.com/38_38836/')
+    # '38_38836'  8秒
     # '65_65593'  #章节少，测试用
     # '2_2704'  #231万字  #6239kb, 153秒
-    # "2_2714"   #《武炼巅峰》1724万字,47839kb, 250秒。100线程
-    #!为什么调用明显慢于继承
+    # "2_2714"   #《武炼巅峰》1724万字,47839kb, 89秒。100线程

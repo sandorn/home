@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-02-29 23:00:26
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-28 16:29:30
+#LastEditTime : 2020-04-29 18:19:43
 https://blog.csdn.net/ksws0393238aa/article/details/20286405?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task
 '''
 
@@ -98,7 +98,5 @@ def main_thread(target):
 
 if __name__ == '__main__':
     main_thread('https://www.biqukan.com/38_38836/')
-    # '38_38836'  #34秒
-    # '10_10736'  #
-    # "2_2714"   #《武炼巅峰》1724万字,47839kb, #!77秒。无线程限制
-    # '0_790'    #《元尊》328万字， 8988KB， 45秒钟
+    # '38_38836'    7秒
+    # "2_2714"   #《武炼巅峰》1724万字,47839kb, #!72秒。无线程限制
