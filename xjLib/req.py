@@ -8,14 +8,13 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-17 19:57:14
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-04-29 17:33:01
 requests 简化调用
 '''
-from __future__ import absolute_import, unicode_literals
+# from __future__ import absolute_import, unicode_literals
 
 import json
-from functools import partial
 from html import unescape
 
 import requests
@@ -76,7 +75,11 @@ class sResponse:
 
     @property
     def status(self):
-        return self.clientResponse.status
+        return self.clientResponse.status_code
+
+    @property
+    def status_code(self):
+        return self.clientResponse.status_code
 
     @property
     def html(self):
@@ -90,11 +93,57 @@ class sResponse:
 
         # #去除节点clean # #解码html:unescape
         html = clean(unescape(self.text), '//script')
-        #html = etree.HTML(self.text)
+        # html = etree.HTML(self.text)
         return html
 
     def __repr__(self):
         return f"<sResponse status[{self.status}] url=[{self.url}]>"
+
+
+class RequestsSession(object):
+    '''参考 https://www.jb51.net/article/153917.htm'''
+
+    def __init__(self):
+        self.session = requests.session()
+        self.header = myhead
+        self.timeout = 20
+        self.cookies = requests.cookies.RequestsCookieJar()
+
+    @retry(wait_random_min=20, wait_random_max=1000, stop_max_attempt_number=10)
+    def post(self, url, data):
+        try:
+            response = self.session.post(
+                url,
+                data=data,
+                allow_redirects=True,
+                headers=self.header,
+                timeout=self.timeout,
+                cookies=self.cookies)  # 传递cookie
+            self.cookies.update(response.cookies)  # 保存cookie
+            # print(self.cookies)
+
+            response.raise_for_status()
+        except Exception as e:
+            print("HTTP请求异常，异常信息：%s" % e)
+        return sResponse(response)
+
+    @retry(wait_random_min=20, wait_random_max=1000, stop_max_attempt_number=10)
+    def get(self, url, params=None):
+        try:
+            response = self.session.get(
+                url,
+                params=params,
+                allow_redirects=True,
+                headers=self.header,
+                timeout=self.timeout,
+                cookies=self.cookies)  # 传递cookie
+            self.cookies.update(response.cookies)  # 保存cookie
+            # print(self.cookies)
+
+            response.raise_for_status()
+        except Exception as e:
+            print("HTTP请求异常，异常信息：%s" % e)
+        return sResponse(response)
 
 
 def parse_get(url, params=None, **kwargs):
@@ -160,6 +209,23 @@ def parse_post(url, data=None, json=None, **kwargs):
 
 
 def set_cookies(cookies):
+    '''
+    #将CookieJar转为字典：
+    cookies = requests.utils.dict_from_cookiejar(r.cookies)
+    #将字典转为CookieJar：
+    cookies = requests.utils.cookiejar_from_dict(cookie_dict, cookiejar=None, overwrite=True)
+
+    可以把headers这个请求头直接转成cookiejar类型放入cookies里面，尝试了成功执行
+    cookies = requests.utils.cookiejar_from_dict(headers, cookiejar=None, overwrite=True)
+
+    #关于requests的session方法无法保持cookie的问题。_Python_falseen的博客-CSDN博客
+    #https://blog.csdn.net/falseen/article/details/46962011
+    用cookies属性的update方法更新cookie
+    cookie_dict = {"a":1}
+    s = requests.Session()
+    s.cookies.update(cookie_dict)
+    s.get(url)
+    '''
     # 将CookieJar转为字典：
     res_cookies_dic = requests.utils.dict_from_cookiejar(cookies)
     # 将新的cookies信息更新到手动cookies字典

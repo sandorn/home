@@ -1,29 +1,27 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-25 10:13:07
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-15 12:36:15
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2020-03-25 10:13:07
+#LastEditTime : 2020-04-29 12:15:20
+#Github       : https://github.com/sandorn/home
+#License      : (C)Copyright 2009-2020, NewSea
+#==============================================================
 '''
 
 import subprocess
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.sql import text
 
 from xjLib.db.dbconf import make_connect_string
 from xjLib.db.sqlbase import SqlBase
-
-Base = declarative_base()  # 生成一个SQLORM基类
-metadata = Base.metadata
 
 
 class engine(SqlBase):
@@ -33,8 +31,8 @@ class engine(SqlBase):
         self.baseclass = baseclass  # 父类定义表格类
         self._set_params()  # 设置self.params参数
         self.engine = create_engine(make_connect_string(key), echo=False)
-        DB_Session = sessionmaker(bind=self.engine)
-        self.session = DB_Session()
+        # self.session = sessionmaker(bind=self.engine)
+        self.session = scoped_session(sessionmaker(bind=self.engine))  # 多线程
         self.init_db()
 
     def _set_params(self):
@@ -233,7 +231,8 @@ class engine(SqlBase):
                         {key: getattr(item, key) for key in self.params.keys()})
                 elif isinstance(item, tuple):
                     # #设置了字段的select
-                    res_list.append([*item])
+                    # res_list.append([*item])
+                    res_list.append(*item)
             return res_list
 
     def close(self):
@@ -273,11 +272,13 @@ class model():
         })
 
 
-def creat_sqlalchemy_db_class(tablename, key='default'):
+def creat_sqlalchemy_db_class(tablename, filename=None, key='default'):
     # #根据已有数据库生成模型
-    # # sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf8
-    com_list = f'sqlacodegen --tables {tablename} --outfile {tablename}_db.py {make_connect_string(key)}'
-    subprocess.Popen(
+    # # sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf
+    if filename is None:
+        filename = tablename
+    com_list = f'sqlacodegen --tables {tablename} --outfile {filename}_db.py {make_connect_string(key)}'
+    subprocess.call(
         com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
@@ -285,6 +286,8 @@ if __name__ == '__main__':
     from sqlalchemy.orm import validates
     from sqlalchemy import Column, DateTime, String, Enum  # Integer, Numeric, TIMESTAMP
     from sqlalchemy.dialects.mysql import INTEGER
+    Base = declarative_base()  # 生成一个SQLORM基类
+    '''metadata = Base.metadata'''
 
     class Users(Base, model):
         # #多个父类，继承model的一些方法

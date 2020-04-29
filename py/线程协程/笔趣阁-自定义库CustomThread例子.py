@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-15 12:23:45
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-04-26 13:46:29
 根据网络资料，写的threadpool
 '''
 
@@ -21,7 +21,6 @@ from xjLib.CustomThread import (SingletonThread, SingletonThread_Queue,
                                 thread_pool_maneger)
 from xjLib.mystr import (Ex_Re_Sub, Ex_Replace, fn_timer, savefile)
 from xjLib.req import parse_get
-from queue import Queue
 
 
 def get_download_url(target):
@@ -51,7 +50,7 @@ def get_contents(lock, index, target):
             '　　': '\n',
             ' ': ' ',
             '\', \'': '',
-            '\xa0': '',  # 表示空格  &nbsp;
+            # '\xa0': '',  # 表示空格  &nbsp;
             '\u3000': '',  # 全角空格
             'www.biqukan.com。': '',
             'm.biqukan.com': '',
@@ -89,10 +88,8 @@ def st(bookname, urls):
 
 @fn_timer
 def sq(bookname, urls):
-    queue = Queue()
     for index, url in enumerate(urls):
-        SingletonThread_Queue(queue)
-        queue.put([get_contents, index, url])
+        SingletonThread_Queue([get_contents, index, url])
 
     # texts = SingletonThread_Queue.getAllResult()
     texts = SingletonThread_Queue.wait_completed()
@@ -118,10 +115,8 @@ def ct(bookname, args):
 
 @fn_timer
 def cq(bookname, args):
-    queue = Queue()
     for index, url in enumerate(urls):
-        Custom_Thread_Queue(queue)
-        queue.put([get_contents, index, url])
+        Custom_Thread_Queue([get_contents, index, url])
 
     # texts = Custom_Thread_Queue.getAllResult()
     texts = Custom_Thread_Queue.wait_completed()
@@ -163,8 +158,8 @@ def tp(bookname, urls, MaxSem=99):
 
 
 if __name__ == "__main__":
-    bookname, urls = get_download_url(
-        'http://www.biqukan.com/2_2714/')  # 38_38836  #2_2714
+    bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
+    # 38_38836  #2_2714
 
     for func in ['st', 'sq', 'ct', 'cq', 'wm', 'tp']:
         eval(func)(bookname, urls)

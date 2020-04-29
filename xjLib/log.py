@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-17 20:14:59
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-04-29 13:33:29
 # author:      he.zhiming
 '''
 
@@ -191,6 +191,26 @@ class MyLog(object):
 
     def setlevel(self, name, level):
         logging.getLogger(name).setLevel(level)
+
+
+def decoLog(func):
+    '''
+    程序出错日志记录装饰器
+    :param func: 当前执行的函数
+    :return: 返回日志
+    '''
+
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except Exception as err:
+            logging.basicConfig(
+                filename=_make_filename(),
+                level=logging.DEBUG,
+                format=standard_format)
+            logging.debug("This is a debug log.")
+
+    return wrapper
 
 
 if __name__ == "__main__":

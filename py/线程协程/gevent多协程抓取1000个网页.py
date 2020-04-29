@@ -20,7 +20,6 @@ from gevent.queue import Queue
 
 monkey.patch_all()
 
-
 link_list = []
 with open('alexa.txt', 'r', encoding='utf-8') as file:
     file_list = file.readlines()
@@ -49,7 +48,7 @@ def boss():
 
 
 if __name__ == '__main__':
-    workQueue = Queue(1000)
+    workQueue = Queue(100)
 
     gevent.spawn(boss).join()
     jobs = []

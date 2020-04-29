@@ -1,15 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-04-06 23:19:45
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-12 18:31:27
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2020-04-06 23:19:45
+#LastEditTime : 2020-04-28 18:56:38
+#Github       : https://github.com/sandorn/home
+#License      : (C)Copyright 2009-2020, NewSea
+#==============================================================
+#!未完成
 '''
 
 import os
@@ -26,6 +28,7 @@ from xjLib.db.dbStore import ISqlHelper
 
 
 class engine(ISqlHelper):
+
     def __init__(self, baseclass, key='default'):
         self.baseclass = baseclass  # 父类定义表格类
         self._set_params()  # 设置self.params参数
@@ -50,8 +53,8 @@ class engine(ISqlHelper):
         self.params = {
             attr: getattr(self.baseclass, attr)
             for attr in self.baseclass.__dict__
-            if not callable(getattr(self.baseclass, attr))
-            and not attr.startswith("__") and not attr == '_sa_class_manager'
+            if not callable(getattr(self.baseclass, attr)) and
+            not attr.startswith("__") and not attr == '_sa_class_manager'
         }
 
     def init_db(self):
@@ -149,11 +152,15 @@ class engine(ISqlHelper):
                 query = query.filter(condition)
 
         if count:
-            if show: return self._result_refine(query.limit(count).all())
-            else: return query.limit(count).all()
+            if show:
+                return self._result_refine(query.limit(count).all())
+            else:
+                return query.limit(count).all()
         else:
-            if show: return self._result_refine(query.all())
-            else: return query.all()
+            if show:
+                return self._result_refine(query.all())
+            else:
+                return query.all()
 
     def from_statement(self, sql, conditions=None, show=False):
         '''
@@ -162,16 +169,17 @@ class engine(ISqlHelper):
         @return:
         '''
         if sql:
-            query = self.session.query(self.baseclass).from_statement(
-                text(sql))
+            query = self.session.query(self.baseclass).from_statement(text(sql))
         if conditions:
             result = query.params(**conditions).all()
             self.session.commit()
         else:
             result = query.all()
             self.session.commit()
-        if show: return self._result_refine(result)
-        else: return result
+        if show:
+            return self._result_refine(result)
+        else:
+            return result
 
     def filter(self, conditions, show=False):
         '''
@@ -184,8 +192,10 @@ class engine(ISqlHelper):
         引用列名时，需要通过 类名.属性名 的方式。
         '''
         result = self.session.query(self.baseclass).filter(**conditions).all()
-        if show: return self._result_refine(result)
-        else: return result
+        if show:
+            return self._result_refine(result)
+        else:
+            return result
 
     def filter_by(self, conditions, show=False):
         '''
@@ -196,8 +206,10 @@ class engine(ISqlHelper):
         '''
         result = self.session.query(
             self.baseclass).filter_by(**conditions).all()
-        if show: return self._result_refine(result)
-        else: return result
+        if show:
+            return self._result_refine(result)
+        else:
+            return result
 
     def _result_refine(self, result):
         '''
@@ -219,10 +231,8 @@ class engine(ISqlHelper):
             for item in result:
                 if isinstance(item, self.baseclass):
                     # #list内多个self.baseclass对象
-                    res_list.append({
-                        key: getattr(item, key)
-                        for key in self.params.keys()
-                    })
+                    res_list.append(
+                        {key: getattr(item, key) for key in self.params.keys()})
                 elif isinstance(item, tuple):
                     # #设置了字段的select
                     res_list.append([*item])
@@ -234,8 +244,10 @@ class engine(ISqlHelper):
     def f(self, conditions, show=False):
         result = self.session.query(self.baseclass).filter(
             self.baseclass.username.like(conditions)).all()
-        if show: return self._result_refine(result)
-        else: return result
+        if show:
+            return self._result_refine(result)
+        else:
+            return result
 
 
 if __name__ == '__main__':
@@ -255,6 +267,7 @@ if __name__ == '__main__':
         })
 
     class UnknownField(object):
+
         def __init__(self, *_, **__):
             pass
 
@@ -266,6 +279,7 @@ if __name__ == '__main__':
         可以在此处制定一些大家都需要的列，
         然后每个继承的子类（表）中都会有这么固定的几列
         """
+
         class Meta:
             database = database
 
@@ -277,8 +291,8 @@ if __name__ == '__main__':
         手机 = CharField(null=True)
         代理人编码 = CharField(null=True)
         会员级别 = CharField(constraints=[SQL("DEFAULT 'C'")], null=True)
-        会员到期日 = DateTimeField(constraints=[SQL("DEFAULT CURRENT_TIMESTAMP")],
-                              null=True)
+        会员到期日 = DateTimeField(
+            constraints=[SQL("DEFAULT CURRENT_TIMESTAMP")], null=True)
         登陆次数 = CharField(null=True)
         备注 = IntegerField(null=True)
 
@@ -303,8 +317,9 @@ if __name__ == '__main__':
         Users2,
     ])
     for i in range(10):
-        Users2(username='王五' + str(i), password=50,
-               手机='1333333333' + str(i)).save()
+        Users2(
+            username='王五' + str(i), password=50,
+            手机='1333333333' + str(i)).save()
 '''
 备注
 # !根据已有数据库生成模型

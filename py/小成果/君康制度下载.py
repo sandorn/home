@@ -1,15 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion:自动登陆，利用账号及密码，下载公告
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-16 00:20:05
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-13 18:12:59
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2020-04-02 12:27:12
+#LastEditTime : 2020-04-29 11:23:56
+#Github       : https://github.com/sandorn/home
+#License      : (C)Copyright 2009-2020, NewSea
+#==============================================================
 
 大幅度修改：
 1.修改Session，保留cookies
@@ -20,7 +21,6 @@
 6.xpath().get获取属性字符串，json.loads为包含字典的list
 7.pandas.read_sql参数为db.conn，而不是db
 8.完善sqlHelper.has_tables,判断数据库是否包含某个表
-
 9.数据库存储公告内容
 '''
 import json
@@ -176,7 +176,7 @@ def main():
 
 
 if __name__ == '__main__':
-    from xjLib.log import log
+    # from xjLib.log import log
     # mylog = log()
     # print = mylog.print
     main()

@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-15 12:01:39
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-04-27 13:59:27
 '''
 import hashlib
 import os
@@ -252,10 +252,21 @@ def change2num(章节编号):
     return m
 
 
-def get_file_size(filePath):
-    _fsize = os.path.getsize(filePath)
-    fsize = _fsize / float(1024 * 1024)
-    return round(fsize, 2)
+class filesize:
+
+    def __init__(self, filePath):
+        self.Bytes = os.path.getsize(filePath)
+        self.KB = round(self.Bytes / float(1024), 2)
+        self.MB = round(self.KB / float(1024), 2)
+
+    def __str__(self):
+        if self.MB > 10:
+            res = str(format(self.MB, ',')) + ' MB'
+        elif self.KB > 10:
+            res = str(format(self.KB, ',')) + ' KB'
+        else:
+            res = str(format(self.Bytes, ',')) + ' Bytes'
+        return res
 
 
 def Ex_Re_Sub(oldtext, *args, **kwds):
@@ -295,8 +306,8 @@ def list2file(_filename, _list_texts, br='\t'):
                 [file.write(str(v) + br) for v in index]
                 file.write('\n')
 
-    size = "文件大小：%.2f MB" % (get_file_size(_filename))
-    print('[{}]保存完成\t文件{}\ttime:{}。'.format(_filename, size, get_time()))
+    size = f"size: {filesize(_filename)}"
+    print('[{}]保存完成\t{}\ttime:{}。'.format(_filename, size, get_time()))
 
     # #换行有问题[f.write(str(v) + '\t') for key in lists for index in key for v in index]
 
@@ -320,7 +331,7 @@ def savefile(_filename, _list_texts, br=''):
 
         each(_list_texts)
 
-    size = "size：%.2f MB" % (get_file_size(_filename))
+    size = f"size: {filesize(_filename)}"
     print('[{}]保存完成\t{}\ttime:{}。'.format(_filename, size, get_time()))
 
 

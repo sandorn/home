@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-23 22:50:08
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-17 18:14:00
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-04-28 19:22:05
 '''
 
 import os
@@ -20,10 +20,7 @@ from xjLib.mystr import Ex_Re_Sub, get_stime, savefile, Ex_Replace
 
 def get_download_url(target):
     urls = []  # 存放章节链接
-    resp = ahttpGet(target)
-    # response = resp.html
-    # 指定解析器
-    response = resp.html
+    response = ahttpGet(target).html
 
     _bookname = response.xpath('//h1/text()')[0]
     全部章节节点 = response.xpath(

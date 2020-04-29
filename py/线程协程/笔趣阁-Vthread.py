@@ -1,32 +1,38 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-18 03:50:41
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-23 17:00:26
-
-# !存在问题，主线程先结束，子线程后结束，未能取得返回值
-# !意思源库join有问题
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2019-05-18 03:50:41
+#LastEditTime : 2020-04-28 17:50:24
+#Github       : https://github.com/sandorn/home
+#License      : (C)Copyright 2009-2020, NewSea
+# !存在问题，主线程先结束，子线程后结束
+# !已修复
+#==============================================================
 '''
+
 import os
-import vthread
+from xjLib.CustomThread import my_pool
+# from xjLib.xt_vthread import pool as my_pool
 from xjLib.mystr import Ex_Re_Sub, savefile, Ex_Replace
 from xjLib.ls import get_download_url
 from xjLib.req import parse_get
 
-text_list = []
-pool = vthread.pool(20)
+# text_list = []
+pool = my_pool(200)
+
+
+def baidu():
+    response = parse_get('http://www.baidu.com')
+    print(response.status)
 
 
 @pool
 def get_contents(index, target):
-    print(index, target)
     response = parse_get(target).html
 
     _name = "".join(response.xpath('//h1/text()'))
@@ -58,19 +64,27 @@ def get_contents(index, target):
             '\n\n': '\n',
         },
     )
-    text_list.append([index, name, '    ' + text])
+
+    # text_list.append([index, name, '    ' + text])
+    return [index, name, '    ' + text]
 
 
-if __name__ == "__main__":
-    _name, urls = get_download_url('https://www.biqukan.com/38_38836/')
-
+def main(url):
+    _name, urls = get_download_url(url)
     _ = [get_contents(i, urls[i]) for i in range(len(urls))]
+    text_list = pool.wait_completed()
 
     text_list.sort(key=lambda x: x[0])  # #排序
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + _name + 'main.txt', text_list, br='\n')
 
-    # '38_38836/'  #章节少，测试用
-    # '65_65593/'  #章节少，测试用
-    # "2_2714"   #《武炼巅峰》664万字
-    # [武炼巅峰.txt]150W, 用时: 947.34 秒。
+
+if __name__ == "__main__":
+
+    # '38_38836/'  #用时: 10秒
+    # '65_65593/'  #用时: 10秒
+    # "2_2714"   #《武炼巅峰》664万字 用时: 77秒。
+    urls = [
+        'https://www.biqukan.com/38_38836/', 'https://www.biqukan.com/65_65593/'
+    ]
+    main(urls[0])

@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-04-01 10:29:33
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-21 23:59:43
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-04-28 16:42:56
 临时库
 '''
 
@@ -20,9 +20,7 @@ from xjLib.req import parse_get
 
 def get_download_url(target):
     urls = []  # 存放章节链接
-    # response = etree.HTML(parse_get(target).content)
-    resp = ahttpGet(target)
-    response = resp.html
+    response = ahttpGet(target).html
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
     全部章节节点 = response.xpath(
         '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
