@@ -9,95 +9,18 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-29 17:58:01
+#LastEditTime : 2020-05-06 12:36:26
 requests 简化调用
 '''
 # from __future__ import absolute_import, unicode_literals
 
 import json
-from html import unescape
 
 import requests
-from cchardet import detect
-from fake_useragent import UserAgent
-from lxml import etree
 from retrying import retry
 
-myhead = {
-    'User-Agent':
-        UserAgent().random,
-    'Accept':
-        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-    'Accept-Encoding':
-        'gzip,deflate,sdch',
-    'Content-Encoding':
-        'gzip,deflate,compress',
-    'Accept-Language':
-        'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
-    'Accept-Charset':
-        'gb2312,utf-8;q=0.7,*;q=0.7',
-    'Connection':
-        'close',
-    # 'Connection': 'keep-alive',
-    # 显示此HTTP连接的Keep-Alive时间    'Keep-Alive': '300',
-    # 请求的web服务器域名地址    'Host': 'www.baidu.com',
-}
-
-
-class sResponse:
-    # 结构化返回结果
-    def __init__(self, sessReq):
-        self.raw = self.clientResponse = sessReq
-
-    @property
-    def content(self):
-        return self.clientResponse.content
-
-    @property
-    def text(self):
-        code_type = detect(self.content)
-        return self.content.decode(code_type['encoding'], 'ignore')
-
-    @property
-    def url(self):
-        return self.clientResponse.url
-
-    @property
-    def cookies(self):
-        return self.clientResponse.cookies
-
-    @property
-    def headers(self):
-        return self.clientResponse.headers
-
-    def json(self):
-        return json.loads(self.text)
-
-    @property
-    def status(self):
-        return self.clientResponse.status_code
-
-    @property
-    def status_code(self):
-        return self.clientResponse.status_code
-
-    @property
-    def html(self):
-
-        def clean(html, filter):
-            data = etree.HTML(html)
-            trashs = data.xpath(filter)
-            for item in trashs:
-                item.getparent().remove(item)
-            return data
-
-        # #去除节点clean # #解码html:unescape
-        html = clean(unescape(self.text), '//script')
-        # html = etree.HTML(self.text)
-        return html
-
-    def __repr__(self):
-        return f"<sResponse status[{self.status}] url=[{self.url}]>"
+from xjLib.head import myhead
+from xjLib.Response import sResponse
 
 
 class RequestsSession(object):
@@ -159,7 +82,7 @@ def parse_get(url, params=None, **kwargs):
         retry_on_exception=lambda x: True,
         retry_on_result=lambda ret: not ret)
     def _run(url, params=params, **kwargs):
-        response = requests.get(url, timeout=10, params=params, **kwargs)
+        response = requests.get(url, params=params, **kwargs)
         assert (response.status_code == 200) or (response.status_code == 302)
         return response
 
@@ -246,7 +169,7 @@ class HttpClient(object):
                 requestUrl,
                 paramsType="params",
                 requestData=None,
-                headers=None,
+                headers=myhead,
                 cookies=None):
         if requestMethod.lower() == "post":
             if paramsType == "form":
@@ -255,27 +178,27 @@ class HttpClient(object):
                     data=json.dumps(eval(requestData)),
                     headers=headers,
                     cookies=cookies)
-                return response
+                return sResponse(response)
             elif paramsType == 'json':
                 response = self.__post(
                     url=requestUrl,
                     json=json.dumps(eval(requestData)),
                     headers=headers,
                     cookies=cookies)
-                return response
+                return sResponse(response)
         elif requestMethod == "get":
             if paramsType == "url":
                 request_url = "%s%s" % (requestUrl, requestData)
                 response = self.__get(
                     url=request_url, headers=headers, cookies=cookies)
-                return response
+                return sResponse(response)
             elif paramsType == "params":
                 response = self.__get(
                     url=requestUrl,
                     params=requestData,
                     headers=headers,
                     cookies=cookies)
-                return response
+                return sResponse(response)
 
 
 class FakeRequests(object):
@@ -286,16 +209,18 @@ class FakeRequests(object):
         kwargs.setdefault("headers", cls.headers)
         response = requests.request(method, url, **kwargs)
         response.encoding = response.apparent_encoding
-        return response
+        return sResponse(response)
 
     @classmethod
     def get(cls, url, params=None, **kwargs):
         kwargs.setdefault('allow_redirects', True)
-        return cls.request('get', url, params=params, **kwargs)
+        response = cls.request('get', url, params=params, **kwargs)
+        return sResponse(response)
 
     @classmethod
     def post(cls, url, data=None, json=None, **kwargs):
-        return cls.request('post', url, data=data, json=json, **kwargs)
+        response = cls.request('post', url, data=data, json=json, **kwargs)
+        return sResponse(response)
 
 
 if __name__ == '__main__':

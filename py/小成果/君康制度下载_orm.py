@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-04-28 19:10:26
-#LastEditTime : 2020-04-29 17:56:28
+#LastEditTime : 2020-05-01 15:48:54
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -66,17 +66,14 @@ def get_download_url(connect, stop=None):
         "http://oa.jklife.com/seeyon/ajax.do", data=getlistdata).json()['list']
 
     # #利用set去重,填充数据库已有公文
-    res_list = connect.select(Columns=['URL'], show=True)
-    # db_set = set(res_list)
+    db_urls_list = [item[0] for item in connect.select(Columns=['URL'])]
 
     # #将未下载公文的编号进行保存
     _urls = []
     for item in _itlist:
-        # if item['id'] not in db_set:
-        if item['id'] not in res_list:
+        if item['id'] not in db_urls_list:
             _urls.append([item['title'].strip(), item['id']])
-            # db_set.add(item['id'])
-            res_list.append(item['id'])
+            db_urls_list.append(item['id'])
 
     return _urls
 
@@ -146,7 +143,7 @@ def main():
         content = Column(LONGTEXT)
         update_TIME = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
 
-    connect = xjLib.db.xt_sqlalchemy.engine(Jkdoc, 'Jkdoc')
+    connect = xjLib.db.xt_sqlalchemy.SqlConnection(Jkdoc, 'Jkdoc')
 
     urls = get_download_url(connect)
     print(f'需要下载的公文数量为：{len(urls)}')
@@ -155,8 +152,8 @@ def main():
 
 
 if __name__ == '__main__':
-    # from xjLib.log import log
-    # mylog = log()
-    # print = mylog.print
+    from xjLib.log import MyLog
+    mylog = MyLog()
+    print = mylog.print
 
     main()

@@ -9,8 +9,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 01:37:18
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-13 18:18:47
+@LastEditors  : Please set LastEditors
+@LastEditTime : 2020-05-01 15:52:44
 '''
 
 db_conf = {
@@ -65,8 +65,17 @@ db_conf = {
         'db': 'Jkdoc',
         'charset': 'utf8mb4',
     },
+    'dbtest': {
+        'type': 'mysql',
+        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
+        'port': 10014,
+        'user': 'sandorn',
+        'passwd': '123456',
+        'db': 'dbtest',
+        'charset': 'utf8mb4',
+    },
 }
-db_conf['default'] = db_conf['TXbx']
+db_conf['default'] = db_conf['dbtest']
 
 
 def make_connect_string(key, odbc=None):

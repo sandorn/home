@@ -8,40 +8,23 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-21 23:55:26
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-05-06 15:52:02
 '''
 import asyncio
 import ctypes
-import json
-import random
+from random import random
 from functools import partial
-from html import unescape
 
 import aiohttp
-from cchardet import detect
-from fake_useragent import UserAgent
-from lxml import etree
 
-# from retrying import retry
+from xjLib.head import myhead
+from xjLib.Response import sResponse
 
 __all__ = ('map', 'Session', 'get', 'options', 'head', 'post', 'put', 'patch',
            'delete')
 
-myhead = {
-    'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
-    'Accept':
-        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-    'Accept-Encoding':
-        'gzip, deflate, sdch',
-    'Accept-Language':
-        'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
-    'Accept-Charset':
-        'gb2312,utf-8;q=0.7,*;q=0.7',
-    'Connection':
-        'close',
-}
+timesout = 10
 
 
 class Session:
@@ -104,18 +87,8 @@ class AsyncRequestTask:
         future = asyncio.ensure_future(AyTask_run(self))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(future)
-        new_res = AhttpResponse(self.result, self.content, self)
+        new_res = sResponse(self.result, self.content, self.index)
         return [new_res, self.callback and self.callback(new_res)][0]
-
-
-def wrap_headers(headers):
-    ua = UserAgent()
-    new_headers = {}
-    for k, v in headers.items():
-        new_headers[k] = str(v)
-
-    new_headers['User-Agent'] = ua.random
-    return new_headers
 
 
 def create_session(method, *args, **kw):
@@ -150,13 +123,12 @@ async def AyTask_run(self):
                     self.method,
                     self.url,
                     *self.args,
-                    timeout=10,
+                    timeout=timesout,
                     verify_ssl=False,
-                    headers=wrap_headers(self.headers or self.session.headers),
+                    headers=self.headers or self.session.headers or myhead,
                     **self.kw) as sessReq:
                 content = await sessReq.read()
-                self.result, self.content, self.index = sessReq, content, id(
-                    self.result)
+                self.result, self.content = sessReq, content
 
     max_try = 10
     index = 0
@@ -166,137 +138,59 @@ async def AyTask_run(self):
             print(f'{self}\ttimes:{index}\tAyTask Done.')
             break
         except Exception as err:
-            warn(f'{self}\ttimes:{index}\tAyTask Err:{ repr(err)}')
+            print(f'{self}\ttimes:{index}\tAyTask Err:{ repr(err)}')
             max_try -= 1
             index += 1
             await asyncio.sleep(0.1)
             continue  # 继续下一轮循环
 
 
-class AhttpResponse:
-    # 结构化返回结果
-    def __init__(self, sessReq, content, task):
-        self.index = task.index
-        self.content = content
-        self.task = task
-        self.raw = self.clientResponse = sessReq
-
-    @property
-    def text(self):
-        code_type = detect(self.content)
-        return self.content.decode(code_type['encoding'], 'ignore')
-
-    @property
-    def url(self):
-        return self.clientResponse.url
-
-    @property
-    def cookies(self):
-        return self.clientResponse.cookies
-
-    @property
-    def session(self):
-        return self.task.session
-
-    @property
-    def headers(self):
-        return self.clientResponse.headers
-
-    def json(self):
-        return json.loads(self.text)
-
-    @property
-    def status(self):
-        return self.clientResponse.status
-
-    @property
-    def method(self):
-        return self.clientResponse.method
-
-    @property
-    def html(self):
-
-        def clean(html, filter):
-            data = etree.HTML(html)
-            trashs = data.xpath(filter)
-            for item in trashs:
-                item.getparent().remove(item)
-            return data
-
-        # #去除节点clean # #解码html:unescape
-        html = clean(unescape(self.text), '//script')
-        # html = etree.HTML(self.text)
-        return html
-
-    def __repr__(self):
-        return f"<AhttpResponse status[{self.status}] url=[{self.url}]>"
-
-
-def run(tasks, pool=100):
+def run(tasks, pool=0):
     if not isinstance(tasks, list):
         raise "the tasks of run must be a list object"
 
-    conn = aiohttp.TCPConnector(
+    result_list = []  # #存放返回结果集合
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(multi_req(tasks, pool, result_list))
+    # 返回结果集合
+    return result_list
+
+
+async def multi_req(tasks, pool, result_list):
+    # 不能传递cookies
+    myconn = aiohttp.TCPConnector(
         use_dns_cache=True,
         loop=asyncio.get_event_loop(),
         ssl=False,
-        # limit=100,  # 限制并行连接的总量,0无限制
-    )
-    result = []  # #存放返回结果集合
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(multi_req(tasks, conn, pool, result))
+        limit=pool)
+    async with aiohttp.ClientSession(
+            connector_owner=False, connector=myconn) as mysession:
+        new_tasks = []
+        for index, task in enumerate(tasks):
+            task_temp = asyncio.ensure_future(
+                fetch_async(index, task, result_list, mysession))
+            new_tasks.append(task_temp)
+        await asyncio.wait(new_tasks)
 
-    # 返回结果集合
-    return result
-
-
-async def multi_req(tasks, conn, pool, result):
-    new_tasks = []
-    sion_list = {}
-    for index in range(len(tasks)):
-        task = tasks[index]
-        task.index = index  # #将任务序号分配给每个任务
-        task.pool = pool  # #将并发限制赋值给每个任务
-        if id(task.session) not in sion_list:
-            sion_list[id(task.session)] = aiohttp.ClientSession(
-                connector_owner=False,
-                connector=conn,
-                cookies=task.session.cookies)
-
-        new_tasks.append(
-            asyncio.ensure_future(
-                control_sem(task, result, sion_list[id(task.session)])))
-
-    await asyncio.wait(new_tasks)
-    await asyncio.wait(
-        [asyncio.ensure_future(v.close()) for k, v in sion_list.items()])
-    await conn.close()  # 关闭tcp连接器
+    await myconn.close()  # 关闭tcp连接器
 
 
-async def control_sem(task, result, session):
-    # !使用信号量限制并发数
-    maxsem = asyncio.Semaphore(task.pool)
-    async with maxsem:
-        await fetch_async(task, result, session)
-
-
-async def fetch_async(task, result, session):
+async def fetch_async(index, task, result_list, session):
 
     async def _run():
-        headers = wrap_headers(
-            task.headers or
-            ctypes.cast(task.session, ctypes.py_object).value.headers)
+        headers = task.headers or ctypes.cast(
+            task.session, ctypes.py_object).value.headers or myhead
         async with session.request(
                 task.method,
                 task.url,
-                timeout=10,
+                timeout=timesout,
                 headers=headers,
                 *task.args,
                 **task.kw) as sessReq:
             assert sessReq.status in [200, 201, 302]
             content = await sessReq.read()
-            new_res = AhttpResponse(sessReq, content, task)
-            result.append(new_res)
+            new_res = sResponse(sessReq, content, index)
+            result_list.append(new_res)
 
             if task.callback:
                 task.callback(new_res)  # 有回调则调用
@@ -310,11 +204,11 @@ async def fetch_async(task, result, session):
             print(f'{task}\ttimes:{maxsave - max_try}\tFetch_async Done.')
             break
         except Exception as err:
-            warn(
+            print(
                 f'{task}\ttimes:{maxsave - max_try}\tFetch_async Err:{repr(err)}'
             )
             max_try -= 1
-            await asyncio.sleep(random.random())
+            await asyncio.sleep(random())
             continue  # 继续下一轮循环
 
 
@@ -324,44 +218,7 @@ def ahttpGet(url, params=None, **kwargs):
     return res
 
 
-def ahttpGetAll(urls, pool=100, params=None, **kwargs):
+def ahttpGetAll(urls, pool=0, params=None, **kwargs):
     tasks = [get(url, params=params, **kwargs) for url in urls]
     resps = run(tasks, pool=pool)
     return resps
-
-
-from xjLib.log import MyLog
-log = MyLog(__name__)
-print = log.print
-warn = log.warn
-'''
-from opnieuw import RetryException, retry
-
-async def fetch_Opnieuw(task, result, session):
-    # # fetch_Opnieuw  #最终解决：增加timeout为300
-    @retry(
-        retry_on_exceptions=(asyncio.exceptions.TimeoutError, asyncio.exceptions.CancelledError, asyncio.TimeoutError, RetryException),
-        max_calls_total=10,
-        retry_window_after_first_call_in_seconds=5,)
-    async def _run():
-        # print(task, 'fetch_Opnieuw start...')
-        headers = wrap_headers(task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers)
-        async with session.request(task.method, task.url, *task.args, headers=headers, timeout=20, **task.kw) as sessReq:
-            assert (sessReq.status == 200) or (sessReq.status == 302)
-            content = await sessReq.read()
-            new_res = AhttpResponse(sessReq, content, task)
-            result.append(new_res)
-
-            if task.callback:
-                task.callback(new_res)  # 有回调则调用
-            return new_res
-
-    try:
-        await _run()
-        print(task, 'fetch_Opnieuw ok。')
-    except Exception as err:
-        print(task, 'fetch_Opnieuw err:', repr(err), flush=True)
-        #raise err
-
-
-'''

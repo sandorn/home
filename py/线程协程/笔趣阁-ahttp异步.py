@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-21 13:04:37
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-05-06 15:49:27
 变更requests为ahttp
 '''
 import os
@@ -107,9 +107,7 @@ def callback(resp):
 def main(url):
     bookname, urls = get_download_url(url)
     resps = ahttpGetAll(urls, pool=200)
-
     text_list = 结果处理(resps)
-
     text_list.sort(key=lambda x: x[0])  # #排序
     aftertexts = [[row[i] for i in range(1, 3)] for row in text_list]
     # @重新梳理数据，剔除序号
@@ -120,7 +118,7 @@ def main(url):
 @fn_timer
 def mainbycall(url):
     bookname, urls = get_download_url(url)
-    ahttpGetAll(urls, pool=500, timeout=60, callback=callback)
+    ahttpGetAll(urls, pool=500, callback=callback)
 
     texts.sort(key=lambda x: x[0])  # #排序
     aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
@@ -142,16 +140,18 @@ if __name__ == '__main__':
 
     from xjLib.log import MyLog
     mylog = MyLog()
-    print = mylog.print
+    # print = mylog.print
     mylog.setlevel('xjLib.ahttp', 30)
-    url = 'https://www.biqukan.com/2_2714/'
-    # mainbycall(url)
-    # main(url)
+
+    # main('https://www.biqukan.com/38_38836/')
+    # mainbycall('https://www.biqukan.com/2_2714/')
+
     urls = [
         'https://www.biqukan.com/38_38836/',
         'https://www.biqukan.com/73_73450/',
         'https://www.biqukan.com/76_76015/',
         'https://www.biqukan.com/75_75766/',
+        'https://www.biqukan.com/2_2714/',
         'https://www.biqukan.com/61_61396/',
     ]
     multpool(urls)

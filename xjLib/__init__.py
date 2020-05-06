@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-26 14:13:05
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-05-06 11:23:35
 '''
 # package
 # __init__.py
@@ -27,5 +27,7 @@ __all__ = [
     "qiniuCos",
     "req",
     "UI",
-    "log"
+    "log",
+    "head",
+    "Response",
 ]
