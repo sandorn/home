@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-31 12:12:40
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-06 15:11:54
+#LastEditTime : 2020-05-06 17:02:21
 '''
 
 import os
@@ -35,8 +35,6 @@ def get_download_url(target):
 
 
 def get_contents(lock, index, target):
-    response = Session.get(target)
-    print(response)
     response = Session.get(target).html
 
     _name = "".join(response.xpath('//h1/text()'))

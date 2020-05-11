@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-04-28 19:10:26
-#LastEditTime : 2020-05-01 15:48:54
+#LastEditTime : 2020-05-11 15:21:13
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -40,14 +40,12 @@ Session = RequestsSession()
 
 def get_download_url(connect, stop=None):
     # #登录，并保存cookies
-    response = Session.post(
+    _ = Session.post(
         'http://oa.jklife.com/seeyon/main.do?method=login',
         data={
             'login_username': 'liuxinjun',
             'login_password': 'sand2808',
         })
-    if response.status != 200:
-        return
 
     # #获取公文列表
     getlistdata = {
@@ -63,7 +61,7 @@ def get_download_url(connect, stop=None):
     # #"typeId": 区分类别，1为公告
 
     _itlist = Session.post(
-        "http://oa.jklife.com/seeyon/ajax.do", data=getlistdata).json()['list']
+        "http://oa.jklife.com/seeyon/ajax.do", data=getlistdata).json['list']
 
     # #利用set去重,填充数据库已有公文
     db_urls_list = [item[0] for item in connect.select(Columns=['URL'])]
@@ -86,6 +84,8 @@ def down_content(connect, title, url):
 
     _res = Session.get(
         f'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId={url}')
+
+    print(_res.json)
 
     公告正文 = ''.join(
         _res.html.xpath('//div[@class="contentText"]//text()')).replace(

@@ -9,18 +9,18 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-04-01 10:29:33
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-29 17:55:47
+#LastEditTime : 2020-05-11 17:39:45
 临时库
 '''
 
-from xjLib.ahttp import ahttpGet
+from xjLib.xt_ahttp import ahttpGet
 from xjLib.mystr import (Ex_Re_Sub, Ex_Replace)
 from xjLib.req import parse_get
 
 
 def get_download_url(target):
     urls = []  # 存放章节链接
-    response = ahttpGet(target).html
+    response = ahttpGet(target).element
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
     全部章节节点 = response.xpath(
         '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
@@ -31,20 +31,33 @@ def get_download_url(target):
     return _bookname, urls
 
 
+def get_biqugeinfo_url(target):
+    urls = []  # 存放章节链接
+    response = ahttpGet(target).element
+    _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
+    全部章节节点 = response.xpath('//dl/dd/a/@href')
+
+    for item in 全部章节节点:
+        urls.append(target + item)
+    return _bookname, urls
+
+
 def get_contents(lock, index, target):
-    response = parse_get(target).html
+    response = parse_get(target).element
 
     _name = "".join(response.xpath('//h1/text()'))
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
-    name = Ex_Re_Sub(_name, {' ': ' '})
+
+    name = Ex_Re_Sub(_name, {' ': '', ' ': ''})
     text = Ex_Replace(
         _showtext.strip("\n\r　  "),
         {
             '　　': '\n',
             ' ': ' ',
             '\', \'': '',
-            # '\xa0': '',  # 表示空格  &nbsp;  dictionary key '\xa0' repeated with different values
+            # '\xa0': '',  # 表示空格  &nbsp;
             '\u3000': '',  # 全角空格
+            '/&nbsp;': '',  # 全角空格
             'www.biqukan.com。': '',
             'm.biqukan.com': '',
             'wap.biqukan.com': '',
@@ -61,6 +74,7 @@ def get_contents(lock, index, target):
             '\r': '\n',
             '\n\n': '\n',
             '\n\n': '\n',
+            '    ': '\n    ',
         },
     )
 
@@ -68,7 +82,7 @@ def get_contents(lock, index, target):
 
 
 def get_contents_byahttp(lock, index, target):
-    response = ahttpGet(target).html
+    response = ahttpGet(target).element
 
     _name = "".join(response.xpath('//h1/text()'))
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
@@ -106,7 +120,7 @@ def get_contents_byahttp(lock, index, target):
 def map_get_contents_byahttp(args):
     print(args)
     [index, target] = args
-    response = ahttpGet(target).html
+    response = ahttpGet(target).element
 
     _name = "".join(response.xpath('//h1/text()'))
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
@@ -139,3 +153,7 @@ def map_get_contents_byahttp(args):
     )
 
     return [index, name, '    ' + text]
+
+
+if __name__ == "__main__":
+    pass

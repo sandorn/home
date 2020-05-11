@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-06 15:52:02
+#LastEditTime : 2020-05-11 13:10:32
 '''
 import asyncio
 import ctypes
@@ -24,7 +24,7 @@ from xjLib.Response import sResponse
 __all__ = ('map', 'Session', 'get', 'options', 'head', 'post', 'put', 'patch',
            'delete')
 
-timesout = 10
+timesout = 20
 
 
 class Session:
@@ -38,7 +38,9 @@ class Session:
     def __getattr__(self, name):
         if name in ['get', 'options', 'head', 'post', 'put', 'patch', 'delete']:
             new_req = AsyncRequestTask(
-                headers=self.headers, session=self.session)
+                headers=self.headers,
+                session=self.session,
+                cookies=self.cookies)
             new_req.__getattr__(name)
             self.request_pool.append(new_req)
             return new_req.get_params
@@ -49,10 +51,15 @@ class Session:
 
 class AsyncRequestTask:
 
-    def __init__(self, *args, session=None, headers=None, **kwargs):
+    def __init__(self,
+                 *args,
+                 session=None,
+                 headers=None,
+                 cookies=None,
+                 **kwargs):
         self.session = session
         self.headers = headers
-        self.cookies = None
+        self.cookies = cookies
         self.kw = kwargs
         self.method = None
 
@@ -87,7 +94,7 @@ class AsyncRequestTask:
         future = asyncio.ensure_future(AyTask_run(self))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(future)
-        new_res = sResponse(self.result, self.content, self.index)
+        new_res = sResponse(self.result, self.content, id(self))
         return [new_res, self.callback and self.callback(new_res)][0]
 
 
@@ -127,55 +134,84 @@ async def AyTask_run(self):
                     verify_ssl=False,
                     headers=self.headers or self.session.headers or myhead,
                     **self.kw) as sessReq:
-                content = await sessReq.read()
-                self.result, self.content = sessReq, content
+                assert sessReq.status in [200, 201, 302]
+                self.content = await sessReq.read()
+                self.result = sessReq
 
     max_try = 10
-    index = 0
+    times = 0
     while max_try > 0:
         try:
             await _run()
-            print(f'{self}\ttimes:{index}\tAyTask Done.')
+            if times != 0:
+                print(f'{self}\ttimes:{times}\tAyTask Done.')
             break
         except Exception as err:
-            print(f'{self}\ttimes:{index}\tAyTask Err:{ repr(err)}')
+            print(f'{self}\ttimes:{times}\tAyTask Err:{ repr(err)}')
             max_try -= 1
-            index += 1
+            times += 1
             await asyncio.sleep(0.1)
             continue  # 继续下一轮循环
 
 
-def run(tasks, pool=0):
+def run(tasks, pool=0, single_session=True):
     if not isinstance(tasks, list):
         raise "the tasks of run must be a list object"
 
     result_list = []  # #存放返回结果集合
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(multi_req(tasks, pool, result_list))
+    loop.run_until_complete(
+        multi_req(tasks, pool, result_list, single_session=single_session))
     # 返回结果集合
     return result_list
 
 
-async def multi_req(tasks, pool, result_list):
+async def multi_req(tasks, pool, result_list, single_session=True):
     # 不能传递cookies
     myconn = aiohttp.TCPConnector(
         use_dns_cache=True,
         loop=asyncio.get_event_loop(),
         ssl=False,
         limit=pool)
-    async with aiohttp.ClientSession(
-            connector_owner=False, connector=myconn) as mysession:
+
+    if single_session:
+        # #默认使用单一session
+        async with aiohttp.ClientSession(
+                connector_owner=False, connector=myconn) as mysession:
+            new_tasks = []
+            for index, task in enumerate(tasks):
+                new_tasks.append(
+                    asyncio.ensure_future(
+                        fetch_async(task, result_list, mysession)))
+            await asyncio.wait(new_tasks)
+
+    else:
+        # #选择使用多个session
+        sessions_list = {}
         new_tasks = []
         for index, task in enumerate(tasks):
-            task_temp = asyncio.ensure_future(
-                fetch_async(index, task, result_list, mysession))
-            new_tasks.append(task_temp)
+            if id(task.session) not in sessions_list:
+                sessions_list[id(task.session)] = aiohttp.ClientSession(
+                    connector_owner=False,
+                    connector=myconn,
+                    cookies=task.session.cookies)
+            new_tasks.append(
+                asyncio.ensure_future(
+                    fetch_async(
+                        task,
+                        result_list,
+                        sessions_list[id(task.session)],
+                    )))
+
         await asyncio.wait(new_tasks)
+        await asyncio.wait([
+            asyncio.ensure_future(v.close()) for k, v in sessions_list.items()
+        ])
 
     await myconn.close()  # 关闭tcp连接器
 
 
-async def fetch_async(index, task, result_list, session):
+async def fetch_async(task, result_list, session):
 
     async def _run():
         headers = task.headers or ctypes.cast(
@@ -189,7 +225,7 @@ async def fetch_async(index, task, result_list, session):
                 **task.kw) as sessReq:
             assert sessReq.status in [200, 201, 302]
             content = await sessReq.read()
-            new_res = sResponse(sessReq, content, index)
+            new_res = sResponse(sessReq, content, id(task))
             result_list.append(new_res)
 
             if task.callback:
@@ -197,17 +233,17 @@ async def fetch_async(index, task, result_list, session):
             return new_res
 
     max_try = 10
-    maxsave = max_try
+    times = 0
     while max_try > 0:
         try:
             await _run()
-            print(f'{task}\ttimes:{maxsave - max_try}\tFetch_async Done.')
+            if times != 0:
+                print(f'{task}\ttimes:{times}\tFetch_async Done.')
             break
         except Exception as err:
-            print(
-                f'{task}\ttimes:{maxsave - max_try}\tFetch_async Err:{repr(err)}'
-            )
+            print(f'{task}\ttimes:{times}\tFetch_async Err:{repr(err)}')
             max_try -= 1
+            times += 1
             await asyncio.sleep(random())
             continue  # 继续下一轮循环
 
@@ -218,7 +254,7 @@ def ahttpGet(url, params=None, **kwargs):
     return res
 
 
-def ahttpGetAll(urls, pool=0, params=None, **kwargs):
+def ahttpGetAll(urls, pool=100, single_session=True, params=None, **kwargs):
     tasks = [get(url, params=params, **kwargs) for url in urls]
-    resps = run(tasks, pool=pool)
+    resps = run(tasks, pool=pool, single_session=single_session)
     return resps

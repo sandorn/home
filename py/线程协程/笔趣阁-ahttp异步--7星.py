@@ -9,12 +9,12 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-06 15:49:27
+#LastEditTime : 2020-05-11 12:12:45
 变更requests为ahttp
 '''
 import os
 
-from xjLib.ahttp import ahttpGetAll
+from xjLib.xt_ahttp import ahttpGetAll
 from xjLib.mystr import Ex_Re_Sub, savefile, Ex_Replace, fn_timer
 from xjLib.ls import get_download_url
 
@@ -24,12 +24,12 @@ def 结果处理(resps):
 
     for resp in resps:
         index = resp.index
-        response = resp.html
+        response = resp.element
 
         _name = "".join(response.xpath('//h1/text()'))
         _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
 
-        name = Ex_Re_Sub(_name, {' ': ' ', '\xa0': ' '})
+        name = Ex_Re_Sub(_name, {' ': '', ' ': ''})
         text = Ex_Replace(
             _showtext.strip("\n\r　  "),
             {
@@ -38,6 +38,7 @@ def 结果处理(resps):
                 '\', \'': '',
                 # '\xa0': '',  # 表示空格  &nbsp;
                 '\u3000': '',  # 全角空格
+                '/&nbsp;': '',  # 全角空格
                 'www.biqukan.com。': '',
                 'm.biqukan.com': '',
                 'wap.biqukan.com': '',
@@ -54,6 +55,7 @@ def 结果处理(resps):
                 '\r': '\n',
                 '\n\n': '\n',
                 '\n\n': '\n',
+                '    ': '\n    ',
             },
         )
         text_list.append([index, name, '    ' + text])
@@ -69,7 +71,7 @@ def callback(resp):
         return
 
     index = resp.index
-    response = resp.html
+    response = resp.element
 
     _name = "".join(response.xpath('//h1/text()'))
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
@@ -129,7 +131,7 @@ def mainbycall(url):
 
 def multpool(urls):
     from multiprocessing import Pool
-    p = Pool(5)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
+    p = Pool(10)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
     _ = [p.apply_async(main, args=(url,)) for url in urls]
 
     p.close()
@@ -143,17 +145,17 @@ if __name__ == '__main__':
     # print = mylog.print
     mylog.setlevel('xjLib.ahttp', 30)
 
-    # main('https://www.biqukan.com/38_38836/')
-    # mainbycall('https://www.biqukan.com/2_2714/')
+    main('https://www.biqukan.com/38_38836/')
+    # mainbycall('https://www.biqukan.com/38_38836/')
 
     urls = [
         'https://www.biqukan.com/38_38836/',
         'https://www.biqukan.com/73_73450/',
         'https://www.biqukan.com/76_76015/',
         'https://www.biqukan.com/75_75766/',
-        'https://www.biqukan.com/2_2714/',
+        # 'https://www.biqukan.com/2_2714/',
         'https://www.biqukan.com/61_61396/',
     ]
-    multpool(urls)
+    # multpool(urls)
     # '38_38836'  #2676KB，#@  6秒
     # "2_2714"    #武炼巅峰，#@  38秒

@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2019-05-18 03:50:41
-#LastEditTime : 2020-04-28 17:50:24
+#LastEditTime : 2020-05-08 17:00:59
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 # !存在问题，主线程先结束，子线程后结束
@@ -24,11 +24,6 @@ from xjLib.req import parse_get
 
 # text_list = []
 pool = my_pool(200)
-
-
-def baidu():
-    response = parse_get('http://www.baidu.com')
-    print(response.status)
 
 
 @pool
@@ -71,7 +66,7 @@ def get_contents(index, target):
 
 def main(url):
     _name, urls = get_download_url(url)
-    _ = [get_contents(i, urls[i]) for i in range(len(urls))]
+    _ = [get_contents(index, url) for index, url in enumerate(urls)]
     text_list = pool.wait_completed()
 
     text_list.sort(key=lambda x: x[0])  # #排序

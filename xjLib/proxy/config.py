@@ -9,14 +9,12 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-04-14 18:02:15
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-06 10:44:09
+#LastEditTime : 2020-05-11 13:48:48
 
 定义规则 urls:url列表
          type：解析方式,取值 regular(正则表达式),xpath(xpath解析),module(自定义第三方模块解析)
          patten：可以是正则表达式,可以是xpath语句不过要和上面的相对应
 '''
-
-from fake_useragent import UserAgent
 
 parserList = [{
     'urls': [
@@ -62,23 +60,8 @@ parserList = [{
 
 UPDATE_TIME = 30 * 60  # 每半个小时检测一次是否有代理ip失效
 
-TIMEOUT = 5  # socket延时
-
-
-def get_header():
-    return {
-        'User-Agent':
-            UserAgent().random,
-        'Accept':
-            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language':
-            'en-US,en;q=0.5',
-        'Connection':
-            'keep-alive',
-        'Accept-Encoding':
-            'gzip, deflate',
-    }
-
+TIMEOUT = 0.5  # socket延时
+RETRY_TIME = 10  # 最大重试次数
 
 # 默认给抓取的ip分配20分,每次连接失败,减一分,直到分数全部扣完从数据库中删除
 DEFAULT_SCORE = 20
@@ -102,7 +85,7 @@ MAX_CHECK_CONCURRENT_PER_PROCESS = 30  # CHECK_PROXY时每个进程的最大并�
 TASK_QUEUE_SIZE = 50  # 任务队列SIZE
 MAX_DOWNLOAD_CONCURRENT = 3  # 从免费代理网站下载时的最大并发
 CHECK_WATI_TIME = 1  # 进程数达到上限时的等待时间
-'''
+temp = '''
 {
         'urls': [
             'http://www.66ip.cn/%s.html' % n

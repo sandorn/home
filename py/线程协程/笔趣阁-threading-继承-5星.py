@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-02-29 23:00:26
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-29 18:19:43
+#LastEditTime : 2020-05-11 12:09:38
 https://blog.csdn.net/ksws0393238aa/article/details/20286405?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task
 '''
 
@@ -22,7 +22,7 @@ texts = []  # 将爬下来的小说存列表list，做最后排序
 
 def get_contents(lock, index, target):
     """以下为需要重复的单次函数操作"""
-    response = parse_get(target).html
+    response = parse_get(target).element
 
     _name = "".join(response.xpath('//h1/text()'))
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
@@ -33,7 +33,7 @@ def get_contents(lock, index, target):
             '　　': '\n',
             ' ': ' ',
             '\', \'': '',
-            '\xa0': '',  # 表示空格  &nbsp;
+            # '\xa0': '',  # 表示空格  &nbsp;
             '\u3000': '',  # 全角空格
             'www.biqukan.com。': '',
             'm.biqukan.com': '',
@@ -63,9 +63,7 @@ def get_contents(lock, index, target):
 
 def get_download_url(target):
     urls = []  # 存放章节链接
-    # response = etree.HTML(parse_get(target).content)
-    resp = parse_get(target)
-    response = resp.html
+    response = parse_get(target).element
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
     全部章节节点 = response.xpath(
         '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
@@ -88,7 +86,6 @@ def main_thread(target):
     for task in CustomThread.all_Thread:
         task.join()  # join等待线程执行结束
         # callback(task.getResult()) # 获取线程结果,并回调
-    print('threading-继承，书籍《' + bookname + '》完成下载', flush=True)
 
     texts.sort(key=lambda x: x[0])
     # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
@@ -97,6 +94,8 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
+    from xjLib.log import MyLog
+    mylog = MyLog()
     main_thread('https://www.biqukan.com/38_38836/')
     # '38_38836'    7秒
     # "2_2714"   #《武炼巅峰》1724万字,47839kb, #!72秒。无线程限制

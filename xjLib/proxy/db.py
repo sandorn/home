@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-04-30 08:58:40
-#LastEditTime : 2020-05-06 11:03:01
+#LastEditTime : 2020-05-11 12:30:02
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -48,3 +48,13 @@ sqlhelper = xjLib.db.xt_sqlalchemy.SqlConnection(Proxy)
 if __name__ == '__main__':
     from xjLib.log import MyLog
     log = MyLog()
+
+    from xjLib.req import get_by_proxy
+    from config import TEST_HTTP_HEADER
+    import random
+    # proxylist = sqlhelper.select(10)
+
+    # proxy = random.choice(proxylist)
+    proxy = ['123.163.97.79', 9999]
+    res = get_by_proxy(TEST_HTTP_HEADER, proxy)
+    print(res, res.text)

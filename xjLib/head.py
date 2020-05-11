@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:05:52
-#LastEditTime : 2020-05-06 11:07:16
+#LastEditTime : 2020-05-11 15:21:21
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -30,6 +30,7 @@ myhead = {
         'gb2312,utf-8;q=0.7,*;q=0.7',
     'Connection':
         'close',
+    # 'Content-Type':'application/json'  #!影响post json
     # 'Connection': 'keep-alive',
     # 显示此HTTP连接的Keep-Alive时间    'Keep-Alive': '300',
     # 请求的web服务器域名地址    'Host': 'www.baidu.com',
