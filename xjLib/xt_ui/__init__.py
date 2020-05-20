@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-12 17:13:40
-#LastEditTime : 2020-05-20 21:31:10
+#LastEditTime : 2020-05-20 21:38:28
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -520,11 +520,10 @@ class xt_QMainWindow(QMainWindow):
             'd:/CODE/xjLib/xt_ui/qdark.qss',
             'd:/CODE/xjLib/xt_ui/white.qss',
         ]
-        qsstools.set(random.choice(qss_list), self)
-
-        rrr = qdarkstyle.load_stylesheet_pyqt5()
-        print(rrr)
-        # self.setStyleSheet()
+        file_name = random.choice(qss_list)
+        self.setWindowTitle(self.windowTitle() + file_name)
+        qsstools.set(file_name, self)
+        # self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         pass
 
     '''
