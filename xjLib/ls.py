@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-04-01 10:29:33
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-11 17:39:45
+#LastEditTime : 2020-05-11 17:42:59
 临时库
 '''
 
@@ -118,7 +118,7 @@ def get_contents_byahttp(lock, index, target):
 
 
 def map_get_contents_byahttp(args):
-    print(args)
+    # print(args)
     [index, target] = args
     response = ahttpGet(target).element
 

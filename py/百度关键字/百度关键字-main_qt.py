@@ -9,30 +9,28 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-11 17:24:32
+#LastEditTime : 2020-05-13 12:22:54
 '''
 import sys
 import time
 
 from PyQt5.QtCore import QEventLoop, Qt, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import (QApplication, QFileDialog, QMainWindow,
-                             QTableWidgetItem, qApp)
+from PyQt5.QtWidgets import (QApplication, QFileDialog, QTableWidgetItem, qApp)
 
 from xjLib.xt_ahttp import ahttpGetAll
 from xjLib.mystr import savefile
 
 from xjLib.req import parse_get
-from xjLib.baidu_key_UI import Ui_MainWindow
+from baidu_key_UI import Ui_MainWindow
 from urllib.parse import unquote
 
 
-class MyWindow(QMainWindow, Ui_MainWindow):
+class MyWindow(Ui_MainWindow):
     _signal = pyqtSignal(list)
     _step = pyqtSignal()
 
     def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setupUi(self)
+        super().__init__()
         self.keys = []  # 关键字
         self.urls = []  # url_list
         self._name = ''  # 文件名
@@ -43,6 +41,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
     def step_valueChanged(self):
         self.pbar.setValue(int(self.step))
+        self.label.setText("进度：{}/{}".format(self.step, _max))
         pass
 
     def update(self, item):
@@ -122,8 +121,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         resp_list = ahttpGetAll(self.urls, pool=200)
         self.getdatas(resp_list)
         self.texts.sort(key=lambda x: x[0])  # #排序
-        QApplication.processEvents(
-            QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
+
         self.status_bar.showMessage('抓取百度检索信息完毕')
         self.open_action.setEnabled(True)
         self.save_action.setEnabled(True)

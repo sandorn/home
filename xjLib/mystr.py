@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-27 13:59:27
+#LastEditTime : 2020-05-20 13:16:33
 '''
 import hashlib
 import os
@@ -18,6 +18,19 @@ import re
 import threading
 import time
 from functools import wraps
+
+
+class qsstools:
+
+    def __init__(self):
+        pass
+
+    """定义一个读取样式的工具类"""
+
+    @classmethod
+    def set(cls, file_path, obj):
+        with open(file_path, 'r', encoding='UTF-8') as f:
+            obj.setStyleSheet(f.read())
 
 
 def Singleton_warp(cls):
@@ -292,6 +305,14 @@ def Ex_Replace(oldtext, adict):
     for key in adict:
         oldtext = _run(oldtext, key, adict[key])
     return oldtext
+
+
+def dict2qss(dict):
+    '''字典形式的QSS转字符串'''
+    import json
+    temp = json.dumps(dict)
+    qss = Ex_Re_Sub(temp, {',': ';', '"': '', ': {': '{'})
+    return qss.strip('{}')
 
 
 def list2file(_filename, _list_texts, br='\t'):
