@@ -238,12 +238,43 @@ QPlainTextEdit {
     background-color: #242424;
 }
 
+QTreeView,
+QListView,
+QTableView {
+    border: 1px solid black;
+    selection-background-color: #ffaa00;
+    selection-color: #F0F0F0;
+}
+
+QTableView::item:selected,
+QListView::item:selected,
+QTreeView::item:selected {
+    color: black;
+    background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:0 #323232, stop: 0.5 #242424, stop:1 #323232);
+}
+
+QTableView::item:hover,
+QListView::item:hover,
+QTreeView::item:hover {
+    background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:0 #323232, stop: 0.5 #242424, stop:1 #323232);
+    color: black;
+}
+
+QTableView::item,
+QListView::item,
+QTreeView::item {
+    padding: 5px;
+    margin: 0px;
+    padding-top: -2px;
+    padding-bottom: -1px;
+}
+
 QTableCornerButton::section,
 QHeaderView::section {
-    /*background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:0 #616161, stop: 0.5 #505050, stop: 0.6 #434343, stop:1 #656565);*/
     color: white;
     padding-left: 4px;
-    border: 1px solid #6c6c6c;
+    border: 1px solid #4c4c4c;
+    background-color: #242424;
 }
 
 QCheckBox:disabled {
@@ -323,7 +354,7 @@ QProgressBar::chunk {
 }
 
 QTabBar::tab {
-    color: #b1b1b1;
+    color: black;
     border: 1px solid #444;
     border-bottom-style: none;
     background-color: #323232;
@@ -332,25 +363,12 @@ QTabBar::tab {
     padding-top: 3px;
     padding-bottom: 2px;
     margin-right: -1px;
+    background-color: #d7801a;
 }
 
 QTabWidget::pane {
     border: 1px solid #444;
     top: 1px;
-}
-
-QTabBar::tab:last {
-    margin-right: 0;
-    /* the last selected tab has nothing to overlap with on the right */
-    border-top-right-radius: 3px;
-}
-
-QTabBar::tab:first: !selected {
-    margin-left: 0px;
-    /* the last selected tab has nothing to overlap with on the right */
-
-
-    border-top-left-radius: 3px;
 }
 
 QTabBar::tab: !selected {

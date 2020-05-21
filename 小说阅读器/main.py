@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-07 12:43:12
-#LastEditTime : 2020-05-13 19:00:57
+#LastEditTime : 2020-05-21 22:58:02
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -16,7 +16,6 @@
 import sys
 
 from read_ui import Ui_MainWindow
-# from READ_UI import Ui_MainWindow
 from PyQt5 import QtWidgets
 
 app = QtWidgets.QApplication(sys.argv)

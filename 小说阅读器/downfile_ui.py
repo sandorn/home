@@ -6,8 +6,23 @@
 #Develop      : VSCode
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
+#Date         : 2020-05-21 22:57:48
+#LastEditTime : 2020-05-21 22:57:51
+#Github       : https://github.com/sandorn/home
+#License      : (C)Copyright 2009-2020, NewSea
+#==============================================================
+'''
+
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
 #Date         : 2020-05-12 11:31:03
-#LastEditTime : 2020-05-21 23:06:08
+#LastEditTime : 2020-05-21 22:57:19
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -42,11 +57,11 @@ class Ui_MainWindow(xt_QMainWindow):
         self.pushButton_2 = xt_QPushButton("确定")
 
         self.tabWidget = xt_QTabWidget(["列表显示", "图表显示"])
-        self.tableWidget = xt_QTableWidget(['章节名称', '链接'], 0, 2)
+        self.tableWidget = xt_QTableWidget(['书号', '名称'], 0, 2)
+        self.tableWidget.setColumnWidth(0, 130)  # 设置第一列宽度
         self.tabWidget.lay[0].addWidget(self.tableWidget)
         self.listWidget = xt_QListWidget()
         self.tabWidget.lay[1].addWidget(self.listWidget)
-        self.QTextEdit = xt_QTextBrowser()
 
     def retranslateUi(self):
         hlayout = QHBoxLayout()
@@ -68,6 +83,7 @@ class Ui_MainWindow(xt_QMainWindow):
 
         hlayout2 = QHBoxLayout()
         hlayout2.addLayout(vlayout1)
+        self.QTextEdit = xt_QTextBrowser()
         hlayout2.addWidget(self.QTextEdit)
 
         vlayout3 = QVBoxLayout()
@@ -108,12 +124,12 @@ class Ui_MainWindow(xt_QMainWindow):
             _url = self.baseurl + '/' + self.book_number + '/'  # 设置书本初始地址
             self.getData(_url)  # 执行主方法
 
+            self.getFiles()  # 获取所有文件
             self.bindList()  # 对列表进行绑定
             self.bindTable()  # 对表格进行绑定
             self.listWidget.itemClicked.connect(
                 self.itemClicked_event)  # @绑定列表单击方法
-            self.tableWidget.itemClicked.connect(
-                self.tableClick_event)  # @绑定表格单击方法
+            self.tableWidget.itemClicked.connect(self.tableClick)  # @绑定表格单击方法
         except Exception as err:
             QMessageBox.warning(None, "警告", f"没有数据，请重新设置书号……:{err}",
                                 QMessageBox.Ok)
@@ -130,12 +146,16 @@ class Ui_MainWindow(xt_QMainWindow):
         self.path = self.path + "\\" + self.bookname + "\\"  # 设置文章存储路径
         if not os.path.isdir(self.path):  # 判断路径是否存在
             os.mkdir(self.path)  # 创建路径
-        self.list = []  #章节列表
+        # self.list = []  #章节列表
         for item in 全部章节节点:  # 遍历文章列表
-            self.list.append(self.baseurl + item)  # 获取遍历到的具体文章地址
+            # self.list.append(self.baseurl + item)  # 获取遍历到的具体文章地址
+            articleUrl = self.baseurl + item  # 获取遍历到的具体文章地址
+            self.savecontent(articleUrl)
+
+        # QMessageBox.Information(None, "提示", self.book_number + "的小说保存完成", QMessageBox.Ok)
 
     # 从网页提取数据
-    def getcontent(self, url):
+    def savecontent(self, url):
         response = ahttpGet(url).element
 
         _title = "".join(response.xpath('//h1/text()'))
@@ -175,14 +195,11 @@ class Ui_MainWindow(xt_QMainWindow):
             newFile.write("<<" + title + ">>\n\n")  # 向文件中写入标题并换行
             newFile.write(article_content)  # 向文件中写入内容
 
-    # 将文件显示在List列表中（图表显示）
-    def bindList(self):
-        for i in range(0, len(self.list)):  # 遍历文件列表
-            self.item = QtWidgets.QListWidgetItem(self.listWidget)  # 创建列表项
-            self.item.setText(self.list[i])
-            self.item.setToolTip(self.list[i])  # 设置提示文字
-            self.item.setFlags(QtCore.Qt.ItemIsSelectable
-                               | QtCore.Qt.ItemIsEnabled)  # 设置选中与否
+    # 获取所有文件
+    def getFiles(self):
+        self.list = os.listdir(self.path)  # 列出文件夹下所有的目录与文件
+        self.list = sorted(self.list)  # 排序
+        # print(self.list)
 
     # 将文件显示在Table中（列表显示）
     def bindTable(self):
@@ -196,16 +213,30 @@ class Ui_MainWindow(xt_QMainWindow):
                                      QtWidgets.QTableWidgetItem(self.list[i]))
 
     # 表格单击方法，用来打开选中的项
-    def tableClick_event(self, item):
-        self.QTextEdit.clear()
-        print(2222, item.text())
-        self.QTextEdit.setPlainText(item.text())
+    def tableClick(self, item):
+        #!显示内容
+        if 'txt' in item.text():  # 点击文件名才弹出
+            self.QTextEdit.clear()
+            with open(self.path + '\\' + item.text(), "r") as file:
+                data = file.read()
+                self.QTextEdit.setPlainText(data)
+
+    # 将文件显示在List列表中（图表显示）
+    def bindList(self):
+        for i in range(0, len(self.list)):  # 遍历文件列表
+            self.item = QtWidgets.QListWidgetItem(self.listWidget)  # 创建列表项
+            self.item.setIcon(QtGui.QIcon('book.png'))  # 设置列表项图标
+            self.item.setText(self.list[i])
+            self.item.setToolTip(self.list[i])  # 设置提示文字
+            self.item.setFlags(QtCore.Qt.ItemIsSelectable
+                               | QtCore.Qt.ItemIsEnabled)  # 设置选中与否
 
     # 列表单击方法，用来打开选中的项
     def itemClicked_event(self, item):
         self.QTextEdit.clear()
-        print(1111, item.text())
-        self.QTextEdit.setPlainText(item.text())
+        with open(self.path + '\\' + item.text(), "r") as file:
+            data = file.read()
+            self.QTextEdit.setPlainText(data)
 
 
 if __name__ == "__main__":
