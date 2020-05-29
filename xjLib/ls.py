@@ -75,8 +75,7 @@ def get_contents(lock, index, target):
             '\n\n': '\n',
             '\n\n': '\n',
             '    ': '\n    ',
-        },
-    )
+        })
 
     return [index, name, '    ' + text]
 

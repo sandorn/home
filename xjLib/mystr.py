@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-20 13:16:33
+#LastEditTime : 2020-05-29 17:38:28
 '''
 import hashlib
 import os
@@ -282,6 +282,15 @@ class filesize:
         return res
 
 
+def Ex_Re_Clean(oldtext, parlist):
+    '''
+    清除所有参数中的字符串
+    用法 newtext=Ex_Re_Sub(oldtext,['aaa','bbb'])
+    '''
+    rx = re.compile('|'.join(parlist))
+    return rx.sub('', oldtext)
+
+
 def Ex_Re_Sub(oldtext, *args, **kwds):
     '''
     用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'})
@@ -309,6 +318,7 @@ def Ex_Replace(oldtext, adict):
 
 def dict2qss(dict):
     '''字典形式的QSS转字符串'''
+    # # 排序  print key, dict[key] for key in sorted(dict.keys())
     import json
     temp = json.dumps(dict)
     qss = Ex_Re_Sub(temp, {',': ';', '"': '', ': {': '{'})
@@ -443,51 +453,14 @@ class _x:
 
 
 if __name__ == "__main__":
-
-    frog = {
-        'name': 'scott',
-        'age': 2,
-        'parts': {
-            'eye': 'green',
-            'leg': 85
-        },
-        "friend": ['moee', 'wee'],
-        "hometown": 'affica'
-    }
-    drr = _x(frog)
-    print(drr['name'])
-    '''
-    res = ([1, 2, 3, 4, 5], [11, 46,
-                             87], [125232], [5667, 2356, 26, 6215, 9741, 23525])
-    res2 = [
-        'and', 'B', ['not', 'A'], [1, 2, 1, [2, 1], [1, 1, [2, 2, 1]]],
-        ['not', 'A', 'A'], ['or', 'A', 'B', 'A'], 'B'
+    text = '''因为那对眼目耳中，却是宛如惊雷。“不过', '可惜，(https://www.biqukan.com/73_73450/529794793.html)圣龙气运被人夺了，还坏这是怨龙毒？”“惨，真惨呐...”　　(https://www.biqukan.com/0_790/36859781.html)　　请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：n.biqukan.com'''
+    str = [
+        '\u3000\u3000', '\xa0', "', '", '\u3000', '/&nbsp;',
+        '\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)',
+        'www.biqukan.com。', 'wap.biqukan.com', 'www.biqukan.com',
+        'm.biqukan.com', 'n.biqukan.com', '笔趣看;', '百度搜索“笔趣看小说网”手机阅读:',
+        '请记住本书首发域名:', '请记住本书首发域名：', '笔趣阁手机版阅读网址:', '笔趣阁手机版阅读网址：', '<br />',
+        '\[\]', '\r\r', '\r', '\n\n', '\n    '
     ]
-    # savefile('d:/1.txt', res2)
-    # for i in flatten(12141.98792):
-    #   print(i)
-    '''
-    '''
-    def case1():  # 第一种情况执行的函数
-        print('This is the case1')
-
-    def case2():  # 第二种情况执行的函数
-        print('This is the case2')
-
-    def case3():  # 第三种情况执行的函数
-        print('This is the case3')
-
-    def default():  # 默认情况下执行的函数
-        print('No such case')
-
-    switch = {
-        'case1': case1,  # 注意此处不要加括号
-        'case2': case2,  # 注意此处不要加括号
-        'case3': case3,  # 注意此处不要加括号
-    }
-    choice = 'case2'  # 获取选择
-    switch.get(choice, default)()  # 执行对应的函数，如果没有就执行默认的函数
-
-    # !判断python版本
-    PY3 = sys.version_info[0] == 3
-    '''
+    newText = Ex_Re_Clean(text.strip("\n\r　  "), str)
+    print(newText)

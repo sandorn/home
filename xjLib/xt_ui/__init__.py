@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-12 17:13:40
-#LastEditTime : 2020-05-21 22:36:47
+#LastEditTime : 2020-05-28 19:48:10
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -18,7 +18,7 @@ __all__ = [
     'xt_QListWidget', 'xt_QListWidget', 'xt_QTreeWidget', 'xt_QLabel',
     'xt_QTextEdit', 'xt_QLineEdit', 'xt_QPushButton', 'xt_QMainWindow',
     'xt_QTextBrowser', 'xt_QComboBox', 'xt_QSpinBox', 'xt_QDoubleSpinBox',
-    'xt_QInputDialog', 'xt_QMessageBOx', 'xt_QFileDialog'
+    'xt_QInputDialog', 'xt_QMessageBOx', 'xt_QFileDialog', 'xt_QTableView'
 ]
 
 import os
@@ -27,17 +27,17 @@ import sys
 from functools import wraps
 
 import qdarkstyle
-from PyQt5.QtCore import (QEventLoop, QMetaObject, QSize, Qt, QThread,
-                          pyqtSignal, pyqtSlot)
-from PyQt5.QtGui import QCursor, QIcon
+from PyQt5.QtCore import (QEventLoop, QMetaObject, Qt, QThread, pyqtSignal,
+                          pyqtSlot)
+from PyQt5.QtGui import QCursor, QStandardItem, QStandardItemModel, QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QComboBox, QDesktopWidget,
                              QDoubleSpinBox, QFileDialog, QHBoxLayout,
                              QHeaderView, QInputDialog, QLabel, QLineEdit,
                              QListView, QListWidget, QMainWindow, QMessageBox,
                              QProgressBar, QPushButton, QSpinBox, QStatusBar,
                              QTableWidget, QTableWidgetItem, QTabWidget,
-                             QTextBrowser, QTextEdit, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout, QWidget, qApp)
+                             QTextBrowser, QTextEdit, QTreeWidget, QTableView,
+                             QTreeWidgetItem, QVBoxLayout, QWidget, QMenu, qApp)
 
 from xjLib.mystr import qsstools
 
@@ -121,8 +121,6 @@ class xt_QTabWidget(QTabWidget):
         else:
             self.addTab(self.tab[0], 'TAB_0')
 
-        # # self.setTabText(0, 'TAB_0')
-
         for index in range(self.count()):
             self.lay[index] = QHBoxLayout()
             self.tab[index].setLayout(self.lay[index])
@@ -134,7 +132,7 @@ class xt_QTabWidget(QTabWidget):
         self.tabBarDoubleClicked.connect(self.tabBarDoubleClicked_event)
 
     def currentChanged_event(self, index):
-        # print(f'切换页面为:{index}')
+        print(f'QTabWidget_currentChanged_event,切换页面为:{index}')
         pass
 
     def tabCloseRequested_event(self, index):
@@ -182,6 +180,136 @@ class xt_QTabWidget(QTabWidget):
     '''
 
 
+class xt_QTableView(QTableView):
+
+    def __init__(self, ColumnsName=[], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setObjectName(f"xt_QTableView_{id(self)}")
+        self.model = QStandardItemModel(0, len(ColumnsName))
+        self.ColumnsName = ColumnsName
+        self.setColumnsName(ColumnsName)
+        self.setModel(self.model)
+        self.设置自适应列宽()
+        self.设置尾列填充()
+        self.设置列宽适应内容()
+        self.表格禁止编辑()
+        self.设置整行选中()
+        self.单行选择()
+        self.双向滚动条()
+        self.clicked.connect(self.clicked_event)
+
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        self.customContextMenuRequested.connect(self.showContextMenu)
+
+    def showContextMenu(self):  # 创建右键菜单
+        self.contextMenu = QMenu(self)
+        self.contextMenu.addAction('Add')
+        self.contextMenu.addSeparator()
+        self.contextMenu.addAction('Del')
+        # self.actionA = self.contextMenu.exec_(self.mapToGlobal(pos))  # 1
+        self.contextMenu.popup(QCursor.pos())  # 2菜单显示的位置
+        # self.actionA.triggered.connect(self.actionHandler)
+        self.contextMenu.triggered[QAction].connect(self.processtrigger)
+        # self.contextMenu.move(self.pos())  # 3
+        self.contextMenu.show()
+
+    def processtrigger(self, QAction):
+        print("QTableView_contextMenu_triggered", QAction, QAction.text())
+
+    def 设置自适应列宽(self):
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+    def 设置尾列填充(self):
+        self.horizontalHeader().setStretchLastSection(True)
+
+    def 设置列宽适应内容(self, index=0):
+        # #设置要根据内容使用宽度的列
+        self.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeToContents)
+
+    def 设置整行选中(self):
+        self.setSelectionBehavior(QTableView.SelectRows)
+
+    def 表格禁止编辑(self):
+        self.setEditTriggers(QTableWidget.NoEditTriggers)
+
+    def 禁止点击表头(self):
+        self.horizontalHeader().setSectionsClickable(False)
+
+    def 单行选择(self):
+        self.setSelectionMode(QTableView.SingleSelection)
+
+    def 颜色交替(self):
+        self.setAlternatingRowColors(True)
+
+    def 双向滚动条(self):
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+    def setColumnsName(self, Columnslist):
+        #TODO 设置水平表头
+        self.model.setHorizontalHeaderLabels(Columnslist)
+
+    @EventLoop
+    def appendItem(self, item=[]):
+        # #取消自动排序
+        self.setSortingEnabled(False)
+
+        if isinstance(item, list):
+            self.model.appendRow(
+                [QStandardItem(str(_c_item)) for _c_item in item])
+
+            # $滚动到最下面
+            self.scrollToBottom()
+
+        # #恢复排序设置
+        self.setSort(self.des_sort)
+
+    @EventLoop
+    def appendItems(self, items=[]):
+        self.setUpdatesEnabled(False)  # 暂停界面刷新
+        if isinstance(items, list) and isinstance(items[0], list):
+            for item in items:
+                self.model.appendRow(
+                    [QStandardItem(str(_c_item)) for _c_item in item])
+
+        # $滚动到最下面
+        self.scrollToBottom()
+        self.setUpdatesEnabled(True)  # 恢复界面刷新
+
+    @EventLoop
+    def empty(self):
+        [self.model.removeRow(0) for _ in range(self.model.rowCount())]
+
+    def clean(self):
+        self.model.clear()
+        self.setColumnsName(self.ColumnsName)
+
+    def clicked_event(self, item):
+        print('QTableView_clicked_event', item, item.data(), item.row())
+        # QModelIndex = self.model.index(self.currentIndex().row(), 2)
+        # self.model.data(QModelIndex) == QModelIndex.data()
+        pass
+
+    '''
+    QTableView可用的模式
+    QTableView控件可以绑定一个模型数据用来更新控件上的内容
+    名称	含义
+    currentIndex().row()
+    QStringListModel	储存一组字符串
+    QstandardItemModel	存储任意层次结构的数据
+    QDirModel	对文件系统进行封装
+    QSqlQueryModel	对SQL的查询结果集进行封装
+    QSqlTableModel	对SQL中的表格进行封装
+    QSqlRelationalTableModel	对带有foreign key的SQL表格进行封装
+    QSortFilterProxyModel	对模型中的数据进行排序或过滤
+    事件：
+    void	clicked ( const QModelIndex & index )
+    void	pressed ( const QModelIndex & index )
+    '''
+
+
 class xt_QTableWidget(QTableWidget):
     '''ColumnsName按顺序传递，不用='''
 
@@ -191,6 +319,7 @@ class xt_QTableWidget(QTableWidget):
         self.row_name_show = True  # #行名显示标志
         self.column_name_show = True  # #列名显示标志
         #TODO 设置垂直方向的表头标签
+        self.setColumnCount(len(ColumnsName))
         self.setColumnsName(ColumnsName)
         #TODO 设置其他优化
         self.设置自适应列宽()
@@ -203,6 +332,25 @@ class xt_QTableWidget(QTableWidget):
         self.表头排序()
         self.颜色交替()
         self.双向滚动条()
+        self.itemClicked.connect(self.itemClicked_event)
+
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        self.customContextMenuRequested.connect(self.showContextMenu)
+
+    def showContextMenu(self):  # 创建右键菜单
+        self.contextMenu = QMenu(self)
+        self.contextMenu.addAction('Add')
+        self.contextMenu.addSeparator()
+        self.contextMenu.addAction('Del')
+        # self.actionA = self.contextMenu.exec_(self.mapToGlobal(pos))  # 1
+        self.contextMenu.popup(QCursor.pos())  # 2菜单显示的位置
+        # self.actionA.triggered.connect(self.actionHandler)
+        self.contextMenu.triggered[QAction].connect(self.processtrigger)
+        # self.contextMenu.move(self.pos())  # 3
+        self.contextMenu.show()
+
+    def processtrigger(self, QAction):
+        print("QTableWidget_contextMenu_triggered", QAction, QAction.text())
 
     def 设置自适应列宽(self):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -212,9 +360,9 @@ class xt_QTableWidget(QTableWidget):
         self.horizontalHeader().setStretchLastSection(True)
 
     def 设置列宽适应内容(self, index=0):
+        # #设置要根据内容使用宽度的列
         self.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeToContents)
-        # #设置要根据内容使用宽度的列
 
     def 表格禁止编辑(self):
         self.setEditTriggers(QTableWidget.NoEditTriggers)
@@ -274,13 +422,15 @@ class xt_QTableWidget(QTableWidget):
         self.verticalHeader().setVisible(self.row_name_show)
         return self.row_name_show
 
-    def setColumnsName(self, Columnslist):
-        #TODO 设置水平表头
-        self.setHorizontalHeaderLabels(Columnslist)
-
     def setColumnName(self, column, ColumnName):
         #TODO 设置单一水平表头
         self.setHorizontalHeaderItem(column, QTableWidgetItem(str(ColumnName)))
+
+    def setColumnsName(self, Columnslist):
+        #TODO 设置水平表头
+        # self.setHorizontalHeaderLabels(Columnslist)
+        for column, ColumnName in enumerate(Columnslist):
+            self.setColumnName(column, ColumnName)
 
     def setRowsName(self, Rowslist):
         #TODO 设置竖直表头
@@ -301,16 +451,16 @@ class xt_QTableWidget(QTableWidget):
         return self.des_sort
 
     @EventLoop
-    def appendItem(self, itemlist):
+    def appendItem(self, item=[]):
         # #取消自动排序
         self.setSortingEnabled(False)
 
-        if isinstance(itemlist, list):
+        if isinstance(item, list):
             row = self.rowCount()
             self.insertRow(row)
 
-            for column, item in enumerate(itemlist):
-                self.setItem(row, column, QTableWidgetItem(str(item)))
+            for column, _c_item in enumerate(item):
+                self.setItem(row, column, QTableWidgetItem(str(_c_item)))
 
             # $滚动到最下面
             self.scrollToBottom()
@@ -319,14 +469,80 @@ class xt_QTableWidget(QTableWidget):
         self.setSort(self.des_sort)
 
     @EventLoop
-    def appendItemList(self, recolist):
-        if isinstance(recolist, list) and isinstance(recolist[0], list):
-            for record in recolist:
-                self.appendItem(record)
+    def appendItems(self, items=[]):
+        self.setUpdatesEnabled(False)  # 暂停界面刷新
+        if isinstance(items, list) and isinstance(items[0], list):
+            for item in items:
+                row = self.rowCount()
+                self.insertRow(row)
+
+                for column, _c_item in enumerate(item):
+                    self.setItem(row, column, QTableWidgetItem(str(_c_item)))
+
+        # $滚动到最下面
+        self.scrollToBottom()
+        # self.scrollToTop()
+        self.setUpdatesEnabled(True)  # 恢复界面刷新
 
     @EventLoop
     def empty(self):
         [self.removeRow(0) for _ in range(self.rowCount())]
+
+    def itemClicked_event(self, item):
+        print('QTableWidget_itemClicked_event', item, item.text(), item.row())
+        # self.currentIndex().row()
+        pass
+
+    '''
+    QTableWidget类中的常用方法
+    方法	描述
+    setROwCount(int row)	设置QTableWidget表格控件的行数
+    setColumnCount(int col)	设置QTableWidget表格控件的列数
+    setHorizontalHeaderLabels()	设置QTableWidget表格控件的水平标签
+    setVerticalHeaderLabels()	设置QTableWidget表格控件的垂直标签
+    setItem(int ,int ,QTableWidgetItem)	在QTableWidget表格控件的每个选项的单元控件内添加控件
+    horizontalHeader()	获得QTableWidget表格控件的表格头，以便执行隐藏
+    rowCount()	获得QTableWidget表格控件的行数
+    columnCount()	获得QTableWidget表格控件的列数
+    setEditTriggers(EditTriggers triggers)	设置表格是否可以编辑，设置表格的枚举值
+    setSelectionBehavior	设置表格的选择行为
+    setTextAlignment()	设置单元格内文本的对齐方式
+    setSpan(int row,int column,int rowSpanCount,int columnSpanCount)	合并单元格，要改变单元格的第row行，column列，要合并rowSpancount行数和columnSpanCount列数
+    row：要改变的行数
+    column：要改变的列数
+    rowSpanCount：需要合并的行数
+    columnSpanCount：需要合并的列数
+    setShowGrid()	在默认情况下表格的显示是有网格的，可以设置True或False用于是否显示，默认True
+    setColumnWidth(int column,int width)	设置单元格行的宽度
+    setRowHeight(int row,int height)	设置单元格列的高度
+    编辑规则的枚举值类型
+    选项	值	描述
+    QAbstractItemView.NoEditTriggers0No	0	不能对表格内容进行修改
+    QAbstractItemView.CurrentChanged1Editing	1	任何时候都能对单元格进行修改
+    QAbstractItemView.DoubleClicked2Editing	2	双击单元格
+    QAbstractItemView.SelectedClicked4Editing	4	单击已经选中的内容
+    QAbstractItemView.EditKeyPressed8Editing	8	当修改键按下时修改单元格
+    QAbstractItemView.AnyKeyPressed16Editing	16	按任意键修改单元格
+    QAbstractItemView.AllEditTriggers31Editing	31	包括以上所有条件
+    表格选择行为的枚举值
+    选择	值	描述
+    QAbstractItemView.SelectItems0Selecting	0	选中单个单元格
+    QAbstractItemView.SelectRows1Selecting	1	选中一行
+    QAbstractItemView.SelectColumns2Selecting	2	选中一列
+    单元格文本水平对齐方式
+    选项	描述
+    Qt.AlignLeft	将单元格内的内容沿单元格的左边缘对齐
+    Qt.AlignRight	将单元格内的内容沿单元格的右边缘对齐
+    Qt.AlignHCenter	在可用空间中，居中显示在水平方向上
+    Qt.AlignJustify	将文本在可用空间内对齐，默认从左到右
+    单元格文本垂直对齐方式
+    选项	描述
+    Qt.AlignTop	与顶部对齐
+    Qt.AlignBottom	与底部对齐
+    Qt.AlignVCenter	在可用空间中，居中显示在垂直方向上
+    Qt.AlignBaseline	与基线对齐
+    如果要设置水平和垂直方向对齐方式，比如在表格空间内上下，左右居中对齐，那么只要使用Qt,AlignHCenter和Qt,AlignVCenter即可
+    '''
 
 
 class xt_QListWidget(QListWidget):
@@ -334,19 +550,59 @@ class xt_QListWidget(QListWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QListWidget_{id(self)}")
-        self.setMovement(QListView.Static)  #设置单元项不可拖动，
-        self.setViewMode(QListView.IconMode)  # 图标格式显示  QListWidget.ListMode
-        self.setIconSize(QSize(50, 50))  # 图标大小
-        self.setSpacing(15)  # 间距大小
+        self.setMovement(QListView.Static)  #设置单元项不可拖动
+        # 图标格式显示 QListView.IconMode | QListWidget.ListMode
+        self.setViewMode(QListView.ListMode)
+        # self.setIconSize(QSize(50, 50))  # 图标大小
+        self.setSpacing(6)  # 间距大小
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # 垂直滚动条
-        self.itemClicked.connect(self.itemClicked_event)  #绑定点击事件
-        self.itemDoubleClicked.connect(self.itemDoubleClicked_event)  #绑定双击事件
+
+        # self.itemClicked.connect(self.itemClicked_event)  #绑定点击事件
+        self.currentRowChanged.connect(self.currentRowChanged_event)  #绑定点击事件
+
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        self.customContextMenuRequested.connect(self.showContextMenu)
+
+    def showContextMenu(self):  # 创建右键菜单
+        self.contextMenu = QMenu(self)
+        self.contextMenu.addAction('Add')
+        self.contextMenu.addSeparator()
+        self.contextMenu.addAction('Del')
+        # self.actionA = self.contextMenu.exec_(self.mapToGlobal(pos))  # 1
+        self.contextMenu.popup(QCursor.pos())  # 2菜单显示的位置
+        # self.actionA.triggered.connect(self.actionHandler)
+        self.contextMenu.triggered[QAction].connect(self.processtrigger)
+        # self.contextMenu.move(self.pos())  # 3
+        self.contextMenu.show()
+
+    def processtrigger(self, QAction):
+        print("QListWidget_contextMenu_triggered", QAction, QAction.text())
+
+    def empty(self):
+        # self.clear()
+        [self.takeItem(0) for _ in range(self.count())]
+
+    @EventLoop
+    def getall(self):
+        widgetres = []
+        # 获取listwidget中条目数
+        count = self.count()
+        # 遍历listwidget中的内容
+        for index in range(count):
+            widgetres.append(self.item(index).text())
+
+        return widgetres
 
     def itemClicked_event(self, item):
-        self._item_temp = item
+        print('QListWidget_itemClicked_event', item, item.text())
+        # self.currentRow() == self.currentIndex().row()
+        pass
 
-    def itemDoubleClicked_event(self, item):
-        self._item_temp = item
+    def currentRowChanged_event(self, row):
+        item = self.item(row)
+        print('QListWidget_currentRowChanged_event', row, item.text())
+        # self.currentRow() == self.currentIndex().row()
+        pass
 
     '''
     方法	描述
@@ -363,6 +619,38 @@ class xt_QListWidget(QListWidget):
     信号	含义
     currentItemChanged	当列表中的条目发生改变时发射此信号
     itemClicked	当点击列表中的条目时发射此信号
+
+    QListWidget自身的信号包括如下：
+
+    currentItemChanged(QListWidgetItem current, QListWidgetItem previous)信号
+    当列表部件中的当前项发生变化时发射，带两个参数，分别表示当前选择项和在此之前的选择项。
+
+    currentRowChanged（int currentRow）信号
+    当列表部件中的当前项发生变化时发射，带一个参数，currentRow表示当前项行号，如果没有当前项，其值为-1。
+
+    currentTextChanged（str currentText)
+    当列表部件中的当前项发生变化时发射，带一个参数，currentText为当前项对应文本。
+
+    itemActivated(QListWidgetItem item)
+    当项激活时发射，项激活是指鼠标单击或双击项，具体依赖于系统配置。项激活还可以是在windows环境下在项上按下回车键，在Mac操作系统下按下Command+O键。
+
+    itemChanged(QListWidgetItem item)
+    当项的文本发生改变时发射该信号，项文本无论是否真正改变都会发射。
+
+    itemClicked(QListWidgetItem item)
+    当部件中的项被鼠标单击时发射该信号。
+
+    itemDoubleClicked(QListWidgetItem item)
+    当部件中的项被鼠标双击时发射该信号。
+
+    itemEntered(QListWidgetItem item)
+    当部件中的项接收到鼠标光标时发射该信号，发射该信号需设置mouseTracking属性为True，如果未设置该属性，则只有鼠标移动到项时按下按键时才触发。
+
+    itemPressed(QListWidgetItem item)
+    当鼠标在部件中的项上按下时触发。
+
+    itemSelectionChanged（）
+    当列表部件中进行了选择操作后触发，无论选中项是否改变。
     '''
 
 
@@ -382,8 +670,25 @@ class xt_QTreeWidget(QTreeWidget):
         self.addTopLevelItem(self.root)
 
         self.clicked.connect(self.clicked_event)
-        self.doubleClicked.connect(self.doubleClicked_event)
         self.itemDoubleClicked.connect(self.itemDoubleClicked_event)
+
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        self.customContextMenuRequested.connect(self.showContextMenu)
+
+    def showContextMenu(self):  # 创建右键菜单
+        self.contextMenu = QMenu(self)
+        self.contextMenu.addAction('Add')
+        self.contextMenu.addSeparator()
+        self.contextMenu.addAction('Del')
+        # self.actionA = self.contextMenu.exec_(self.mapToGlobal(pos))  # 1
+        self.contextMenu.popup(QCursor.pos())  # 2菜单显示的位置
+        # self.actionA.triggered.connect(self.actionHandler)
+        self.contextMenu.triggered[QAction].connect(self.processtrigger)
+        # self.contextMenu.move(self.pos())  # 3
+        self.contextMenu.show()
+
+    def processtrigger(self, QAction):
+        print("QTableWidget_contextMenu_triggered", QAction, QAction.text())
 
     def 多行选择(self):
         # shift键的连续选择
@@ -406,20 +711,16 @@ class xt_QTreeWidget(QTreeWidget):
             child.setText(index, _text)
 
     def clicked_event(self, qmodelindex):
-        item = self.currentItem()
-        print([item.text(index) for index in range(self.columnCount())])
-        pass
-
-    def doubleClicked_event(self, qmodelindex):
-        item = self.currentItem()
-        print('doubleClicked_event',
-              [item.text(index) for index in range(self.columnCount())])
+        '''PyQt5.QtCore.QModelIndex对象'''
+        print('QTreeWidget_clicked_event', qmodelindex, qmodelindex.data())
+        # item = self.currentItem() # 当前节点
+        # print([item.text(index) for index in range(self.columnCount())])
         pass
 
     def itemDoubleClicked_event(self, item, columnindex):
-        print('itemDoubleClicked_event',
-              [item.text(index) for index in range(self.columnCount())],
-              columnindex)
+        '''QTreeWidgetItem对象，列号'''
+        print('itemDoubleClicked_event', item.text(columnindex), columnindex,
+              [item.text(index) for index in range(self.columnCount())])
         pass
 
     '''
@@ -432,15 +733,14 @@ class xt_QTreeWidget(QTreeWidget):
     expandAll()	展开所有节点的树形节点
     invisibleRootItem()	返回树形控件中不可见的根选项（Root Item）
     selectionItems()	返回所有选定的非隐藏项目的列表内
-    QTreeWidgetItem类中常用的方法
-    方法	描述
+    #@QTreeWidgetItem类中常用的方法
     addChild()	将子项追加到子列表中
     setText()	设置显示的节点文本
-    Text()	返回显示的节点文本
-    setCheckState(column.state)	设置指定列的选中状态：
-    Qt.Checked:节点选中
-    Qt.Unchecked:节点没有选中
+    text()	返回显示的节点文本
+    setCheckState(column.state)	设置指定列的选中状态：Qt.Checked:节点选中;Qt.Unchecked:节点没有选中
     setIcon(column,icon)	在指定的列中显示图标
+    事件
+    clicked,doubleClicked,itemDoubleClicked
     '''
 
 
@@ -456,10 +756,48 @@ class xt_QTextBrowser(QTextBrowser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTextBrowser_{id(self)}")
+        self.setReadOnly(True)
+        self.ensureCursorVisible()  # 游标可用
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         #设置垂直滚动条按需可见
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         #设置水平滚动条按需可见
+        self.setOpenLinks(True)  #打开文档内部链接 默认为True
+        self.setOpenExternalLinks(True)
+        #打开外部链接 默认false 当openlinks设置false时 该选项无效
+        self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard
+                                     | Qt.LinksAccessibleByMouse
+                                     | Qt.TextBrowserInteraction
+                                     | Qt.TextSelectableByKeyboard
+                                     | Qt.TextSelectableByMouse)
+
+    def addtext(self, str):
+        self.append(str)  #添加数据
+        self.moveCursor(self.textCursor().End)  #文本框显示到底部
+        qApp.processEvents()
+
+    '''
+    cursor =  self.textCursor();
+    cursor.movePosition(self.textCursor().End);
+    self.setTextCursor(cursor);
+
+    textCursor()  #光标的位置
+    setText() 解析html格式文本
+    setPlainText() 不解析html格式文本
+    setHtml() # 设置文档
+    setSource() #设置链接  QUrl
+    setDocumentTitle('dsds') # 设置文档标题
+    QTextBrowser同时 具有以下插槽: home() :返回主文档, backward() #返回上一文档,forward()前进
+
+    _temp = '<font size="5">' + _text.replace("\n","<br>") + '</font>'
+
+    SourceChanged.connect(self.update) # 发出一个SourceChanged(QUrl)信号
+        self.anchorClicked.connect(self.__on_anchor_clicked)
+
+    def __on_anchor_clicked(self, url: QUrl):
+        fp = url.toString()
+        os.startfile(fp)
+    '''
 
 
 class xt_QTextEdit(QTextEdit):
@@ -499,10 +837,13 @@ class xt_QPushButton(QPushButton):
         self.clicked.connect(self.clicked_event)
 
     def clicked_event(self):
-        # #print('QPushButton_clicked_event')
+        print('QPushButton_clicked_event', self.text())
         pass
 
     '''
+    setText()设置按钮字符
+    text()获取按钮字符
+    按钮字符开头用 & + 字母 ,设置快捷键：alt+字母
     事件信号： clicked、pressed、released
     '''
 
@@ -773,8 +1114,17 @@ class xt_QMainWindow(QMainWindow):
             self.mousePressEvent = super().mousePressEvent
             self.mouseMoveEvent = super().mouseMoveEvent
             self.mouseReleaseEvent = super().mouseReleaseEvent
+
         # @用于自动绑定信号和函数
         QMetaObject.connectSlotsByName(self)
+        '''
+        继承仍需声明，可能与控件生成顺序有关
+        action:on_objectName_triggered
+        button:on_objectName_clicked
+        必须使用@PyQt5.QtCore.pyqtSlot()修饰要调用的函数
+        ......
+        手工绑定:connect(lamda : self.func(args))；解除绑定:disconnect()
+        '''
         qss = '''* {font: 11pt 'Sarasa Term SC';outline: none;}''' + qdarkstyle.load_stylesheet_pyqt5(
         )
         self.setStyleSheet(qss)
@@ -827,22 +1177,21 @@ class xt_QMainWindow(QMainWindow):
         # #QAction
         # _path = os.path.dirname(__file__) + '/'
         self.open_action = QAction(
-            QIcon(self.basepath + '/ico/open.ico'), 'Open', self)
+            QIcon(self.basepath + '/ico/open.ico'), '&Open', self)
         self.save_action = QAction(
-            QIcon(self.basepath + '/ico/save.ico'), 'Save', self)
+            QIcon(self.basepath + '/ico/save.ico'), '&Save', self)
         self.run_action = QAction(
-            QIcon(self.basepath + '/ico/run.ico'), 'Theme', self)
+            QIcon(self.basepath + '/ico/run.ico'), '&Theme', self)
         self.open_action.setObjectName("openObject")
         self.save_action.setObjectName("saveObject")
         self.run_action.setObjectName("runObject")
         # !必须,关键，用于自动绑定信号和函数  on_ObjectName_triggered
         # !配套：QMetaObject.connectSlotsByName(self)
         self.close_action = QAction(
-            QIcon(self.basepath + '/ico/close.ico'), 'Close', self)
-
+            QIcon(self.basepath + '/ico/close.ico'), '&Quit', self)
         self.open_action.setShortcut('Ctrl+O')
         self.save_action.setShortcut('Ctrl+S')
-        self.run_action.setShortcut('Ctrl+R')
+        self.run_action.setShortcut('Ctrl+T')
         self.close_action.setShortcut('Ctrl+Q')
         self.close_action.setToolTip('Close the window')
         self.close_action.setStatusTip('Close the window')
@@ -949,7 +1298,7 @@ if __name__ == '__main__':
             for index in range(1, 20):
                 self.tree.addItem(
                     ['child' + str(index * 10), 'name1' + str(index * 10)])
-            self.table = xt_QTableWidget([], 10, 5)
+            self.table = xt_QTableWidget([1, 2, 3], 10, 5)
             self.tabw = xt_QTabWidget(2)
             self.btn.move(40, 80)
             self.btn.clicked.connect(self.tabls)
@@ -995,7 +1344,7 @@ if __name__ == '__main__':
             self.table.empty()
             self.table.appendItem(['1', '记录一'])
             self.table.appendItem(['2', '记录2', 2, 3, 4, 5])
-            self.table.appendItemList(
+            self.table.appendItems(
                 [['3', '记录3'], ['4', '记录4'],
                  ['5', '记录5', 'djahd', 'ihviairh' * 5, 'ohv7384' * 3]])
             r = []
@@ -1011,7 +1360,7 @@ if __name__ == '__main__':
                 r.append([i * 10, '记录' + ran_str, ran_str_2])
                 # self.table.appendItem([i * 10, '记录' + str(i * 10)])
             # print(r)
-            self.table.appendItemList(r)
+            self.table.appendItems(r)
             self.table.setColumnName(0, '张三')
             self.table.setRowName(0, '张4')
             self.table.setColumnWidth(0, 60)
@@ -1027,7 +1376,7 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     ex = Example()
-    #ex = xt_QMainWindow()
+    # ex = xt_QMainWindow()
     sys.exit(app.exec_())
     '''
     import sys, qdarkstyle

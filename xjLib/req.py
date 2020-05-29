@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-11 15:24:14
+#LastEditTime : 2020-05-28 18:10:33
 requests 简化调用
 '''
 # from __future__ import absolute_import, unicode_literals
@@ -56,7 +56,7 @@ class RequestsSession(object):
         wait_random_min=20,
         wait_random_max=1000,
         stop_max_attempt_number=RETRY_TIME)
-    def post(self, url, data=None,  **kwargs):
+    def post(self, url, data=None, **kwargs):
         try:
             response = self.session.post(
                 url,
@@ -144,10 +144,18 @@ def parse_post(url, data=None, json=None, **kwargs):
     try:
         response = _run()
         response.raise_for_status()
+        # $assert response.status_code in [200, 201, 302]
         return sResponse(response, response.content, id(response))
     except Exception as err:
         print(url, '_parse post err:', repr(err), flush=True)
         raise err
+    '''
+    res = parse_post(
+        url,
+        json=body_dict,  # @ or : data = json.dumps(body_dict)
+        headers=httpHeaders)
+
+    '''
 
 
 def set_cookies(cookies):
@@ -247,6 +255,50 @@ class FakeRequests(object):
         return sResponse(response, response.content, id(response))
 
 
+class SessRequests(object):
+
+    def __init__(self):
+        self.s = requests.session()
+
+    @retry(
+        wait_random_min=20,
+        wait_random_max=1000,
+        stop_max_attempt_number=RETRY_TIME,
+        retry_on_exception=lambda x: True,
+        retry_on_result=lambda ret: not ret)
+    def get(self, url, params=None, **kwargs):
+        '''verify=False,allow_redirects=False'''
+        response = self.s.get(url, params=params, **kwargs)
+        self.setcooikes(response.cookies)
+        return sResponse(response, response.content, id(response))
+
+    @retry(
+        wait_random_min=20,
+        wait_random_max=1000,
+        stop_max_attempt_number=RETRY_TIME,
+        retry_on_exception=lambda x: True,
+        retry_on_result=lambda ret: not ret)
+    def post(self, url, data=None, json=None, **kwargs):
+        response = self.s.post(url, data=data, json=json, **kwargs)
+        self.setcooikes(response.cookies)
+        return sResponse(response, response.content, id(response))
+
+    def setcooikes(self, cookie_dict):
+        self.s.cookies.update(cookie_dict)
+
+    def setheader(self, header_dict):
+        self.s.headers.update(header_dict)
+
+
 if __name__ == '__main__':
     r = FakeRequests.get(url="https://httpbin.org/get")
+    # print(r.text)
+    s = SessRequests()
+    s.setheader({
+        'Content-Type': 'application/json',
+        'charset': 'UTF-8',
+        **myhead
+    })
+
+    r = s.get(url="https://httpbin.org/get")
     print(r.text)

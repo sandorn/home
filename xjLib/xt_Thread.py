@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-28 14:12:40
+#LastEditTime : 2020-05-28 22:07:53
 '''
 
 __all__ = [
@@ -24,6 +24,7 @@ __all__ = [
     'thread_pool_maneger',
     'WorkThread',  # 继承线程,利用queue；参照htreadpool编写的自定义库
     'my_pool',  # 装饰符方式
+    'stop_thread',  # 外部停止线程
 ]
 
 import ctypes
@@ -122,14 +123,15 @@ class SingletonThread(Thread):
                     cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, func, args, **kwargs):
-        super().__init__(target=func, args=args, **kwargs)
+    def __init__(self, func, *args, **kwargs):
+        super().__init__(target=func, args=args, kwargs=kwargs)
         self.all_Thread.append(self)
         self.start()
 
     def run(self):
         # 调用线程函数，并将元组类型的参数值分解为单个的参数值传入线程函数
-        self.Result = self._target(self.rlock, *self._args)  # 获取结果
+        self.Result = self._target(*self._args, self.rlock, **self._kwargs)
+        # 获取结果
         self.result_list.append(self.Result)
 
     def getResult(self):
@@ -189,8 +191,8 @@ class SingletonThread_Queue(Thread):
                     cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, queue_list, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, queue_list, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.task_queue.put([*queue_list])
         self.all_Thread.append(self)
         self.start()
@@ -202,7 +204,7 @@ class SingletonThread_Queue(Thread):
             return
         else:
             target = args.pop(0)
-            self.Result = target(self.rlock, *args)  # 获取结果
+            self.Result = target(*args, self.rlock)  # 获取结果
             # with SingletonThread_Queue.rlock:
             #    print(2222, self.name, '\targs:', *args, '\tdone。', flush=True)
             self.task_queue.task_done()  # 发出此队列完成信号
@@ -260,22 +262,64 @@ class CustomThread(Thread):
     result_list = []  # 结果列表
     rlock = RLock()
 
-    def __init__(self, func, args, **kwargs):
-        super().__init__(target=func, args=args, **kwargs)
+    def __init__(self, func, *args, **kwargs):
+        super().__init__(target=func, args=args, kwargs=kwargs)
         self.daemon = True
         self.all_Thread.append(self)
         self.start()
 
     def run(self):
         # 调用线程函数，并将元组类型的参数值分解为单个的参数值传入线程函数
-        self.Result = self._target(self.rlock, *self._args)  # 获取结果
+        self.Result = self._target(*self._args, self.rlock, **self._kwargs)
+        # 获取结果
         self.result_list.append(self.Result)
 
     def getResult(self):
+        return self.Result
+
+    def stop_all(self):
+        """停止线程池， 所有线程停止工作"""
+        for _ in range(len(self.all_Thread)):
+            thread = self.all_Thread.pop()
+            thread.join()
+
+    @classmethod
+    def wait_completed(cls):
+        """等待全部线程结束，返回结果"""
         try:
-            return self.Result
+            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
+            res, cls.result_list = cls.result_list, []
+            return res
         except Exception:
             return None
+
+    @classmethod
+    def getAllResult(cls):
+        """返回结果"""
+        res, cls.result_list = cls.result_list, []
+        return res
+
+
+class CustomThreadSort(Thread):
+    """结果带index，便于排序处理，继承自threading.Thread"""
+    all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
+    result_list = {}  # 结果列表
+    rlock = RLock()
+
+    def __init__(self, func, index, *args, **kwargs):
+        super().__init__(target=func, args=args, kwargs=kwargs)
+        self.daemon = True
+        self.id = index
+        self.all_Thread.append(self)
+        self.start()
+
+    def run(self):
+        # 调用线程函数，并将元组类型的参数值分解为单个的参数值传入线程函数
+        self.Result = self._target(*self._args, **self._kwargs)  # 获取结果
+        self.result_list[self.id] = self.Result
+
+    def getResult(self):
+        return self.Result
 
     def stop_all(self):
         """停止线程池， 所有线程停止工作"""
@@ -308,8 +352,8 @@ class Custom_Thread_Queue(Thread):
     result_list = []  # 结果列表
     task_queue = Queue()
 
-    def __init__(self, queue_list, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, queue_list, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.daemon = True
         self.task_queue.put([*queue_list])
         self.all_Thread.append(self)
@@ -322,7 +366,7 @@ class Custom_Thread_Queue(Thread):
             return
         else:
             target = args.pop(0)
-            self.Result = target(self.rlock, *args)  # 获取结果
+            self.Result = target(*args, self.rlock)  # 获取结果
             # with self.rlock:
             #    print(self.name, '\targs:', *args, '\tdone。', flush=True)
             self.task_queue.task_done()  # 发出此队列完成信号
@@ -502,7 +546,7 @@ class Work(Thread):
             except Empty:
                 break
             else:
-                result = task.func(self.lock, *task.args,
+                result = task.func(*task.args, self.lock,
                                    **task.kwds)  # 传递 list 各元素
                 self.result_queue.put(result)  # 取得函数返回值
                 self.work_queue.task_done()  # 通知系统任务完成
@@ -660,7 +704,7 @@ class WorkThread(Thread):
 
             # 执行请求队列中的请求
             try:
-                result = task.func(self.lock, *task.args, **task.kwds)
+                result = task.func(*task.args, self.lock, **task.kwds)
                 self.result_queue.put((task, result))
             except BaseException:
                 task.exception = True

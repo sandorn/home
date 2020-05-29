@@ -9,16 +9,17 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-26 13:46:29
+#LastEditTime : 2020-05-28 22:11:21
 根据网络资料，写的threadpool
 '''
 
 import os
 
-from xjLib.ahttp import ahttpGet
-from xjLib.CustomThread import (SingletonThread, SingletonThread_Queue,
-                                CustomThread, Custom_Thread_Queue, WorkManager,
-                                thread_pool_maneger)
+from xjLib.xt_ahttp import ahttpGet
+from xjLib.xt_Thread import (SingletonThread, SingletonThread_Queue,
+                             CustomThread, CustomThreadSort,
+                             Custom_Thread_Queue, WorkManager,
+                             thread_pool_maneger)
 from xjLib.mystr import (Ex_Re_Sub, Ex_Replace, fn_timer, savefile)
 from xjLib.req import parse_get
 
@@ -38,8 +39,8 @@ def get_download_url(target):
     return _bookname, urls
 
 
-def get_contents(lock, index, target):
-    response = parse_get(target).html
+def get_contents(index, url, lock=None):
+    response = parse_get(url).html
 
     _name = "".join(response.xpath('//h1/text()'))
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
@@ -74,10 +75,46 @@ def get_contents(lock, index, target):
     return [index, name, '    ' + text]
 
 
+def get_contents_noindex(target):
+    response = parse_get(target).html
+
+    _name = "".join(response.xpath('//h1/text()'))
+    _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
+    name = Ex_Re_Sub(_name, {' ': ' ', '\xa0': ' '})
+    text = Ex_Replace(
+        _showtext.strip("\n\r　  \xa0"),
+        {
+            '　　': '\n',
+            ' ': ' ',
+            '\', \'': '',
+            # '\xa0': '',  # 表示空格  &nbsp;
+            '\u3000': '',  # 全角空格
+            'www.biqukan.com。': '',
+            'm.biqukan.com': '',
+            'wap.biqukan.com': '',
+            'www.biqukan.com': '',
+            '笔趣看;': '',
+            '百度搜索“笔趣看小说网”手机阅读:': '',
+            '请记住本书首发域名:': '',
+            '请记住本书首发域名：': '',
+            '笔趣阁手机版阅读网址:': '',
+            '笔趣阁手机版阅读网址：': '',
+            '[]': '',
+            '<br />': '',
+            '\r\r': '\n',
+            '\r': '\n',
+            '\n\n': '\n',
+            '\n\n': '\n',
+        },
+    )
+
+    return [name, '    ' + text]
+
+
 @fn_timer
 def st(bookname, urls):
     _ = [
-        SingletonThread(get_contents, (index, url))
+        SingletonThread(get_contents, index, url)
         for index, url in enumerate(urls)
     ]
     texts = SingletonThread.wait_completed()
@@ -103,14 +140,27 @@ def sq(bookname, urls):
 @fn_timer
 def ct(bookname, args):
     _ = [
-        CustomThread(get_contents, [index, url])
-        for index, url in enumerate(urls)
+        CustomThread(get_contents, index, url) for index, url in enumerate(urls)
     ]
     texts = CustomThread.wait_completed()
     texts.sort(key=lambda x: x[0])
     # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
     files = os.path.split(__file__)[-1].split(".")[0]
     savefile(files + '＆' + bookname + 'CustomThread.txt', texts, br='\n')
+
+
+def ct_noindex(bookname, args):
+    _ = [
+        CustomThreadSort(get_contents_noindex, index, url)
+        for index, url in enumerate(urls)
+    ]
+    dict_data = CustomThreadSort.wait_completed()
+    texts = sorted(dict_data.items(), key=lambda x: x[0])
+
+    # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
+    files = os.path.split(__file__)[-1].split(".")[0]
+    savefile(
+        files + '＆' + bookname + 'CustomThread_Noindex.txt', texts, br='\n')
 
 
 @fn_timer
@@ -160,24 +210,25 @@ def tp(bookname, urls, MaxSem=99):
 if __name__ == "__main__":
     bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
     # 38_38836  #2_2714
-
-    for func in ['st', 'sq', 'ct', 'cq', 'wm', 'tp']:
+    tp(bookname, urls)
+    '''
+    for func in ['st', 'sq', 'ct', 'cq','ct_noindex', 'wm', 'tp']:
         eval(func)(bookname, urls)
         # print('#' * 33, threading.active_count(), threading.enumerate())
         # locals()[func](bookname, urls)
         # globals()[func](bookname, urls)
-'''
-# 默认线程数量
-[笔趣阁-自定义库CustomThread例子＆武炼巅峰SingletonThread.txt]保存完成	size：46.47 MB
-Total time running with [SingletonThread]: 68.46 seconds
-[笔趣阁-自定义库CustomThread例子＆武炼巅峰SingletonThread_Queue.txt]保存完成	size：46.47 MB
-Total time running with [SingletonThread_Queue]: 75.63 seconds
-[笔趣阁-自定义库CustomThread例子＆武炼巅峰CustomThread.txt]保存完成	size：46.47 MB
-Total time running with [CustomThread]: 91.00 seconds
-[笔趣阁-自定义库CustomThread例子＆武炼巅峰Custom_Thread_Queue.txt]保存完成	size：46.47 MB
-Total time running with [Custom_Thread_Queue]: 67.19 seconds
-[笔趣阁-自定义库CustomThread例子＆武炼巅峰WorkManager.txt]保存完成	size：46.47 MB
-Total time running with [WorkManager]: 66.73 seconds
-[笔趣阁-自定义库CustomThread例子＆武炼巅峰thread_pool_maneger.txt]保存完成	size：46.47 MB
-Total time running with [thread_pool_maneger]: 130.96 seconds
-'''
+
+    # 默认线程数量
+    [笔趣阁-自定义库CustomThread例子＆武炼巅峰SingletonThread.txt]保存完成	size：46.47 MB
+    Total time running with [SingletonThread]: 68.46 seconds
+    [笔趣阁-自定义库CustomThread例子＆武炼巅峰SingletonThread_Queue.txt]保存完成	size：46.47 MB
+    Total time running with [SingletonThread_Queue]: 75.63 seconds
+    [笔趣阁-自定义库CustomThread例子＆武炼巅峰CustomThread.txt]保存完成	size：46.47 MB
+    Total time running with [CustomThread]: 91.00 seconds
+    [笔趣阁-自定义库CustomThread例子＆武炼巅峰Custom_Thread_Queue.txt]保存完成	size：46.47 MB
+    Total time running with [Custom_Thread_Queue]: 67.19 seconds
+    [笔趣阁-自定义库CustomThread例子＆武炼巅峰WorkManager.txt]保存完成	size：46.47 MB
+    Total time running with [WorkManager]: 66.73 seconds
+    [笔趣阁-自定义库CustomThread例子＆武炼巅峰thread_pool_maneger.txt]保存完成	size：46.47 MB
+    Total time running with [thread_pool_maneger]: 130.96 seconds
+    '''
