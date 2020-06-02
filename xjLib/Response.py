@@ -7,13 +7,14 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
-#LastEditTime : 2020-05-25 22:05:39
+#LastEditTime : 2020-05-30 18:19:52
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 '''
 
 import json
+
 # from html import unescape
 
 from cchardet import detect
@@ -31,8 +32,7 @@ class sResponse:
     def text(self):
         code_type = detect(self.content)
         if code_type != 'utf-8':
-            self.content = self.content.decode(code_type['encoding'],
-                                               'ignore').encode('utf-8')
+            self.content = self.content.decode(code_type['encoding'], 'ignore').encode('utf-8')
         return self.content.decode('utf-8', 'ignore')
 
     @property
@@ -64,7 +64,6 @@ class sResponse:
 
     @property
     def html(self):
-
         def clean(html, filter):
             data = etree.HTML(html)
             trashs = data.xpath(filter)
@@ -80,8 +79,7 @@ class sResponse:
     def element(self):
         code_type = detect(self.content)
         if code_type != 'utf-8':
-            self.content = self.content.decode(code_type['encoding'],
-                                               'ignore').encode('utf-8')
+            self.content = self.content.decode(code_type['encoding'], 'ignore').encode('utf-8')
         element = etree.HTML(self.content.decode('utf-8', 'ignore'))
         return element
 

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-06 11:23:35
+#LastEditTime : 2020-05-30 18:16:30
 '''
 # package
 # __init__.py
@@ -20,14 +20,18 @@ __license__ = 'NewSea'
 xjLib_VERSION = __version__ = '0.1.9'
 
 __all__ = [
-    'ahttp',
-    "CustomThread",
+    'Ahttp',
+    "Class",
+    'Db',
     "mystr",
-    "txCos",
-    "qiniuCos",
-    "req",
-    "UI",
-    "log",
-    "head",
+    "TxCos",
+    "QiniuCos",
+    "Ui",
+    "Log",
+    "Head",
+    "Hotkey",
     "Response",
+    "Requests",
+    "Thread",
+    "QThread",
 ]

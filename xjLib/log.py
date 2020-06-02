@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-29 13:33:29
+#LastEditTime : 2020-05-30 18:11:25
 # author:      he.zhiming
 '''
 
@@ -60,19 +60,10 @@ def _make_filename(filename='.log', log_level=10):
 
     date_str = datetime.today().strftime('%Y%m%d')
     pidstr = '-' or str(os.getpid())
-    return ''.join((
-        date_str,
-        '-',
-        pidstr,
-        '-',
-        _level,
-        '',
-        filename,
-    ))
+    return ''.join((date_str, '-', pidstr, '-', _level, '', filename,))
 
 
 class _logger(object):
-
     def __init__(self, level=logging.DEBUG, logger=__name__):
         self.level = level
         self.log_name = _make_filename(log_level=self.level)
@@ -80,51 +71,20 @@ class _logger(object):
         self.conf_dic = {
             'version': 1,
             'disable_existing_loggers': False,
-            'formatters': {
-                'standard': {
-                    'format': standard_format
-                },
-                'simple': {
-                    'format': simple_format
-                },
-            },
+            'formatters': {'standard': {'format': standard_format}, 'simple': {'format': simple_format},},
             'filters': {},
             'handlers': {
                 # 打印到终端的日志
-                'console': {
-                    'level': self.level,
-                    'class': 'logging.StreamHandler',  # 打印到屏幕
-                    'formatter': 'simple',
-                },
+                'console': {'level': self.level, 'class': 'logging.StreamHandler', 'formatter': 'simple',},  # 打印到屏幕
                 # 打印到文件的日志,收集DEBUG及以上的日志
-                'default': {
-                    'level': self.level,
-                    'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件
-                    'formatter': 'standard',
-                    'filename': self.log_name,  # 日志文件
-                    'maxBytes': 1024 * 1024 * 5,  # 日志大小 5M
-                    'backupCount': 5,
-                    'encoding': 'utf-8',  # 日志文件的编码，再也不用担心中文log乱码了
-                },
+                'default': {'level': self.level, 'class': 'logging.handlers.RotatingFileHandler', 'formatter': 'standard', 'filename': self.log_name, 'maxBytes': 1024 * 1024 * 5, 'backupCount': 5, 'encoding': 'utf-8',},  # 保存到文件  # 日志文件  # 日志大小 5M  # 日志文件的编码，再也不用担心中文log乱码了
             },
             'loggers': {
                 # logging.getLogger(__name__)拿到的logger配置
-                '': {
-                    'handlers': ['default', 'console'],  # log数据既写入文件又打印到屏幕
-                    'level': self.level,
-                    'propagate': True,  # 向上（更高level的logger）传递
-                },
-                'default': {
-                    'handlers': ['default'],
-                    'level': self.level,
-                    'propagate': True,
-                },
-                'console': {
-                    'handlers': ['console'],
-                    'level': self.level,
-                    'propagate': True,
-                },
-            }
+                '': {'handlers': ['default', 'console'], 'level': self.level, 'propagate': True,},  # log数据既写入文件又打印到屏幕  # 向上（更高level的logger）传递
+                'default': {'handlers': ['default'], 'level': self.level, 'propagate': True,},
+                'console': {'handlers': ['console'], 'level': self.level, 'propagate': True,},
+            },
         }
         # #定义字典完毕
         logging.config.dictConfig(self.conf_dic)  # 导入上面定义的logging配置
@@ -146,11 +106,7 @@ def logs():
 
 
 class MyLog(object):
-
-    def __init__(self,
-                 name=__name__,
-                 showlevel=logging.DEBUG,
-                 writelevel=logging.WARNING):  # 类MyLog的构造函数
+    def __init__(self, name=__name__, showlevel=logging.DEBUG, writelevel=logging.WARNING):  # 类MyLog的构造函数
         self.logger = logging.getLogger(name)  # 返回一个特定名字的日志
         self.logger.setLevel(showlevel)  # 对显示的日志信息设置一个阈值低于DEBUG级别的不显示
         logFile = _make_filename(log_level=writelevel)  # 日志文件名
@@ -161,8 +117,7 @@ class MyLog(object):
         logHand.setFormatter(std_formatter)  # 为logHand以formatter设置格式
         logHand.setLevel(writelevel)  # 只有错误才被记录到logfile中
 
-        logHandSt = logging.StreamHandler(
-        )  # class logging.StreamHandler(stream=None)
+        logHandSt = logging.StreamHandler()  # class logging.StreamHandler(stream=None)
         # 返回StreamHandler类的实例，如果stream被确定，使用该stream作为日志输出，反之，使用
         # sys.stderr
         logHandSt.setFormatter(smp_formatter)  # 为logHandSt以formatter设置格式
@@ -204,11 +159,7 @@ def decoLog(func):
         try:
             func(*args, **kwargs)
         except Exception as err:
-            logging.basicConfig(
-                filename=_make_filename(),
-                level=logging.DEBUG,
-                format=standard_format)
-            logging.debug("This is a debug log.")
+            log().print(err)
 
     return wrapper
 

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-14 13:57:28
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-29 17:38:28
+#LastEditTime : 2020-06-02 18:30:34
 '''
 import hashlib
 import os
@@ -21,7 +21,6 @@ from functools import wraps
 
 
 class qsstools:
-
     def __init__(self):
         pass
 
@@ -47,6 +46,7 @@ def Singleton_warp(cls):
 
 class Singleton(object):
     """单例类"""
+
     """实例化 obj = Singleton()"""
     _instance_lock = threading.Lock()
 
@@ -69,8 +69,7 @@ def fn_timer(function):
         t0 = time.time()
         result = function(*args, **kwargs)
         t1 = time.time()
-        print("Total time running with [%s]: %.2f seconds" %
-              (function.__name__, t1 - t0))
+        print("Total time running with [%s]: %.2f seconds" % (function.__name__, t1 - t0))
         return result
 
     return function_timer
@@ -88,10 +87,24 @@ def txt2List(filepath):
     return res_list
 
 
-def md5(txt):
-    data = txt
-    m = hashlib.md5(data.encode("utf-8", 'ignore'))
-    return (m.hexdigest())
+def md5(data):
+    my_md5 = hashlib.md5(data.encode("utf-8", 'ignore'))
+    return my_md5.hexdigest()
+
+
+def stringtomd5(data):
+    """将string转化为MD5"""
+    my_md5 = hashlib.md5()  # 获取一个MD5的加密算法对象
+    my_md5.update(data.encode("utf-8", 'ignore'))  # 得到MD5消息摘要
+    my_md5_Digest = my_md5.hexdigest()  # 以16进制返回消息摘要，32位
+    return my_md5_Digest
+
+
+def get_sha1_value(data):
+    my_sha = hashlib.sha1()
+    my_sha.update(data.encode("utf-8", 'ignore'))
+    my_sha_Digest = my_sha.hexdigest()
+    return my_sha_Digest
 
 
 def myAlign(text, distance=0):
@@ -119,154 +132,7 @@ def align(str1, distance, alignment='left'):
     return str1
 
 
-def cn2num(章节编号):
-    # 实现了中文向阿拉伯数字转换
-    # 用于从小说章节名提取id来排序
-    # !待调试
-    chs_arabic_map = {
-        '零': 0,
-        '一': 1,
-        '二': 2,
-        '三': 3,
-        '四': 4,
-        '五': 5,
-        '六': 6,
-        '七': 7,
-        '八': 8,
-        '九': 9,
-        '十': 10,
-        '百': 100,
-        '千': 10**3,
-        '万': 10**4,
-        '〇': 0,
-        '壹': 1,
-        '贰': 2,
-        '叁': 3,
-        '肆': 4,
-        '伍': 5,
-        '陆': 6,
-        '柒': 7,
-        '捌': 8,
-        '玖': 9,
-        '拾': 10,
-        '佰': 100,
-        '仟': 10**3,
-        '萬': 10**4,
-        '亿': 10**8,
-        '億': 10**8,
-        '幺': 1,
-        '0': 0,
-        '1': 1,
-        '2': 2,
-        '3': 3,
-        '4': 4,
-        '5': 5,
-        '7': 7,
-        '8': 8,
-        '9': 9
-    }
-
-    num_list = [
-        '1',
-        '2',
-        '3',
-        '4',
-        '5',
-        '6',
-        '7',
-        '8',
-        '9',
-        '0',
-        '一',
-        '二',
-        '三',
-        '四',
-        '五',
-        '六',
-        '七',
-        '八',
-        '九',
-        '十',
-        '零',
-        '千',
-        '百',
-    ]
-
-    def get_tit_num(title):
-        result = ''
-        for char in title:
-            if char in num_list:
-                result += char
-        return result
-
-    chinese_digits = get_tit_num(章节编号)
-    result = 0
-    tmp = 0
-    hnd_mln = 0
-    for count in range(len(chinese_digits)):
-        curr_char = chinese_digits[count]
-        curr_digit = chs_arabic_map[curr_char]
-        # meet 「亿」 or 「億」
-        if curr_digit == 10**8:
-            result = result + tmp
-            result = result * curr_digit
-            # get result before 「亿」 and store it into hnd_mln
-            # reset `result`
-            hnd_mln = hnd_mln * 10**8 + result
-            result = 0
-            tmp = 0
-        # meet 「万」 or 「萬」
-        elif curr_digit == 10**4:
-            result = result + tmp
-            result = result * curr_digit
-            tmp = 0
-        # meet 「十」, 「百」, 「千」 or their traditional version
-        elif curr_digit >= 10:
-            tmp = 1 if tmp == 0 else tmp
-            result = result + curr_digit * tmp
-            tmp = 0
-        # meet single digit
-        elif curr_digit is not None:
-            tmp = tmp * 10 + curr_digit
-        else:
-            return result
-    result = result + tmp
-    result = result + hnd_mln
-    return result
-
-
-# 章节数字转换
-def change2num(章节编号):
-    num_enum = {
-        '零': 0,
-        '一': 1,
-        '二': 2,
-        '三': 3,
-        '四': 4,
-        '五': 5,
-        '六': 6,
-        '七': 7,
-        '八': 8,
-        '九': 9,
-        '两': 2
-    }
-    multi_cov = {'百': 100, '十': 10}
-    m = 0
-    mc = 1
-    rev_name = 章节编号[::-1]
-    for t_str in rev_name:
-        if t_str in num_enum:
-            m += num_enum[t_str] * mc
-        if t_str in multi_cov:
-            mc = multi_cov[t_str]
-    # 第十二章，第十章特例
-    if 章节编号 == '十':
-        m += 10
-    return m
-
-
 class filesize:
-
     def __init__(self, filePath):
         self.Bytes = os.path.getsize(filePath)
         self.KB = round(self.Bytes / float(1024), 2)
@@ -284,42 +150,101 @@ class filesize:
 
 def Ex_Re_Clean(oldtext, parlist):
     '''
-    清除所有参数中的字符串
-    用法 newtext=Ex_Re_Sub(oldtext,['aaa','bbb'])
+    #!正则清除，自写正则表达式
+    用法 newtext=Ex_Re_Clean(oldtext,['aaa','bbb'])
     '''
-    rx = re.compile('|'.join(parlist))
-    return rx.sub('', oldtext)
+    pattern = re.compile('|'.join(parlist))
+    return pattern.sub('', oldtext)
 
 
-def Ex_Re_Sub(oldtext, *args, **kwds):
+def Ex_Re_Replace(oldtext, REPLACEMENTS):
     '''
-    用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'})
-    author = author.strip("\n\r    \xa0")
+    #!正则替换，自写正则表达式
+    用法 newtext=Ex_Re_Replace(oldtext,{'a':aaa','b':bbb'})
     '''
-    adict = dict(*args, **kwds)
-    rx = re.compile('|'.join(map(re.escape, adict)))
+    pattern = re.compile('|'.join(REPLACEMENTS.keys()))
+    return pattern.sub(lambda m: REPLACEMENTS[m.group(0)], oldtext)
+
+
+def Ex_Re_Sub(oldtext, REPLACEMENTS):
+    '''
+    #@正则替换，不支持正则表达式
+    用法 newtext=Ex_Re_Sub(oldtext,{'a':aaa','b':bbb'})
+    '''
+    pattern = re.compile('|'.join(map(re.escape, REPLACEMENTS.keys())))
 
     def one_xlat(match):
-        return adict[match.group(0)]
+        return REPLACEMENTS[match.group(0)]
 
-    return rx.sub(one_xlat, oldtext)
+    return pattern.sub(one_xlat, oldtext)
+    '''
+    re.sub(`pattern`, `repl`, `string`, `count=0`, `flags=0`)
+    `pattern`, `repl`, `string` 为必选参数
+    `count`, `flags` 为可选参数
+    `pattern`正则表达式
+    `repl`被替换的内容，可以是字符串，也可以是函数
+    `string`正则表达式匹配的内容
+    `count`由于正则表达式匹配的结果是多个，使用count来限定替换的个数从左向右，默认值是0，替换所有的匹配到的结果
+    `flags`是匹配模式，`re.I`忽略大小写，`re.L`表示特殊字符集\w,\W,\b,\B,\s,\S，`re.M`表示多行模式，`re.S` ‘.’包括换行符在内的任意字符，`re.U`表示特殊字符集\w,\W,\b,\B,\d,\D,\s,\D
+    '''
 
 
-def Ex_Replace(oldtext, adict):
-    '''用法 newtext=Ex_Re_Sub(oldtext,{'\n\n':'\n'})'''
+def Ex_Str_Replace(oldtext, adict):
+    '''
+    #@字符替换，不支持正则表达式
+    用法 newtext=Ex_Str_Replace(oldtext,{'a':aaa','b':bbb'})
+    '''
 
-    def _run(oldtext, key, value):
-        return oldtext.replace(key, value)
+    def _run(_text, key, value):
+        return _text.replace(key, value)
 
     for key in adict:
         oldtext = _run(oldtext, key, adict[key])
     return oldtext
 
 
+def string_split_join_with_maxlen_list(string, maxlen=300):
+    newText = []
+    _temp = ''
+
+    _temp_list = string.strip().split('\n')
+    line_Text = [item.strip() for item in _temp_list]
+    line_Text[0] = line_Text[0] + '。'  ##章节标题加间隔
+
+    for index, text in enumerate(line_Text):
+        if len(text) > maxlen:
+            if _temp != '':
+                newText.append(_temp)
+                _temp = ''
+
+            temp = text.strip().split('。')
+            long = round(len(temp) / 2)
+            newText.append('。'.join(temp[:long]) + '。')
+            newText.append('。'.join(temp[long:]))
+            continue
+
+        if len(_temp) < maxlen:
+            if len(_temp + text.strip()) < maxlen:
+                _temp += text
+                # @ 标记1
+            else:
+                newText.append(_temp)
+                newText.append(text)
+                _temp = ''
+
+    # @ 标记1,最后处理临时变量
+    if _temp != '':
+        newText.append(_temp)
+        _temp = ''
+
+    return newText
+
+
 def dict2qss(dict):
     '''字典形式的QSS转字符串'''
     # # 排序  print key, dict[key] for key in sorted(dict.keys())
     import json
+
     temp = json.dumps(dict)
     qss = Ex_Re_Sub(temp, {',': ';', '"': '', ': {': '{'})
     return qss.strip('{}')
@@ -386,14 +311,51 @@ def flatten(nested):
 
 def get_stime():
     import datetime
+
     time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
     return time_now
 
 
 def get_time():
     import datetime
+
     time_now = datetime.datetime.now().strftime('%H:%M:%S.%f')
     return time_now
+
+
+def timestr_10_timestamp(timestr):
+    '''
+    函数功能：获取特定时间的时间戳；时间字符串->时间戳
+    '''
+    # timestr = '2017-12-20 12:00:00'
+    timearray = time.strptime(timestr, '%Y-%m-%d %H:%M:%S')
+    # 将时间数组转换成时间戳，使用mktime()函数得到的是一个浮点数，需要进行强制类型转换
+    timestamp = int(time.mktime(timearray))
+    return timestamp
+
+
+def timestr_to_13timestamp(timestr):
+    '''
+    函数作用：将制定的时间字符串转换成13位时间戳
+    '''
+    return timestr_10_timestamp(timestr) * 1000
+
+
+def get_10_timestamp():
+    '''
+    函数功能：获取当前时间的时间戳（10位）
+    '''
+    # 13位时间戳的获取方式跟10位时间戳获取方式一样
+    # 两者之间的区别在于10位时间戳是秒级，13位时间戳是毫秒级
+    timestamp = time.time()
+    return int(round(timestamp))
+
+
+def get_13_timestamp():
+    '''
+    函数功能：获取当前时间的时间戳（13位）
+    '''
+    return get_10_timestamp() * 1000
 
 
 def random_20char(length, string=[]):
@@ -411,6 +373,7 @@ def random_20char(length, string=[]):
 
 def toMysqlDateTime():
     import datetime
+
     dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return dt
 
@@ -453,14 +416,5 @@ class _x:
 
 
 if __name__ == "__main__":
-    text = '''因为那对眼目耳中，却是宛如惊雷。“不过', '可惜，(https://www.biqukan.com/73_73450/529794793.html)圣龙气运被人夺了，还坏这是怨龙毒？”“惨，真惨呐...”　　(https://www.biqukan.com/0_790/36859781.html)　　请记住本书首发域名：www.biqukan.com。笔趣阁手机版阅读网址：n.biqukan.com'''
-    str = [
-        '\u3000\u3000', '\xa0', "', '", '\u3000', '/&nbsp;',
-        '\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)',
-        'www.biqukan.com。', 'wap.biqukan.com', 'www.biqukan.com',
-        'm.biqukan.com', 'n.biqukan.com', '笔趣看;', '百度搜索“笔趣看小说网”手机阅读:',
-        '请记住本书首发域名:', '请记住本书首发域名：', '笔趣阁手机版阅读网址:', '笔趣阁手机版阅读网址：', '<br />',
-        '\[\]', '\r\r', '\r', '\n\n', '\n    '
-    ]
-    newText = Ex_Re_Clean(text.strip("\n\r　  "), str)
-    print(newText)
+
+

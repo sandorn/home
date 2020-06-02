@@ -7,28 +7,12 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-21 22:57:48
-#LastEditTime : 2020-05-21 22:57:51
+#LastEditTime : 2020-05-29 22:54:36
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 '''
 
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-12 11:31:03
-#LastEditTime : 2020-05-21 22:57:19
-#Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
-#==============================================================
-
-
-'''
 import os
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -36,7 +20,7 @@ from PyQt5.QtWidgets import (QFileDialog, QMessageBox, QVBoxLayout, QHBoxLayout)
 
 from xjLib.mystr import Ex_Re_Sub, Ex_Replace
 from xjLib.xt_ahttp import ahttpGet
-from xjLib.xt_ui import xt_QMainWindow, xt_QTableWidget, xt_QListWidget, xt_QTabWidget, xt_QPushButton, xt_QLineEdit, xt_QLabel, xt_QTextEdit, xt_QTextBrowser
+from xjLib.xt_ui import xt_QMainWindow, xt_QTableWidget, xt_QListWidget, xt_QTabWidget, xt_QPushButton, xt_QLineEdit, xt_QLabel, xt_QTextBrowser
 
 
 class Ui_MainWindow(xt_QMainWindow):
