@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:30:36
-@LastEditors: Even.Sand
-@LastEditTime: 2020-02-19 18:34:59
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-06-04 11:25:37
 '''
 
 from scrapy.cmdline import execute
@@ -26,5 +26,6 @@ dirpath = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(dirpath)
 # 切换工作目录
 os.chdir(dirpath)
+print(dirpath, ' | Scrapy爬虫启动中.......')
 # 启动爬虫,第三个参数为爬虫name
 execute(['scrapy', 'crawl', 'xiashu'])

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-30 18:16:30
+#LastEditTime : 2020-06-03 11:27:43
 '''
 # package
 # __init__.py
@@ -18,20 +18,3 @@ __author__ = 'Even.Sand'
 __license__ = 'NewSea'
 
 xjLib_VERSION = __version__ = '0.1.9'
-
-__all__ = [
-    'Ahttp',
-    "Class",
-    'Db',
-    "mystr",
-    "TxCos",
-    "QiniuCos",
-    "Ui",
-    "Log",
-    "Head",
-    "Hotkey",
-    "Response",
-    "Requests",
-    "Thread",
-    "QThread",
-]

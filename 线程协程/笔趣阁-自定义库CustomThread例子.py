@@ -9,16 +9,16 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-02 18:20:07
+#LastEditTime : 2020-06-03 20:57:50
 根据网络资料，写的threadpool
 '''
 
 import os
 
-from xjLib.Thread import SingletonThread, SingletonThread_Queue, CustomThread, CustomThreadSort, Custom_Thread_Queue, WorkManager, thread_pool_maneger
-from xjLib.mystr import fn_timer, savefile
-from xjLib.Requests import parse_get
-from xjLib.ls import get_download_url, get_contents, arrangeContent
+from xt_Thread import SingletonThread, SingletonThread_Queue, CustomThread, CustomThreadSort, Custom_Thread_Queue, WorkManager, thread_pool_maneger
+from xt_String import fn_timer, savefile
+from xt_Requests import parse_get
+from xt_Ls import get_download_url, get_contents, arrangeContent
 
 
 def get_contents_noindex(target):

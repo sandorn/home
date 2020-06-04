@@ -8,9 +8,17 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-03 16:17:06
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-06-04 11:21:36
 '''
+
+import os
+import sys
+
+# '***获取上级目录***'
+_p = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+sys.path.append(_p)
+
 import re
 
 import MySQLdb
@@ -18,9 +26,9 @@ import pandas
 import redis
 import scrapy
 
-from BQG.items import BqgItem
-from xjLib.dBrouter import dbconf
-from xjLib.mystr import align, md5
+from items import BqgItem
+from xt_DAO.dbconf import db_conf
+from xt_String import align, md5
 
 
 class Spider(scrapy.Spider):
@@ -29,24 +37,22 @@ class Spider(scrapy.Spider):
     # 扩展设置
     custom_settings = {
         # 设置管道下载
-        'ITEM_PIPELINES': {
-            'BQG.pipelines.PipelineCheck': 20,
-            'BQG.pipelines.PipelineToSqlTwisted': 100,
-            'BQG.pipelines.PipelineToTxt': 200
-        }
+        'ITEM_PIPELINES': {'BQG.pipelines.PipelineCheck': 20, 'BQG.pipelines.PipelineToSqlTwisted': 100, 'BQG.pipelines.PipelineToTxt': 200}
     }
 
     start_urls = [
         # 填写爬取地址
-        'https://www.biqukan.com/2_2714/',
+        # 'https://www.biqukan.com/2_2714/',
         # 'https://www.biqukan.com/76_76519/',
-        # 'https://www.biqukan.com/38_38836/',
+        'https://www.biqukan.com/38_38836/',
         # 'https://www.biqukan.com/0_790/',
     ]
 
     db = set()
     res_db = {}
-    connect = MySQLdb.connect(**dbconf['TXbook'])
+    if 'type' in db_conf['TXbook']:
+        db_conf['TXbook'].pop('type')
+    connect = MySQLdb.connect(**db_conf['TXbook'])
 
     def start_requests(self):
         # 循环生成需要爬取的地址
@@ -120,8 +126,9 @@ class Spider(scrapy.Spider):
 
 
 if __name__ == '__main__':
-    from xjLib.ScrapyRun import ScrapyRun
+    from xt_ScrapyRun import ScrapyRun
     import os
+
     # 获取当前脚本路径
     filepath = os.path.abspath(__file__)
     dirpath = os.path.dirname(os.path.dirname(filepath))

@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-23 14:56:08
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-06-04 11:24:47
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -20,9 +20,9 @@ import MySQLdb
 import numpy
 import pandas
 from twisted.enterprise import adbapi
-
-from xjLib.dBrouter import dbconf
-from xjLib.mystr import Ex_Re_Sub, align, Ex_Replace
+from xt_DAO.dbconf import db_conf
+from xt_String import align
+from xt_Ls import arrangeContent
 
 
 class PipelineCheck(object):
@@ -30,40 +30,8 @@ class PipelineCheck(object):
         pass
 
     def process_item(self, item, spider):
-        item['ZJNAME'] = Ex_Re_Sub(
-            item['ZJNAME'],
-            {
-                ' ': ' ',
-                '\xa0': ' ',
-            }
-        )
-        item['ZJTEXT'] = Ex_Replace(
-            item['ZJTEXT'].strip("\n\r　  \xa0"),
-            {
-                '　　': '\n',
-                ' ': ' ',
-                '\', \'': '',
-                '\xa0': '',  # 表示空格  &nbsp;
-                '\u3000': '',  # 全角空格
-                'www.biqukan.com。': '',
-                'm.biqukan.com': '',
-                'wap.biqukan.com': '',
-                'www.biqukan.com': '',
-                '笔趣看;': '',
-                '百度搜索“笔趣看小说网”手机阅读:': '',
-                '请记住本书首发域名:': '',
-                '请记住本书首发域名：': '',
-                '笔趣阁手机版阅读网址:': '',
-                '笔趣阁手机版阅读网址：': '',
-                '[]': '',
-                '<br />': '',
-                '\r\r': '\n',
-                '\r': '\n',
-                '\n\n': '\n',
-                '\n\n': '\n',
-            },
-        )
-
+        item['ZJNAME'] = item['ZJNAME'].strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
+        item['ZJTEXT'] = arrangeContent(item['ZJTEXT'])
         return item
 
 
@@ -79,7 +47,9 @@ class PipelineToSqlTwisted(object):
     @classmethod
     def from_settings(cls, settings):
         # #用于获取settings配置文件中的信息
-        dbpool = adbapi.ConnectionPool("MySQLdb", **dbconf['TXbook'])
+        if 'type' in db_conf['TXbook']:
+            db_conf['TXbook'].pop('type')
+        dbpool = adbapi.ConnectionPool("MySQLdb", **db_conf['TXbook'])
         return cls(dbpool)
 
     def process_item(self, item, spider):
@@ -128,7 +98,7 @@ class PipelineToTxt(object):
         return item
 
     def close_spider(self, spider):
-        self.connect = MySQLdb.connect(**dbconf['TXbook'])
+        self.connect = MySQLdb.connect(**db_conf['TXbook'])
 
         for bookname in self.file_dict:
             # 从MySQL里提数据
@@ -137,8 +107,9 @@ class PipelineToTxt(object):
             pDataFrame = pandas.read_sql(sql, self.connect)
             # 将DataFrame转换为list
             self.content_list[bookname] = numpy.array(pDataFrame).tolist()
-            # 将list排序
-            self.list_sorted[bookname] = sorted(self.content_list[bookname], key=lambda x: x[2])  # @'INDEX'
+            # @'INDEX'  将list排序
+            # self.list_sorted[bookname] = sorted(self.content_list[bookname], key=lambda x: x[2])
+            self.content_list[bookname].sort(key=lambda x: x[2])
 
             for item in self.list_sorted[bookname]:
                 self.file[item[1]].write("----------%s----------%d----------%s----------\n" % (item[1], item[2], item[3]))
@@ -150,8 +121,9 @@ class PipelineToTxt(object):
 
 
 if __name__ == '__main__':
-    from xjLib.ScrapyRun import ScrapyRun
+    from xt_ScrapyRun import ScrapyRun
     import os
+
     # 获取当前脚本路径
     filepath = os.path.abspath(__file__)
     dirpath = os.path.dirname(filepath)

@@ -9,54 +9,18 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-04-14 18:02:15
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-11 13:48:48
+#LastEditTime : 2020-06-03 11:28:40
 
 定义规则 urls:url列表
          type：解析方式,取值 regular(正则表达式),xpath(xpath解析),module(自定义第三方模块解析)
          patten：可以是正则表达式,可以是xpath语句不过要和上面的相对应
 '''
 
-parserList = [{
-    'urls': [
-        'http://www.kuaidaili.com/proxylist/%s/' % n for n in range(1, 11)
-    ],
-    'type': 'xpath',
-    'pattern': ".//*[@id='index_free_list']/table/tbody/tr[position()>0]",
-    'position': {
-        'ip': './td[1]',
-        'port': './td[2]',
-        'type': './td[3]',
-        'protocol': './td[4]'
-    }
-}, {
-    'urls': [
-        'http://www.kuaidaili.com/free/%s/%s/' % (m, n)
-        for m in ['inha', 'intr']
-        for n in range(1, 11)
-    ],
-    'type': 'xpath',
-    'pattern': ".//*[@id='list']/table/tbody/tr[position()>0]",
-    'position': {
-        'ip': './td[1]',
-        'port': './td[2]',
-        'type': './td[3]',
-        'protocol': './td[4]'
-    }
-}, {
-    'urls': [
-        'http://www.xicidaili.com/%s/%s' % (m, n)
-        for m in ['nn', 'nt', 'wn', 'wt']
-        for n in range(1, 8)
-    ],
-    'type': 'xpath',
-    'pattern': ".//*[@id='ip_list']/tr[position()>1]",
-    'position': {
-        'ip': './td[2]',
-        'port': './td[3]',
-        'type': './td[5]',
-        'protocol': './td[6]'
-    }
-}]
+parserList = [
+    {'urls': ['http://www.kuaidaili.com/proxylist/%s/' % n for n in range(1, 11)], 'type': 'xpath', 'pattern': ".//*[@id='index_free_list']/table/tbody/tr[position()>0]", 'position': {'ip': './td[1]', 'port': './td[2]', 'type': './td[3]', 'protocol': './td[4]'},},
+    {'urls': ['http://www.kuaidaili.com/free/%s/%s/' % (m, n) for m in ['inha', 'intr'] for n in range(1, 11)], 'type': 'xpath', 'pattern': ".//*[@id='list']/table/tbody/tr[position()>0]", 'position': {'ip': './td[1]', 'port': './td[2]', 'type': './td[3]', 'protocol': './td[4]'},},
+    {'urls': ['http://www.xicidaili.com/%s/%s' % (m, n) for m in ['nn', 'nt', 'wn', 'wt'] for n in range(1, 8)], 'type': 'xpath', 'pattern': ".//*[@id='ip_list']/tr[position()>1]", 'position': {'ip': './td[2]', 'port': './td[3]', 'type': './td[5]', 'protocol': './td[6]'},},
+]
 
 UPDATE_TIME = 30 * 60  # 每半个小时检测一次是否有代理ip失效
 
@@ -85,8 +49,8 @@ MAX_CHECK_CONCURRENT_PER_PROCESS = 30  # CHECK_PROXY时每个进程的最大并�
 TASK_QUEUE_SIZE = 50  # 任务队列SIZE
 MAX_DOWNLOAD_CONCURRENT = 3  # 从免费代理网站下载时的最大并发
 CHECK_WATI_TIME = 1  # 进程数达到上限时的等待时间
+
 temp = '''
-{
         'urls': [
             'http://www.66ip.cn/%s.html' % n
             for n in ['index'] + list(range(2, 12))
@@ -147,5 +111,4 @@ temp = '''
         }
         proxylist.append(proxy)
     return proxylist
-
 '''
