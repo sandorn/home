@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-03-25 10:13:07
 #FilePath     : \CODE\xjLib\xt_DAO\xt_sqlalchemy.py
-#LastEditTime : 2020-06-04 09:04:24
+#LastEditTime : 2020-06-04 13:03:51
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -203,7 +203,7 @@ if __name__ == '__main__':
         print(Users)
         res = sqlhelper.select(10)
         print(res)
-        user2 = [{'username': '刘澈', 'password': '234567', '手机': '17610786502', '代理人编码': '10005393', '会员级别': 'SSS', '会员到期日': '8888,12,31',}, {'username': '刘新军', '手机': '13910118122',}]
+        user2 = [{'username': '刘澈', 'password': '234567', '手机': '17610786502', '代理人编码': '10005393', '会员级别': 'SSS', '会员到期日': '8888,12,31', }, {'username': '刘新军', '手机': '13910118122', }]
 
         sqlhelper.insert_all(user2)
         sqlhelper.update({'手机': '17610786502'}, {'会员到期日': '7777,12,31'})

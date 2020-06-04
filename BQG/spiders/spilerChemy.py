@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 20:54:21
 #FilePath     : \CODE\BQG\spiders\spilerChemy.py
-#LastEditTime : 2020-06-04 12:50:25
+#LastEditTime : 2020-06-04 13:03:43
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -42,7 +42,7 @@ class Spider(scrapy.Spider):
         # 设置管道下载
         'ITEM_PIPELINES': {
             'BQG.pipelines.PipelineCheck': 20,
-                'BQG.pipelines.PipelineToSqlTwisted': 100,
+            'BQG.pipelines.PipelineToSqlTwisted': 100,
             'BQG.pipelines.PipelineToTxt': 200
         }
     }
@@ -68,11 +68,11 @@ class Spider(scrapy.Spider):
 
     def parse(self, response):
         # #获取书籍名称，判断是否需要创建数据库
-        _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
+        _bookname = response.xpath('//meta[@property="og:title"]//@content').extract_first()
 
-        self.res_key = md5(_BOOKNAME)  # k相当于字典名称
+        self.res_key = md5(_bookname)  # k相当于字典名称
 
-        if _BOOKNAME not in self.db:
+        if _bookname not in self.db:
             # #创建数据库,用于储存爬取到的数据
             CreateDb_sql = (
                 '''
@@ -85,36 +85,36 @@ class Spider(scrapy.Spider):
             `ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
             PRIMARY KEY (`ID`) USING BTREE)
             '''
-                % _BOOKNAME
+                % _bookname
             )
             self.connect.cursor().execute(CreateDb_sql)
             self.connect.commit()
-            self.db.add(_BOOKNAME)
+            self.db.add(_bookname)
 
-        if _BOOKNAME not in self.zjurls:
+        if _bookname not in self.zjurls:
             # #构建set字典，用于去重
-            self.zjurls[_BOOKNAME] = set()
-            sql = "SELECT ZJHERF FROM %s;" % _BOOKNAME  # 从MySQL里提数据
+            self.zjurls[_bookname] = set()
+            sql = "SELECT ZJHERF FROM %s;" % _bookname  # 从MySQL里提数据
             pandasData = pandas.read_sql(sql, self.connect)  # 读MySQL数据
 
             # #set字典填充数据
-            for _ZJHERF in pandasData['ZJHERF']:
-                self.zjurls[_BOOKNAME].add(md5(_ZJHERF))
+            for _zj_link in pandasData['ZJHERF']:
+                self.zjurls[_bookname].add(md5(_zj_link))
 
         全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a').extract()
 
         for index in range(len(全部章节节点)):
-            _ZJHERF = re.match('<a href="(.*?)">', 全部章节节点[index]).group(1)
-            _ZJHERF = response.urljoin(_ZJHERF)
+            _zj_link = re.match('<a href="(.*?)">', 全部章节节点[index]).group(1)
+            _zj_link = response.urljoin(_zj_link)
 
-            _ZJNAME = re.match('<a href=".*?">(.*?)</a>', 全部章节节点[index]).group(1)
+            _zj_title = re.match('<a href=".*?">(.*?)</a>', 全部章节节点[index]).group(1)
 
-            if md5(_ZJHERF) not in self.zjurls[_BOOKNAME]:
-                self.zjurls[_BOOKNAME].add(md5(_ZJHERF))
-                request = scrapy.Request(_ZJHERF, meta={'index': index}, callback=self.parse_content)
+            if md5(_zj_link) not in self.zjurls[_bookname]:
+                self.zjurls[_bookname].add(md5(_zj_link))
+                request = scrapy.Request(_zj_link, meta={'index': index}, callback=self.parse_content)
                 yield request
             else:
-                print('--《' + align(_BOOKNAME, 20, 'center') + '》\t' + align(_ZJNAME, 40) + '\t|记录重复入库！')
+                print('--《' + align(_bookname, 20, 'center') + '》\t' + align(_zj_title, 40) + '\t|记录重复入库！')
                 pass
 
     def parse_content(self, response):
