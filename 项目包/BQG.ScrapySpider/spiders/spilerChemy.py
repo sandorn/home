@@ -7,10 +7,9 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 20:54:21
-#FilePath     : \CODE\BQG\spiders\spilerChemy.py
-#LastEditTime : 2020-06-04 13:03:43
+#FilePath     : /项目包/BQG.ScrapySpider/spiders/spilerChemy.py
+#LastEditTime : 2020-06-04 14:03:12
 #Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 '''
 import os
@@ -22,6 +21,7 @@ parent_path = os.path.dirname(this_path)
 sys.path.append(parent_path)
 # #项目工作目录
 sys.path.append(os.getcwd())
+
 
 import re
 

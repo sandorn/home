@@ -1,5 +1,5 @@
 # !/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 '''
 @Descripttion: 头部注释None
 @Develop: VSCode
@@ -8,11 +8,11 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
-@LastEditors: Even.Sand
-@LastEditTime: 2019-06-18 11:06:06
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-06-04 13:53:22
 '''
-from xjLib.req import parse_get
-from xjLib.log import log
+from xt_Requests import parse_get
+from xt_Log import log
 from pyquery import PyQuery
 import sys
 import time
@@ -175,7 +175,7 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
             _k = []
             with open(filename) as myFile:
-                #for row in myFile.readlines():
+                # for row in myFile.readlines():
                 for row in myFile:
                     row = row.strip()  # 默认删除空白符
                     if len(row) == 0:

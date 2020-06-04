@@ -1,16 +1,18 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2020-02-14 13:57:28
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-02 18:32:15
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2020-02-14 13:57:28
+#FilePath     : /xjLib/xt_String.py
+#LastEditTime : 2020-06-04 14:11:10
+#Github       : https://github.com/sandorn/home
+#==============================================================
 '''
+
 import hashlib
 import os
 import random
@@ -209,7 +211,7 @@ def string_split_join_with_maxlen_list(string, maxlen=300):
 
     _temp_list = string.strip().split('\n')
     line_Text = [item.strip() for item in _temp_list]
-    line_Text[0] = line_Text[0] + '。'  ##章节标题加间隔
+    line_Text[0] = line_Text[0] + '。'  # 章节标题加间隔
 
     for index, text in enumerate(line_Text):
         if len(text) > maxlen:

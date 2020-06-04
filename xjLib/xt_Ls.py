@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-04-01 10:29:33
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-03 11:33:49
+# LastEditors  : Please set LastEditors
+# LastEditTime : 2020-06-04 15:58:31
 临时库  用于笔趣阁爬虫
 '''
 
@@ -99,7 +99,6 @@ def get_contents_byahttp(index, target, lock):
 
 
 def map_get_contents_byahttp(*args):
-    # print(args)
     index, target = args  # 元组拆包
     response = ahttpGet(target).element
 
@@ -111,4 +110,5 @@ def map_get_contents_byahttp(*args):
 
 
 if __name__ == "__main__":
-    pass
+    from xt_Log import log
+    print = log().debug

@@ -8,14 +8,16 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-06-18 11:06:57
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-17 22:58:24
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-06-04 13:55:41
 '''
-from xjLib.req import parse_get
-from xjLib.log import log
+from xt_Requests import parse_get
+from xt_Log import log
 from pyquery import PyQuery
 import requests
 import json
+
+log = log()
 
 
 def set_cookies(cookies):
@@ -58,8 +60,8 @@ def main(user, pwd):
     response = session.post(
         "https://aq.yy.com/p/wklogin.do?callbackURL=https://aq.yy.com/welcome.do"
     )
-    #log.print(response.text)
-    #log.print(response.cookies)
+    # log.print(response.text)
+    # log.print(response.cookies)
     session.cookies = set_cookies(response.cookies)
 
     _sp = json.loads(response.text)
@@ -75,7 +77,6 @@ def main(user, pwd):
 
 
 if __name__ == "__main__":
-    log = log()
     user = 'chen8997447@163.com'
     pwd = '1234567890'
     main(user, pwd)
