@@ -8,20 +8,12 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-03-25 10:13:07
 #FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-#LastEditTime : 2020-06-04 15:23:00
+#LastEditTime : 2020-06-05 14:23:06
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 '''
-import os
-import sys
 
-# #上级目录
-this_path = os.path.dirname(__file__)
-parent_path = os.path.dirname(this_path)
-sys.path.append(parent_path)
-# #项目工作目录
-sys.path.append(os.getcwd())
 
 import subprocess
 

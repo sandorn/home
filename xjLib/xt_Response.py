@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
-#LastEditTime : 2020-06-03 11:46:40
+#LastEditTime : 2020-06-05 13:53:38
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -27,6 +27,11 @@ class ReqResult:
         self.raw = self.clientResponse = response
         self.content = content or self.clientResponse.content
         self.index = index or id(response)
+
+    # @property装饰器把方法变成属性
+    # #下标obj[key] 获取属性
+    def __getitem__(self, attr):
+        return getattr(self, attr)
 
     @property
     def text(self):

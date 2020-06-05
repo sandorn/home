@@ -9,14 +9,14 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-31 12:12:40
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-02 18:15:02
+#LastEditTime : 2020-06-05 12:01:02
 '''
 
 import os
 
-from xjLib.mystr import savefile
-from xjLib.Thread import CustomThread
-from xjLib.ls import get_download_url, get_contents
+from xt_File import savefile
+from xt_Thread import CustomThread
+from xt_Ls_Bqg import get_download_url, get_contents
 
 
 def main(bookname, args):

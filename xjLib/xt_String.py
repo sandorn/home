@@ -1,92 +1,24 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-02-14 13:57:28
+# ==============================================================
+# Descripttion : None
+# Develop      : VSCode
+# Author       : Even.Sand
+# Contact      : sandorn@163.com
+# Date         : 2020-02-14 13:57:28
 #FilePath     : /xjLib/xt_String.py
-#LastEditTime : 2020-06-04 14:11:10
-#Github       : https://github.com/sandorn/home
-#==============================================================
+#LastEditTime : 2020-06-05 18:48:50
+# Github       : https://github.com/sandorn/home
+# ==============================================================
+#  string  |  dict  |  list  |  tupe  |  json
 '''
 
 import hashlib
-import os
+import json
 import random
 import re
-import threading
-import time
-from functools import wraps
-
-
-class qsstools:
-    def __init__(self):
-        pass
-
-    """定义一个读取样式的工具类"""
-
-    @classmethod
-    def set(cls, file_path, obj):
-        with open(file_path, 'r', encoding='UTF-8') as f:
-            obj.setStyleSheet(f.read())
-
-
-def Singleton_warp(cls):
-    """单例装饰器"""
-    _instance = {}
-
-    def _singleton(*args, **kargs):
-        if cls not in _instance:
-            _instance[cls] = cls(*args, **kargs)
-        return _instance[cls]
-
-    return _singleton
-
-
-class Singleton(object):
-    """单例类"""
-
-    """实例化 obj = Singleton()"""
-    _instance_lock = threading.Lock()
-
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(Singleton, "_instance"):
-            with Singleton._instance_lock:
-                if not hasattr(Singleton, "_instance"):
-                    Singleton._instance = super().__new__(cls, *args, **kwargs)
-        return Singleton._instance
-
-    def __init__(self):
-        pass
-
-
-def fn_timer(function):
-    '''定义一个装饰器来测量函数的执行时间'''
-
-    @wraps(function)
-    def function_timer(*args, **kwargs):
-        t0 = time.time()
-        result = function(*args, **kwargs)
-        t1 = time.time()
-        print("Total time running with [%s]: %.2f seconds" % (function.__name__, t1 - t0))
-        return result
-
-    return function_timer
-
-
-def txt2List(filepath):
-    res_list = []
-    with open(filepath, 'r') as file_to_read:
-        while True:
-            line = file_to_read.readline()
-            if not line:
-                break
-            line = line.strip('\n')
-            res_list.append(line)
-    return res_list
+from functools import reduce
 
 
 def md5(data):
@@ -94,7 +26,7 @@ def md5(data):
     return my_md5.hexdigest()
 
 
-def stringtomd5(data):
+def Exmd5(data):
     """将string转化为MD5"""
     my_md5 = hashlib.md5()  # 获取一个MD5的加密算法对象
     my_md5.update(data.encode("utf-8", 'ignore'))  # 得到MD5消息摘要
@@ -102,23 +34,56 @@ def stringtomd5(data):
     return my_md5_Digest
 
 
-def get_sha1_value(data):
+def sha1(data):
     my_sha = hashlib.sha1()
     my_sha.update(data.encode("utf-8", 'ignore'))
     my_sha_Digest = my_sha.hexdigest()
     return my_sha_Digest
 
 
-def myAlign(text, distance=0):
-    # #print打印对齐
-    if distance == 0:
-        return text
-    slen = distance - len(text.encode('gbk', 'ignore'))
-    text = text + ' ' * slen
-    return text
+def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
+    """
+    保序去重
+    :param iterable:
+    :param keep: 去重的同时要对element做的操作
+    :param key: 使用哪一部分去重
+    :param reverse: 是否反向去重
+    :return:
+    """
+    result = list()
+    duplicator = list()
+    if reverse:
+        iterable = reversed(iterable)
+    for i in iterable:
+        keep_field = keep(i)
+        key_words = key(i)
+        if key_words not in duplicator:
+            result.append(keep_field)
+            duplicator.append(key_words)
+    return list(reversed(result)) if reverse else result
 
 
-def align(str1, distance, alignment='left'):
+def chain_all(iterobj):
+    """连接多个序列或字典"""
+    iterobj = list(iterobj)
+    if not iterobj:
+        return []
+    if isinstance(iterobj[0], dict):
+        result = {}
+        for i in iterobj:
+            result.update(i)
+    else:
+        result = reduce(lambda x, y: list(x) + list(y), iterobj)
+    return result
+
+
+def format_html_string(html):
+    '''格式化html, 去掉多余的字符，类，script等。'''
+    trims = [(r'\n', ''), (r'\t', ''), (r'\r', ''), (r'  ', ''), (r'\u2018', "'"), (r'\u2019', "'"), (r'\ufeff', ''), (r'\u2022', ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'), (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''), (r"</?a.*?>", '')]
+    return reduce(lambda string, replacement: re.sub(replacement[0], replacement[1], string), trims, html)
+
+
+def align(str1, distance=66, alignment='left'):
     # #print打印对齐
     length = len(str1.encode('gbk', 'ignore'))
     slen = distance - length if distance > length else 0
@@ -132,22 +97,6 @@ def align(str1, distance, alignment='left'):
     elif alignment == 'center':
         str1 = ' ' * (slen // 2) + str1 + ' ' * (slen // 2)
     return str1
-
-
-class filesize:
-    def __init__(self, filePath):
-        self.Bytes = os.path.getsize(filePath)
-        self.KB = round(self.Bytes / float(1024), 2)
-        self.MB = round(self.KB / float(1024), 2)
-
-    def __str__(self):
-        if self.MB > 10:
-            res = str(format(self.MB, ',')) + ' MB'
-        elif self.KB > 10:
-            res = str(format(self.KB, ',')) + ' KB'
-        else:
-            res = str(format(self.Bytes, ',')) + ' Bytes'
-        return res
 
 
 def Ex_Re_Clean(oldtext, parlist):
@@ -170,7 +119,7 @@ def Ex_Re_Replace(oldtext, REPLACEMENTS):
 
 def Ex_Re_Sub(oldtext, REPLACEMENTS):
     '''
-    #@正则替换，不支持正则表达式
+    # @正则替换，不支持正则表达式
     用法 newtext=Ex_Re_Sub(oldtext,{'a':aaa','b':bbb'})
     '''
     pattern = re.compile('|'.join(map(re.escape, REPLACEMENTS.keys())))
@@ -193,7 +142,7 @@ def Ex_Re_Sub(oldtext, REPLACEMENTS):
 
 def Ex_Str_Replace(oldtext, adict):
     '''
-    #@字符替换，不支持正则表达式
+    # @字符替换，不支持正则表达式
     用法 newtext=Ex_Str_Replace(oldtext,{'a':aaa','b':bbb'})
     '''
 
@@ -242,125 +191,27 @@ def string_split_join_with_maxlen_list(string, maxlen=300):
     return newText
 
 
-def dict2qss(dict):
+def dict2qss(dict_tmp):
     '''字典形式的QSS转字符串'''
     # # 排序  print key, dict[key] for key in sorted(dict.keys())
-    import json
-
-    temp = json.dumps(dict)
+    isinstance(dict_tmp, dict)
+    temp = json.dumps(dict_tmp)
     qss = Ex_Re_Sub(temp, {',': ';', '"': '', ': {': '{'})
     return qss.strip('{}')
 
 
-def list2file(_filename, _list_texts, br='\t'):
-    # 函数说明:将爬取的文章内容写入文件,只能1层
-    print('[' + _filename + ']开始保存......')
-    _list_texts.sort()
-    with open(_filename, 'w', encoding='utf-8') as file:
-        file.write(_filename + '\n')
-        file.write('   key   \tpage\tindex\ttitle\turl\t\n')
-        for key in _list_texts:  # 区分关键字
-            for index in key:  # 区分记录index
-                [file.write(str(v) + br) for v in index]
-                file.write('\n')
-
-    size = f"size: {filesize(_filename)}"
-    print('[{}]保存完成\t{}\ttime:{}。'.format(_filename, size, get_time()))
-
-    # #换行有问题[f.write(str(v) + '\t') for key in lists for index in key for v in index]
-
-
-def savefile(_filename, _list_texts, br=''):
-    '''   函数说明:将爬取的文章内容写入文件,迭代多层   '''
-    '''   br为标题换行标志，可以用'\t'   '''
-    '''   多层次的list 或 tuple写入文件   '''
-
-    with open(_filename, 'w', encoding='utf-8') as file:
-        file.write(_filename + '\n')
-
-        def each(data):
-            for index, value in enumerate(data):
-                if isinstance(value, list) or isinstance(value, tuple):
-                    each(value)
-                else:
-                    file.write(str(value) + br)
-                    if index == len(data) - 1:
-                        file.write('\n')
-
-        each(_list_texts)
-
-    size = f"size: {filesize(_filename)}"
-    print('[{}]保存完成\t{}\ttime:{}。'.format(_filename, size, get_time()))
-
-
-def flatten(nested):
-    try:
-        # 不要迭代类似字符串的对象：
-        # if isinstance(variate,list) or isinstance(variate,tuple):
-        try:
-            nested + ''
-        except TypeError:
-            pass
-        else:
-            raise TypeError
-
-        for sublist in nested:
-            for element in flatten(sublist):
-                yield element
-    except TypeError:
-        yield nested
-
-
-def get_stime():
-    import datetime
-
-    time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-    return time_now
-
-
-def get_time():
-    import datetime
-
-    time_now = datetime.datetime.now().strftime('%H:%M:%S.%f')
-    return time_now
-
-
-def timestr_10_timestamp(timestr):
+def groupby(iterobj, key):
     '''
-    函数功能：获取特定时间的时间戳；时间字符串->时间戳
+    自实现groupby，return: 字典对象
+    itertool的groupby不能合并不连续但是相同的组, 且返回值是iter
     '''
-    # timestr = '2017-12-20 12:00:00'
-    timearray = time.strptime(timestr, '%Y-%m-%d %H:%M:%S')
-    # 将时间数组转换成时间戳，使用mktime()函数得到的是一个浮点数，需要进行强制类型转换
-    timestamp = int(time.mktime(timearray))
-    return timestamp
+    groups = dict()
+    for item in iterobj:
+        groups.setdefault(key(item), []).append(item)
+    return groups
 
 
-def timestr_to_13timestamp(timestr):
-    '''
-    函数作用：将制定的时间字符串转换成13位时间戳
-    '''
-    return timestr_10_timestamp(timestr) * 1000
-
-
-def get_10_timestamp():
-    '''
-    函数功能：获取当前时间的时间戳（10位）
-    '''
-    # 13位时间戳的获取方式跟10位时间戳获取方式一样
-    # 两者之间的区别在于10位时间戳是秒级，13位时间戳是毫秒级
-    timestamp = time.time()
-    return int(round(timestamp))
-
-
-def get_13_timestamp():
-    '''
-    函数功能：获取当前时间的时间戳（13位）
-    '''
-    return get_10_timestamp() * 1000
-
-
-def random_20char(length, string=[]):
+def random_char(length=20, string=[]):
     """实现指定长度的随机数"""
     for i in range(length):
         x = random.randint(1, 2)
@@ -373,49 +224,95 @@ def random_20char(length, string=[]):
     return string
 
 
-def toMysqlDateTime():
-    import datetime
-
-    dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return dt
-
-
-class _x:
-    """
-     从简单数据类型转换成python对象
-
-     p = _x({'name':'boob','body':{'color':'black'},'toys':[1,2,3,],'age':100})
-     print p['toys'][1]
-     print len(p.toys)
-     print p.body.colors
-     """
-
-    def __init__(self, primitive):
-        self.data = primitive
-
-    def __getattr__(self, item):
-        value = self.data.get(item, None)
-        if isinstance(value, dict):
-            value = _x(value)
-        return value
-
-    def __len__(self):
-        return len(self.data)
-
-    def __str__(self):
-        return str(self.data)
-
-    def __getitem__(self, item):
-        # value = self.__getattribute__(item)
-        value = None
-        if type(self.data) in (list, tuple):
-            value = self.data[item]
-            if type(value) in (dict, list, tuple):
-                value = _x(value)
-        elif isinstance(self.data, dict):
-            value = self.__getattr__(item)
-        return value
-
-
 if __name__ == "__main__":
-    pass
+    print(align('myAlignmyAlign1', 66))
+    print(align('myAlignmyAlign2', 66, alignment='right'))
+    print(align('myAlignmyAlign3', 66, alignment='center'))
+
+'''
+    #统计一个list中各个元素出现的次数
+    #方法1，使用字典
+    from random import randint
+    data = [randint(1,10) for _ in rang(10)]
+    # 把data里的数据作为key来创建一个字典，且value初始化为0
+    dic = dict.fromkeys(data, 0)
+    for x in data:
+    dic[x] += 1
+    #dic 中key为元素，value为该元素出现次数
+
+    #方法2，使用Counter()
+    from collections import Counter()
+    data = [randint(1,10) for _ in range(10)]
+    # 得到的dic2和方法1的dic一样，一条代码解决问题！
+    dic2 = Counter(data)
+    # 并且还可以使用most_common(n)方法来直接统计出出现频率最高的n个元素
+    dic2.most_common(2)
+    # 输出一个list ,其中的元素为（key,value）的键值对，类似[(6, 4), (3, 2)]这样"
+
+    #对字典排序
+    #以上一例子的dic作为排序对象
+    dic = {0: 1, 2: 2, 4: 4, 6: 1, 7: 1, -6: 1}
+    dic_after = sorted(dic.items(), key=lambda x:x[1])
+    # 如果想按key来排序则sorted(dic.items(), key=lambda x:x[0])
+    # dic_after为一个列表： [(0, 1), (6, 1), (7, 1), (-6, 1), (2, 2), (4, 4)]
+
+    #正则匹配查找
+    import re
+    sentence = 'this is a test, not testing.'
+    it = re.finditer('\\btest\\b', sentence)
+    for match in it:
+        print 'match position: ' + str(match.start()) +'-'+ str(match.end())
+
+    #使用正则表达式分割文本
+    import re
+    s = 'ab,wer.wer,wer|wer||,wwer wer,wer3'
+    re.split(r'[,|.]+', s)
+    Out[6]: ['ab', 'wer', 'wer', 'wer', 'wer', 'wwer wer', 'wer3']"
+
+    # 分割为所有单词组成的list, W匹配非字母数字及下划线
+    import re
+    result = re.split('W+', text)
+
+
+    #使用正则表达式提取文本
+    import re
+    #用(?P<year>...)括住一个群，并命名为year
+    m = re.search('output_(?P<year>d{4})', 'output_1986.txt')
+    print(m.group('year') #输出1986
+
+
+    #正则 调整文本格式
+    import re
+    s = '1991-02-28'
+    re.sub(r'(d{4})-(d{2})-(d{2})', r'\\1/\\2/\\3')
+    #Out[6]: '1991/02/28'
+
+    #利用set是一个不同的对象的集合，删除列表中的重复元素。然且维持顺序
+    from collections import OrderedDict
+    x = [1, 8, 4, 5, 5, 5, 8, 1, 8]
+    list(OrderedDict.fromkeys(x))"
+
+    #筛选列表中的数据
+    #列表解析
+    from random import randint
+    data = [randint(-10,10) for _ in range(10)]
+    data_after=[x for x in data if x > 0]
+    # or
+    targetList = [v for v in targetList if not v.strip()=='']
+    # or
+    targetList = filter(lambda x: len(x)>0, targetList)
+
+    #筛选字典中的数据，字典解析
+    from random import randint
+    d = {x: randint(60,100) for x in range(1,21)}
+    d_after = {k:v for k,v in d.items() if v > 90}
+
+    #使用命名元组为每个元素命名
+    from collections import namedtuple
+    Student = namedtuple('Student', ['name', 'age', 'sex'])
+    s = Student('aaa',18,'male')
+    s2= Student(name='bbb', age=12, sex='female')
+
+    if s.name == 'aaa':
+        pass
+'''

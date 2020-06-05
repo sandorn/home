@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-12 17:13:40
-#LastEditTime : 2020-06-03 14:11:16
+#LastEditTime : 2020-06-04 19:32:52
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -19,12 +19,21 @@ import sys
 from functools import wraps
 
 import qdarkstyle
-from PyQt5.QtCore import QEventLoop, QMetaObject, Qt, QThread, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QCursor, QStandardItem, QStandardItemModel, QIcon
-from PyQt5.QtWidgets import QAction, QApplication, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QMainWindow, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTableView, QTreeWidgetItem, QVBoxLayout, QWidget, QMenu, qApp
+from PyQt5.QtCore import (QEventLoop, QMetaObject, Qt, QThread, pyqtSignal,
+                          pyqtSlot)
+from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
+from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox,
+                             QDesktopWidget, QDoubleSpinBox, QFileDialog,
+                             QHBoxLayout, QHeaderView, QInputDialog, QLabel,
+                             QLineEdit, QListView, QListWidget, QMainWindow,
+                             QMenu, QMessageBox, QProgressBar, QPushButton,
+                             QSpinBox, QStatusBar, QTableView, QTableWidget,
+                             QTableWidgetItem, QTabWidget, QTextBrowser,
+                             QTextEdit, QTreeWidget, QTreeWidgetItem,
+                             QVBoxLayout, QWidget, qApp)
+from pysnooper import snoop
 
 from xt_String import qsstools
-from pysnooper import snoop
 
 
 def EventLoop(function):
@@ -75,10 +84,10 @@ class xt_QProgressBar(QProgressBar):
 
     @EventLoop
     def step_by_step(self, value):
-        if type(value) == int and value > self.maximum():
+        if isinstance(value, int) and value > self.maximum():
             value = self.maximum()
 
-        if value is None or type(value) == str:  # #传入None或字符，则在原值上+1
+        if value is None or isinstance(value, str):  # #传入None或字符，则在原值上+1
             value = self.value() + 1
 
         self.setValue(int(value))
@@ -112,9 +121,9 @@ class xt_QTabWidget(QTabWidget):
             # self.lay[index].addWidget(label, 0, 0)
 
         self.stylestring = self.styleSheet()
-        self.currentChanged.connect(self.currentChanged_event)
-        self.tabCloseRequested.connect(self.tabCloseRequested_event)
-        self.tabBarDoubleClicked.connect(self.tabBarDoubleClicked_event)
+        # self.currentChanged.connect(self.currentChanged_event)
+        # self.tabCloseRequested.connect(self.tabCloseRequested_event)
+        # self.tabBarDoubleClicked.connect(self.tabBarDoubleClicked_event)
 
     def currentChanged_event(self, index):
         print(f'QTabWidget_currentChanged_event,切换页面为:{index}')
@@ -179,10 +188,10 @@ class xt_QTableView(QTableView):
         self.设置整行选中()
         self.单行选择()
         self.双向滚动条()
-        self.clicked.connect(self.clicked_event)
+        # self.clicked.connect(self.clicked_event)
 
-        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
-        self.customContextMenuRequested.connect(self.showContextMenu)
+        # self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        # self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
         self.contextMenu = QMenu(self)
@@ -193,7 +202,7 @@ class xt_QTableView(QTableView):
         self.contextMenu.popup(QCursor.pos())  # 2菜单显示的位置
         # self.actionA.triggered.connect(self.actionHandler)
         self.contextMenu.triggered[QAction].connect(self.processtrigger)
-        # self.contextMenu.move(self.pos())  # 3
+        self.contextMenu.move(self.pos())  # 3
         self.contextMenu.show()
 
     def processtrigger(self, QAction):
@@ -314,8 +323,8 @@ class xt_QTableWidget(QTableWidget):
         self.双向滚动条()
         self.itemClicked.connect(self.itemClicked_event)
 
-        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
-        self.customContextMenuRequested.connect(self.showContextMenu)
+        # self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        # self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
         self.contextMenu = QMenu(self)
@@ -536,21 +545,19 @@ class xt_QListWidget(QListWidget):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # 垂直滚动条
 
         # self.itemClicked.connect(self.itemClicked_event)  #绑定点击事件
-        self.currentRowChanged.connect(self.currentRowChanged_event)  # 绑定点击事件
+        # self.currentRowChanged.connect(self.currentRowChanged_event)  # 绑定点击事件
 
-        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
-        self.customContextMenuRequested.connect(self.showContextMenu)
+        # self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        # self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
         self.contextMenu = QMenu(self)
         self.contextMenu.addAction('Add')
         self.contextMenu.addSeparator()
         self.contextMenu.addAction('Del')
-        # self.actionA = self.contextMenu.exec_(self.mapToGlobal(pos))  # 1
-        self.contextMenu.popup(QCursor.pos())  # 2菜单显示的位置
-        # self.actionA.triggered.connect(self.actionHandler)
+        self.contextMenu.popup(QCursor.pos())  # 菜单显示的位置
         self.contextMenu.triggered[QAction].connect(self.processtrigger)
-        # self.contextMenu.move(self.pos())  # 3
+        self.contextMenu.move(self.pos())  # 3
         self.contextMenu.show()
 
     def processtrigger(self, QAction):
@@ -646,11 +653,11 @@ class xt_QTreeWidget(QTreeWidget):
         self.root.setText(0, 'root')  # 设置根节点的名称
         self.addTopLevelItem(self.root)
 
-        self.clicked.connect(self.clicked_event)
-        self.itemDoubleClicked.connect(self.itemDoubleClicked_event)
+        # self.clicked.connect(self.clicked_event)
+        # self.itemDoubleClicked.connect(self.itemDoubleClicked_event)
 
-        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
-        self.customContextMenuRequested.connect(self.showContextMenu)
+        # self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        # self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
         self.contextMenu = QMenu(self)
@@ -774,7 +781,7 @@ class xt_QTextEdit(QTextEdit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTextEdit_{id(self)}")
-        self.textChanged.connect(self.textChanged_event)
+        # self.textChanged.connect(self.textChanged_event)
 
     def textChanged_event(self):
         print('textChanged', self.toPlainText())
@@ -785,8 +792,8 @@ class xt_QLineEdit(QLineEdit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QLineEdit_{id(self)}")
-        self.textChanged.connect(self.textChanged_event)
-        self.textEdited.connect(self.textEdited_event)
+        # self.textChanged.connect(self.textChanged_event)
+        # self.textEdited.connect(self.textEdited_event)
 
     def textChanged_event(self):
         print('textChanged', self.text())
@@ -801,7 +808,7 @@ class xt_QPushButton(QPushButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QPushButton_{id(self)}")
-        self.clicked.connect(self.clicked_event)
+        # self.clicked.connect(self.clicked_event)
 
     def clicked_event(self):
         print('QPushButton_clicked_event', self.text())
@@ -815,6 +822,35 @@ class xt_QPushButton(QPushButton):
     '''
 
 
+class xt_QCheckBox(QCheckBox):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setObjectName(f"xt_QCheckBox_{id(self)}")
+        self.setChecked(True)
+
+        # self.stateChanged.connect(self.stateChangedEvent)
+
+    def stateChangedEvent(self, state):
+        print(state)
+
+    '''
+    setChecked()	设置复选框的状态，设置为True表示选中，False表示取消选中的复选框
+    setText()	设置复选框的显示文本
+    text()	返回复选框的显示文本
+    isChecked()	检查复选框是否被选中,选中就返回True，否则返回False
+    setTriState()	设置复选框为一个三态复选框
+    setCheckState()	三态复选框的状态设置，具体设置可以见下表
+    checkState() 获取三态复选框状态 Qt.Checked | Qt.Unchecked | Qt.PartiallyChecked
+
+    名称	值	含义
+    Qt.Checked	2	组件没有被选中（默认）
+    Qt.PartiallyChecked	1	组件被半选中
+    Qt.Unchecked	0	组件被选中
+
+    stateChanged 状态改变事件
+    '''
+
+
 class xt_QComboBox(QComboBox):
     def __init__(self, itemlist=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -823,7 +859,7 @@ class xt_QComboBox(QComboBox):
         if isinstance(itemlist, list) and len(itemlist) > 0:
             self.addItems(itemlist)
 
-        self.currentIndexChanged.connect(self.currentIndexChanged_event)
+        # self.currentIndexChanged.connect(self.currentIndexChanged_event)
 
     def currentIndexChanged_event(self, index):
         print('currentIndexChanged_event', index, self.currentText())
@@ -868,7 +904,7 @@ class xt_QSpinBox(QSpinBox):
         #  开启循环
         self.setWrapping(True)
 
-        self.valueChanged.connect(self.valueChanged_event)
+        # self.valueChanged.connect(self.valueChanged_event)
 
     def valueChanged_event(self, value):
         '''传入 int value,与self.value()相等'''
@@ -925,7 +961,7 @@ class xt_QDoubleSpinBox(QDoubleSpinBox):
         #  开启循环
         self.setWrapping(True)
 
-        self.valueChanged.connect(self.valueChanged_event)
+        # self.valueChanged.connect(self.valueChanged_event)
 
     def valueChanged_event(self, value):
         print('currentIndexChanged_event', value, self.text())
@@ -1024,7 +1060,7 @@ class xt_menu:
         statusbarAct = QAction('View statusbar', self, checkable=True)
         statusbarAct.setStatusTip('View statusbar')
         statusbarAct.setChecked(True)  # True为默认选中状态
-        statusbarAct.triggered.connect(self.toggleMenu)
+        # statusbarAct.triggered.connect(self.toggleMenu)
 
     '''
     方法	描述

@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
-#LastEditTime : 2020-06-03 18:40:58
+#LastEditTime : 2020-06-05 18:22:13
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -24,11 +24,11 @@ user2 = {
 '''
 
 from ali_speech._create_token import AccessToken
-from xt_String import get_10_timestamp
+from xt_Time import get_10_timestamp
 
 
-# #全局常量
 class Constant:
+    '''全局常量'''
     appKey = 'Ofm34215thIUdSIX'
     accessKeyId = 'LTAI4G5TRjsGy8BNKPtctjXQ'
     accessKeySecret = 'hS8Kl0b9orxNUW7IOeBIFUfzgcVn00'
@@ -37,6 +37,7 @@ class Constant:
 
 
 def GetToken():
+    '''获取token,更新Constant'''
     access_key_id = Constant.accessKeyId
     access_key_secret = Constant.accessKeySecret
     now = get_10_timestamp()
@@ -49,10 +50,10 @@ def GetToken():
     return Constant.token, Constant.expire_time
 
 
-# #默认参数
 class SpeechReqMeta:
-
+    '''默认参数'''
     appkey = Constant.appKey
+    # #导入此库就立即加载token
     token = Constant.token or GetToken()[0]
     format = 'wav'
     sample_rate = 16000

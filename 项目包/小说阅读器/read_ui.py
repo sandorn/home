@@ -1,27 +1,31 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-12 11:31:03
-#LastEditTime : 2020-06-03 11:44:32
-#Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
-#==============================================================
+# ==============================================================
+# Descripttion : None
+# Develop      : VSCode
+# Author       : Even.Sand
+# Contact      : sandorn@163.com
+# Date         : 2020-05-12 11:31:03
+#LastEditTime : 2020-06-05 23:15:11
+# Github       : https://github.com/sandorn/home
+# License      : (C)Copyright 2009-2020, NewSea
+# ==============================================================
 '''
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMetaObject, QThread, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMessageBox, QVBoxLayout, qApp
+
+from xt_Ls_Bqg import get_contents, get_title_url
+from xt_Alispeech.xt_Pygame import ReqSynthesizer_QThread_read
+from xt_String import string_split_join_with_maxlen_list
+from xt_Ui import EventLoop, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser, xt_QCheckBox
+
 from pysnooper import snoop
 
-from xt_Ls import get_contents, get_title_url
-from xt_Pygame import ReqSynthesizer_QThread_read
-from xt_String import string_split_join_with_maxlen_list
-from xt_Ui import EventLoop, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser
+from xt_Log import log
+print = log().debug
 
 
 class Ui_MainWindow(xt_QMainWindow):
@@ -58,6 +62,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.pushButton_3.clicked.connect(self.previous)
         self.pushButton_4 = xt_QPushButton("下一章")
         self.pushButton_4.clicked.connect(self.next)
+        self.checkbox = xt_QCheckBox('自动翻页')
 
     def setnum(self):
         self.book_number = self.lineEdit.text()
@@ -73,6 +78,7 @@ class Ui_MainWindow(xt_QMainWindow):
         vlayout1.addLayout(hlayout)
         vlayout1.addLayout(hlayout1)
         hlayout2 = QHBoxLayout()
+        hlayout2.addWidget(self.checkbox)
         hlayout2.addWidget(self.pushButton_read)
         hlayout2.addWidget(self.pushButton_3)
         hlayout2.addWidget(self.pushButton_4)
@@ -91,6 +97,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.setCentralWidget(self.centralwidget)
         QMetaObject.connectSlotsByName(self)  # @  关键，用于自动绑定信号和函数
         self.tabWidget.currentChanged.connect(self.currentChanged_event)
+        self.listWidgetCurrentRow = 0
 
     def currentChanged_event(self, index):
         if index == 0:
@@ -104,37 +111,40 @@ class Ui_MainWindow(xt_QMainWindow):
         pass
 
     def previous(self):
-        if self.row > 0:
-            self.listWidget.setCurrentRow(self.row - 1)
+        if self.listWidgetCurrentRow == 0:
+            return
+        if self.listWidgetCurrentRow > 0:
+            self.listWidget.setCurrentRow(self.listWidgetCurrentRow - 1)
 
     def next(self):
-        if self.row + 1 < self.listWidget.count():
-            self.listWidget.setCurrentRow(self.row + 1)
+        if self.listWidgetCurrentRow == 0:
+            return
+        if self.listWidgetCurrentRow + 1 < self.listWidget.count():
+            self.listWidget.setCurrentRow(self.listWidgetCurrentRow + 1)
 
     # 抓取所有数据
-    @snoop()
     @pyqtSlot()
     def on_ok_button_clicked(self):
         self.QTextEdit.clear()
         self.tableWidget.clean()
-        self.listWidget.clear()  # empty()
+        self.listWidget.empty()   # clear()
 
         try:
             # # 设置书本初始地址,执行主方法
             self.getlist(self.baseurl + '/' + self.book_number + '/')
-
+        except Exception as err:
+            QMessageBox.warning(None, "警告", f"没有数据，请检查：{err}", QMessageBox.Ok)
+        else:
             self.bindTable()  # 对表格进行填充
             self.bindList()  # 对列表进行填充
 
             self.listWidget.currentRowChanged.connect(self.currentRowChanged_event)
             self.tableWidget.clicked.connect(self.tableClick_event)  # @绑定表格单击方法
 
-        except Exception as err:
-            QMessageBox.warning(None, "警告", f"没有数据，请重新设置书号……:{err}", QMessageBox.Ok)
-            # @交还控制权,恢复鼠标样式
-            qApp.processEvents()
-            QApplication.restoreOverrideCursor()
-            return
+        # @交还控制权,恢复鼠标样式
+        qApp.processEvents()
+        QApplication.restoreOverrideCursor()
+        return
 
     def read_Button_event(self):
         (self.read_read if self.pushButton_read.text() == '&Read' else self.read_stop)()
@@ -149,12 +159,18 @@ class Ui_MainWindow(xt_QMainWindow):
     def read_read(self):
         self.pushButton_read.setText('&STOP')
         qApp.processEvents()
-        ##处理字符串
+        # 处理字符串
         newText = string_split_join_with_maxlen_list(self.QTextEdit.toPlainText())
         self.runthread = ReqSynthesizer_QThread_read(newText, format='mp3')
+        # #绑定ReqSynthesizer_QThread_read中定义的finished信号
         self.runthread._signal.connect(self.playdone)
 
-    # 抓取数据
+    def playdone(self):
+        self.read_stop()
+        if self.checkbox.isChecked():
+            self.next()
+            self.read_read()
+
     @EventLoop
     def getlist(self, url):
         self.bookname, self.list = get_title_url(url)
@@ -203,7 +219,7 @@ class Ui_MainWindow(xt_QMainWindow):
     # 列表单击方法，用来打开选中的项
     @EventLoop
     def currentRowChanged_event(self, row):
-        self.row = row
+        self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
         # _text = self.getcontent(self.list[row][1])
         nowthread = QThread()
@@ -213,15 +229,11 @@ class Ui_MainWindow(xt_QMainWindow):
         _text = '<font size="4">' + _text.replace("\n", "<br>") + '</font>'
         self.QTextEdit.setText(_text)
 
-    def playdone(self):
-        self.read_stop()
-        self.next()
-        self.read_read()
-
 
 if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
     ui = Ui_MainWindow()
+    ui.QTextEdit.setText('根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组，由公司总经理毕永辉任整治小组组长，成员包括公司副总经理刘新军、行政人事部总经理朱立志。')
     sys.exit(app.exec_())  # 程序关闭时退出进程

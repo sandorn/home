@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-02 11:55:46
+#LastEditTime : 2020-06-05 16:23:52
 '''
 
 __all__ = [
@@ -35,6 +35,20 @@ import traceback
 from queue import Empty, Queue
 from threading import Event, Lock, RLock, Thread, enumerate, main_thread
 from time import sleep, time
+
+
+def thread_safe(lock):
+    '''对指定函数进行线程安全包装，需要提供锁'''
+
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            with lock:
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorate
 
 
 class my_pool:

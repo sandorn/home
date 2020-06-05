@@ -1,0 +1,952 @@
+Source path:... d:\CODE\xjLib\xt_Alispeech\__init__.py
+Starting var:.. text = '\n        根据保险专业中介机构公司治理专项视频会议要求，我司按照会议安排，对公司相关...专业代理产品协议，手续费结算规范、合理。公司与股东公司之间无虚挂业务、套取费用行为。\n    '
+Starting var:.. format = 'wav'
+Starting var:.. audioFile = None
+Starting var:.. method = 'post'
+Starting var:.. callback = <function play_callback at 0x00000267241B6AF0>
+18:22:31.679679 call        69 def ReqSynthesizer(text, format='wav', audioFile='', method='post', callback=None):
+18:22:31.702679 line        71     result = {}
+New var:....... result = {}
+18:22:31.706681 line        72     url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
+New var:....... url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
+18:22:31.724680 line        73     httpHeaders = {'Content-Type': 'application/json'}
+New var:....... httpHeaders = {'Content-Type': 'application/json'}
+18:22:31.725679 line        74     SpeechReqMeta.format = format
+18:22:31.728682 line        76         'appkey': SpeechReqMeta.appkey,
+18:22:31.729679 line        77         'token': SpeechReqMeta.token,
+18:22:31.730682 line        78         'text': text,
+18:22:31.731679 line        79         'format': SpeechReqMeta.format,
+18:22:31.732690 line        80         'sample_rate': SpeechReqMeta.sample_rate,
+18:22:31.732690 line        81         'voice': SpeechReqMeta.voice,
+18:22:31.733681 line        82         'volume': SpeechReqMeta.volume,
+18:22:31.734681 line        83         'speech_rate': SpeechReqMeta.speech_rate,
+18:22:31.735681 line        84         'pitch_rate': SpeechReqMeta.pitch_rate,
+18:22:31.735681 line        75     body_dict = {
+New var:....... body_dict = {'appkey': 'Ofm34215thIUdSIX', 'token': 'd47aca0...'volume': 100, 'speech_rate': 0, 'pitch_rate': 0}
+18:22:31.735681 line        87     session = SessionClient()
+New var:....... session = <xt_Requests.SessionClient object at 0x0000026723F4C850>
+18:22:31.742708 line        88     session.update_headers(httpHeaders)
+18:22:31.743706 line        89     if method == 'get':
+18:22:31.743706 line        92         res = session.post(url, json=body_dict)  # "https://httpbin.org/post"
+[2020-06-05 18:22:31,764][MainThread:18416][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 18:22:49,189][MainThread:18416][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /stream/v1/tts HTTP/1.1" 200 1803708]
+New var:....... res = <sResponse status[200] url=[https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts]>
+18:22:50.719859 line        94     if 'audio/mpeg' == res.headers['Content-Type']:
+18:22:50.722850 line        95         result['data'] = res.content
+Modified var:.. result = {'data': b'RIFF$ 5\x00WAVEfmt \x10\x00\x00\x00\x...x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'}
+18:22:50.723849 line        96         if audioFile == '':
+18:22:50.790864 line        98         elif audioFile is not None:
+18:22:50.869847 line       104         if callback:
+18:22:50.911846 line       105             result['callback'] = callback(res.content)
+Modified var:.. result = {'data': b'RIFF$ 5\x00WAVEfmt \x10\x00\x00\x00\x...0\x00\x00\x00\x00\x00\x00\x00', 'callback': None}
+18:23:48.318647 line       107     return result
+18:23:48.397645 return     107     return result
+Return value:.. {'data': b'RIFF$ 5\x00WAVEfmt \x10\x00\x00\x00\x...0\x00\x00\x00\x00\x00\x00\x00', 'callback': None}
+Elapsed time: 00:01:16.872963
+[2020-06-05 21:48:34,735][MainThread:24124][xt_Log][xt_Requests.py->get_retry:92]	[DEBUG]	[TypeError("out_wrapper() missing 1 required positional argument: 'func'")]
+[2020-06-05 21:49:32,221][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:32,596][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:32,702][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:32,848][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:32,958][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:33,112][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:33,215][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:33,384][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:33,489][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:33,649][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:33,757][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:33,907][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:34,011][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:34,169][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:34,273][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:34,419][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:34,525][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:34,692][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:34,796][MainThread:8420][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:49:34,962][MainThread:8420][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:49:34,965][MainThread:8420][xt_Log][xt_Requests.py->get_retry:92]	[DEBUG]	[HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 21:52:34,493][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:34,663][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:34,768][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:34,962][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:35,070][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:35,242][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:35,350][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:35,529][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:35,647][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:35,842][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:35,950][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:36,147][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:36,253][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:36,471][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:36,576][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:36,765][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:36,873][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:37,040][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:37,147][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:52:37,327][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:52:37,382][MainThread:23968][xt_Log][xt_Requests.py->get_retry:92]	[DEBUG]	[UnboundLocalError("local variable 'result' referenced before assignment")]
+[2020-06-05 21:53:57,191][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:57,397][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:57,517][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:57,682][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:57,794][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:57,996][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:58,104][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:58,293][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:58,399][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:58,602][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:58,708][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:58,868][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:58,973][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:59,133][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:59,239][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:59,398][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:59,503][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:59,664][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:59,774][MainThread:23060][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:53:59,958][MainThread:23060][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:53:59,960][MainThread:23060][xt_Log][xt_Requests.py->get_retry:94]	[DEBUG]	[AttributeError("'NoneType' object has no attribute 'content'")]
+[2020-06-05 21:54:44,544][MainThread:20764][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 21:54:48,244][MainThread:20764][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "GET /get HTTP/1.1" 200 639]
+[2020-06-05 21:54:48,671][MainThread:20764][xt_Log][xt_Requests.py-><module>:211]	[DEBUG]	[{
+  "args": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1464.0 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda4ea6-0401dca0508ccf401ac34028"
+  }, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/get"
+}
+]
+[2020-06-05 21:55:19,047][MainThread:24104][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:55:19,222][MainThread:24104][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:55:19,327][MainThread:24104][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:55:19,486][MainThread:24104][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:55:19,590][MainThread:24104][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:55:19,739][MainThread:24104][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:55:19,743][MainThread:24104][xt_Log][xt_Requests.py->get_retry:94]	[DEBUG]	[AttributeError("'NoneType' object has no attribute 'content'")]
+[2020-06-05 21:55:19,743][MainThread:24104][xt_Log][xt_Requests.py-><module>:211]	[DEBUG]	[None]
+[2020-06-05 21:55:48,109][MainThread:24032][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:55:48,286][MainThread:24032][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:55:48,400][MainThread:24032][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:55:48,565][MainThread:24032][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:55:48,670][MainThread:24032][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:55:48,832][MainThread:24032][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:55:48,835][MainThread:24032][xt_Log][xt_Requests.py-><module>:211]	[DEBUG]	[None]
+[2020-06-05 21:56:04,034][MainThread:23968][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 21:56:05,073][MainThread:23968][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "GET /get HTTP/1.1" 200 647]
+[2020-06-05 21:56:05,076][MainThread:23968][xt_Log][xt_Requests.py-><module>:211]	[DEBUG]	[<sResponse status[200] url=[https://httpbin.org/get]>]
+[2020-06-05 21:56:34,739][MainThread:8620][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:56:34,922][MainThread:8620][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:56:35,045][MainThread:8620][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:56:35,232][MainThread:8620][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:56:35,341][MainThread:8620][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:56:35,523][MainThread:8620][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:57:51,336][MainThread:23316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:57:51,506][MainThread:23316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:57:51,615][MainThread:23316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:57:51,782][MainThread:23316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 21:57:51,891][MainThread:23316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 21:57:52,067][MainThread:23316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:08:41,900][MainThread:4492][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:08:42,252][MainThread:4492][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:08:42,258][MainThread:4492][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:08:42,417][MainThread:4492][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:08:42,427][MainThread:4492][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:08:42,593][MainThread:4492][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:08:42,604][MainThread:4492][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:08:42,762][MainThread:4492][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:08:42,774][MainThread:4492][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:08:42,959][MainThread:4492][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:09:36,267][MainThread:16660][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:09:36,446][MainThread:16660][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:09:36,459][MainThread:16660][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:09:36,629][MainThread:16660][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:09:36,636][MainThread:16660][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:09:36,799][MainThread:16660][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:09:36,805][MainThread:16660][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:09:36,973][MainThread:16660][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:09:36,980][MainThread:16660][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:09:37,138][MainThread:16660][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:09:37,146][MainThread:16660][xt_Log][xt_Requests.py-><module>:212]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"b268569d9e364c4d9d6a703dadfb203f","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:10:38,156][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:38,381][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:38,767][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:38,958][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:39,753][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:39,947][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:40,607][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:40,784][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:41,650][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:41,830][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:42,234][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:42,422][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:42,703][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:42,901][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:43,861][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:44,028][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:44,585][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:44,751][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:45,623][MainThread:22316][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:10:45,773][MainThread:22316][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:10:45,775][MainThread:22316][xt_Log][xt_Requests.py->get_retry:95]	[DEBUG]	[HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:10:45,775][MainThread:22316][xt_Log][xt_Requests.py-><module>:212]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"d26343fe16ca42e59b550bab059f6162","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:12:05,040][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:05,241][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:05,371][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:05,541][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:05,852][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:06,016][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:06,263][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:06,445][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:07,146][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:07,299][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:07,413][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:07,567][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:08,124][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:08,290][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:08,661][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:08,864][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:09,807][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:10,001][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:10,873][MainThread:18940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:12:11,053][MainThread:18940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:12:11,057][MainThread:18940][xt_Log][xt_Requests.py->post_retry:116]	[DEBUG]	[HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:12:11,057][MainThread:18940][xt_Log][xt_Requests.py-><module>:215]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"2c9db5a6b6924adf85c8ddfc4b4d24b1","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:16:57,796][MainThread:7396][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:16:57,984][MainThread:7396][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:16:57,990][MainThread:7396][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:16:58,165][MainThread:7396][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:16:58,170][MainThread:7396][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:16:58,338][MainThread:7396][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:16:58,343][MainThread:7396][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:16:58,530][MainThread:7396][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:16:58,542][MainThread:7396][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:16:58,721][MainThread:7396][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:16:58,730][MainThread:7396][xt_Log][xt_Requests.py->post_retry:117]	[DEBUG]	[HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:17:20,262][MainThread:23324][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:17:20,448][MainThread:23324][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:17:20,464][MainThread:23324][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:17:20,657][MainThread:23324][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:17:20,665][MainThread:23324][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:17:20,819][MainThread:23324][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:17:20,829][MainThread:23324][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:17:21,039][MainThread:23324][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:17:21,051][MainThread:23324][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:17:21,210][MainThread:23324][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:17:21,213][MainThread:23324][xt_Log][xt_Requests.py->post_retry:117]	[DEBUG]	[HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:17:21,214][MainThread:23324][xt_Log][xt_Requests.py-><module>:216]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"f32daf7d839846f8b1c0ff1e8f94aa7b","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:36:53,870][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:54,128][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:54,244][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:54,431][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:54,489][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:54,675][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:55,017][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:55,223][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:56,078][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:56,264][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:56,574][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:56,739][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:57,323][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:57,483][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:57,932][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:58,118][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:58,479][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:58,676][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:58,944][MainThread:21816][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:36:59,111][MainThread:21816][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:36:59,114][MainThread:21816][xt_Log][xt_Requests.py->post_retry:116]	[DEBUG]	[HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:36:59,115][MainThread:21816][xt_Log][xt_Requests.py-><module>:215]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"216d441a082a4a27be87f9e04cc20269","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:38:50,333][MainThread:1876][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:38:50,513][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:50,750][MainThread:1876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:38:50,926][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:51,284][MainThread:1876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:38:51,477][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:52,294][MainThread:1876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:38:52,452][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:53,197][MainThread:1876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:38:53,348][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:54,124][MainThread:1876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:38:54,292][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:54,811][MainThread:1876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:38:54,973][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:55,263][MainThread:1876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:38:55,427][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:56,307][MainThread:1876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:38:56,472][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:57,061][MainThread:1876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:38:57,210][MainThread:1876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:38:57,212][MainThread:1876][xt_Log][xt_Requests.py->get_retry:180]	[DEBUG]	[HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:38:57,212][MainThread:1876][xt_Log][xt_Requests.py-><module>:216]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"68e48881473e45f587b44b95c5def83d","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:39:47,372][MainThread:24068][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:39:47,566][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:47,797][MainThread:24068][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:39:47,968][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:48,269][MainThread:24068][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:39:48,436][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:48,648][MainThread:24068][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:39:48,821][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:48,991][MainThread:24068][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:39:49,177][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:49,749][MainThread:24068][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:39:49,894][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:50,397][MainThread:24068][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:39:50,554][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:51,086][MainThread:24068][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:39:51,259][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:51,646][MainThread:24068][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:39:51,819][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:52,127][MainThread:24068][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:39:52,302][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:39:52,304][MainThread:24068][xt_Log][xt_Requests.py->post_retry:199]	[DEBUG]	[HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:39:52,304][MainThread:24068][xt_Log][xt_Requests.py-><module>:218]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"97d3dfa29b58482786ad6f6e08f025ca","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:44:06,138][MainThread:24068][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:44:06,322][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:44:06,444][MainThread:24068][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:44:06,615][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:44:07,514][MainThread:24068][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:44:07,694][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:44:08,431][MainThread:24068][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:44:08,621][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:44:08,706][MainThread:24068][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:44:08,886][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:44:09,500][MainThread:24068][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:44:09,642][MainThread:24068][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:44:09,646][MainThread:24068][xt_Log][xt_Requests.py->post_retry:114]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 22:44:09,646][MainThread:24068][xt_Log][xt_Requests.py-><module>:215]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"6e44a1eccd59459eb394e038b011d4bd","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:46:23,403][MainThread:24020][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:46:23,593][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:46:23,599][MainThread:24020][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 0 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:46:23,603][MainThread:24020][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:46:23,765][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:46:23,769][MainThread:24020][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:46:23,776][MainThread:24020][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:46:23,963][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:46:23,967][MainThread:24020][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:46:23,971][MainThread:24020][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:46:24,143][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:46:24,148][MainThread:24020][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:46:24,151][MainThread:24020][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:46:24,335][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:46:24,339][MainThread:24020][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:46:24,342][MainThread:24020][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:46:24,496][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:46:24,499][MainThread:24020][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:46:24,500][MainThread:24020][xt_Log][xt_Requests.py-><module>:211]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"3ed94c9de86244048deb92f5d83b4162","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:49:45,647][MainThread:17088][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:49:45,823][MainThread:17088][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:49:46,055][MainThread:17088][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:49:46,215][MainThread:17088][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:49:46,629][MainThread:17088][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:49:46,841][MainThread:17088][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:49:47,833][MainThread:17088][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:49:48,015][MainThread:17088][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:49:48,580][MainThread:17088][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:49:48,747][MainThread:17088][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:49:49,187][MainThread:17088][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:49:49,377][MainThread:17088][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:49:49,381][MainThread:17088][xt_Log][xt_Requests.py->get_retry:89]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 22:49:49,405][MainThread:17088][xt_Log][xt_Requests.py-><module>:210]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"3ee8260391e744d4901cdb96ff746412","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:51:45,018][MainThread:20784][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:51:45,198][MainThread:20784][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:51:45,403][MainThread:20784][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:51:45,594][MainThread:20784][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:51:46,200][MainThread:20784][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:51:46,376][MainThread:20784][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:51:47,252][MainThread:20784][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:51:47,466][MainThread:20784][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:51:48,459][MainThread:20784][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:51:48,654][MainThread:20784][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:51:48,688][MainThread:20784][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:51:48,851][MainThread:20784][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:51:48,853][MainThread:20784][xt_Log][xt_Requests.py->post_retry:108]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 22:51:48,853][MainThread:20784][xt_Log][xt_Requests.py-><module>:209]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"38457447f4964baabee7eb137b1c0df1","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:54:17,593][MainThread:22984][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:17,763][MainThread:22984][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:17,859][MainThread:22984][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:18,035][MainThread:22984][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:18,218][MainThread:22984][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:18,382][MainThread:22984][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:19,041][MainThread:22984][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:19,205][MainThread:22984][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:19,847][MainThread:22984][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:19,998][MainThread:22984][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:20,155][MainThread:22984][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:20,320][MainThread:22984][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:20,322][MainThread:22984][xt_Log][xt_Requests.py->post_retry:108]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 22:54:20,322][MainThread:22984][xt_Log][xt_Requests.py-><module>:212]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"60e97df52f28414cb2db375be8bd1014","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:54:50,791][MainThread:2112][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:50,967][MainThread:2112][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:51,469][MainThread:2112][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:51,654][MainThread:2112][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:52,406][MainThread:2112][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:52,620][MainThread:2112][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:53,288][MainThread:2112][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:53,512][MainThread:2112][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:54,309][MainThread:2112][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:54,506][MainThread:2112][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:54,740][MainThread:2112][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:54:54,914][MainThread:2112][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:54:54,919][MainThread:2112][xt_Log][xt_Requests.py->get_retry:87]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 22:54:54,919][MainThread:2112][xt_Log][xt_Requests.py-><module>:212]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"f77a4554922546c49f58c2d15b804b8f","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:56:31,719][MainThread:24280][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:56:31,910][MainThread:24280][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:56:32,751][MainThread:24280][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:56:32,939][MainThread:24280][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:56:33,410][MainThread:24280][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:56:33,575][MainThread:24280][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:56:34,294][MainThread:24280][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:56:34,472][MainThread:24280][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:56:34,979][MainThread:24280][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:56:35,128][MainThread:24280][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:56:35,308][MainThread:24280][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:56:35,465][MainThread:24280][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:56:35,466][MainThread:24280][xt_Log][xt_Requests.py->get_retry:173]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 22:56:35,466][MainThread:24280][xt_Log][xt_Requests.py-><module>:215]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"c6c4dff2c6dc4296bdbfba9ffb7dcb82","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:57:47,430][MainThread:22180][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:57:47,587][MainThread:22180][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:57:48,454][MainThread:22180][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:57:48,634][MainThread:22180][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:57:48,931][MainThread:22180][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:57:49,088][MainThread:22180][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:57:49,823][MainThread:22180][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:57:49,997][MainThread:22180][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:57:50,225][MainThread:22180][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:57:50,414][MainThread:22180][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:57:51,065][MainThread:22180][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:57:51,225][MainThread:22180][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:57:51,227][MainThread:22180][xt_Log][xt_Requests.py->post_retry:194]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 22:57:51,227][MainThread:22180][xt_Log][xt_Requests.py-><module>:217]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"daa184961359475581882a464610a4b3","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:57:59,300][MainThread:22244][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:57:59,490][MainThread:22244][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:57:59,491][MainThread:22244][xt_Log][xt_Requests.py->post:151]	[DEBUG]	[session.post 0 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:57:59,495][MainThread:22244][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:57:59,676][MainThread:22244][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:57:59,678][MainThread:22244][xt_Log][xt_Requests.py->post:151]	[DEBUG]	[session.post 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:57:59,681][MainThread:22244][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:57:59,855][MainThread:22244][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:57:59,856][MainThread:22244][xt_Log][xt_Requests.py->post:151]	[DEBUG]	[session.post 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:57:59,860][MainThread:22244][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:58:00,024][MainThread:22244][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:58:00,025][MainThread:22244][xt_Log][xt_Requests.py->post:151]	[DEBUG]	[session.post 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:58:00,028][MainThread:22244][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:58:00,187][MainThread:22244][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:58:00,190][MainThread:22244][xt_Log][xt_Requests.py->post:151]	[DEBUG]	[session.post 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:58:00,197][MainThread:22244][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:58:00,378][MainThread:22244][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:58:00,379][MainThread:22244][xt_Log][xt_Requests.py->post:151]	[DEBUG]	[session.post 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:58:00,379][MainThread:22244][xt_Log][xt_Requests.py-><module>:217]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"50d9cea9b4964d24bd25c45aa7ce7d4b","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:58:46,448][MainThread:21740][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:58:46,620][MainThread:21740][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:58:46,623][MainThread:21740][xt_Log][xt_Requests.py->parse_post:67]	[DEBUG]	[requests.post 0 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:58:46,626][MainThread:21740][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:58:46,817][MainThread:21740][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:58:46,821][MainThread:21740][xt_Log][xt_Requests.py->parse_post:67]	[DEBUG]	[requests.post 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:58:46,825][MainThread:21740][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:58:46,987][MainThread:21740][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:58:46,989][MainThread:21740][xt_Log][xt_Requests.py->parse_post:67]	[DEBUG]	[requests.post 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:58:46,998][MainThread:21740][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:58:47,159][MainThread:21740][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:58:47,162][MainThread:21740][xt_Log][xt_Requests.py->parse_post:67]	[DEBUG]	[requests.post 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:58:47,165][MainThread:21740][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:58:47,315][MainThread:21740][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:58:47,318][MainThread:21740][xt_Log][xt_Requests.py->parse_post:67]	[DEBUG]	[requests.post 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:58:47,320][MainThread:21740][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:58:47,470][MainThread:21740][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:58:47,472][MainThread:21740][xt_Log][xt_Requests.py->parse_post:67]	[DEBUG]	[requests.post 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:58:47,473][MainThread:21740][xt_Log][xt_Requests.py-><module>:217]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"672897945b6948fc853b9ed8fd9497c8","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 22:59:05,465][MainThread:3284][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 22:59:05,666][MainThread:3284][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:59:05,667][MainThread:3284][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 0 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:59:05,670][MainThread:3284][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:59:05,833][MainThread:3284][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:59:05,834][MainThread:3284][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:59:05,837][MainThread:3284][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:59:06,005][MainThread:3284][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:59:06,006][MainThread:3284][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:59:06,009][MainThread:3284][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:59:06,184][MainThread:3284][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:59:06,185][MainThread:3284][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:59:06,188][MainThread:3284][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:59:06,337][MainThread:3284][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:59:06,338][MainThread:3284][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:59:06,341][MainThread:3284][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 22:59:06,487][MainThread:3284][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 22:59:06,488][MainThread:3284][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 22:59:06,488][MainThread:3284][xt_Log][xt_Requests.py-><module>:217]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"91b301440d6840a5a9111067d240dd68","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:00:11,473][MainThread:21612][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:00:11,689][MainThread:21612][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:00:12,317][MainThread:21612][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:00:12,494][MainThread:21612][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:00:13,287][MainThread:21612][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:00:13,448][MainThread:21612][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:00:13,522][MainThread:21612][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:00:13,693][MainThread:21612][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:00:14,706][MainThread:21612][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:00:14,908][MainThread:21612][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:00:15,373][MainThread:21612][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:00:15,529][MainThread:21612][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:00:15,531][MainThread:21612][xt_Log][xt_Requests.py->get_retry:173]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 23:00:15,531][MainThread:21612][xt_Log][xt_Requests.py-><module>:217]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"4cd1231b1025493eb0040e884f560793","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:01:28,091][MainThread:23640][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:01:28,276][MainThread:23640][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:29,257][MainThread:23640][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:29,429][MainThread:23640][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:29,971][MainThread:23640][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:30,150][MainThread:23640][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:30,178][MainThread:23640][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:30,344][MainThread:23640][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:31,124][MainThread:23640][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:31,348][MainThread:23640][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:32,274][MainThread:23640][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:32,465][MainThread:23640][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:32,467][MainThread:23640][xt_Log][xt_Requests.py->get_retry:173]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 23:01:32,467][MainThread:23640][xt_Log][xt_Requests.py-><module>:217]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"a730df1170574c8fa88acdbe4a8ff770","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:01:38,441][MainThread:7876][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:01:38,642][MainThread:7876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:38,645][MainThread:7876][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:01:38,654][MainThread:7876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:38,852][MainThread:7876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:38,853][MainThread:7876][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:01:38,855][MainThread:7876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:39,025][MainThread:7876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:39,026][MainThread:7876][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:01:39,029][MainThread:7876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:39,232][MainThread:7876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:39,235][MainThread:7876][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:01:39,241][MainThread:7876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:39,412][MainThread:7876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:39,413][MainThread:7876][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:01:39,417][MainThread:7876][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:01:39,590][MainThread:7876][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:01:39,591][MainThread:7876][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 6 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:01:39,592][MainThread:7876][xt_Log][xt_Requests.py-><module>:217]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"55fac26af61e476e95fbb0cccc349732","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:02:40,225][MainThread:3936][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:02:40,549][MainThread:3936][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:02:40,553][MainThread:3936][xt_Log][xt_Requests.py->parse_get:47]	[DEBUG]	[requests.get 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:02:40,556][MainThread:3936][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:02:40,737][MainThread:3936][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:02:40,743][MainThread:3936][xt_Log][xt_Requests.py->parse_get:47]	[DEBUG]	[requests.get 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:02:40,746][MainThread:3936][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:02:40,918][MainThread:3936][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:02:40,921][MainThread:3936][xt_Log][xt_Requests.py->parse_get:47]	[DEBUG]	[requests.get 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:02:40,924][MainThread:3936][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:02:41,100][MainThread:3936][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:02:41,109][MainThread:3936][xt_Log][xt_Requests.py->parse_get:47]	[DEBUG]	[requests.get 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:02:41,112][MainThread:3936][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:02:41,289][MainThread:3936][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:02:41,292][MainThread:3936][xt_Log][xt_Requests.py->parse_get:47]	[DEBUG]	[requests.get 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:02:41,295][MainThread:3936][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:02:41,491][MainThread:3936][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:02:41,494][MainThread:3936][xt_Log][xt_Requests.py->parse_get:47]	[DEBUG]	[requests.get 6 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:02:41,494][MainThread:3936][xt_Log][xt_Requests.py-><module>:218]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"1ec1f8147c8e4ca9b22e7ad8af93f1c5","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:04:27,271][MainThread:4124][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:04:27,460][MainThread:4124][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:04:27,464][MainThread:4124][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:04:27,478][MainThread:4124][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:04:27,673][MainThread:4124][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:04:27,674][MainThread:4124][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:04:27,676][MainThread:4124][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:04:27,865][MainThread:4124][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:04:27,867][MainThread:4124][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:04:27,869][MainThread:4124][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:04:28,055][MainThread:4124][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:04:28,059][MainThread:4124][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:04:28,070][MainThread:4124][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:04:28,238][MainThread:4124][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:04:28,239][MainThread:4124][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:04:28,242][MainThread:4124][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:04:28,428][MainThread:4124][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:04:28,431][MainThread:4124][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 6 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:04:28,432][MainThread:4124][xt_Log][xt_Requests.py-><module>:220]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"126ea328becf4d2eab9b8b3c5fece0c6","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:05:29,849][MainThread:24024][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:05:30,020][MainThread:24024][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:05:30,025][MainThread:24024][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:05:30,209][MainThread:24024][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:05:30,213][MainThread:24024][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:05:30,386][MainThread:24024][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:05:30,390][MainThread:24024][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:05:30,556][MainThread:24024][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:05:30,560][MainThread:24024][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:05:30,732][MainThread:24024][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:05:30,736][MainThread:24024][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:05:30,907][MainThread:24024][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:06:17,695][MainThread:24020][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:06:17,875][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:06:17,877][MainThread:24020][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:06:17,881][MainThread:24020][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:06:18,067][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:06:18,068][MainThread:24020][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:06:18,072][MainThread:24020][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:06:18,232][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:06:18,233][MainThread:24020][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:06:18,237][MainThread:24020][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:06:18,420][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:06:18,421][MainThread:24020][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:06:18,424][MainThread:24020][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:06:18,603][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:06:18,604][MainThread:24020][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:06:18,607][MainThread:24020][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:06:18,787][MainThread:24020][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:06:18,790][MainThread:24020][xt_Log][xt_Requests.py->get:137]	[DEBUG]	[session.get 6 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:06:18,790][MainThread:24020][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"2c8bffff646b4e0293a6f6a402962f4c","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:07:42,869][MainThread:8376][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:07:43,037][MainThread:8376][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:07:43,045][MainThread:8376][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:07:43,051][MainThread:8376][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:07:43,237][MainThread:8376][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:07:43,240][MainThread:8376][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:07:43,243][MainThread:8376][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:07:43,417][MainThread:8376][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:07:43,421][MainThread:8376][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:07:43,424][MainThread:8376][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:07:43,590][MainThread:8376][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:07:43,593][MainThread:8376][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:07:43,596][MainThread:8376][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:07:43,757][MainThread:8376][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:07:43,763][MainThread:8376][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:07:43,766][MainThread:8376][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:07:43,954][MainThread:8376][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:07:43,957][MainThread:8376][xt_Log][xt_Requests.py->parse_get:48]	[DEBUG]	[requests.get 6 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:07:43,958][MainThread:8376][xt_Log][xt_Requests.py-><module>:220]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"6a45f83f43304e5484a0447758e5a370","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:08:30,489][MainThread:7668][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:08:30,674][MainThread:7668][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:08:30,681][MainThread:7668][xt_Log][xt_Requests.py->get:138]	[DEBUG]	[session.get 1 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:08:30,689][MainThread:7668][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:08:30,871][MainThread:7668][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:08:30,873][MainThread:7668][xt_Log][xt_Requests.py->get:138]	[DEBUG]	[session.get 2 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:08:30,883][MainThread:7668][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:08:31,063][MainThread:7668][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:08:31,064][MainThread:7668][xt_Log][xt_Requests.py->get:138]	[DEBUG]	[session.get 3 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:08:31,070][MainThread:7668][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:08:31,246][MainThread:7668][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:08:31,248][MainThread:7668][xt_Log][xt_Requests.py->get:138]	[DEBUG]	[session.get 4 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:08:31,256][MainThread:7668][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:08:31,427][MainThread:7668][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:08:31,428][MainThread:7668][xt_Log][xt_Requests.py->get:138]	[DEBUG]	[session.get 5 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:08:31,431][MainThread:7668][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:08:31,613][MainThread:7668][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "GET /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:08:31,614][MainThread:7668][xt_Log][xt_Requests.py->get:138]	[DEBUG]	[session.get 6 times ; HTTPError('400 Client Error:  for url: https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async')]
+[2020-06-05 23:08:31,614][MainThread:7668][xt_Log][xt_Requests.py-><module>:220]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required String parameter 'task_id' is not present","error_code":40000000,"request_id":"bec1e18926ad43779beb9bee1ef051c5","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:08:44,656][MainThread:20724][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:08:47,341][MainThread:20724][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "GET /get HTTP/1.1" 200 707]
+[2020-06-05 23:08:47,360][MainThread:20724][xt_Log][xt_Requests.py-><module>:220]	[DEBUG]	[{
+  "args": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Charset": "UTF-8", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Type": "application/json", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.93 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda5ffe-152a35a74cb4411cd26ceeba"
+  }, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/get"
+}
+]
+[2020-06-05 23:08:52,190][MainThread:17460][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:08:53,487][MainThread:17460][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /get HTTP/1.1" 405 178]
+[2020-06-05 23:08:53,488][MainThread:17460][xt_Log][xt_Requests.py->post:155]	[DEBUG]	[session.post 1 times ; HTTPError('405 Client Error: METHOD NOT ALLOWED for url: https://httpbin.org/get')]
+[2020-06-05 23:08:53,491][MainThread:17460][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: httpbin.org]
+[2020-06-05 23:08:54,575][MainThread:17460][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /get HTTP/1.1" 405 178]
+[2020-06-05 23:08:54,576][MainThread:17460][xt_Log][xt_Requests.py->post:155]	[DEBUG]	[session.post 2 times ; HTTPError('405 Client Error: METHOD NOT ALLOWED for url: https://httpbin.org/get')]
+[2020-06-05 23:08:54,578][MainThread:17460][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: httpbin.org]
+[2020-06-05 23:08:56,177][MainThread:17460][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /get HTTP/1.1" 405 178]
+[2020-06-05 23:08:56,178][MainThread:17460][xt_Log][xt_Requests.py->post:155]	[DEBUG]	[session.post 3 times ; HTTPError('405 Client Error: METHOD NOT ALLOWED for url: https://httpbin.org/get')]
+[2020-06-05 23:08:56,181][MainThread:17460][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: httpbin.org]
+[2020-06-05 23:08:57,395][MainThread:17460][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /get HTTP/1.1" 405 178]
+[2020-06-05 23:08:57,396][MainThread:17460][xt_Log][xt_Requests.py->post:155]	[DEBUG]	[session.post 4 times ; HTTPError('405 Client Error: METHOD NOT ALLOWED for url: https://httpbin.org/get')]
+[2020-06-05 23:08:57,399][MainThread:17460][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: httpbin.org]
+[2020-06-05 23:08:58,803][MainThread:17460][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /get HTTP/1.1" 405 178]
+[2020-06-05 23:08:59,237][MainThread:17460][xt_Log][xt_Requests.py->post:155]	[DEBUG]	[session.post 5 times ; HTTPError('405 Client Error: METHOD NOT ALLOWED for url: https://httpbin.org/get')]
+[2020-06-05 23:08:59,240][MainThread:17460][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: httpbin.org]
+[2020-06-05 23:09:00,467][MainThread:17460][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /get HTTP/1.1" 405 178]
+[2020-06-05 23:09:00,468][MainThread:17460][xt_Log][xt_Requests.py->post:155]	[DEBUG]	[session.post 6 times ; HTTPError('405 Client Error: METHOD NOT ALLOWED for url: https://httpbin.org/get')]
+[2020-06-05 23:09:00,469][MainThread:17460][xt_Log][xt_Requests.py-><module>:220]	[DEBUG]	[<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<title>405 Method Not Allowed</title>
+<h1>Method Not Allowed</h1>
+<p>The method is not allowed for the requested URL.</p>
+]
+[2020-06-05 23:09:07,086][MainThread:6276][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:09:08,357][MainThread:6276][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "GET /get HTTP/1.1" 200 849]
+[2020-06-05 23:09:08,361][MainThread:6276][xt_Log][xt_Requests.py-><module>:220]	[DEBUG]	[{
+  "args": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Charset": "UTF-8", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Type": "application/json", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36 Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 Mobile/7B334b Safari/531.21.10", 
+    "X-Amzn-Trace-Id": "Root=1-5eda6013-1118aa8b0f7d4fae8a99ce14"
+  }, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/get"
+}
+]
+[2020-06-05 23:10:05,868][MainThread:24432][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:10:07,754][MainThread:24432][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /post HTTP/1.1" 200 799]
+[2020-06-05 23:10:07,756][MainThread:24432][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Charset": "UTF-8", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Length": "0", 
+    "Content-Type": "application/json", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.93 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda604f-76eded4bef548086cb340e9c"
+  }, 
+  "json": null, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/post"
+}
+]
+[2020-06-05 23:10:18,504][MainThread:14920][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:10:19,610][MainThread:14920][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /post HTTP/1.1" 200 731]
+[2020-06-05 23:10:19,614][MainThread:14920][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Length": "0", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda605a-f4094266993d352d8de85e82"
+  }, 
+  "json": null, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/post"
+}
+]
+[2020-06-05 23:12:43,504][MainThread:24184][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:12:44,784][MainThread:24184][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /post HTTP/1.1" 200 743]
+[2020-06-05 23:12:44,787][MainThread:24184][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Length": "0", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda60ec-2d212eea10f190ce2ab792da"
+  }, 
+  "json": null, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/post"
+}
+]
+[2020-06-05 23:12:51,007][MainThread:19320][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:12:52,451][MainThread:19320][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /post HTTP/1.1" 200 797]
+[2020-06-05 23:12:52,453][MainThread:19320][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Charset": "UTF-8", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Length": "0", 
+    "Content-Type": "application/json", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda60f3-955ee11c4070cb3460305ca0"
+  }, 
+  "json": null, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/post"
+}
+]
+[2020-06-05 23:12:57,978][MainThread:24448][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:12:58,184][MainThread:24448][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:12:58,859][MainThread:24448][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:12:59,013][MainThread:24448][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:12:59,585][MainThread:24448][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:12:59,777][MainThread:24448][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:00,537][MainThread:24448][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:13:00,704][MainThread:24448][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:01,087][MainThread:24448][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:13:01,250][MainThread:24448][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:01,766][MainThread:24448][urllib3.connectionpool][connectionpool.py->_get_conn:271]	[DEBUG]	[Resetting dropped connection: nls-gateway.cn-shanghai.aliyuncs.com]
+[2020-06-05 23:13:01,954][MainThread:24448][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:01,955][MainThread:24448][xt_Log][xt_Requests.py->post:197]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 23:13:01,955][MainThread:24448][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"de3522fc651747868b643484978edf08","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:13:06,190][MainThread:22224][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:13:06,406][MainThread:22224][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:06,564][MainThread:22224][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:13:06,728][MainThread:22224][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:07,568][MainThread:22224][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:13:07,732][MainThread:22224][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:08,523][MainThread:22224][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:13:08,722][MainThread:22224][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:08,917][MainThread:22224][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:13:09,068][MainThread:22224][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:09,383][MainThread:22224][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:13:09,596][MainThread:22224][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:13:09,600][MainThread:22224][xt_Log][xt_Requests.py->post:110]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 23:13:09,600][MainThread:22224][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"9646ea1526744a2ca25043c540264770","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:19:48,669][MainThread:19940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:19:49,012][MainThread:19940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:19:49,221][MainThread:19940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:19:49,401][MainThread:19940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:19:49,775][MainThread:19940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:19:49,997][MainThread:19940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:19:50,653][MainThread:19940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:19:50,838][MainThread:19940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:19:51,499][MainThread:19940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:19:51,647][MainThread:19940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:19:52,118][MainThread:19940][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:19:52,267][MainThread:19940][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:19:52,269][MainThread:19940][xt_Log][xt_Requests.py->post:110]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 23:20:14,558][MainThread:2744][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:20:18,750][MainThread:2744][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /post HTTP/1.1" 200 731]
+[2020-06-05 23:20:18,753][MainThread:2744][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[<class 'requests.models.Response'>]
+[2020-06-05 23:20:18,754][MainThread:2744][xt_Log][xt_Requests.py-><module>:222]	[DEBUG]	[{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Length": "0", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda62b2-234d17883797f8455ec29766"
+  }, 
+  "json": null, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/post"
+}
+]
+[2020-06-05 23:20:45,172][MainThread:17596][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:20:46,458][MainThread:17596][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /post HTTP/1.1" 200 752]
+[2020-06-05 23:20:46,461][MainThread:17596][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[<class 'xt_Response.ReqResult'>]
+[2020-06-05 23:20:46,505][MainThread:17596][xt_Log][xt_Requests.py-><module>:222]	[DEBUG]	[{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Length": "0", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda62cd-4cda77965023e778fa03141c"
+  }, 
+  "json": null, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/post"
+}
+]
+[2020-06-05 23:21:03,436][MainThread:21004][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:21:03,625][MainThread:21004][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:21:03,740][MainThread:21004][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:21:03,925][MainThread:21004][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:21:04,627][MainThread:21004][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:21:04,777][MainThread:21004][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:21:05,459][MainThread:21004][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:21:05,654][MainThread:21004][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:21:05,798][MainThread:21004][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:21:05,972][MainThread:21004][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:21:06,166][MainThread:21004][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): nls-gateway.cn-shanghai.aliyuncs.com:443]
+[2020-06-05 23:21:06,347][MainThread:21004][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://nls-gateway.cn-shanghai.aliyuncs.com:443 "POST /rest/v1/tts/async HTTP/1.1" 400 None]
+[2020-06-05 23:21:06,351][MainThread:21004][xt_Log][xt_Requests.py->post:110]	[DEBUG]	[RetryError(Attempts: 6, Value: <Response [400]>)]
+[2020-06-05 23:21:06,351][MainThread:21004][xt_Log][xt_Requests.py-><module>:221]	[DEBUG]	[<class 'requests.models.Response'>]
+[2020-06-05 23:21:06,351][MainThread:21004][xt_Log][xt_Requests.py-><module>:222]	[DEBUG]	[{"error_message":"Gateway:CLIENT_ERROR:Required request body is missing: public com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncPostResponse com.alibaba.nls.cloud.gateway.controller.TtsAsyncController.doTtsPostRequest(javax.servlet.http.HttpServletRequest,com.alibaba.nls.cloud.gateway.service.plumbing.tts.TtsAsyncRequest) throws com.alibaba.nls.cloud.NlsException","error_code":40000000,"request_id":"6380b1b3743e47c682ca6254b4bd8af7","url":"/rest/v1/tts/async","status":400}]
+[2020-06-05 23:23:07,415][MainThread:11408][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:23:08,906][MainThread:11408][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /post HTTP/1.1" 200 733]
+[2020-06-05 23:23:08,910][MainThread:11408][xt_Log][xt_Requests.py-><module>:229]	[DEBUG]	[<class 'xt_Response.ReqResult'>]
+[2020-06-05 23:23:08,910][MainThread:11408][xt_Log][xt_Requests.py-><module>:230]	[DEBUG]	[{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Length": "0", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.3319.102 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda635c-f6c9109849ccc684a481f9a4"
+  }, 
+  "json": null, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/post"
+}
+]
+[2020-06-05 23:23:23,739][MainThread:23668][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-05 23:23:25,072][MainThread:23668][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "POST /post HTTP/1.1" 200 799]
+[2020-06-05 23:23:25,073][MainThread:23668][xt_Log][xt_Requests.py-><module>:229]	[DEBUG]	[<class 'xt_Response.ReqResult'>]
+[2020-06-05 23:23:25,074][MainThread:23668][xt_Log][xt_Requests.py-><module>:230]	[DEBUG]	[{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {}, 
+  "headers": {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", 
+    "Accept-Charset": "gb2312,utf-8;q=0.7,*;q=0.7", 
+    "Accept-Encoding": "gzip,deflate,sdch", 
+    "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4", 
+    "Charset": "UTF-8", 
+    "Content-Encoding": "gzip,deflate,compress", 
+    "Content-Length": "0", 
+    "Content-Type": "application/json", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1866.237 Safari/537.36", 
+    "X-Amzn-Trace-Id": "Root=1-5eda636c-5bf5adb95890ebe9691178ed"
+  }, 
+  "json": null, 
+  "origin": "111.204.170.226", 
+  "url": "https://httpbin.org/post"
+}
+]

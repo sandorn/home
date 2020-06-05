@@ -7,9 +7,9 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-25 11:34:01
-#LastEditTime : 2020-06-03 18:41:05
+#FilePath     : /xjLib/xt_Alispeech/__init__.py
+#LastEditTime : 2020-06-05 23:25:07
 #Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 
 阿里云语音合成对接接口 - 简书
@@ -26,22 +26,29 @@ https://help.aliyun.com/knowledge_detail/130555.html?spm=a2c4g.11186631.2.4.4f6b
 
 由SSML控制合成效果_语音合成_智能语音交互-阿里云
 https://help.aliyun.com/document_detail/101645.html?spm=a2c4g.11174283.3.9.29807275qNaSDa
-
 '''
 import json
 import time
-from xt_String import md5, get_10_timestamp, string_split_join_with_maxlen_list
 
-from aliyunsdkcore.acs_exception.exceptions import ClientException, ServerException
+from aliyunsdkcore.acs_exception.exceptions import (ClientException,
+                                                    ServerException)
 from aliyunsdkcore.client import AcsClient  # 阿里云核心代码库
 from aliyunsdkcore.request import CommonRequest  # 阿里云官方核心代码库
+from pysnooper import snoop
 
 from ali_speech import NlsClient
-from ali_speech.callbacks import SpeechSynthesizerCallback, SpeechTranscriberCallback
-
+from ali_speech.callbacks import (SpeechSynthesizerCallback,
+                                  SpeechTranscriberCallback)
+from xt_Alispeech.config import Constant  # 常量参数
+from xt_Alispeech.config import SpeechReqMeta  # 默认参数
+from xt_Log import log
 from xt_Requests import SessionClient
-from xt_Alispeech.config import Constant  ##常量参数
-from xt_Alispeech.config import SpeechReqMeta  ##默认参数
+from xt_String import md5, string_split_join_with_maxlen_list
+from xt_Time import get_10_timestamp
+
+log = log()
+snooper = snoop(log.filename)
+print = log.debug
 
 
 def ReqLongSynthesizer(longtext, audioFile='', method='post', callback=None):
@@ -58,11 +65,12 @@ def ReqLongSynthesizer(longtext, audioFile='', method='post', callback=None):
         ReqSynthesizer(text, audioFile=audioFile, method=method, callback=callback)
 
 
-def ReqSynthesizer(text, audioFile='', method='post', callback=None):
+def ReqSynthesizer(text, format='wav', audioFile='', method='post', callback=None):
     # text, appkey=Constant.appKey, token=Constant.token, audioFile='', format='wav', sample_rate=16000, voice='Aida', volume=100, speech_rate=0, pitch_rate=0, callback=None):
     result = {}
     url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
     httpHeaders = {'Content-Type': 'application/json'}
+    SpeechReqMeta.format = format
     body_dict = {
         'appkey': SpeechReqMeta.appkey,
         'token': SpeechReqMeta.token,

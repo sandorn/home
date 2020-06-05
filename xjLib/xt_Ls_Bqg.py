@@ -1,27 +1,26 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-04-01 10:29:33
-# LastEditors  : Please set LastEditors
-# LastEditTime : 2020-06-04 15:58:31
-临时库  用于笔趣阁爬虫
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2020-04-01 10:29:33
+#FilePath     : /xjLib/xt_Ls_Bqg.py
+#LastEditTime : 2020-06-05 23:16:08
+#Github       : https://github.com/sandorn/home
+#==============================================================
 '''
 
 from xt_Ahttp import ahttpGet
+from xt_Log import log
+from xt_Requests import get
 from xt_String import Ex_Re_Clean, Ex_Str_Replace
-from xt_Requests import parse_get
-
-from pysnooper import snoop
 
 
 def arrangeContent(textlist):
-    temp_list = ["', '", '&nbsp;', r';\[笔趣看  www.biqukan.com\]', r'\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)', 'www.biqukan.com。', 'wap.biqukan.com', 'www.biqukan.com', 'm.biqukan.com', 'n.biqukan.com', '百度搜索“笔趣看小说网”手机阅读:', '百度搜索“笔趣看小说网”手机阅读：', '请记住本书首发域名:', '请记住本书首发域名：', '笔趣阁手机版阅读网址:', '笔趣阁手机版阅读网址：', '<br />', r';\[笔趣看  \]']
+    temp_list = ["', '", '&nbsp;', r';\[笔趣看  www.biqukan.com\]', r'\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)', 'www.biqukan.com。', 'wap.biqukan.com', 'www.biqukan.com', 'm.biqukan.com', 'n.biqukan.com', '百度搜索“笔趣看小说网”手机阅读:', '百度搜索“笔趣看小说网”手机阅读：', '请记住本书首发域名:', '请记住本书首发域名：', '笔趣阁手机版阅读网址:', '笔趣阁手机版阅读网址：', '<br />', r';\[笔趣看  \]', r'\[笔趣看 \]']
     adict = {
         '<br />': '\n',
         '\r\r': '\n',
@@ -79,7 +78,7 @@ def get_biqugeinfo_url(target):
 
 
 def get_contents(index=None, target=None, lock=None):
-    response = parse_get(target).element
+    response = get(target).element
 
     _title = "".join(response.xpath('//h1/text()'))
     title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
@@ -110,5 +109,4 @@ def map_get_contents_byahttp(*args):
 
 
 if __name__ == "__main__":
-    from xt_Log import log
-    print = log().debug
+    pass

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-04 15:57:23
+#LastEditTime : 2020-06-05 11:51:35
 # author:      he.zhiming
 '''
 
@@ -48,7 +48,7 @@ def _make_filename(level=10):
 class log(object):
     def __init__(self, level=logging.DEBUG, logger=__name__):
         self.level = level
-        self.log_name = _make_filename(level=self.level)
+        self.filename = _make_filename(level=self.level)
         # #定义字典
         self.conf_dic = {
             'version': 1,
@@ -70,7 +70,7 @@ class log(object):
                     'level': self.level,
                     'class': 'logging.handlers.RotatingFileHandler',
                     'formatter': 'standard',
-                    'filename': self.log_name,
+                    'filename': self.filename,
                     'maxBytes': 1024 * 1024 * 5,
                     'backupCount': 5,
                     'encoding': 'utf-8',

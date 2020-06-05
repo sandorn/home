@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 20:11:54
-#LastEditTime : 2020-06-03 14:10:36
+#LastEditTime : 2020-06-04 18:44:09
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -62,28 +62,26 @@ class ReqSynthesizer_QThread_read(QThread):
                     cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, textlist=[], format='wav', *args, **kwargs):
+    def __init__(self, textlist=[], format='wav'):
         super().__init__()
         self._target = ReqSynthesizer
-        self._args = args
-        self._kwargs = kwargs
         self.textlist = textlist
         self.datas_list = []
         self._running = True
-        pygame.mixer.init(frequency=8000)  #!使用16000和默认,声音不行
+        pygame.mixer.init(frequency=8000)  # !使用16000和默认,声音不行
         self.format = format
         if self.format == 'wav':
             self.pym = pygame.mixer
         else:
             self.pym = pygame.mixer.music
-        self.main_monitor()  ##启动语音生成
+        self.main_monitor()  # 启动语音生成
         self.start()
 
     def main_monitor(self):
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
-                data = self._target(text, format=self.format, audioFile=None, *self._args, **self._kwargs)['data']
+                data = self._target(text, format=self.format, audioFile=None)['data']
                 self.datas_list.append(data)
                 if not self._running:
                     break
@@ -97,13 +95,13 @@ class ReqSynthesizer_QThread_read(QThread):
     def run(self):
         while self._running:
             if self.pym.get_busy():
-                ##正在播放，等待
+                # 正在播放，等待
                 QThread.msleep(500)
                 print('self.py_mixer.playing......')
                 continue
             else:
                 if len(self.datas_list) > 0:
-                    ##朗读完毕，有未加载数据
+                    # 朗读完毕，有未加载数据
                     _data = self.datas_list.pop(0)
                     if self.format == 'wav':
                         pygame.mixer.Sound(_data).play()
@@ -112,13 +110,15 @@ class ReqSynthesizer_QThread_read(QThread):
                         pygame.mixer.music.play(1, 0.07)
                     print('self.py_mixer new loading......')
                     continue
-                elif len(self.textlist) == 0 and len(self.datas_list) == 0:
-                    ##朗读完毕，且无未加载数据
-                    self.stop()
-                    print('all recod play finished!!!!!!')
-                    self._signal.emit()
 
-        ##停止标记
+                if not self._MainMonitor.isAlive():
+                    # #合成语音线程结束，朗读完毕，且无未加载数据
+                    if len(self.textlist) == 0 and len(self.datas_list) == 0:
+                        self.stop()
+                        print('all recod play finished!!!!!!')
+                        self._signal.emit()
+
+        # 停止标记
         self.pym.stop()
         print('self.py_mixer.stoping!!!!!!')
 
@@ -139,28 +139,26 @@ class ReqSynthesizer_Thread_read(Thread):
                     cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, textlist=[], format='wav', *args, **kwargs):
+    def __init__(self, textlist=[], format='wav'):
         super().__init__()
         self._target = ReqSynthesizer
-        self._args = args
-        self._kwargs = kwargs
         self.textlist = textlist
         self.datas_list = []
         self._running = True
-        pygame.mixer.init(frequency=8000)  #!使用16000和默认,声音不行
+        pygame.mixer.init(frequency=8000)  # !使用16000和默认,声音不行
         self.format = format
         if self.format == 'wav':
             self.pym = pygame.mixer
         else:
             self.pym = pygame.mixer.music
-        self.main_monitor()  ##启动语音生成
+        self.main_monitor()  # 启动语音生成
         self.start()
 
     def main_monitor(self):
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
-                data = self._target(text, format=self.format, audioFile=None, *self._args, **self._kwargs)['data']
+                data = self._target(text, format=self.format, audioFile=None)['data']
                 self.datas_list.append(data)
                 if not self._running:
                     break
@@ -175,13 +173,13 @@ class ReqSynthesizer_Thread_read(Thread):
 
         while self._running:
             if self.pym.get_busy():
-                ##正在播放，等待
+                # 正在播放，等待
                 QThread.msleep(500)
                 print('self.py_mixer.playing......')
                 continue
             else:
                 if len(self.datas_list) > 0:
-                    ##朗读完毕，有未加载数据
+                    # 朗读完毕，有未加载数据
                     _data = self.datas_list.pop(0)
                     if self.format == 'wav':
                         pygame.mixer.Sound(_data).play()
@@ -190,13 +188,15 @@ class ReqSynthesizer_Thread_read(Thread):
                         pygame.mixer.music.play(1, 0.07)
                     print('self.py_mixer new loading......')
                     continue
-                elif len(self.textlist) == 0 and len(self.datas_list) == 0:
-                    ##朗读完毕，且无未加载数据
-                    self.stop()
-                    print('all recod play finished!!!!!!')
-                    self._signal.emit()
 
-        ##停止
+                if not self._MainMonitor.isAlive():
+                    # #合成语音线程结束，朗读完毕，且无未加载数据
+                    if len(self.textlist) == 0 and len(self.datas_list) == 0:
+                        self.stop()
+                        print('all recod play finished!!!!!!')
+                        self._signal.emit()
+
+        # 停止
         self.pym.stop()
         print('self.py_mixer.stoping!!!!!!')
 
