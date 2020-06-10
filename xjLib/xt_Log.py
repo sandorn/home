@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-05 11:51:35
+#LastEditTime : 2020-06-06 12:26:33
 # author:      he.zhiming
 '''
 
@@ -59,13 +59,11 @@ class log(object):
             },
             'filters': {},
             'handlers': {
-                # 打印到终端的日志
                 'console': {
                     'level': self.level,
                     'class': 'logging.StreamHandler',
                     'formatter': 'simple',
                 },
-                # 保存到日志文件  # 日志大小 5M  # 日志文件的编码
                 'default': {
                     'level': self.level,
                     'class': 'logging.handlers.RotatingFileHandler',

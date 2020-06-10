@@ -9,42 +9,48 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-03 13:53:16
+#LastEditTime : 2020-06-08 18:33:35
 '''
 import asyncio
 import ctypes
-from random import random
 from functools import partial
+from random import random
 
 import aiohttp
+from pysnooper import snoop
 
 from xt_Head import myhead
+from xt_Log import log
 from xt_Response import ReqResult
 
-__all__ = ('map', 'Session', 'get', 'options', 'head', 'post', 'put', 'patch', 'delete')
+log = log()
+snooper = snoop(log.filename)
+# print = log.debug
+
+__all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
 timesout = 20
 
 
-class Session:
+class SessionMeta:
     def __init__(self, *args, **kwargs):
         self.session = self
         self.headers = myhead
         self.cookies = {}
-        self.request_pool = []
+        # self.request_pool = []
 
     def __getattr__(self, name):
         if name in ['get', 'options', 'head', 'post', 'put', 'patch', 'delete']:
-            new_req = AsyncRequestTask(headers=self.headers, session=self.session, cookies=self.cookies)
-            new_req.__getattr__(name)
-            self.request_pool.append(new_req)
-            return new_req.get_params
+            new_AyReqTaskMeta = AyReqTaskMeta(headers=self.headers, session=self.session, cookies=self.cookies)
+            new_AyReqTaskMeta.__getattr__(name)
+            # self.request_pool.append(new_AyReqTaskMeta)
+            return new_AyReqTaskMeta.get_params
 
     def __repr__(self):
         return f"<Ahttp Session [id:{id(self.session)} client]>"
 
 
-class AsyncRequestTask:
+class AyReqTaskMeta:
     def __init__(self, *args, session=None, headers=None, cookies=None, **kwargs):
         self.session = session
         self.headers = headers
@@ -80,7 +86,7 @@ class AsyncRequestTask:
         return self
 
     def run(self):
-        future = asyncio.ensure_future(AyTask_run(self))
+        future = asyncio.ensure_future(AyReqTask_run(self))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(future)
         new_res = ReqResult(self.result, self.content, id(self))
@@ -88,7 +94,7 @@ class AsyncRequestTask:
 
 
 def create_session(method, *args, **kw):
-    session = Session()
+    session = SessionMeta()  # SessionMeta类
     _dict = {"get": session.get, "post": session.post, "options": session.options, "head": session.head, "put": session.put, "patch": session.patch, "delete": session.delete}
     return _dict[method](*args, **kw)
 
@@ -103,14 +109,14 @@ patch = partial(create_session, "patch")
 delete = partial(create_session, "delete")
 
 
-async def AyTask_run(self):
+async def AyReqTask_run(self):
     # #单个任务，从task.run()调用
     async def _run():
         async with aiohttp.ClientSession(cookies=self.cookies) as session:
-            async with session.request(self.method, self.url, *self.args, timeout=timesout, verify_ssl=False, headers=self.headers or self.session.headers or myhead, **self.kw) as sessReq:
-                assert sessReq.status in [200, 201, 302]
+            async with session.request(self.method, self.url, *self.args, timeout=timesout, verify_ssl=False, headers=self.headers, **self.kw) as sessReq:
                 self.content = await sessReq.read()
                 self.result = sessReq
+                assert sessReq.status in [200, 201, 302]
 
     max_try = 10
     times = 0
@@ -157,8 +163,9 @@ async def multi_req(tasks, pool, result_list, single_session=True):
         new_tasks = []
         for index, task in enumerate(tasks):
             if id(task.session) not in sessions_list:
-                sessions_list[id(task.session)] = aiohttp.ClientSession(connector_owner=False, connector=myconn, cookies=task.session.cookies)
-            new_tasks.append(asyncio.ensure_future(fetch_async(task, result_list, sessions_list[id(task.session)],)))
+                async with aiohttp.ClientSession(connector_owner=False, connector=myconn, cookies=task.session.cookies) as mysession:
+                    sessions_list[id(task.session)] = mysession
+                new_tasks.append(asyncio.ensure_future(fetch_async(task, result_list, sessions_list[id(task.session)],)))
 
         await asyncio.wait(new_tasks)
         await asyncio.wait([asyncio.ensure_future(v.close()) for k, v in sessions_list.items()])
@@ -167,6 +174,7 @@ async def multi_req(tasks, pool, result_list, single_session=True):
 
 
 async def fetch_async(task, result_list, session):
+
     async def _run():
         headers = task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers or myhead
         async with session.request(task.method, task.url, timeout=timesout, headers=headers, *task.args, **task.kw) as sessReq:
@@ -195,13 +203,37 @@ async def fetch_async(task, result_list, session):
             continue  # 继续下一轮循环
 
 
-def ahttpGet(url, params=None, **kwargs):
-    task = get(url, params=params, **kwargs)
+def ahttpGet(url, *args, **kwargs):
+    task = get(url, *args, **kwargs)
     res = task.run()
     return res
 
 
-def ahttpGetAll(urls, pool=100, single_session=True, params=None, **kwargs):
-    tasks = [get(url, params=params, **kwargs) for url in urls]
+def ahttpPost(url, *args, **kwargs):
+    task = post(url, *args, **kwargs)
+    res = task.run()
+    return res
+
+
+def ahttpGetAll(urls, pool=100, single_session=True, *args, **kwargs):
+    tasks = [get(url, *args, **kwargs) for url in urls]
     resps = run(tasks, pool=pool, single_session=single_session)
     return resps
+
+
+def ahttpPostAll(urls, pool=100, single_session=True, *args, **kwargs):
+    tasks = [post(url, *args, **kwargs) for url in urls]
+    resps = run(tasks, pool=pool, single_session=single_session)
+    return resps
+
+
+if __name__ == "__main__":
+    url = "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async"  # 400
+    url_get = "https://httpbin.org/get"  # 返回head及ip等信息
+    url_post = "https://httpbin.org/post"  # 返回head及ip等信息
+    res = ahttpGet(url_get)
+    print(res.text)
+    res = ahttpPost(url_post)
+    print(res.text)
+    res = ahttpGetAll([url_get, url])
+    print(res)

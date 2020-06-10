@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-05 23:29:30
+#LastEditTime : 2020-06-08 18:36:53
 requests 简化调用
 '''
 # from __future__ import absolute_import, unicode_literals
@@ -25,13 +25,13 @@ from pysnooper import snoop
 from xt_Log import log
 log = log()
 snooper = snoop(log.filename)
-print = log.debug
+# print = log.debug
 
 RETRY_TIME = 6  # 最大重试次数
 Retry = retry(wait_random_min=20, wait_random_max=1000, stop_max_attempt_number=RETRY_TIME, retry_on_exception=lambda x: True, retry_on_result=lambda ret: not ret)
 
 
-def parse_get(url, params=None, **kwargs):
+def parse_get(url, *args, **kwargs):
     attempts = 0
     response = None
     kwargs.setdefault('headers', myhead)
@@ -39,7 +39,7 @@ def parse_get(url, params=None, **kwargs):
 
     while attempts < RETRY_TIME:
         try:
-            response = requests.get(url, params=params, **kwargs)
+            response = requests.get(url, *args, **kwargs)
             response.raise_for_status()
             # $ assert response.status_code in [200, 201, 302]
         except Exception as err:
@@ -51,7 +51,7 @@ def parse_get(url, params=None, **kwargs):
     return response
 
 
-def parse_post(url, data=None, json=None, **kwargs):
+def parse_post(url, *args, **kwargs):
     attempts = 0
     response = None
     kwargs.setdefault('headers', myhead)
@@ -59,7 +59,7 @@ def parse_post(url, data=None, json=None, **kwargs):
 
     while attempts < RETRY_TIME:
         try:
-            response = requests.post(url, data=data, json=json, **kwargs)
+            response = requests.post(url, *args, **kwargs)
             response.raise_for_status()
             # $ assert response.status_code in [200, 201, 302]
         except Exception as err:
@@ -71,7 +71,7 @@ def parse_post(url, data=None, json=None, **kwargs):
     return response
 
 
-def get(url, params=None, **kwargs):
+def get(url, *args, **kwargs):
     response = None
     kwargs.setdefault('headers', myhead)
     kwargs.setdefault('allow_redirects', True)  # @启动重定向
@@ -79,7 +79,7 @@ def get(url, params=None, **kwargs):
     @Retry
     def _run():
         nonlocal response
-        response = requests.get(url, params=params, **kwargs)
+        response = requests.get(url, *args, **kwargs)
         return response
 
     try:
@@ -94,7 +94,7 @@ def get(url, params=None, **kwargs):
     return response
 
 
-def post(url, data=None, json=None, **kwargs):
+def post(url, *args, **kwargs):
     response = None
     kwargs.setdefault('headers', myhead)
     kwargs.setdefault('allow_redirects', True)
@@ -102,7 +102,7 @@ def post(url, data=None, json=None, **kwargs):
     @Retry
     def _run():
         nonlocal response
-        response = requests.post(url, data=data, json=json, **kwargs)
+        response = requests.post(url, *args, **kwargs)
         return response
 
     try:
@@ -118,95 +118,50 @@ def post(url, data=None, json=None, **kwargs):
 
 
 class SessionClient(object):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.session = requests.session()
         self.cookies = requests.cookies.RequestsCookieJar()
 
-    def _get(self, url, params=None, **kwargs):  # #原版
-        return self.session.get(url, params=params, cookies=self.cookies, **kwargs)
+    @Retry
+    def request(self):
+        self.result = self.session.request(self.method, self.url, *self.args, **self.kwargs)
+        return self.result
 
-    def _post(self, url, data=None, json=None, **kwargs):  # #原版
-        return self.session.post(url, data=data, json=json, cookies=self.cookies, **kwargs)
-
-    def parse_get(self, url, params=None, **kwargs):
-        attempts = 0
-        response = None
-        while attempts < RETRY_TIME:
-            try:
-                response = self._get(url, params=params, **kwargs)
-                response.raise_for_status()
-                # $ assert response.status_code in [200, 201, 302]
-            except Exception as err:
-                attempts += 1
-                print(f'session.get {attempts} times ; {repr(err)}')
-            else:
-                self.update_cookies(response.cookies)
-                return ReqResult(response, response.content, id(response))
-
-        return response
-
-    def parse_post(self, url, data=None, json=None, **kwargs):
-        attempts = 0
-        response = None
-        while attempts < RETRY_TIME:
-            try:
-                response = self._post(url, data=data, json=json, **kwargs)
-                response.raise_for_status()
-                # $ assert response.status_code in [200, 201, 302]
-            except Exception as err:
-                attempts += 1
-                print(f'session.post {attempts} times ; {repr(err)}')
-            else:
-                self.update_cookies(response.cookies)
-                return ReqResult(response, response.content, id(response))
-
-        return response
-
-    def get(self, url, params=None, **kwargs):
-        response = None
-        kwargs.setdefault('headers', myhead)
-        kwargs.setdefault('allow_redirects', True)  # @启动重定向
-
-        @Retry
-        def _run():
-            nonlocal response
-            response = self._get(url, params=params, **kwargs)
-            return response
-
+    def _run(self):
         try:
-            response = _run()
+            response = self.request()
         except Exception as err:
             print(repr(err))
         else:
-            self.update_cookies(response.cookies)
             # #返回正确结果
+            self.update_cookies(response.cookies)
             return ReqResult(response, response.content, id(response))
 
         # #返回错误结果
-        return response
+        return ReqResult(self.result, self.result.content, id(self.result))
 
-    def post(self, url, data=None, json=None, **kwargs):
-        response = None
+    def __create_params(self, *args, **kwargs):
         kwargs.setdefault('headers', myhead)
         kwargs.setdefault('allow_redirects', True)  # @启动重定向
-
-        @Retry
-        def _run():
-            nonlocal response
-            response = self._post(url, data=data, json=json, **kwargs)
-            return response
-
-        try:
-            response = _run()
-        except Exception as err:
-            print(repr(err))
+        self.url = args[0]
+        self.args = args[1:]
+        if "callback" in kwargs:
+            self.callback = kwargs['callback']
+            kwargs.pop("callback")
         else:
-            self.update_cookies(response.cookies)
-            # #返回正确结果
-            return ReqResult(response, response.content, id(response))
+            self.callback = None
 
-        # #返回错误结果
-        return response
+        if "headers" in kwargs:
+            self.headers = kwargs['headers']
+            kwargs.pop("headers")
+        self.kwargs = kwargs
+
+        return self._run()
+
+    def __getattr__(self, method):
+        if method in ['get', 'post']:
+            self.method = method
+            return self.__create_params  # !不带括号,传递*args, **kwargs参数
 
     def update_cookies(self, cookie_dict):
         self.session.cookies.update(cookie_dict)
@@ -224,23 +179,22 @@ if __name__ == '__main__':
     url_get = "https://httpbin.org/get"  # 返回head及ip等信息
     url_post = "https://httpbin.org/post"  # 返回head及ip等信息
 
-    r = s.post(url_post)
-    print(type(r))
+    r = post(url_post)
     print(r.text)  # print(r['text'])  r.text
 
 
 '''
     set_cookies(cookies)
 
-    #将CookieJar转为字典：
+    # 将CookieJar转为字典：
     cookies = requests.utils.dict_from_cookiejar(r.cookies)
 
-    #将字典转为CookieJar：
+    # 将字典转为CookieJar：
     cookies = requests.utils.cookiejar_from_dict(cookie_dict, cookiejar=None, overwrite=True)
     可以把headers这个请求头直接转成cookiejar类型放入cookies里面
     cookies = requests.utils.cookiejar_from_dict(headers, cookiejar=None, overwrite=True)
 
-    #https://blog.csdn.net/falseen/article/details/46962011
+    # https://blog.csdn.net/falseen/article/details/46962011
     用cookies属性的update方法更新cookie
 
     cookie_dict = {"a":1}

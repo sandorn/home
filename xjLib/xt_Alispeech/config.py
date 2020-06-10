@@ -7,10 +7,11 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
-#LastEditTime : 2020-06-05 18:22:13
+#FilePath     : /xjLib/xt_Alispeech/config.py
+#LastEditTime : 2020-06-09 11:23:57
 #Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
+
 用户登录名称 sandorn_ram@1915355838841755.onaliyun.com
 登录密码 rH17b#9{$gDqRiJXB3flDaWqbMPAEz{n
 user1 = {
@@ -61,3 +62,24 @@ class SpeechReqMeta:
     volume = 100
     speech_rate = 0
     pitch_rate = 0
+
+
+class SynResult:
+    '''合成结果'''
+    response = ''
+    filename = ''
+    callback = ''
+
+    def __repr__(self):
+        return f'filename:<{self.filename}>,response:{self.response},callback:<{self.callback}>'
+
+
+class TransResult:
+    '''识别结果'''
+    text = ''
+    name = ''
+    task_id = ''
+    response = ''
+
+    def __repr__(self):
+        return f'text:<{self.text}>,task_id:<{self.task_id}>'

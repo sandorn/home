@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 20:54:21
 #FilePath     : /项目包/BQG.ScrapySpider/spiders/spilerChemy.py
-#LastEditTime : 2020-06-04 14:03:12
+#LastEditTime : 2020-06-08 20:28:18
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -21,7 +21,6 @@ parent_path = os.path.dirname(this_path)
 sys.path.append(parent_path)
 # #项目工作目录
 sys.path.append(os.getcwd())
-
 
 import re
 
@@ -78,7 +77,7 @@ class Spider(scrapy.Spider):
                 '''
             Create Table If Not Exists %s(
             `ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-            `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+            `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,where python
             `INDEX` int(10) NOT NULL,
             `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
             `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,

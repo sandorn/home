@@ -9,14 +9,14 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-03 11:41:56
+#LastEditTime : 2020-06-08 20:40:28
 '''
 
 import MySQLdb
 import pandas
 import pymysql
 
-from xt_DAO.dbconf import db_conf
+from .dbconf import db_conf
 
 
 class engine(object):

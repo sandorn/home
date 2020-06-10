@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-02-14 13:57:28
 #FilePath     : /xjLib/xt_String.py
-#LastEditTime : 2020-06-05 18:48:50
+#LastEditTime : 2020-06-09 13:44:54
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 #  string  |  dict  |  list  |  tupe  |  json
@@ -154,7 +154,9 @@ def Ex_Str_Replace(oldtext, adict):
     return oldtext
 
 
-def string_split_join_with_maxlen_list(string, maxlen=300):
+def string_split_limited_list(string, maxlen=300):
+    # #仅按照长度分割
+    # #newText = [string[i:i+maxlen] for i in range(0, len(string), maxlen)]
     newText = []
     _temp = ''
 

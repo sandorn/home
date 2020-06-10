@@ -8,22 +8,23 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-03-25 10:13:07
 #FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-#LastEditTime : 2020-06-05 14:23:06
+#LastEditTime : 2020-06-08 20:39:45
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 '''
 
 
-import subprocess
-
-from sqlalchemy import create_engine
+from sqlalchemy import (TIMESTAMP, Column, DateTime, Enum, Integer, Numeric,
+                        String, create_engine)
+from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker, validates
 from sqlalchemy.sql import text
 
-from xt_DAO.dbconf import make_connect_string
-from xt_DAO.xt_sqlbase import SqlBase, SqlMeta
+# 此处用.引用在其他地方可以操作，本文件不可以
+from .dbconf import make_connect_string
+from .xt_sqlbase import SqlBase, SqlMeta
 
 
 class SqlConnection(SqlBase):
@@ -163,76 +164,18 @@ def creat_sqlalchemy_db_class(tablename, filename=None, key='default'):
     根据已有数据库生成模型
     sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf
     '''
+    import subprocess
+
     if filename is None:
         filename = tablename
     com_list = f'sqlacodegen --tables {tablename} --outfile {filename}_db.py {make_connect_string(key)}'
+
     subprocess.call(com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
 if __name__ == '__main__':
-
-    def main():
-        from sqlalchemy.orm import validates
-        from sqlalchemy import Column, DateTime, String, Enum  # Integer, Numeric, TIMESTAMP
-        from sqlalchemy.dialects.mysql import INTEGER
-
-        Base = declarative_base()  # 生成一个SQLORM基类
-        '''metadata = Base.metadata'''
-
-        class Users(Base, SqlMeta):
-            # #多个父类，继承model的一些方法
-            # #解决下标取值赋值、打印显示、生成字段列表
-            __tablename__ = 'users2'
-
-            ID = Column(INTEGER(6), primary_key=True)
-            username = Column(String(24), nullable=False)
-            password = Column(String(16), nullable=False, server_default='123456')
-            手机 = Column(String(11), nullable=False)
-            代理人编码 = Column(String(8))
-            会员级别 = Column(Enum('SSS', 'SS', 'S', 'A', "\\\\'B", 'C'), server_default='C')
-            会员到期日 = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
-            登陆次数 = Column(INTEGER(2))
-            备注 = Column(String(255))  # db.ForeignKey('roles.id') 外键
-
-            @validates('手机')  # 对字段的校验
-            def validate_手机(self, key, 手机):
-                assert len(手机) == 11
-                return 手机
-
-        sqlhelper = SqlConnection(Users, 'TXbx')
-        print(Users)
-        res = sqlhelper.select(10)
-        print(res)
-        user2 = [{'username': '刘澈', 'password': '234567', '手机': '17610786502', '代理人编码': '10005393', '会员级别': 'SSS', '会员到期日': '8888,12,31', }, {'username': '刘新军', '手机': '13910118122', }]
-
-        sqlhelper.insert_all(user2)
-        sqlhelper.update({'手机': '17610786502'}, {'会员到期日': '7777,12,31'})
-        sqlhelper.update({'username': '刘澈'}, {'会员到期日': '9999,12,31'})
-        res = sqlhelper.filter_by({"username": "刘澈"})
-        print(1111, res)
-        res[0]['会员级别'] = 'A'
-        sqlhelper.session.commit()
-        print(res[0].getColumns())
-        for row in sqlhelper.select(conditions={"username": "刘澈"}):
-            print(row.username, row.ID)
-        res = sqlhelper.select(conditions={"username": "刘澈"})
-        print(2222, res)
-        res = sqlhelper.select(conditions={"username": "刘澈"})
-        print(3333, res)
-        res = sqlhelper.select(conditions={"username": "刘澈"}, Columns=['username', 'ID'])
-        print(4444, res)
-        res = sqlhelper.select(2, conditions={"username": "刘澈"}, Columns=['username', 'ID'])
-        print(5555, res)
-        res = sqlhelper.select(conditions={"username": "刘澈"}, count=1)
-        print(6666, res)
-        print(6666, res[0]['username'], res[0].username)
-        res = sqlhelper.from_statement("SELECT username,ID FROM users2 where username=:username limit 4", {"username": "刘澈"})
-        print(7777, sqlhelper.baseclass.ToDict(res))
-        for item in res:
-            print(8888, Users.ToDict(item))
-
-    main()
-
+    pass
+    # /py学习/sqlalchemy测试.py
 '''
     fiter举例：
     query(User.name).filter(User.fullname==’Ed Jones’)

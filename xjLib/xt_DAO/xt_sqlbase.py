@@ -10,7 +10,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 01:37:18
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-03 09:40:52
+#LastEditTime : 2020-06-08 20:43:34
 '''
 
 
@@ -50,7 +50,7 @@ class SqlBase(object):
 
 
 class SqlMeta:
-
+    # #扩展DB模型的方法
     # #作用：支持下标引用和赋值
     def __getitem__(self, attr):
         # return  self.__getattribute__(attr)
