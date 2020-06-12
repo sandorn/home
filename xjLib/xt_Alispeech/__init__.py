@@ -8,24 +8,9 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-05-25 11:34:01
 #FilePath     : /xjLib/xt_Alispeech/__init__.py
-#LastEditTime : 2020-06-09 11:44:29
+#LastEditTime : 2020-06-11 14:54:05
 # Github       : https://github.com/sandorn/home
 # ==============================================================
-
-阿里云语音合成对接接口 - 简书
-https://www.jianshu.com/p/3a462046b574
-
-RAM访问控制
-https://ram.console.aliyun.com/users/sandorn_ram
-
-由SSML控制合成效果_由SSML控制合成效果_长文本语音合成_智能语音交互-阿里云
-https://help.aliyun.com/knowledge_detail/146123.html?spm=a2c4g.11186631.2.5.4f6b485aLTLTLv
-
-RESTful API_RESTful API_长文本语音合成_智能语音交互-阿里云
-https://help.aliyun.com/knowledge_detail/130555.html?spm=a2c4g.11186631.2.4.4f6b485aLTLTLv
-
-由SSML控制合成效果_语音合成_智能语音交互-阿里云
-https://help.aliyun.com/document_detail/101645.html?spm=a2c4g.11174283.3.9.29807275qNaSDa
 '''
 import json
 import time
@@ -39,12 +24,12 @@ from pysnooper import snoop
 from ali_speech import NlsClient
 from ali_speech.callbacks import (SpeechSynthesizerCallback,
                                   SpeechTranscriberCallback)
-from .config import Constant  # 常量参数
-from .config import SpeechReqMeta  # 默认参数
-from .config import GetToken, SynResult, TransResult
+from .conf import Constant  # 常量参数
+from .conf import SpeechArgs  # 默认参数
+from .conf import SynResult, TransResult
 from xt_Log import log
-from xt_Requests import SessionClient
-from xt_String import md5, string_split_limited_list
+from xt_Requests import SessionClient, parse_get, parse_post
+from xt_String import md5, string_split_limited_list, class_to_dict
 from xt_Time import get_10_timestamp
 
 log = log()
@@ -70,34 +55,25 @@ def ReqLongSynthesizer(longtext, savefile=True, method='post', callback=None):
 
 
 def ReqSynthesizer(text, format='wav', savefile=True, method='post', callback=None):
-    # text, appkey=Constant.appKey, token=Constant.token, audioFile='', format='wav', sample_rate=16000, voice='Aida', volume=100, speech_rate=0, pitch_rate=0, callback=None):
+    # text, appkey=Constant().appKey, token=Constant().token, audioFile='', format='wav', sample_rate=16000, voice='Aida', volume=100, speech_rate=0, pitch_rate=0, callback=None):
     result = SynResult()
     url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
     httpHeaders = {'Content-Type': 'application/json'}
-    SpeechReqMeta.format = format
-    body_dict = {
-        'appkey': SpeechReqMeta.appkey,
-        'token': SpeechReqMeta.token,
-        'text': text,
-        'format': SpeechReqMeta.format,
-        'sample_rate': SpeechReqMeta.sample_rate,
-        'voice': SpeechReqMeta.voice,
-        'volume': SpeechReqMeta.volume,
-        'speech_rate': SpeechReqMeta.speech_rate,
-        'pitch_rate': SpeechReqMeta.pitch_rate,
-    }
+    args_dict = class_to_dict(SpeechArgs())
+    args_dict['format'] = format  # #更新
+    args_dict['text'] = text  # 添加
 
     session = SessionClient()
     session.update_headers(httpHeaders)
     if method == 'get':
-        result.response = session.get(url, params=body_dict)
+        result.response = session.get(url, params=args_dict)
     else:
-        result.response = session.post(url, json=body_dict)
+        result.response = session.post(url, json=args_dict)
 
     if 'audio/mpeg' == result.response.headers['Content-Type']:
 
         if savefile:
-            result.filename = f'{md5(text)}_{SpeechReqMeta.voice}_{round(SpeechReqMeta.sample_rate/1000)}K.{format}'
+            result.filename = f'''{md5(text)}_{ args_dict['voice'] }_{args_dict['sample_rate']//1000}K.{args_dict['format']}'''
             with open(result.filename, mode='wb') as f:
                 f.write(result.response.content)
             print(result.filename, 'Request succeed!')
@@ -109,49 +85,36 @@ def ReqSynthesizer(text, format='wav', savefile=True, method='post', callback=No
 
 
 class synthesizeClass:
-    def __init__(self, text=None, appkey=Constant.appKey, token=Constant.token, savefile=True, format='wav', sample_rate=16000, voice='Aida', volume=100, speech_rate=0, pitch_rate=0, callback=None, method='post'):
+    def __init__(self, text=None, savefile=True, callback=None, method='post'):
         self.session = SessionClient()
         self.session.update_headers({'Content-Type': 'application/json'})
         self.method = method
         self.callback = callback
         self.url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
-        self.appkey = appkey
-        self.token = token or GetToken()[0]
-        self.text = text
         self.savefile = savefile
-        # self.audioFile = md5(self.text)
-        self.format = format
-        self.sample_rate = sample_rate
-        self.voice = voice
-        self.volume = volume
-        self.speech_rate = speech_rate
-        self.pitch_rate = pitch_rate
         self.result = SynResult()
-        self.body_dict = {'appkey': self.appkey, 'token': self.token, 'text': self.text, 'format': self.format, 'sample_rate': self.sample_rate, 'voice': self.voice, 'volume': self.volume, 'speech_rate': self.speech_rate, 'pitch_rate': self.pitch_rate}
+        self.args_dict = class_to_dict(SpeechArgs())
+        self.args_dict['text'] = text  # 添加
 
-    # #设置参数，更新body_dict
     def setparams(self, attr, value):
-        self.__setattr__(attr, value)
-        '''
-        if attr == 'text':
-            self.audioFile = md5(self.text)
-        '''
-        if attr in self.body_dict.keys():
-            self.body_dict[attr] = value
+        if attr in self.args_dict.keys():
+            self.args_dict[attr] = value
+        elif hasattr(self, attr):
+            setattr(self, attr, value)
 
     def run(self):
 
         if self.method == 'post':
-            self.result.response = self.session.post(self.url, json=self.body_dict)
+            self.result.response = self.session.post(self.url, json=self.args_dict)
         else:
-            self.result.response = self.session.get(self.url, params=self.body_dict)
+            self.result.response = self.session.get(self.url, params=self.args_dict)
         return self._handle_result()
 
     def _handle_result(self):
         if 'audio/mpeg' == self.result.response.headers['Content-Type']:
 
             if self.savefile:
-                self.result.filename = f'{md5(self.text)}_{self.voice}_{round(self.sample_rate/1000)}K.{self.format}'
+                self.result.filename = f'''{md5(self.args_dict['text'] )}_{self.args_dict['voice'] }_{self.args_dict['sample_rate'] //1000}K.{self.args_dict['format']}'''
                 with open(self.result.filename, mode='wb') as f:
                     f.write(self.result.response.content)
                 print(self.result.filename, 'Request succeed!')
@@ -191,19 +154,22 @@ class Synthesizer_MyCallback(SpeechSynthesizerCallback):
 def Synthesizerprocess(text, callback=Synthesizer_MyCallback):
     client = NlsClient()
     client.set_log_level('INFO')
+    args_dict = class_to_dict(SpeechArgs())
+    args_dict['format'] = format  # #更新
+    args_dict['text'] = text  # 添加
     audioFile = md5(text)
-    filename = f'{audioFile}_{SpeechReqMeta.voice}_{round(SpeechReqMeta.sample_rate/1000)}K.{SpeechReqMeta.format}'
+    filename = f'''{audioFile}_{args_dict['voice']}_{args_dict['sample_rate']//1000}K.{args_dict['format']}'''
     callbackfunc = callback(filename)
     synthesizer = client.create_synthesizer(callbackfunc)
-    synthesizer.set_appkey(SpeechReqMeta.appkey)
-    synthesizer.set_token(SpeechReqMeta.token)
-    synthesizer.set_voice(SpeechReqMeta.voice)
+    synthesizer.set_appkey(args_dict['appkey'])
+    synthesizer.set_token(args_dict['token'])
+    synthesizer.set_voice(args_dict['voice'])
     synthesizer.set_text(text)
-    synthesizer.set_format(SpeechReqMeta.format)
-    synthesizer.set_sample_rate(SpeechReqMeta.sample_rate)
-    synthesizer.set_volume(SpeechReqMeta.volume)
-    synthesizer.set_speech_rate(SpeechReqMeta.speech_rate)
-    synthesizer.set_pitch_rate(SpeechReqMeta.pitch_rate)
+    synthesizer.set_format(args_dict['format'])
+    synthesizer.set_sample_rate(args_dict['sample_rate'])
+    synthesizer.set_volume(args_dict['volume'])
+    synthesizer.set_speech_rate(args_dict['speech_rate'])
+    synthesizer.set_pitch_rate(args_dict['pitch_rate'])
 
     try:
         ret = synthesizer.start()
@@ -253,19 +219,20 @@ class TranscriberCallback(SpeechTranscriberCallback):
         print('TranscriberCallback.OnRecognitionChannelClosed')
 
 
-def TranscriberProcess(filepath, appkey=Constant.appKey, token=Constant.token):
+def TranscriberProcess(filepath):
     '''本地音频文件识别
     Python SDK_实时语音识别_智能语音交互-阿里云
     https://help.aliyun.com/document_detail/120698.html?spm=a2c4g.11186623.6.577.2579259eScpzA7
     支持音频编码格式：pcm(无压缩的pcm文件或wav文件)，16bit采样位数的单声道(mono)
     '''
     client = NlsClient()
+
     # 设置输出日志信息的级别：DEBUG、INFO、WARNING、ERROR
     client.set_log_level('INFO')
     callback = TranscriberCallback(filepath)
     transcriber = client.create_transcriber(callback)
-    transcriber.set_appkey(appkey)
-    transcriber.set_token(token or GetToken()[0])
+    transcriber.set_appkey(Constant().appKey)
+    transcriber.set_token(Constant().token)
     transcriber.set_format('pcm')
     transcriber.set_sample_rate(16000)
     transcriber.set_enable_intermediate_result(False)
@@ -299,7 +266,7 @@ def TranscriberProcess(filepath, appkey=Constant.appKey, token=Constant.token):
         return callback.result
 
 
-def PostTransFile(audioFile, appkey=Constant.appKey, token=Constant.token, format='wav', sampleRate=16000, enablePunctuationPrediction=False, enableInverseTextNormalization=True, enableVoiceDetection=True):
+def PostTransFile(audioFile, format='wav', sampleRate=16000, enablePunctuationPrediction=False, enableInverseTextNormalization=True, enableVoiceDetection=True):
     '''
     一句话识别RESTful API支持以POST方式整段上传不超过一分钟的语音文件
     RESTful API_一句话识别_智能语音交互-阿里云
@@ -309,7 +276,7 @@ def PostTransFile(audioFile, appkey=Constant.appKey, token=Constant.token, forma
     result.name = audioFile
     url = 'http://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/asr'
     # 设置RESTful请求参数
-    request = url + '?appkey=' + appkey
+    request = url + '?appkey=' + Constant().appKey
     request = request + '&format=' + format
     request = request + '&sample_rate=' + str(sampleRate)
     if enablePunctuationPrediction:
@@ -325,7 +292,7 @@ def PostTransFile(audioFile, appkey=Constant.appKey, token=Constant.token, forma
 
     # 设置HTTPS Headers
     httpHeaders = {
-        'X-NLS-Token': token or GetToken()[0],
+        'X-NLS-Token': Constant().token,
         'Content-type': 'application/octet-stream',
         'Content-Length': str(len(audioContent)),
     }
@@ -342,7 +309,7 @@ def PostTransFile(audioFile, appkey=Constant.appKey, token=Constant.token, forma
     return result
 
 
-def APITransUrl(urlLink, accessKeyId=Constant.accessKeyId, accessKeySecret=Constant.accessKeySecret, appkey=Constant.appKey, enable_words=False, auto_split=False):
+def APITransUrl(urlLink, enable_words=False, auto_split=False):
     '''
     网络音频文件识别
     识别的文件需要提交基于HTTP可访问的URL地址，不支持提交本地文件
@@ -356,7 +323,7 @@ def APITransUrl(urlLink, accessKeyId=Constant.accessKeyId, accessKeySecret=Const
     result = TransResult()
     result.name = urlLink
     # 创建AcsClient实例
-    client = AcsClient(accessKeyId, accessKeySecret, "cn-shanghai")
+    client = AcsClient(Constant().accessKeyId, Constant().accessKeySecret, "cn-shanghai")
     # 提交录音文件识别请求
     postRequest = CommonRequest()
     postRequest.set_domain(DOMAIN)
@@ -365,7 +332,7 @@ def APITransUrl(urlLink, accessKeyId=Constant.accessKeyId, accessKeySecret=Const
     postRequest.set_action_name("SubmitTask")
     postRequest.set_method('POST')
 
-    task = {'appkey': appkey, 'file_link': urlLink, 'version': "4.0", 'enable_words': enable_words, 'auto_split': auto_split}  # 开启智能分轨
+    task = {'appkey': Constant().appKey, 'file_link': urlLink, 'version': "4.0", 'enable_words': enable_words, 'auto_split': auto_split}  # 开启智能分轨
     postRequest.add_body_params("Task", json.dumps(task))
 
     try:
@@ -420,6 +387,21 @@ def APITransUrl(urlLink, accessKeyId=Constant.accessKeyId, accessKeySecret=Const
 
 
 '''
+    阿里云语音合成对接接口 - 简书
+    https://www.jianshu.com/p/3a462046b574
+
+    RAM访问控制
+    https://ram.console.aliyun.com/users/sandorn_ram
+
+    由SSML控制合成效果_由SSML控制合成效果_长文本语音合成_智能语音交互-阿里云
+    https://help.aliyun.com/knowledge_detail/146123.html?spm=a2c4g.11186631.2.5.4f6b485aLTLTLv
+
+    RESTful API_RESTful API_长文本语音合成_智能语音交互-阿里云
+    https://help.aliyun.com/knowledge_detail/130555.html?spm=a2c4g.11186631.2.4.4f6b485aLTLTLv
+
+    由SSML控制合成效果_语音合成_智能语音交互-阿里云
+    https://help.aliyun.com/document_detail/101645.html?spm=a2c4g.11174283.3.9.29807275qNaSDa
+
     声音说明：
     字级别音素边界接口：语音实时合成服务在输出音频的同时，可输出每个字在音频中的时间位置，即时间戳。该时间信息可用于驱动虚拟人口型、做视频配音字幕等。
     注意：只有支持字级别音素边界接口的发音人才有此功能。

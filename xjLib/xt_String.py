@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-02-14 13:57:28
 #FilePath     : /xjLib/xt_String.py
-#LastEditTime : 2020-06-09 13:44:54
+#LastEditTime : 2020-06-11 13:53:35
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 #  string  |  dict  |  list  |  tupe  |  json
@@ -77,26 +77,79 @@ def chain_all(iterobj):
     return result
 
 
-def format_html_string(html):
-    '''格式化html, 去掉多余的字符，类，script等。'''
-    trims = [(r'\n', ''), (r'\t', ''), (r'\r', ''), (r'  ', ''), (r'\u2018', "'"), (r'\u2019', "'"), (r'\ufeff', ''), (r'\u2022', ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'), (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''), (r"</?a.*?>", '')]
-    return reduce(lambda string, replacement: re.sub(replacement[0], replacement[1], string), trims, html)
-
-
 def align(str1, distance=66, alignment='left'):
+    # #居中打印为string类方法
+    if alignment == 'center':
+        return(str1.center(distance, ' '))
+
     # #print打印对齐
     length = len(str1.encode('gbk', 'ignore'))
     slen = distance - length if distance > length else 0
-    if (slen % 2) == 1:
-        slen = slen + 1
 
     if alignment == 'left':
         str1 = str1 + ' ' * slen
     elif alignment == 'right':
         str1 = ' ' * slen + str1
-    elif alignment == 'center':
-        str1 = ' ' * (slen // 2) + str1 + ' ' * (slen // 2)
     return str1
+
+
+def Ex_Re_Repl(string, trims=None):
+    '''
+        格式化html string, 去掉多余的字符，类，script等。
+        #!正则替换，自写正则表达式
+        string:欲处理的字符串
+        trims:list内包含tuple或list
+        tuple[0]:被替换
+        tuple[1]:替换为
+    '''
+    # 第一种方法
+    if trims is None:
+        trims = [
+            (r'\n', ''),
+            (r'\t', ''),
+            (r'\r', ''),
+            (r'  ', ''),
+            (r'\u2018', "'"),
+            (r'\u2019', "'"),
+            (r'\ufeff', ''),
+            (r'\u2022', ":"),
+            (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'),
+            (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''),
+            (r"</?a.*?>", '')
+        ]
+
+    def run(str_tmp, replacement):
+        return re.sub(replacement[0], replacement[1], str_tmp)
+    return reduce(run, trims, string)
+    # 第二种写法，用lamda # string为初始值，最后传入，在lambda中最先接收
+    # return reduce(lambda str_tmp, replacement: re.sub(replacement[0], replacement[1], str_tmp), trims, string)
+    '''
+        re.sub(`pattern`, `repl`, `string`, `count=0`, `flags=0`)
+        `pattern`, `repl`, `string` 为必选参数
+        `count`, `flags` 为可选参数
+        `pattern`正则表达式
+        `repl`被替换的内容，可以是字符串，也可以是函数
+        `string`正则表达式匹配的内容
+        `count`由于正则表达式匹配的结果是多个，使用count来限定替换的个数从左向右，默认值是0，替换所有的匹配到的结果
+        `flags`是匹配模式，`re.I`忽略大小写，`re.L`表示特殊字符集\w,\W,\b,\B,\s,\S，`re.M`表示多行模式，`re.S` ‘.’包括换行符在内的任意字符，`re.U`表示特殊字符集\w,\W,\b,\B,\d,\D,\s,\D
+    '''
+
+
+def Ex_Str_Replace(string, trims):
+    '''
+        # @字符替换，不支持正则表达式
+        string:欲处理的字符串
+        trims:list内包含tuple或list
+        tuple[0]:被替换
+        tuple[1]:替换为
+    '''
+    # 第一种方法
+    # for item in trims:
+    #     string = string.replace(item[0], item[1])
+    # return string
+
+    # 第二种方法  # string为初始值，最后传入，在lambda中最先接收
+    return reduce(lambda string, item: string.replace(item[0], item[1]), trims, string)
 
 
 def Ex_Re_Clean(oldtext, parlist):
@@ -108,50 +161,26 @@ def Ex_Re_Clean(oldtext, parlist):
     return pattern.sub('', oldtext)
 
 
-def Ex_Re_Replace(oldtext, REPLACEMENTS):
+def Ex_Re_Replace(string, REPLACEMENTS):
     '''
     #!正则替换，自写正则表达式
     用法 newtext=Ex_Re_Replace(oldtext,{'a':aaa','b':bbb'})
     '''
     pattern = re.compile('|'.join(REPLACEMENTS.keys()))
-    return pattern.sub(lambda m: REPLACEMENTS[m.group(0)], oldtext)
+    return pattern.sub(lambda m: REPLACEMENTS[m.group(0)], string)
 
 
-def Ex_Re_Sub(oldtext, REPLACEMENTS):
+def Ex_Re_Sub(string, REPLACEMENTS):
     '''
     # @正则替换，不支持正则表达式
-    用法 newtext=Ex_Re_Sub(oldtext,{'a':aaa','b':bbb'})
+    用法 newtext=Ex_Re_Sub(string,{'a':aaa','b':bbb'})
     '''
     pattern = re.compile('|'.join(map(re.escape, REPLACEMENTS.keys())))
 
     def one_xlat(match):
         return REPLACEMENTS[match.group(0)]
 
-    return pattern.sub(one_xlat, oldtext)
-    '''
-    re.sub(`pattern`, `repl`, `string`, `count=0`, `flags=0`)
-    `pattern`, `repl`, `string` 为必选参数
-    `count`, `flags` 为可选参数
-    `pattern`正则表达式
-    `repl`被替换的内容，可以是字符串，也可以是函数
-    `string`正则表达式匹配的内容
-    `count`由于正则表达式匹配的结果是多个，使用count来限定替换的个数从左向右，默认值是0，替换所有的匹配到的结果
-    `flags`是匹配模式，`re.I`忽略大小写，`re.L`表示特殊字符集\w,\W,\b,\B,\s,\S，`re.M`表示多行模式，`re.S` ‘.’包括换行符在内的任意字符，`re.U`表示特殊字符集\w,\W,\b,\B,\d,\D,\s,\D
-    '''
-
-
-def Ex_Str_Replace(oldtext, adict):
-    '''
-    # @字符替换，不支持正则表达式
-    用法 newtext=Ex_Str_Replace(oldtext,{'a':aaa','b':bbb'})
-    '''
-
-    def _run(_text, key, value):
-        return _text.replace(key, value)
-
-    for key in adict:
-        oldtext = _run(oldtext, key, adict[key])
-    return oldtext
+    return pattern.sub(one_xlat, string)
 
 
 def string_split_limited_list(string, maxlen=300):
@@ -226,10 +255,20 @@ def random_char(length=20, string=[]):
     return string
 
 
+def class_to_dict(tobj):
+    '''把对象转换成字典'''
+    dict = {}
+    if len(tobj.__dict__) > 0:
+        dict.update(tobj.__dict__)
+    else:
+        dict.update({key: getattr(tobj, key) for key in dir(tobj) if not key.startswith('__') and not callable(getattr(tobj, key))})
+    return dict
+
+
 if __name__ == "__main__":
-    print(align('myAlignmyAlign1', 66))
-    print(align('myAlignmyAlign2', 66, alignment='right'))
-    print(align('myAlignmyAlign3', 66, alignment='center'))
+    print(align('myAliggn1', 66))
+    print(align('myAliggn2', 66, alignment='right'))
+    print(align('myAliggn3', 66, alignment='center'))
 
 '''
     #统计一个list中各个元素出现的次数

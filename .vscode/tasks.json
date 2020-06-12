@@ -2,8 +2,12 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "2.0.0",
-    "tasks": [
-        {
+    // 在Linux和Mac系统中使用"sh".
+    "command": "cmd",
+    // global args
+    // 在Linux和Mac系统中使用"-c"(注意大小写).
+    "args": ["/C"],
+    "tasks": [{
             "label": "verify",
             "type": "shell",
             "command": "mvn -B verify",
@@ -14,6 +18,16 @@
             "type": "shell",
             "command": "mvn -B test",
             "group": "test"
+        },
+        {
+            "label": "py34",
+            "type": "shell",
+            "args": ["${file}"],
+        },
+        {
+            "label": "python",
+            "type": "shell",
+            "args": ["${file}"]
         }
     ]
 }

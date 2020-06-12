@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-15 23:56:43
-#LastEditTime : 2020-05-20 20:36:35
+#LastEditTime : 2020-06-10 13:40:23
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -88,7 +88,7 @@ allstyles = QStatusBarstyle + QProgressBarstyle + QToolBarstyle + QMenuBarstyle 
 
 if __name__ == "__main__":
     pass
-    from xjLib.mystr import dict2qss
+    from xt_File import dict2qss
     from qdarkstyle.utils.scss import create_custom_qss
     temp = {
         'QPushButton': {

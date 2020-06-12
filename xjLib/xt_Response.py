@@ -7,11 +7,12 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
-#LastEditTime : 2020-06-05 13:53:38
+#FilePath     : /xjLib/xt_Response.py
+#LastEditTime : 2020-06-10 15:43:55
 #Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 '''
+
 
 import json
 

@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-12 17:13:40
-#LastEditTime : 2020-06-04 19:32:52
+#LastEditTime : 2020-06-11 09:37:19
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -33,7 +33,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox,
                              QVBoxLayout, QWidget, qApp)
 from pysnooper import snoop
 
-from xt_String import qsstools
+from xt_File import qsstools
 
 
 def EventLoop(function):
@@ -78,7 +78,7 @@ class xt_QProgressBar(QProgressBar):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QProgressBar_{id(self)}")
         self.step.connect(self.step_by_step)
-        # #self.signal.emit(value)  # 传递信号
+        # 主UI界面 self.signal.emit(value)  # 传递信号
         # #self.setInvertedAppearance(True) # 逆序
         # #self.setOrientation(Qt.Vertical)  # 垂直
 
@@ -121,19 +121,21 @@ class xt_QTabWidget(QTabWidget):
             # self.lay[index].addWidget(label, 0, 0)
 
         self.stylestring = self.styleSheet()
-        # self.currentChanged.connect(self.currentChanged_event)
-        # self.tabCloseRequested.connect(self.tabCloseRequested_event)
-        # self.tabBarDoubleClicked.connect(self.tabBarDoubleClicked_event)
+        self.currentChanged.connect(self.currentChanged_event)
+        self.tabCloseRequested.connect(self.tabCloseRequested_event)
+        self.tabBarDoubleClicked.connect(self.tabBarDoubleClicked_event)
 
     def currentChanged_event(self, index):
-        print(f'QTabWidget_currentChanged_event,切换页面为:{index}')
+        # print(f'QTabWidget_currentChanged_event,切换页面为:{index}')
         pass
 
     def tabCloseRequested_event(self, index):
         self.removeTab(index)
+        pass
 
     def tabBarDoubleClicked_event(self, index):
         self.removeTab(index)
+        pass
 
     # @动态调整tab页签宽度
     def resizeEvent(self, event):
@@ -188,10 +190,10 @@ class xt_QTableView(QTableView):
         self.设置整行选中()
         self.单行选择()
         self.双向滚动条()
-        # self.clicked.connect(self.clicked_event)
+        self.clicked.connect(self.clicked_event)
 
-        # self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
-        # self.customContextMenuRequested.connect(self.showContextMenu)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
         self.contextMenu = QMenu(self)
@@ -276,9 +278,7 @@ class xt_QTableView(QTableView):
         self.setColumnsName(self.ColumnsName)
 
     def clicked_event(self, item):
-        print('QTableView_clicked_event', item, item.data(), item.row())
-        # QModelIndex = self.model.index(self.currentIndex().row(), 2)
-        # self.model.data(QModelIndex) == QModelIndex.data()
+        # print('QTableView_clicked_event', item, item.data(), item.row())
         pass
 
     '''
@@ -323,8 +323,8 @@ class xt_QTableWidget(QTableWidget):
         self.双向滚动条()
         self.itemClicked.connect(self.itemClicked_event)
 
-        # self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
-        # self.customContextMenuRequested.connect(self.showContextMenu)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
         self.contextMenu = QMenu(self)
@@ -477,7 +477,7 @@ class xt_QTableWidget(QTableWidget):
         [self.removeRow(0) for _ in range(self.rowCount())]
 
     def itemClicked_event(self, item):
-        print('QTableWidget_itemClicked_event', item, item.text(), item.row())
+        # print('QTableWidget_itemClicked_event', item, item.text(), item.row())
         # self.currentIndex().row()
         pass
 
@@ -544,11 +544,11 @@ class xt_QListWidget(QListWidget):
         self.setSpacing(6)  # 间距大小
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # 垂直滚动条
 
-        # self.itemClicked.connect(self.itemClicked_event)  #绑定点击事件
-        # self.currentRowChanged.connect(self.currentRowChanged_event)  # 绑定点击事件
+        self.itemClicked.connect(self.itemClicked_event)  # 绑定点击事件
+        self.currentRowChanged.connect(self.currentRowChanged_event)  # 绑定点击事件
 
-        # self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
-        # self.customContextMenuRequested.connect(self.showContextMenu)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
         self.contextMenu = QMenu(self)
@@ -579,13 +579,13 @@ class xt_QListWidget(QListWidget):
         return widgetres
 
     def itemClicked_event(self, item):
-        print('QListWidget_itemClicked_event', item, item.text())
+        # print('QListWidget_itemClicked_event', item, item.text())
         # self.currentRow() == self.currentIndex().row()
         pass
 
     def currentRowChanged_event(self, row):
-        item = self.item(row)
-        print('QListWidget_currentRowChanged_event', row, item.text())
+        # item = self.item(row)
+        # print('QListWidget_currentRowChanged_event', row, item.text())
         # self.currentRow() == self.currentIndex().row()
         pass
 
@@ -653,11 +653,11 @@ class xt_QTreeWidget(QTreeWidget):
         self.root.setText(0, 'root')  # 设置根节点的名称
         self.addTopLevelItem(self.root)
 
-        # self.clicked.connect(self.clicked_event)
-        # self.itemDoubleClicked.connect(self.itemDoubleClicked_event)
+        self.clicked.connect(self.clicked_event)
+        self.itemDoubleClicked.connect(self.itemDoubleClicked_event)
 
-        # self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
-        # self.customContextMenuRequested.connect(self.showContextMenu)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)  # 配合右键菜单
+        self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
         self.contextMenu = QMenu(self)
@@ -696,14 +696,14 @@ class xt_QTreeWidget(QTreeWidget):
 
     def clicked_event(self, qmodelindex):
         '''PyQt5.QtCore.QModelIndex对象'''
-        print('QTreeWidget_clicked_event', qmodelindex, qmodelindex.data())
+        # print('QTreeWidget_clicked_event', qmodelindex, qmodelindex.data())
         # item = self.currentItem() # 当前节点
         # print([item.text(index) for index in range(self.columnCount())])
         pass
 
     def itemDoubleClicked_event(self, item, columnindex):
         '''QTreeWidgetItem对象，列号'''
-        print('itemDoubleClicked_event', item.text(columnindex), columnindex, [item.text(index) for index in range(self.columnCount())])
+        # print('itemDoubleClicked_event', item.text(columnindex), columnindex, [item.text(index) for index in range(self.columnCount())])
         pass
 
     '''
@@ -781,10 +781,10 @@ class xt_QTextEdit(QTextEdit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTextEdit_{id(self)}")
-        # self.textChanged.connect(self.textChanged_event)
+        self.textChanged.connect(self.textChanged_event)
 
     def textChanged_event(self):
-        print('textChanged', self.toPlainText())
+        # print('textChanged', self.toPlainText())
         pass
 
 
@@ -792,15 +792,15 @@ class xt_QLineEdit(QLineEdit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QLineEdit_{id(self)}")
-        # self.textChanged.connect(self.textChanged_event)
-        # self.textEdited.connect(self.textEdited_event)
+        self.textChanged.connect(self.textChanged_event)
+        self.textEdited.connect(self.textEdited_event)
 
     def textChanged_event(self):
-        print('textChanged', self.text())
+        # print('textChanged', self.text())
         pass
 
     def textEdited_event(self):
-        print('textEdited', self.text())
+        # print('textEdited', self.text())
         pass
 
 
@@ -808,10 +808,10 @@ class xt_QPushButton(QPushButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QPushButton_{id(self)}")
-        # self.clicked.connect(self.clicked_event)
+        self.clicked.connect(self.clicked_event)
 
     def clicked_event(self):
-        print('QPushButton_clicked_event', self.text())
+        # print('QPushButton_clicked_event', self.text())
         pass
 
     '''
@@ -828,10 +828,11 @@ class xt_QCheckBox(QCheckBox):
         self.setObjectName(f"xt_QCheckBox_{id(self)}")
         self.setChecked(True)
 
-        # self.stateChanged.connect(self.stateChangedEvent)
+        self.stateChanged.connect(self.stateChangedEvent)
 
     def stateChangedEvent(self, state):
-        print(state)
+        # print(state)
+        pass
 
     '''
     setChecked()	设置复选框的状态，设置为True表示选中，False表示取消选中的复选框
@@ -859,10 +860,10 @@ class xt_QComboBox(QComboBox):
         if isinstance(itemlist, list) and len(itemlist) > 0:
             self.addItems(itemlist)
 
-        # self.currentIndexChanged.connect(self.currentIndexChanged_event)
+        self.currentIndexChanged.connect(self.currentIndexChanged_event)
 
     def currentIndexChanged_event(self, index):
-        print('currentIndexChanged_event', index, self.currentText())
+        # print('currentIndexChanged_event', index, self.currentText())
         pass
 
     '''
@@ -904,11 +905,11 @@ class xt_QSpinBox(QSpinBox):
         #  开启循环
         self.setWrapping(True)
 
-        # self.valueChanged.connect(self.valueChanged_event)
+        self.valueChanged.connect(self.valueChanged_event)
 
     def valueChanged_event(self, value):
         '''传入 int value,与self.value()相等'''
-        print('currentIndexChanged_event', value, self.text())
+        # print('currentIndexChanged_event', value, self.text())
         pass
 
     '''
@@ -961,10 +962,10 @@ class xt_QDoubleSpinBox(QDoubleSpinBox):
         #  开启循环
         self.setWrapping(True)
 
-        # self.valueChanged.connect(self.valueChanged_event)
+        self.valueChanged.connect(self.valueChanged_event)
 
     def valueChanged_event(self, value):
-        print('currentIndexChanged_event', value, self.text())
+        # print('currentIndexChanged_event', value, self.text())
         pass
 
     '''
@@ -1060,7 +1061,7 @@ class xt_menu:
         statusbarAct = QAction('View statusbar', self, checkable=True)
         statusbarAct.setStatusTip('View statusbar')
         statusbarAct.setChecked(True)  # True为默认选中状态
-        # statusbarAct.triggered.connect(self.toggleMenu)
+        statusbarAct.triggered.connect(self.toggleMenu)
 
     '''
     方法	描述
@@ -1127,7 +1128,7 @@ class xt_QMainWindow(QMainWindow):
         # #居中设置  # setGeometry
         deskSize = QDesktopWidget().screenGeometry()  # 获取桌面窗体参数
         windowSize = self.geometry()  # 获取窗体本身参数
-        self.move(int((deskSize.width() - windowSize.width()) / 2), int((deskSize.height() - windowSize.height()) / 2))
+        self.move((deskSize.width() - windowSize.width()) // 2, (deskSize.height() - windowSize.height()) // 2)
 
     # @重写事件，响应拖动
     def mousePressEvent(self, event):
@@ -1235,31 +1236,31 @@ class xt_QMainWindow(QMainWindow):
         pass
 
     '''
-    #@setWindowFlags(Qt.WindowFlags|Qt.WindowFlags)
-    PYQT基本窗口类型有如下类型：
-    Qt.Qt.Widget#插件默认窗口，有最小化、最大化、关闭按钮
-    Qt.Qt.Window#普通窗口，有最小化、最大化、关闭按钮
-    Qt.Qt.Dialog#对话框窗口，有问号和关闭按钮
-    Qt.Qt.Popup#弹出窗口，窗口无边框化
-    Qt.Qt.ToolTip#提示窗口，窗口无边框化，无任务栏窗口
-    Qt.Qt.SplashScreen#飞溅屏幕，窗口无边框化，无任务栏窗口
-    Qt.Qt.SubWindow#子窗口，窗口无按钮但有标题栏
+        #@setWindowFlags(Qt.WindowFlags|Qt.WindowFlags)
+        PYQT基本窗口类型有如下类型：
+        Qt.Qt.Widget#插件默认窗口，有最小化、最大化、关闭按钮
+        Qt.Qt.Window#普通窗口，有最小化、最大化、关闭按钮
+        Qt.Qt.Dialog#对话框窗口，有问号和关闭按钮
+        Qt.Qt.Popup#弹出窗口，窗口无边框化
+        Qt.Qt.ToolTip#提示窗口，窗口无边框化，无任务栏窗口
+        Qt.Qt.SplashScreen#飞溅屏幕，窗口无边框化，无任务栏窗口
+        Qt.Qt.SubWindow#子窗口，窗口无按钮但有标题栏
 
-    自定义外观的顶层窗口标志：
-    Qt.Qt.MSWindowsFixedSizeDialogHint#窗口无法调整大小
-    Qt.Qt.FramelessWindowHint#窗口无边框化
-    Qt.Qt.CustomizeWindowHint#有边框但无标题栏和按钮，不能移动和拖动
-    Qt.Qt.WindowTitleHint#添加标题栏和一个关闭按钮
-    Qt.Qt.WindowSystemMenuHint#添加系统目录和一个关闭按钮
-    Qt.Qt.WindowMaximizeButtonHint#激活最大化和关闭按钮，禁止最小化按钮
-    Qt.Qt.WindowMinimizeButtonHint#激活最小化和关闭按钮，禁止最大化按钮
-    Qt.Qt.WindowMinMaxButtonsHint#激活最小化、最大化和关闭按钮，
-    #相当于Qt.Qt.WindowMaximizeButtonHint|Qt.Qt.WindowMinimizeButtonHint
-    Qt.Qt.WindowCloseButtonHint#添加一个关闭按钮
-    Qt.Qt.WindowContextHelpButtonHint#添加问号和关闭按钮，像对话框一样
-    Qt.Qt.WindowStaysOnTopHint#窗口始终处于顶层位置
-    Qt.Qt.WindowStaysOnBottomHint#窗口始终处于底层位置
-    Qt.Qt.Tool 有一个小小的关闭按钮
+        自定义外观的顶层窗口标志：
+        Qt.Qt.MSWindowsFixedSizeDialogHint#窗口无法调整大小
+        Qt.Qt.FramelessWindowHint#窗口无边框化
+        Qt.Qt.CustomizeWindowHint#有边框但无标题栏和按钮，不能移动和拖动
+        Qt.Qt.WindowTitleHint#添加标题栏和一个关闭按钮
+        Qt.Qt.WindowSystemMenuHint#添加系统目录和一个关闭按钮
+        Qt.Qt.WindowMaximizeButtonHint#激活最大化和关闭按钮，禁止最小化按钮
+        Qt.Qt.WindowMinimizeButtonHint#激活最小化和关闭按钮，禁止最大化按钮
+        Qt.Qt.WindowMinMaxButtonsHint#激活最小化、最大化和关闭按钮，
+        #相当于Qt.Qt.WindowMaximizeButtonHint|Qt.Qt.WindowMinimizeButtonHint
+        Qt.Qt.WindowCloseButtonHint#添加一个关闭按钮
+        Qt.Qt.WindowContextHelpButtonHint#添加问号和关闭按钮，像对话框一样
+        Qt.Qt.WindowStaysOnTopHint#窗口始终处于顶层位置
+        Qt.Qt.WindowStaysOnBottomHint#窗口始终处于底层位置
+        Qt.Qt.Tool 有一个小小的关闭按钮
     '''
 
 

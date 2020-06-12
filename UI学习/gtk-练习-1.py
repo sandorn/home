@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-09 17:25:36
-#FilePath     : /UI/gtk-练习-1.py
-#LastEditTime : 2020-06-09 17:52:29
+#FilePath     : /UI学习/gtk-练习-1.py
+#LastEditTime : 2020-06-11 14:23:44
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -33,18 +33,14 @@ class MyWindow(Gtk.Window):
         self.button = Gtk.Button(label="Click Here")
         self.button.connect("clicked", self.on_button_clicked)
         self.add(self.button)
+        self.connect("delete-event", Gtk.main_quit)
+        self.show_all()
+        Gtk.main()
 
     @staticmethod
     def on_button_clicked(widget):
         print("Hello World")
 
 
-def main():
-    win = MyWindow()
-    win.connect("delete-event", Gtk.main_quit)
-    win.show_all()
-    Gtk.main()
-
-
 if __name__ == "__main__":
-    main()
+    win = MyWindow()

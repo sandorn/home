@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 12:57:23
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-08 18:36:53
+#LastEditTime : 2020-06-11 13:11:49
 requests 简化调用
 '''
 # from __future__ import absolute_import, unicode_literals
@@ -179,7 +179,7 @@ if __name__ == '__main__':
     url_get = "https://httpbin.org/get"  # 返回head及ip等信息
     url_post = "https://httpbin.org/post"  # 返回head及ip等信息
 
-    r = post(url_post)
+    r = s.get(url)
     print(r.text)  # print(r['text'])  r.text
 
 

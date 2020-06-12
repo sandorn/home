@@ -1,40 +1,76 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-04-01 10:29:33
+# ==============================================================
+# Descripttion : None
+# Develop      : VSCode
+# Author       : Even.Sand
+# Contact      : sandorn@163.com
+# Date         : 2020-04-01 10:29:33
 #FilePath     : /xjLib/xt_Ls_Bqg.py
-#LastEditTime : 2020-06-05 23:16:08
-#Github       : https://github.com/sandorn/home
-#==============================================================
+#LastEditTime : 2020-06-11 11:58:48
+# Github       : https://github.com/sandorn/home
+# ==============================================================
 '''
 
 from xt_Ahttp import ahttpGet
 from xt_Log import log
 from xt_Requests import get
-from xt_String import Ex_Re_Clean, Ex_Str_Replace
+from xt_String import Ex_Re_Clean, Ex_Str_Replace, Ex_Re_Repl
 
 
-def arrangeContent(textlist):
-    temp_list = ["', '", '&nbsp;', r';\[笔趣看  www.biqukan.com\]', r'\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)', 'www.biqukan.com。', 'wap.biqukan.com', 'www.biqukan.com', 'm.biqukan.com', 'n.biqukan.com', '百度搜索“笔趣看小说网”手机阅读:', '百度搜索“笔趣看小说网”手机阅读：', '请记住本书首发域名:', '请记住本书首发域名：', '笔趣阁手机版阅读网址:', '笔趣阁手机版阅读网址：', '<br />', r';\[笔趣看  \]', r'\[笔趣看 \]']
-    adict = {
-        '<br />': '\n',
-        '\r\r': '\n',
-        '\r': '\n',
-        '    ': '\n    ',
-        '\n\n\n': '\n',
-        '\n\n': '\n',
-        '\n\n': '\n',
-    }
-    oldtext = '\n'.join([item.strip("\r\n　  ") for item in textlist])
-    newtext = oldtext.strip("\r\n　  ").replace(u'\u3000', u' ').replace(u'\xa0', u' ')
-    newtext = Ex_Re_Clean(newtext, temp_list)
-    newtext = Ex_Str_Replace(newtext, adict)
-    return newtext
+def clean_Content(string, repl_list=None):
+    if repl_list is None:
+        repl_list = [
+            ("', '", ''),
+            ('&nbsp;', ''),
+            (r';\[笔趣看  www.biqukan.com\]', ''),
+            (r'\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)', ''),
+            ('www.biqukan.com。', ''),
+            ('wap.biqukan.com', ''),
+            ('www.biqukan.com', ''),
+            ('m.biqukan.com', ''),
+            ('n.biqukan.com', ''),
+            ('百度搜索“笔趣看小说网”手机阅读:', ''),
+            ('百度搜索“笔趣看小说网”手机阅读：', ''),
+            ('请记住本书首发域名:', ''),
+            ('请记住本书首发域名：', ''),
+            ('笔趣阁手机版阅读网址:', ''),
+            ('笔趣阁手机版阅读网址：', ''),
+            (r';\[笔趣看  \]', ''),
+            (r'\[笔趣看 \]', ''),
+            ('<br />', '\n'),
+            ('\r\r', '\n'),
+            ('\r', '\n'),
+            ('    ', '\n    '),
+            ('\n\n\n', '\n'),
+            ('\n\n', '\n'),
+            ('\n\n', '\n'),
+        ]
+
+    if isinstance(string, (list, tuple)):
+        string = '\n'.join([item.strip("\r\n　  ") for item in string])
+
+    return Ex_Re_Repl(string, repl_list)
+
+
+def arrangeContent(string):
+    clean_list = ["', '", '&nbsp;', r';\[笔趣看  www.biqukan.com\]', r'\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)', 'www.biqukan.com。', 'wap.biqukan.com', 'www.biqukan.com', 'm.biqukan.com', 'n.biqukan.com', '百度搜索“笔趣看小说网”手机阅读:', '百度搜索“笔趣看小说网”手机阅读：', '请记住本书首发域名:', '请记住本书首发域名：', '笔趣阁手机版阅读网址:', '笔趣阁手机版阅读网址：', '<br />', r';\[笔趣看  \]', r'\[笔趣看 \]']
+    repl_dict = [
+        (r'<br />', '\n'),
+        (r'\r\r', '\n'),
+        (r'\r', '\n'),
+        (r'    ', '\n    '),
+        (r'\n\n\n', '\n'),
+        (r'\n\n', '\n'),
+        (r'\n\n', '\n'),
+    ]
+    if isinstance(string, (list, tuple)):
+        string = '\n'.join([item.strip("\r\n　  ") for item in string])
+    string = string.strip("\r\n　  ").replace(u'\u3000', u' ').replace(u'\xa0', u' ')
+    string = Ex_Re_Clean(string, clean_list)
+    string = Ex_Str_Replace(string, repl_dict)
+    return string
 
 
 def get_download_url(target):
@@ -109,4 +145,12 @@ def map_get_contents_byahttp(*args):
 
 
 if __name__ == "__main__":
-    pass
+    url = 'https://www.biqukan.com/69_69034/458679741.html'
+    res = get(url)
+    response = res.element
+    _title = "".join(response.xpath('//h1/text()'))
+    title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
+    _showtext = response.xpath('//*[@id="content"]/text()')
+
+    print(arrangeContent(_showtext), '*' * 88)
+    print(clean_Content(_showtext), '*' * 88)
