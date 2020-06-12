@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 20:54:21
 #FilePath     : /项目包/BQG.ScrapySpider/spiders/spilerChemy.py
-#LastEditTime : 2020-06-08 20:28:18
+#LastEditTime : 2020-06-10 12:36:38
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
