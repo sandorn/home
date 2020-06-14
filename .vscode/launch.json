@@ -17,20 +17,13 @@
             "showLog": true
         },
         {
-            "name": "Python38", // 配置名称，将会在启动配置的下拉菜单中显示
-            "type": "python", // 配置类型
-            "request": "launch", // 请求配置类型，可以为launch（启动）或attach（附加）
-            //"launchOptionType": "Local", // 调试器启动类型，这里只能为Local
-            "stopOnEntry": false, // 设为true时程序将暂停在程序入口处，一般设置为false
-            "program": "${file}", // 将要进行调试的程序的路径
+            "name": "Python38",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${workspaceRoot}",
             "console": "internalConsole",
-            "cwd": "${workspaceRoot}", // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
-            "env": {
-                "PYTHONPATH": "${workspaceRoot}"
-            },
-            "envFile": "${workspaceFolder}/.env",
-            //"args": ["--quiet", "--norepeat"] // 程序调试时传递给程序的命令行参数，一般为空
-            //"envFile":  "${workspaceRoot}/.env"
+            "stopOnEntry": false, // 设为true时程序将暂停在程序入口处，一般设置为false
         },
         {
             "name": "Python:内置终端",
@@ -58,9 +51,6 @@
                 "PYTHONPATH": "${workspaceRoot}"
             },
             "envFile": "${workspaceFolder}/.env",
-            "debugOptions": [
-                "RedirectOutput"
-            ],
             "args": [
                 //"--quiet", "--norepeat"
                 "run",
@@ -68,50 +58,6 @@
                 "--no-reload"
             ]
         },
-        {
-            "name": "Python: Django",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": true,
-            "program": "${workspaceFolder}/manage.py",
-            "cwd": "${workspaceFolder}",
-            "args": [
-                "runserver",
-                "0.0.0.0:8080",
-                "--noreload",
-                "--nothreading"
-            ],
-            "env": {
-                "PYTHONPATH": "${workspaceRoot}"
-            },
-            "envFile": "${workspaceFolder}/.env",
-            "debugOptions": [
-                "WaitOnAbnormalExit",
-                "WaitOnNormalExit",
-                "RedirectOutput",
-                "DjangoDebugging"
-            ]
-        },
-        {
-            "name": "Python: Attach using Process Id",
-            "type": "python",
-            "request": "attach",
-            "processId": "${command:pickProcess}"
-        },
-        {
-            "name": "使用本机 Chrome 调试",
-            "type": "chrome",
-            "request": "launch",
-            "file": "${file}",
-            //"url": "http://mysite.com/index.html",
-            //"useBuildInServer":false
-            //使用外部服务器时,请注释掉 file, 改用 url, 并将 useBuildInServer 设置为 false
-            "runtimeExecutable": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", // 改成您的 Chrome 安装路径
-            "sourceMaps": true,
-            "webRoot": "${workspaceRoot}",
-            //  "preLaunchTask":"build",
-            "userDataDir": "${tmpdir}",
-            "port": 5433
-        }
+
     ]
 }

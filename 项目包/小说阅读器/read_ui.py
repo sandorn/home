@@ -7,7 +7,7 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-05-12 11:31:03
-#LastEditTime : 2020-06-05 23:15:11
+#LastEditTime : 2020-06-14 12:41:28
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -19,13 +19,13 @@ from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMessageBox, QVBoxLayout,
 
 from xt_Ls_Bqg import get_contents, get_title_url
 from xt_Alispeech.xt_Pygame import ReqSynthesizer_QThread_read
-from xt_String import string_split_join_with_maxlen_list
+from xt_String import string_split_limited_list
 from xt_Ui import EventLoop, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser, xt_QCheckBox
-
 from pysnooper import snoop
-
 from xt_Log import log
-print = log().debug
+log = log()
+snooper = snoop(log.filename)
+print = log.debug
 
 
 class Ui_MainWindow(xt_QMainWindow):
@@ -127,7 +127,7 @@ class Ui_MainWindow(xt_QMainWindow):
     def on_ok_button_clicked(self):
         self.QTextEdit.clear()
         self.tableWidget.clean()
-        self.listWidget.empty()   # clear()
+        self.listWidget.empty()  # clear()
 
         try:
             # # 设置书本初始地址,执行主方法
@@ -138,8 +138,10 @@ class Ui_MainWindow(xt_QMainWindow):
             self.bindTable()  # 对表格进行填充
             self.bindList()  # 对列表进行填充
 
-            self.listWidget.currentRowChanged.connect(self.currentRowChanged_event)
-            self.tableWidget.clicked.connect(self.tableClick_event)  # @绑定表格单击方法
+            self.listWidget.currentRowChanged.connect(
+                self.currentRowChanged_event)
+            self.tableWidget.clicked.connect(
+                self.tableClick_event)  # @绑定表格单击方法
 
         # @交还控制权,恢复鼠标样式
         qApp.processEvents()
@@ -147,7 +149,8 @@ class Ui_MainWindow(xt_QMainWindow):
         return
 
     def read_Button_event(self):
-        (self.read_read if self.pushButton_read.text() == '&Read' else self.read_stop)()
+        (self.read_read
+         if self.pushButton_read.text() == '&Read' else self.read_stop)()
         # (func1 if y == 1 else func2)(arg1, arg2)
         # 如果y等于1,那么调用func1(arg1,arg2)否则调用func2(arg1,arg2)
 
@@ -160,7 +163,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.pushButton_read.setText('&STOP')
         qApp.processEvents()
         # 处理字符串
-        newText = string_split_join_with_maxlen_list(self.QTextEdit.toPlainText())
+        newText = string_split_limited_list(self.QTextEdit.toPlainText())
         self.runthread = ReqSynthesizer_QThread_read(newText, format='mp3')
         # #绑定ReqSynthesizer_QThread_read中定义的finished信号
         self.runthread._signal.connect(self.playdone)
@@ -192,14 +195,16 @@ class Ui_MainWindow(xt_QMainWindow):
     # 将文件显示在Table中（列表显示）
     @EventLoop
     def bindTable(self):
-        res = [[self.book_number, self.list[index][0], self.list[index][1]] for index in range(len(self.list))]
+        res = [[self.book_number, self.list[index][0], self.list[index][1]]
+               for index in range(len(self.list))]
         self.tableWidget.appendItems(res)
         self.tableWidget.scrollToTop()
 
     # 将文件显示在List列表中（图表显示）
     @EventLoop
     def bindList(self):
-        self.listWidget.addItems([self.list[index][0] for index in range(len(self.list))])
+        self.listWidget.addItems(
+            [self.list[index][0] for index in range(len(self.list))])
         # self.listWidget.scrollToBottom()
         self.listWidget.scrollToTop()
 
@@ -235,5 +240,7 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     ui = Ui_MainWindow()
-    ui.QTextEdit.setText('根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组，由公司总经理毕永辉任整治小组组长，成员包括公司副总经理刘新军、行政人事部总经理朱立志。')
+    ui.QTextEdit.setText(
+        '根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组，由公司总经理毕永辉任整治小组组长，成员包括公司副总经理刘新军、行政人事部总经理朱立志。'
+    )
     sys.exit(app.exec_())  # 程序关闭时退出进程

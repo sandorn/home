@@ -8,32 +8,71 @@
 @Contact      : sandorn@163.com
 @Date         : 2020-02-14 20:38:57
 @FilePath     : /xjLib/xt_DAO/dbconf.PY
-@LastEditTime : 2020-06-11 15:01:36
+@LastEditTime : 2020-06-12 18:57:20
 @Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 
 db_conf = {
     'TXbook': {
-        'type': 'mysql', 'host': 'cdb-lfp74hz4.bj.tencentcdb.com', 'port': 10014, 'user': 'sandorn', 'passwd': '123456', 'db': 'biqukan', 'charset': 'utf8mb4'
+        'type': 'mysql',
+        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
+        'port': 10014,
+        'user': 'sandorn',
+        'passwd': '123456',
+        'db': 'biqukan',
+        'charset': 'utf8mb4'
     },
     'TXbx': {
-        'type': 'mysql', 'host': 'cdb-lfp74hz4.bj.tencentcdb.com', 'port': 10014, 'user': 'sandorn', 'passwd': '123456', 'db': 'bxflb', 'charset': 'utf8mb4'
+        'type': 'mysql',
+        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
+        'port': 10014,
+        'user': 'sandorn',
+        'passwd': '123456',
+        'db': 'bxflb',
+        'charset': 'utf8mb4'
     },
     'TX_Root': {
-        'type': 'mysql', 'host': 'cdb-lfp74hz4.bj.tencentcdb.com', 'port': 10014, 'user': 'root', 'passwd': 'Sand2808', 'db': 'bxflb', 'charset': 'utf8mb4'
+        'type': 'mysql',
+        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
+        'port': 10014,
+        'user': 'root',
+        'passwd': 'Sand2808',
+        'db': 'bxflb',
+        'charset': 'utf8mb4'
     },
     'db4': {
-        'type': 'mysql', 'host': 'db4free.net', 'port': 3306, 'user': 'sandorn', 'passwd': 'eeM3sh4KPkp4sJ8A', 'db': 'baoxianjihuashu', 'charset': 'utf8mb4'
+        'type': 'mysql',
+        'host': 'db4free.net',
+        'port': 3306,
+        'user': 'sandorn',
+        'passwd': 'eeM3sh4KPkp4sJ8A',
+        'db': 'baoxianjihuashu',
+        'charset': 'utf8mb4'
     },
     'redis': {
-        'type': 'redis', 'host': '127.0.0.1', 'port': 6379, 'db': 4
+        'type': 'redis',
+        'host': '127.0.0.1',
+        'port': 6379,
+        'db': 4
     },
     'Jkdoc': {
-        'type': 'mysql', 'host': 'cdb-lfp74hz4.bj.tencentcdb.com', 'port': 10014, 'user': 'sandorn', 'passwd': '123456', 'db': 'Jkdoc', 'charset': 'utf8mb4'
+        'type': 'mysql',
+        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
+        'port': 10014,
+        'user': 'sandorn',
+        'passwd': '123456',
+        'db': 'Jkdoc',
+        'charset': 'utf8mb4'
     },
     'dbtest': {
-        'type': 'mysql', 'host': 'cdb-lfp74hz4.bj.tencentcdb.com', 'port': 10014, 'user': 'sandorn', 'passwd': '123456', 'db': 'dbtest', 'charset': 'utf8mb4'
+        'type': 'mysql',
+        'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
+        'port': 10014,
+        'user': 'sandorn',
+        'passwd': '123456',
+        'db': 'dbtest',
+        'charset': 'utf8mb4'
     }
 }
 

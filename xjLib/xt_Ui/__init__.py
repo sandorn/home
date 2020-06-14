@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-12 17:13:40
-#LastEditTime : 2020-06-11 09:37:19
+#LastEditTime : 2020-06-12 18:31:52
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -22,15 +22,13 @@ import qdarkstyle
 from PyQt5.QtCore import (QEventLoop, QMetaObject, Qt, QThread, pyqtSignal,
                           pyqtSlot)
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox,
-                             QDesktopWidget, QDoubleSpinBox, QFileDialog,
-                             QHBoxLayout, QHeaderView, QInputDialog, QLabel,
-                             QLineEdit, QListView, QListWidget, QMainWindow,
-                             QMenu, QMessageBox, QProgressBar, QPushButton,
-                             QSpinBox, QStatusBar, QTableView, QTableWidget,
-                             QTableWidgetItem, QTabWidget, QTextBrowser,
-                             QTextEdit, QTreeWidget, QTreeWidgetItem,
-                             QVBoxLayout, QWidget, qApp)
+from PyQt5.QtWidgets import (
+    QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget,
+    QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog,
+    QLabel, QLineEdit, QListView, QListWidget, QMainWindow, QMenu, QMessageBox,
+    QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget,
+    QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget,
+    QTreeWidgetItem, QVBoxLayout, QWidget, qApp)
 from pysnooper import snoop
 
 from xt_File import qsstools
@@ -38,7 +36,6 @@ from xt_File import qsstools
 
 def EventLoop(function):
     '''定义一个装饰器,确定鼠标显示和控制权'''
-
     @wraps(function)
     def warp(*args, **kwargs):
         # @忽略用户的输入（鼠标和键盘事件）,显示等待中的鼠标样式
@@ -95,7 +92,6 @@ class xt_QProgressBar(QProgressBar):
 
 class xt_QTabWidget(QTabWidget):
     '''textlist 按顺序传递，不用='''
-
     def __init__(self, textlist=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTabWidget_{id(self)}")
@@ -144,7 +140,8 @@ class xt_QTabWidget(QTabWidget):
         if _tabCount == 0:
             return
         _tabWidth = round(self.width() / _tabCount)
-        self.setStyleSheet(self.stylestring + "QTabBar::tab{width:%upx;}" % _tabWidth)
+        self.setStyleSheet(self.stylestring +
+                           "QTabBar::tab{width:%upx;}" % _tabWidth)
 
     '''
     方法	描述
@@ -219,7 +216,8 @@ class xt_QTableView(QTableView):
 
     def 设置列宽适应内容(self, index=0):
         # #设置要根据内容使用宽度的列
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeToContents)
 
     def 设置整行选中(self):
         self.setSelectionBehavior(QTableView.SelectRows)
@@ -250,7 +248,8 @@ class xt_QTableView(QTableView):
         self.setSortingEnabled(False)
 
         if isinstance(item, list):
-            self.model.appendRow([QStandardItem(str(_c_item)) for _c_item in item])
+            self.model.appendRow(
+                [QStandardItem(str(_c_item)) for _c_item in item])
 
             # $滚动到最下面
             self.scrollToBottom()
@@ -263,7 +262,8 @@ class xt_QTableView(QTableView):
         self.setUpdatesEnabled(False)  # 暂停界面刷新
         if isinstance(items, list) and isinstance(items[0], list):
             for item in items:
-                self.model.appendRow([QStandardItem(str(_c_item)) for _c_item in item])
+                self.model.appendRow(
+                    [QStandardItem(str(_c_item)) for _c_item in item])
 
         # $滚动到最下面
         self.scrollToBottom()
@@ -301,7 +301,6 @@ class xt_QTableView(QTableView):
 
 class xt_QTableWidget(QTableWidget):
     '''ColumnsName按顺序传递，不用='''
-
     def __init__(self, ColumnsName=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTableWidget_{id(self)}")
@@ -350,7 +349,8 @@ class xt_QTableWidget(QTableWidget):
 
     def 设置列宽适应内容(self, index=0):
         # #设置要根据内容使用宽度的列
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeToContents)
 
     def 表格禁止编辑(self):
         self.setEditTriggers(QTableWidget.NoEditTriggers)
@@ -746,7 +746,11 @@ class xt_QTextBrowser(QTextBrowser):
         self.setOpenLinks(True)  # 打开文档内部链接 默认为True
         self.setOpenExternalLinks(True)
         # 打开外部链接 默认false 当openlinks设置false时 该选项无效
-        self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard | Qt.LinksAccessibleByMouse | Qt.TextBrowserInteraction | Qt.TextSelectableByKeyboard | Qt.TextSelectableByMouse)
+        self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard
+                                     | Qt.LinksAccessibleByMouse
+                                     | Qt.TextBrowserInteraction
+                                     | Qt.TextSelectableByKeyboard
+                                     | Qt.TextSelectableByMouse)
 
     def addtext(self, str):
         self.append(str)  # 添加数据
@@ -887,7 +891,6 @@ class xt_QComboBox(QComboBox):
 
 class xt_QSpinBox(QSpinBox):
     '''QSpinBox旨在处理整数和离散值（例如：月份名称）'''
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QSpinBox_{id(self)}")
@@ -942,7 +945,6 @@ class xt_QSpinBox(QSpinBox):
 
 class xt_QDoubleSpinBox(QDoubleSpinBox):
     '''QDoubleSpinBox则用于处理浮点值'''
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QDoubleSpinBox _{id(self)}")
@@ -1081,7 +1083,15 @@ class xt_menu:
 
 
 class xt_QMainWindow(QMainWindow):
-    def __init__(self, title="MainWindow", status=True, menu=True, action=True, FramelessWindowHint=False, TranslucentBackground=False, *args, **kwargs):
+    def __init__(self,
+                 title="MainWindow",
+                 status=True,
+                 menu=True,
+                 action=True,
+                 FramelessWindowHint=False,
+                 TranslucentBackground=False,
+                 *args,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         # #窗体title,setupUI
         self.title = title
@@ -1115,7 +1125,8 @@ class xt_QMainWindow(QMainWindow):
         ......
         手工绑定:connect(lamda : self.func(args))；解除绑定:disconnect()
         '''
-        qss = '''* {font: 11pt 'Sarasa Term SC';outline: none;}''' + qdarkstyle.load_stylesheet_pyqt5()
+        qss = '''* {font: 11pt 'Sarasa Term SC';outline: none;}''' + qdarkstyle.load_stylesheet_pyqt5(
+        )
         self.setStyleSheet(qss)
         self.show()
 
@@ -1128,7 +1139,8 @@ class xt_QMainWindow(QMainWindow):
         # #居中设置  # setGeometry
         deskSize = QDesktopWidget().screenGeometry()  # 获取桌面窗体参数
         windowSize = self.geometry()  # 获取窗体本身参数
-        self.move((deskSize.width() - windowSize.width()) // 2, (deskSize.height() - windowSize.height()) // 2)
+        self.move((deskSize.width() - windowSize.width()) // 2,
+                  (deskSize.height() - windowSize.height()) // 2)
 
     # @重写事件，响应拖动
     def mousePressEvent(self, event):
@@ -1163,15 +1175,19 @@ class xt_QMainWindow(QMainWindow):
     def action_init(self):
         # #QAction
         # _path = os.path.dirname(__file__) + '/'
-        self.open_action = QAction(QIcon(self.basepath + '/ico/open.ico'), '&Open', self)
-        self.save_action = QAction(QIcon(self.basepath + '/ico/save.ico'), '&Save', self)
-        self.run_action = QAction(QIcon(self.basepath + '/ico/run.ico'), '&Theme', self)
+        self.open_action = QAction(QIcon(self.basepath + '/ico/open.ico'),
+                                   '&Open', self)
+        self.save_action = QAction(QIcon(self.basepath + '/ico/save.ico'),
+                                   '&Save', self)
+        self.run_action = QAction(QIcon(self.basepath + '/ico/run.ico'),
+                                  '&Theme', self)
         self.open_action.setObjectName("openObject")
         self.save_action.setObjectName("saveObject")
         self.run_action.setObjectName("runObject")
         # !必须,关键，用于自动绑定信号和函数  on_ObjectName_triggered
         # !配套：QMetaObject.connectSlotsByName(self)
-        self.close_action = QAction(QIcon(self.basepath + '/ico/close.ico'), '&Quit', self)
+        self.close_action = QAction(QIcon(self.basepath + '/ico/close.ico'),
+                                    '&Quit', self)
         self.open_action.setShortcut('Ctrl+O')
         self.save_action.setShortcut('Ctrl+S')
         self.run_action.setShortcut('Ctrl+T')
@@ -1231,7 +1247,8 @@ class xt_QMainWindow(QMainWindow):
             self.basepath + '/white.qss',
         ]
         file_name = random.choice(qss_list)
-        self.setWindowTitle(self.title + '--' + file_name.split('/')[-1].split('.')[0])
+        self.setWindowTitle(self.title + '--' +
+                            file_name.split('/')[-1].split('.')[0])
         qsstools.set(file_name, self)
         pass
 
@@ -1279,7 +1296,8 @@ if __name__ == '__main__':
             self.tree = xt_QTreeWidget(['aaa', 'b', 'cc'])
             self.tree.addItem(['child1', 'name11', 'name22'])
             for index in range(1, 20):
-                self.tree.addItem(['child' + str(index * 10), 'name1' + str(index * 10)])
+                self.tree.addItem(
+                    ['child' + str(index * 10), 'name1' + str(index * 10)])
             self.table = xt_QTableWidget([1, 2, 3], 10, 5)
             self.tabw = xt_QTabWidget(2)
             self.btn.move(40, 80)
@@ -1326,11 +1344,19 @@ if __name__ == '__main__':
             self.table.empty()
             self.table.appendItem(['1', '记录一'])
             self.table.appendItem(['2', '记录2', 2, 3, 4, 5])
-            self.table.appendItems([['3', '记录3'], ['4', '记录4'], ['5', '记录5', 'djahd', 'ihviairh' * 5, 'ohv7384' * 3]])
+            self.table.appendItems(
+                [['3', '记录3'], ['4', '记录4'],
+                 ['5', '记录5', 'djahd', 'ihviairh' * 5, 'ohv7384' * 3]])
             r = []
             for i in range(10):
-                ran_str = ''.join(random.sample('zyxwvutsrqponmlkjihgfedcba0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()', 5))
-                ran_str_2 = ''.join(random.sample('zyxwvutsrqponmlkjihgfedcba0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()', 27))
+                ran_str = ''.join(
+                    random.sample(
+                        'zyxwvutsrqponmlkjihgfedcba0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()',
+                        5))
+                ran_str_2 = ''.join(
+                    random.sample(
+                        'zyxwvutsrqponmlkjihgfedcba0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()',
+                        27))
                 r.append([i * 10, '记录' + ran_str, ran_str_2])
                 # self.table.appendItem([i * 10, '记录' + str(i * 10)])
             # print(r)

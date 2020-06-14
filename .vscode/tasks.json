@@ -14,17 +14,6 @@
             "group": "build"
         },
         {
-            "label": "test",
-            "type": "shell",
-            "command": "mvn -B test",
-            "group": "test"
-        },
-        {
-            "label": "py34",
-            "type": "shell",
-            "args": ["${file}"],
-        },
-        {
             "label": "python",
             "type": "shell",
             "args": ["${file}"]

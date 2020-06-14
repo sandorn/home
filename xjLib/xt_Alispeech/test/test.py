@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-06-11 12:27:03
 #FilePath     : /xjLib/xt_Alispeech/test/test.py
-#LastEditTime : 2020-06-11 14:58:50
+#LastEditTime : 2020-06-14 12:37:53
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -104,7 +104,10 @@ def 合成语音():
     SYC = synthesizeClass(longtext)
     res = SYC.run()
     print(res)
-    SYC.setparams('text', '根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组，由公司总经理毕永辉任整治小组组长，成员包括公司副总经理刘新军、行政人事部总经理朱立志。')
+    SYC.setparams(
+        'text',
+        '根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组，由公司总经理毕永辉任整治小组组长，成员包括公司副总经理刘新军、行政人事部总经理朱立志。'
+    )
     SYC.setparams('callback', play_callback)  # 设置回调
     res = SYC.run()
     print(3333, SYC.result.filename)
@@ -121,9 +124,9 @@ def 合成语音2():
 def 合成长语音():
     # #长文字合成语音
     long_text_list = string_split_limited_list(longtext)
-    # ReqSynthesizer_Thread_read(long_text_list)
-    reses = ReqLongSynthesizer(longtext)
-    print(reses)
+    ReqSynthesizer_Thread_read(long_text_list)
+    # reses = ReqLongSynthesizer(longtext)
+    # print(reses)
 
 
 def 网络音频识别():
@@ -142,13 +145,15 @@ def 本地音频识别():
 
 def 使用SSML别():
     # #短文字合成语音，使用SSML
-    ssml_text_list = ['<speak' + item for item in ssml_text.split('<speak') if item.strip()]
+    ssml_text_list = [
+        '<speak' + item for item in ssml_text.split('<speak') if item.strip()
+    ]
     ReqSynthesizer_Thread_read(ssml_text_list)
 
 
 # 合成语音()
 # 合成语音2()
-# 合成长语音()
+合成长语音()
 # 网络音频识别()
 # 本地音频识别()
 # 使用SSML别()

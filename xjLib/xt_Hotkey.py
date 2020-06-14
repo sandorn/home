@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-28 19:16:13
 #FilePath     : /xjLib/xt_Hotkey.py
-#LastEditTime : 2020-06-04 17:02:05
+#LastEditTime : 2020-06-14 19:30:39
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -21,13 +21,15 @@ import threading
 
 user32 = ctypes.windll.user32  # 加载user32.dll
 
-
 from pysnooper import snoop
+from xt_Log import log
+log = log()
+snooper = snoop(log.filename)
+# print = log.debug
 
 
-@snoop()
+@snooper
 class Hotkey(threading.Thread):  # 创建一个Thread.threading的扩展类
-
     def __init__(self, ikey1=105, ikey2=106):
         super().__init__()
         self.RUN = False  # 用来传递运行一次的参数
@@ -83,6 +85,5 @@ if __name__ == '__main__':
             # 这里是用于退出循环的
             print('win32con.VK_F10,hotkey.EXIT == True', 'EXIT')
             break
-
 
     # # QShortcut(QKeySequence("Escape"), self, self.close)

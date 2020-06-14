@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
 #FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-06-11 15:12:06
+#LastEditTime : 2020-06-14 23:05:02
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -26,11 +26,11 @@ user2 = {
 
 from ali_speech._create_token import AccessToken
 from xt_Time import get_10_timestamp
-from xt_String import class_to_dict
+from xt_Class import Singleton_Warp_Class
 
 
+@Singleton_Warp_Class
 class Constant:
-    '''常量'''
     __appKey = 'Ofm34215thIUdSIX'
     __accessKeyId = 'LTAI4G5TRjsGy8BNKPtctjXQ'
     __accessKeySecret = 'hS8Kl0b9orxNUW7IOeBIFUfzgcVn00'
@@ -39,22 +39,27 @@ class Constant:
 
     def __init__(self):
         '''更新Constant.获取token'''
+        self.__gettoken__()
+
+    @classmethod
+    def __gettoken__(cls):
         now = get_10_timestamp()
         # #token生命周期缩短3分钟
-        if (Constant.__expire_time - 60 * 3) <= now:
-            Constant.__token, Constant.__expire_time = AccessToken.create_token(Constant.__accessKeyId, Constant.__accessKeySecret)
+        if (cls.__expire_time - 60 * 3) <= now:
+            cls.__token, cls.__expire_time = AccessToken.create_token(
+                cls.__accessKeyId, cls.__accessKeySecret)
 
     appKey = property(lambda cls: cls.__appKey)
     accessKeyId = property(lambda cls: cls.__accessKeyId)
     accessKeySecret = property(lambda cls: cls.__accessKeySecret)
-    token = property(lambda cls: cls.__token)
     expire_time = property(lambda cls: cls.__expire_time)
+    # token = property(lambda cls: cls.__token)
 
-    # 第二种方法
-    # @property
-    # def token(self):
-    #     Constant.__gettoken__()
-    #     return Constant.__token
+    #第二种方法
+    @property
+    def token(self):
+        self.__gettoken__()
+        return self.__token
 
 
 class SpeechArgs:
@@ -72,7 +77,6 @@ class SpeechArgs:
 
 class SynResult:
     '''合成结果'''
-
     def __init__(self):
         self.response = ''
         self.filename = ''
@@ -84,7 +88,6 @@ class SynResult:
 
 class TransResult:
     '''识别结果'''
-
     def __init__(self):
         self.text = ''
         self.name = ''
@@ -98,10 +101,11 @@ class TransResult:
 if __name__ == "__main__":
     print(Constant().token)
     c1 = Constant()
-    print(c1.token)
+    print(c1.token, id(c1))
     c2 = Constant()
-    print(c2.accessKeyId)
-    print(Constant().appKey)
+    print(c2.token, id(c2))
+    print(Constant().token)
+    print(c1.__repr__())
     # from xt_String import class_to_dict
     # body_dict = class_to_dict(SpeechArgs())
     # body_dict['format'] = 'format'  # #更新

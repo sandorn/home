@@ -8,34 +8,35 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-03-25 10:13:07
 #FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-#LastEditTime : 2020-06-12 15:56:31
+#LastEditTime : 2020-06-13 18:23:20
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
 '''
 
-
 from sqlalchemy import (TIMESTAMP, Column, DateTime, Enum, Integer, Numeric,
-                        String, create_engine)
+                        String, text, create_engine)
 from sqlalchemy.dialects.mysql import INTEGER
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, api
 from sqlalchemy.orm import scoped_session, sessionmaker, validates
-from sqlalchemy.sql import text
+# from sqlalchemy.sql import text
 
 # 此处用.引用在其他地方可以操作，本文件不可以
 from .dbconf import make_connect_string
 from .xt_sqlbase import SqlBase, SqlMeta
+from xt_Class import typed_property
 
 
 class SqlConnection(SqlBase):
-    __slots__ = ('baseclass', 'params', 'engine', 'session')
-
-    # @sqlhelper = engine(DB_class, 'TXbx')
+    baseclass = typed_property('baseclass', api.DeclarativeMeta)
 
     def __init__(self, baseclass, key='default'):
         self.baseclass = baseclass  # #定义基础数据类
         # #设置self.params参数
-        self.params = {attr: getattr(baseclass, attr) for attr in baseclass.getColumns()}
+        self.params = {
+            attr: getattr(baseclass, attr)
+            for attr in baseclass.getColumns()
+        }
         self.engine = create_engine(make_connect_string(key), echo=False)
         self.session = scoped_session(sessionmaker(bind=self.engine))
         # #单线程 sessionmaker(bind=self.engine)
@@ -61,7 +62,8 @@ class SqlConnection(SqlBase):
             conditon_list = []
             for key in list(conditions.keys()):
                 if self.params.get(key, None):
-                    conditon_list.append(self.params.get(key) == conditions.get(key))
+                    conditon_list.append(
+                        self.params.get(key) == conditions.get(key))
             conditions = conditon_list
             query = self.session.query(self.baseclass)
             for condition in conditions:
@@ -83,7 +85,8 @@ class SqlConnection(SqlBase):
             conditon_list = []
             for key in list(conditions.keys()):
                 if self.params.get(key, None):
-                    conditon_list.append(self.params.get(key) == conditions.get(key))
+                    conditon_list.append(
+                        self.params.get(key) == conditions.get(key))
             conditions = conditon_list
             query = self.session.query(self.baseclass)
             for condition in conditions:
@@ -119,7 +122,8 @@ class SqlConnection(SqlBase):
             conditon_list = []
             for key in list(conditions.keys()):
                 if self.params.get(key, None):
-                    conditon_list.append(self.params.get(key) == conditions.get(key))
+                    conditon_list.append(
+                        self.params.get(key) == conditions.get(key))
             conditions = conditon_list
         else:
             conditions = []
@@ -138,7 +142,8 @@ class SqlConnection(SqlBase):
         使用完全基于字符串的语句
         '''
         if sql:
-            query = self.session.query(self.baseclass).from_statement(text(sql))
+            query = self.session.query(self.baseclass).from_statement(
+                text(sql))
         if conditions:
             result = query.params(**conditions).all()
             self.session.commit()
@@ -155,7 +160,8 @@ class SqlConnection(SqlBase):
         filter_by的参数是**kwargs，直接支持组合查询。
         仅支持[等于]、[and]，无需明示，在参数中以字典形式传入
         '''
-        result = self.session.query(self.baseclass).filter_by(**conditions).all()
+        result = self.session.query(
+            self.baseclass).filter_by(**conditions).all()
         return result
 
     def close(self):
@@ -173,4 +179,7 @@ def creat_sqlalchemy_db_class(tablename, filename=None, key='default'):
         filename = tablename
     com_list = f'sqlacodegen --tables {tablename} --outfile {filename}_db.py {make_connect_string(key)}'
 
-    subprocess.call(com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    subprocess.call(com_list,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT)

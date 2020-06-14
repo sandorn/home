@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-03 23:26:06
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-08 20:40:28
+#LastEditTime : 2020-06-13 17:24:35
 '''
 
 import MySQLdb
@@ -24,7 +24,6 @@ class engine(object):
     mysql数据库对象，参数：db_name , odbc
     可选驱动：[mysql.connector 出错禁用]、[pymysql]、[MySQLdb]
     """
-
     def __init__(self, key='default', odbc='MySQLdb'):
         self.db_name = key
         self.odbc = odbc
@@ -103,7 +102,10 @@ class engine(object):
     def insert(self, dt, tb_name):
         # 以字典形式提交插入
         ls = [(k, dt[k]) for k in dt if dt[k] is not None]
-        sql = 'insert into %s (' % tb_name + ','.join([i[0] for i in ls]) + ') values (' + ','.join(['%r' % i[1] for i in ls]) + ');'
+        sql = 'insert into %s (' % tb_name + ','.join(
+            [i[0]
+             for i in ls]) + ') values (' + ','.join(['%r' % i[1]
+                                                      for i in ls]) + ');'
         # print(sql)  # .replace('%', '%%')
         self.worKon(sql)
 
@@ -111,7 +113,10 @@ class engine(object):
         # dt_update,更新的数据
         # dt_condition，匹配的数据
         # tb_name,表名
-        sql = 'UPDATE %s SET ' % tb_name + ','.join(['%s=%r' % (k, dt_update[k]) for k in dt_update]) + ' WHERE ' + ' AND '.join(['%s=%r' % (k, dt_condition[k]) for k in dt_condition]) + ';'
+        sql = 'UPDATE %s SET ' % tb_name + ','.join(
+            ['%s=%r' % (k, dt_update[k])
+             for k in dt_update]) + ' WHERE ' + ' AND '.join(
+                 ['%s=%r' % (k, dt_condition[k]) for k in dt_condition]) + ';'
         self.worKon(sql)
 
     def ver(self):

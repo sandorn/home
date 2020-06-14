@@ -1,34 +1,38 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-16 12:57:23
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-11 13:11:49
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2019-05-16 12:57:23
+#FilePath     : /xjLib/xt_Requests.py
+#LastEditTime : 2020-06-13 18:33:41
+#Github       : https://github.com/sandorn/home
+#==============================================================
 requests 简化调用
 '''
 # from __future__ import absolute_import, unicode_literals
 
 import requests
-
+from pysnooper import snoop
 from retrying import retry
 
 from xt_Head import myhead
+from xt_Log import log
 from xt_Response import ReqResult
 
-from pysnooper import snoop
-from xt_Log import log
 log = log()
 snooper = snoop(log.filename)
 # print = log.debug
 
 RETRY_TIME = 6  # 最大重试次数
-Retry = retry(wait_random_min=20, wait_random_max=1000, stop_max_attempt_number=RETRY_TIME, retry_on_exception=lambda x: True, retry_on_result=lambda ret: not ret)
+Retry = retry(wait_random_min=20,
+              wait_random_max=1000,
+              stop_max_attempt_number=RETRY_TIME,
+              retry_on_exception=lambda x: True,
+              retry_on_result=lambda ret: not ret)
 
 
 def parse_get(url, *args, **kwargs):
@@ -117,14 +121,18 @@ def post(url, *args, **kwargs):
     return response
 
 
-class SessionClient(object):
+class SessionClient:
+    __slots__ = ('session', 'headers', 'cookies', 'result', 'url', 'method',
+                 'args', 'kwargs', 'callback')
+
     def __init__(self, *args, **kwargs):
-        self.session = requests.session()
+        self.session = requests.session(*args, **kwargs)
         self.cookies = requests.cookies.RequestsCookieJar()
 
     @Retry
     def request(self):
-        self.result = self.session.request(self.method, self.url, *self.args, **self.kwargs)
+        self.result = self.session.request(self.method, self.url, *self.args,
+                                           **self.kwargs)
         return self.result
 
     def _run(self):
@@ -161,7 +169,8 @@ class SessionClient(object):
     def __getattr__(self, method):
         if method in ['get', 'post']:
             self.method = method
-            return self.__create_params  # !不带括号,传递*args, **kwargs参数
+            # @不带括号,传递*args, **kwargs参数
+            return self.__create_params
 
     def update_cookies(self, cookie_dict):
         self.session.cookies.update(cookie_dict)
@@ -169,18 +178,6 @@ class SessionClient(object):
 
     def update_headers(self, header_dict):
         self.session.headers.update(header_dict)
-
-
-if __name__ == '__main__':
-    s = SessionClient()
-    s.update_headers({'Content-Type': 'application/json', 'charset': 'UTF-8', **myhead})
-
-    url = "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async"  # 400
-    url_get = "https://httpbin.org/get"  # 返回head及ip等信息
-    url_post = "https://httpbin.org/post"  # 返回head及ip等信息
-
-    r = s.get(url)
-    print(r.text)  # print(r['text'])  r.text
 
 
 '''

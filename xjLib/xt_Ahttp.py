@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-08 18:33:35
+#LastEditTime : 2020-06-14 19:26:58
 '''
 import asyncio
 import ctypes
@@ -40,8 +40,12 @@ class SessionMeta:
         # self.request_pool = []
 
     def __getattr__(self, name):
-        if name in ['get', 'options', 'head', 'post', 'put', 'patch', 'delete']:
-            new_AyReqTaskMeta = AyReqTaskMeta(headers=self.headers, session=self.session, cookies=self.cookies)
+        if name in [
+                'get', 'options', 'head', 'post', 'put', 'patch', 'delete'
+        ]:
+            new_AyReqTaskMeta = AyReqTaskMeta(headers=self.headers,
+                                              session=self.session,
+                                              cookies=self.cookies)
             new_AyReqTaskMeta.__getattr__(name)
             # self.request_pool.append(new_AyReqTaskMeta)
             return new_AyReqTaskMeta.get_params
@@ -51,7 +55,12 @@ class SessionMeta:
 
 
 class AyReqTaskMeta:
-    def __init__(self, *args, session=None, headers=None, cookies=None, **kwargs):
+    def __init__(self,
+                 *args,
+                 session=None,
+                 headers=None,
+                 cookies=None,
+                 **kwargs):
         self.session = session
         self.headers = headers
         self.cookies = cookies
@@ -63,7 +72,9 @@ class AyReqTaskMeta:
             yield attr, value
 
     def __getattr__(self, name):
-        if name in ['get', 'options', 'head', 'post', 'put', 'patch', 'delete']:
+        if name in [
+                'get', 'options', 'head', 'post', 'put', 'patch', 'delete'
+        ]:
             self.method = name
             return self.get_params
 
@@ -95,7 +106,15 @@ class AyReqTaskMeta:
 
 def create_session(method, *args, **kw):
     session = SessionMeta()  # SessionMeta类
-    _dict = {"get": session.get, "post": session.post, "options": session.options, "head": session.head, "put": session.put, "patch": session.patch, "delete": session.delete}
+    _dict = {
+        "get": session.get,
+        "post": session.post,
+        "options": session.options,
+        "head": session.head,
+        "put": session.put,
+        "patch": session.patch,
+        "delete": session.delete
+    }
     return _dict[method](*args, **kw)
 
 
@@ -113,7 +132,13 @@ async def AyReqTask_run(self):
     # #单个任务，从task.run()调用
     async def _run():
         async with aiohttp.ClientSession(cookies=self.cookies) as session:
-            async with session.request(self.method, self.url, *self.args, timeout=timesout, verify_ssl=False, headers=self.headers, **self.kw) as sessReq:
+            async with session.request(self.method,
+                                       self.url,
+                                       *self.args,
+                                       timeout=timesout,
+                                       verify_ssl=False,
+                                       headers=self.headers,
+                                       **self.kw) as sessReq:
                 self.content = await sessReq.read()
                 self.result = sessReq
                 assert sessReq.status in [200, 201, 302]
@@ -140,21 +165,28 @@ def run(tasks, pool=0, single_session=True):
 
     result_list = []  # #存放返回结果集合
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(multi_req(tasks, pool, result_list, single_session=single_session))
+    loop.run_until_complete(
+        multi_req(tasks, pool, result_list, single_session=single_session))
     # 返回结果集合
     return result_list
 
 
 async def multi_req(tasks, pool, result_list, single_session=True):
     # 不能传递cookies
-    myconn = aiohttp.TCPConnector(use_dns_cache=True, loop=asyncio.get_event_loop(), ssl=False, limit=pool)
+    myconn = aiohttp.TCPConnector(use_dns_cache=True,
+                                  loop=asyncio.get_event_loop(),
+                                  ssl=False,
+                                  limit=pool)
 
     if single_session:
         # #默认使用单一session
-        async with aiohttp.ClientSession(connector_owner=False, connector=myconn) as mysession:
+        async with aiohttp.ClientSession(connector_owner=False,
+                                         connector=myconn) as mysession:
             new_tasks = []
             for index, task in enumerate(tasks):
-                new_tasks.append(asyncio.ensure_future(fetch_async(task, result_list, mysession)))
+                new_tasks.append(
+                    asyncio.ensure_future(
+                        fetch_async(task, result_list, mysession)))
             await asyncio.wait(new_tasks)
 
     else:
@@ -163,21 +195,37 @@ async def multi_req(tasks, pool, result_list, single_session=True):
         new_tasks = []
         for index, task in enumerate(tasks):
             if id(task.session) not in sessions_list:
-                async with aiohttp.ClientSession(connector_owner=False, connector=myconn, cookies=task.session.cookies) as mysession:
+                async with aiohttp.ClientSession(
+                        connector_owner=False,
+                        connector=myconn,
+                        cookies=task.session.cookies) as mysession:
                     sessions_list[id(task.session)] = mysession
-                new_tasks.append(asyncio.ensure_future(fetch_async(task, result_list, sessions_list[id(task.session)],)))
+                new_tasks.append(
+                    asyncio.ensure_future(
+                        fetch_async(
+                            task,
+                            result_list,
+                            sessions_list[id(task.session)],
+                        )))
 
         await asyncio.wait(new_tasks)
-        await asyncio.wait([asyncio.ensure_future(v.close()) for k, v in sessions_list.items()])
+        await asyncio.wait([
+            asyncio.ensure_future(v.close()) for k, v in sessions_list.items()
+        ])
 
     await myconn.close()  # 关闭tcp连接器
 
 
 async def fetch_async(task, result_list, session):
-
     async def _run():
-        headers = task.headers or ctypes.cast(task.session, ctypes.py_object).value.headers or myhead
-        async with session.request(task.method, task.url, timeout=timesout, headers=headers, *task.args, **task.kw) as sessReq:
+        headers = task.headers or ctypes.cast(
+            task.session, ctypes.py_object).value.headers or myhead
+        async with session.request(task.method,
+                                   task.url,
+                                   timeout=timesout,
+                                   headers=headers,
+                                   *task.args,
+                                   **task.kw) as sessReq:
             assert sessReq.status in [200, 201, 302]
             content = await sessReq.read()
             new_res = ReqResult(sessReq, content, id(task))

@@ -9,17 +9,17 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-06 12:26:33
+#LastEditTime : 2020-06-14 23:07:19
 # author:      he.zhiming
 '''
 
 import logging
 import logging.config
-import os
 from datetime import datetime
 
 style = {
-    'standard': '[%(asctime)s][%(threadName)s:%(thread)d][%(name)s][%(filename)s->%(funcName)s:%(lineno)d]\t[%(levelname)s]\t[%(message)s]',
+    'standard':
+    '[%(asctime)s][%(threadName)s:%(thread)d][%(name)s][%(filename)s->%(funcName)s:%(lineno)d]\t[%(levelname)s]\t[%(message)s]',
     'simple': '[%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
 }
 
@@ -40,9 +40,7 @@ def _make_filename(level=10):
     else:
         _level = level
 
-    date_str = datetime.today().strftime('%Y%m%d')
-
-    return ''.join((date_str, '-', _level, '.log',))
+    return datetime.today().strftime('%Y%m%d') + '-' + _level + '.log'
 
 
 class log(object):
@@ -54,8 +52,12 @@ class log(object):
             'version': 1,
             'disable_existing_loggers': False,
             'formatters': {
-                'standard': {'format': style['standard']},
-                'simple': {'format': style['standard']},
+                'standard': {
+                    'format': style['standard']
+                },
+                'simple': {
+                    'format': style['standard']
+                },
             },
             'filters': {},
             'handlers': {
@@ -92,8 +94,7 @@ class log(object):
                 },
             },
         }
-        # #定义字典完毕
-        logging.config.dictConfig(self.conf_dic)  # 导入上面定义的logging配置
+        # #定义字典完毕        logging.config.dictConfig(self.conf_dic)  # 导入上面定义的logging配置
         self.logger = logging.getLogger(logger)
         # 日志的5个级别对应以下的五个函数
 
@@ -113,6 +114,4 @@ class log(object):
 
 
 if __name__ == "__main__":
-    from xt_Log import log
-    print = log().debug
-    print(9999)
+    pass

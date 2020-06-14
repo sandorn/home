@@ -10,7 +10,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 01:37:18
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-08 20:43:34
+#LastEditTime : 2020-06-13 17:35:16
 '''
 
 
@@ -50,8 +50,7 @@ class SqlBase(object):
 
 
 class SqlMeta:
-    # #扩展DB模型的方法
-    # #作用：支持下标引用和赋值
+    # #扩展DB模型的方法,支持下标引用和赋值
     def __getitem__(self, attr):
         # return  self.__getattribute__(attr)
         return getattr(self, attr)
@@ -63,7 +62,12 @@ class SqlMeta:
     # #获取字段名列表
     @classmethod
     def getColumns(cls):
-        ColumnsList = [attr for attr in dir(cls) if not callable(getattr(cls, attr)) and not attr.startswith("__") and not attr == '_sa_class_manager' and not attr == '_decl_class_registry' and not attr == '_sa_instance_state' and not attr == 'metadata']
+        ColumnsList = [
+            attr for attr in dir(cls) if not callable(getattr(cls, attr))
+            and not attr.startswith("__") and not attr == '_sa_class_manager'
+            and not attr == '_decl_class_registry'
+            and not attr == '_sa_instance_state' and not attr == 'metadata'
+        ]
         return ColumnsList
 
     # #数据记录转字典
@@ -73,10 +77,13 @@ class SqlMeta:
             return {key: getattr(result, key) for key in cls.getColumns()}
 
         elif isinstance(result[0], cls):
-            return [{key: getattr(item, key) for key in cls.getColumns()} for item in result]
+            return [{key: getattr(item, key)
+                     for key in cls.getColumns()} for item in result]
 
     # #用于打印显示
     def __repr__(self):
-        return str(self.__class__) + ' : ' + str({attr: getattr(self, attr) for attr in self.getColumns()})
+        return '<' + str(self.__class__) + '>:' + str(
+            {attr: getattr(self, attr)
+             for attr in self.getColumns()})
 
     __str__ = __repr__
