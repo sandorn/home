@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-12 16:05:58
 #FilePath     : /xjLib/test/class--test.py
-#LastEditTime : 2020-06-14 23:09:36
+#LastEditTime : 2020-06-15 13:09:45
 #Github       : https://github.com/sandorn/home
 #==============================================================
 8.9 创建新的类或实例属性_w3cschool
@@ -17,6 +17,7 @@ Python3.7 dataclass使用指南 - apocelipes - 博客园
 https://www.cnblogs.com/apocelipes/p/10284346.html
 
 '''
+
 from xt_Class import typed_property, typeassert, readonly, Singleton_Warp_Func, Singleton_Warp_Class
 from dataclasses import dataclass
 from functools import partial
@@ -53,48 +54,79 @@ def setparams(self, attr, value):
         self.body_dict[attr] = value
 
 
-String = partial(typed_property, expected_type=str)
-Integer = partial(typed_property, expected_type=int)
+def example1():
+    # String = partial(typed_property, expected_type=str)
+    Integer = partial(typed_property, expected_type=int)
+
+    class Person:
+        name = typed_property('name', str)
+        age = Integer('age')
+
+        def __init__(self, name, age):
+            self.name = name
+            self.age = age
+
+        def __repr__(self):
+            return "Person [name={}, age={}]".format(self.name, self.age)
+
+    a = Person('张三', 44)
+    a.name = '二狗子'
+    print(a)
 
 
-# Example use
-class Person:
-    name = typed_property('name', str)
-    age = Integer('age')
+def example2():
+    @typeassert(name=str, shares=int, price=float)
+    class Stock:
+        def __init__(self, name, shares, price):
+            self.name = name
+            self.shares = shares
+            self.price = price
 
-    def __init__(self, name, age):
-        self.name = name
-        self.age = age
+        def __repr__(self):
+            return f"{self.__class__.__name__} [name={self.name},shares={self.shares},price={self.price}]"
 
-    def __repr__(self):
-        return "Person [name={}, age={}]".format(self.name, self.age)
-
-
-a = Person('张三', 44)
-a.name = '二狗子'
-print(a)
+    zsy = Stock('中国石油', 600987, 4.02)
+    print(zsy)
 
 
-# Example use
-# @typeassert(name=str, shares=int, price=float)
-class Stock:
-    __slots__ = ('real_name', '_shares', '__price')
-    name = readonly('real_name')
-    shares = readonly('_shares')
-    price = readonly('_Stock__price')
+def example3():
+    class Stock_1:
+        __slots__ = ('real_name', '_shares', '__price')
+        name = readonly('real_name')
+        shares = readonly('_shares')
+        price = readonly('_Stock_1__price')
 
-    def __init__(self, name, shares, price):
-        self.real_name = name
-        self._shares = shares
-        self.__price = price
+        def __init__(self, name, shares, price):
+            self.real_name = name
+            self._shares = shares
+            self.__price = price
 
-    def __repr__(self):
-        return f"{self.__class__.__name__} [name={self.name},shares={self.shares},price={self.price}]"
+        def __repr__(self):
+            return f"{self.__class__.__name__} [name={self.name},shares={self.shares},price={self.price}]"
+
+    zsy = Stock_1('中国石油', 600987, 4.02)
+    zsy._shares = 260987
+    zsy._Stock_1__price = 48.32
+    print(zsy)
 
 
-zsy = Stock('中国石油', 600987, 4.02)
-print(zsy)
-zsy._shares = 260987
-zsy._Stock__price = 48.32
-print(zsy)
-print(dir(zsy))
+def example4():
+    @dataclass
+    class Stock_D:
+        name = readonly('real_name')
+        shares = readonly('_shares')
+        price = readonly('__price')
+        real_name: str = ''
+        _shares: int = 600987
+        __price: float = 8.72
+
+    zsy = Stock_D('中国石油', 600987, 4.02)
+    zsy._shares = 260987
+    zsy._Stock_D__price = 48.32
+    print(zsy)
+
+
+example1()
+example2()
+example3()
+example4()

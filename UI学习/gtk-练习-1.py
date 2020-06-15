@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-09 17:25:36
 #FilePath     : /UI学习/gtk-练习-1.py
-#LastEditTime : 2020-06-11 14:23:44
+#LastEditTime : 2020-06-15 15:58:08
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -29,7 +29,8 @@ class MyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Center Window")
         self.set_size_request(self.WIDTH, self.HEIGHT)
-        self.move((Gdk.Screen.width() - self.WIDTH) / 2, (Gdk.Screen.height() - self.HEIGHT) / 2)
+        self.move((Gdk.Screen.width() - self.WIDTH) // 2,
+                  (Gdk.Screen.height() - self.HEIGHT) // 2)
         self.button = Gtk.Button(label="Click Here")
         self.button.connect("clicked", self.on_button_clicked)
         self.add(self.button)

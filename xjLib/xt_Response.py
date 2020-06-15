@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
 #FilePath     : /xjLib/xt_Response.py
-#LastEditTime : 2020-06-14 00:50:07
+#LastEditTime : 2020-06-15 09:31:14
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -16,6 +16,7 @@
 import json
 from cchardet import detect
 from lxml import etree
+from xt_Class import readonly
 
 
 class ReqResult:

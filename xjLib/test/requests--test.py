@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-12 16:18:13
 #FilePath     : /xjLib/test/requests--test.py
-#LastEditTime : 2020-06-13 22:34:12
+#LastEditTime : 2020-06-15 09:31:30
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -29,5 +29,5 @@ url_post = "https://httpbin.org/post"  # 返回head及ip等信息
 
 # #s.session.auth = ('user', 'pass')
 res = s.get(url_get)  #, auth=('sandorn', '123456'))
-print(res)  # print(r['text'])  r.text
+print(res.text)  # print(r['text'])  r.text
 # print(res.text)

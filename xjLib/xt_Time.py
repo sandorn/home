@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 10:04:55
 #FilePath     : /xjLib/xt_Time.py
-#LastEditTime : 2020-06-05 12:59:22
+#LastEditTime : 2020-06-15 13:30:06
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -24,7 +24,8 @@ def fn_timer(function):
         t0 = time.time()
         result = function(*args, **kwargs)
         t1 = time.time()
-        print("Function : <%s> Total running time: %.2f seconds" % (function.__name__, t1 - t0))
+        print("Function : <%s> Total running time: %.2f seconds" %
+              (function.__name__, t1 - t0))
         return result
 
     return function_timer
@@ -39,7 +40,9 @@ def get_lite_time():
 
 
 def get_sql_time():
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return f'{datetime.now():%F %X}'
+    # #'the time is 2020-06-15 13:28:27'
 
 
 def get_10_timestamp(timestr=None):

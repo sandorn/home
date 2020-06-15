@@ -7,7 +7,7 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-05-30 14:25:16
-#LastEditTime : 2020-06-14 16:12:15
+#LastEditTime : 2020-06-15 12:58:30
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -24,7 +24,7 @@ snooper = snoop(log.filename)
 # print = log.debug
 
 
-class Method_Meta:
+class Ex_Class_Method_Meta:
 
     # #下标obj[key]
     def __getitem__(self, attr):
@@ -82,7 +82,7 @@ class Singleton_Warp_Class(object):
     def __init__(self, cls):
         self._cls = cls
         self._instance = {}
-        print(self.__class__.__name__, id(self))
+        # print(self.__class__.__name__, id(self))
 
     def __call__(self):
         if self._cls not in self._instance:
@@ -117,7 +117,7 @@ class SingletonMeta(object):
         return warp_init
 
     def __init__(self):
-        print(self.__class__.__name__, id(self))
+        # print(self.__class__.__name__, id(self))
         pass
 
 
@@ -132,12 +132,13 @@ class Singleton(object):
         return cls._instance
 
     def __init__(self):
-        print(self.__class__.__name__, id(self))
+        # print(self.__class__.__name__, id(self))
         pass
 
 
 def typeassert(**kwargs):
     # Descriptor for a type-checked attribute
+    # @限制属性赋值的类型，因使用__dict__,与slots冲突
     class Typed:
         def __init__(self, name, expected_type):
             self.name = name
@@ -177,7 +178,6 @@ def typed_property(name, expected_type):
 
     @prop.setter
     def prop(self, value):
-        # assert isinstance(value, expected_type)
         if not isinstance(value, expected_type):
             raise TypeError('{} must be a {}'.format(name, expected_type))
         setattr(self, storage_name, value)
@@ -187,8 +187,7 @@ def typed_property(name, expected_type):
 
 def readonly(name):
     '''
-    class属性生成器,为class外部，
-    调用类的双下划线开头的私有属性，需要在前面加下划线及类名:_类名
+    class属性生成器,用于隐藏真实属性名，真实属性名用name定义
     '''
     storage_name = name
 

@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
 #FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-06-14 23:05:02
+#LastEditTime : 2020-06-15 14:02:47
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -26,7 +26,9 @@ user2 = {
 
 from ali_speech._create_token import AccessToken
 from xt_Time import get_10_timestamp
-from xt_Class import Singleton_Warp_Class
+from xt_Class import Singleton_Warp_Class, readonly
+from typing import Any
+from dataclasses import dataclass, field
 
 
 @Singleton_Warp_Class
@@ -62,54 +64,43 @@ class Constant:
         return self.__token
 
 
+@dataclass(init=False)
 class SpeechArgs:
     '''默认参数'''
-    appkey = Constant().appKey
-    # #导入此库就立即加载token
-    token = Constant().token
-    format = 'wav'
-    sample_rate = 16000
-    voice = 'Aida'
-    volume = 100
-    speech_rate = 0
-    pitch_rate = 0
+    appkey = readonly('_appkey')
+    token = readonly('_token')
+
+    _appkey: str = Constant().appKey
+    _token: str = Constant().token
+    format: str = 'wav'
+    sample_rate: int = 16000
+    voice: str = 'Aida'
+    volume: int = 100
+    speech_rate: int = 0
+    pitch_rate: int = 0
 
 
+@dataclass(init=False)
 class SynResult:
     '''合成结果'''
-    def __init__(self):
-        self.response = ''
-        self.filename = ''
-        self.callback = ''
-
-    def __repr__(self):
-        return f'filename:<{self.filename}>,response:{self.response},callback:<{self.callback}>'
+    response: Any = ''
+    filename: str = ''
+    callback: str = ''
 
 
+@dataclass(init=False)
 class TransResult:
     '''识别结果'''
-    def __init__(self):
-        self.text = ''
-        self.name = ''
-        self.task_id = ''
-        self.response = ''
-
-    def __repr__(self):
-        return f'text:<{self.text}>,task_id:<{self.task_id}>'
+    text: str = ''
+    name: str = ''
+    task_id: str = ''
+    response: Any = ''
 
 
 if __name__ == "__main__":
-    print(Constant().token)
-    c1 = Constant()
-    print(c1.token, id(c1))
-    c2 = Constant()
-    print(c2.token, id(c2))
-    print(Constant().token)
-    print(c1.__repr__())
-    # from xt_String import class_to_dict
-    # body_dict = class_to_dict(SpeechArgs())
-    # body_dict['format'] = 'format'  # #更新
-    # body_dict['text'] = 'text'  # 添加
-    # print(body_dict)
-
+    a = SpeechArgs()
+    b = SpeechArgs()
+    a.sample_rate = 24000
+    print(a)
+    print(f'metadata={b!r},')
     pass

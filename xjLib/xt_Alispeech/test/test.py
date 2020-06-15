@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-06-11 12:27:03
 #FilePath     : /xjLib/xt_Alispeech/test/test.py
-#LastEditTime : 2020-06-14 12:37:53
+#LastEditTime : 2020-06-15 10:55:05
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -153,7 +153,7 @@ def 使用SSML别():
 
 # 合成语音()
 # 合成语音2()
-合成长语音()
+# 合成长语音()
 # 网络音频识别()
 # 本地音频识别()
 # 使用SSML别()
