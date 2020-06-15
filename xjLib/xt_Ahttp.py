@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-14 19:26:58
+#LastEditTime : 2020-06-15 17:44:59
 '''
 import asyncio
 import ctypes
@@ -40,9 +40,8 @@ class SessionMeta:
         # self.request_pool = []
 
     def __getattr__(self, name):
-        if name in [
-                'get', 'options', 'head', 'post', 'put', 'patch', 'delete'
-        ]:
+        if name in ['get', 'post']:
+            #, 'put', 'patch', 'delete','options', 'head',
             new_AyReqTaskMeta = AyReqTaskMeta(headers=self.headers,
                                               session=self.session,
                                               cookies=self.cookies)
@@ -51,7 +50,7 @@ class SessionMeta:
             return new_AyReqTaskMeta.get_params
 
     def __repr__(self):
-        return f"<Ahttp Session [id:{id(self.session)} client]>"
+        return f"<SessionMeta id:[{id(self.session)}] client>"
 
 
 class AyReqTaskMeta:
@@ -79,7 +78,7 @@ class AyReqTaskMeta:
             return self.get_params
 
     def __repr__(self):
-        return f"<AsyncTask session:[{id(self.session)}]\t{self.method.upper()}:{self.url}>"
+        return f"<AyReqTaskMeta id:[{id(self.session)}]\tmethod:[{self.method.upper()}]\turl:[{self.url}]>"
 
     def get_params(self, *args, **kw):
         self.url = args[0]
