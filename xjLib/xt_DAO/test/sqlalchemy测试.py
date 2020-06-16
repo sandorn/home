@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-08 20:30:34
 #FilePath     : /xjLib/xt_DAO/test/sqlalchemy测试.py
-#LastEditTime : 2020-06-14 00:54:04
+#LastEditTime : 2020-06-16 18:08:13
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -56,14 +56,14 @@ user2 = [{
     '手机': '13910118122',
 }]
 
-sqlhelper.insert_all(user2)
+# sqlhelper.insert_all(user2)
 sqlhelper.update({'手机': '17610786502'}, {'会员到期日': '7777,12,31'})
 sqlhelper.update({'username': '刘澈'}, {'会员到期日': '9999,12,31'})
 res = sqlhelper.filter_by({"username": "刘澈"})
 print(1111, res)
 res[0]['会员级别'] = 'A'
 sqlhelper.session.commit()
-print(res[0].getColumns())
+print(res[0]._fields())
 for row in sqlhelper.select(conditions={"username": "刘澈"}):
     print(row.username, row.ID)
 res = sqlhelper.select(conditions={"username": "刘澈"})
@@ -79,10 +79,12 @@ res = sqlhelper.select(2,
 print(5555, res)
 res = sqlhelper.select(conditions={"username": "刘澈"}, count=1)
 print(6666, res)
-print(6666, res[0]['username'], res[0].username)
+print(6767, res[0]['username'], res[0].username)
 res = sqlhelper.from_statement(
     "SELECT username,ID FROM users2 where username=:username limit 4",
     {"username": "刘澈"})
-print(7777, sqlhelper.baseclass.ToDict(res))
+print(7777, sqlhelper.baseclass.get_dict(res))
 for item in res:
-    print(8888, Users.ToDict(item))
+    print(7878, item, item.username, item['password'])
+    print(8888, Users.get_dict(item))
+    print(9999, item.record_to_dict())

@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-06-13 18:33:41
+#LastEditTime : 2020-06-16 13:18:01
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
@@ -125,19 +125,19 @@ class SessionClient:
     __slots__ = ('session', 'headers', 'cookies', 'result', 'url', 'method',
                  'args', 'kwargs', 'callback')
 
-    def __init__(self, *args, **kwargs):
-        self.session = requests.session(*args, **kwargs)
+    def __init__(self):
+        self.session = requests.session()
         self.cookies = requests.cookies.RequestsCookieJar()
 
     @Retry
-    def request(self):
-        self.result = self.session.request(self.method, self.url, *self.args,
-                                           **self.kwargs)
+    def _request(self, method, url, *args, **kwargs):
+        self.result = self.session.request(method, url, *args, **kwargs)
         return self.result
 
     def _run(self):
         try:
-            response = self.request()
+            response = self._request(self.method, self.url, *self.args,
+                                     **self.kwargs)
         except Exception as err:
             print(repr(err))
         else:
@@ -167,6 +167,13 @@ class SessionClient:
         return self._run()
 
     def __getattr__(self, method):
+        if method in ['get', 'post']:
+            self.method = method
+            # @不带括号,传递*args, **kwargs参数
+            return self.__create_params
+
+    # #下标obj[key]
+    def __getitem__(self, method):
         if method in ['get', 'post']:
             self.method = method
             # @不带括号,传递*args, **kwargs参数

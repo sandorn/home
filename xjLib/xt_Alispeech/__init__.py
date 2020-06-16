@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-05-25 11:34:01
 #FilePath     : /xjLib/xt_Alispeech/__init__.py
-#LastEditTime : 2020-06-16 10:13:24
+#LastEditTime : 2020-06-16 13:18:40
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -64,17 +64,17 @@ def ReqSynthesizer(text,
                    callback=None):
     result = SynResult()
     url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
-    httpHeaders = {'Content-Type': 'application/json'}
     args_dict = class_to_dict(SpeechArgs())
     args_dict['format'] = format  # #更新
     args_dict['text'] = text  # 添加
 
     session = SessionClient()
-    session.update_headers(httpHeaders)
-    if method == 'get':
-        result.response = session.get(url, params=args_dict)
-    else:
-        result.response = session.post(url, json=args_dict)
+    result.response = session[method](url,
+                                      params=args_dict,
+                                      json=args_dict,
+                                      headers={
+                                          'Content-Type': 'application/json'
+                                      })
 
     if 'audio/mpeg' == result.response.headers['Content-Type']:
 
@@ -93,7 +93,6 @@ def ReqSynthesizer(text,
 class synthesizeClass:
     def __init__(self, text=None, savefile=True, callback=None, method='post'):
         self.session = SessionClient()
-        self.session.update_headers({'Content-Type': 'application/json'})
         self.method = method
         self.callback = callback
         self.url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
@@ -109,13 +108,13 @@ class synthesizeClass:
             setattr(self, attr, value)
 
     def run(self):
-
-        if self.method == 'post':
-            self.result.response = self.session.post(self.url,
-                                                     json=self.args_dict)
-        else:
-            self.result.response = self.session.get(self.url,
-                                                    params=self.args_dict)
+        res = self.session[self.method](self.url,
+                                        params=self.args_dict,
+                                        json=self.args_dict,
+                                        headers={
+                                            'Content-Type': 'application/json'
+                                        })
+        self.result.response = res
         return self._handle_result()
 
     def _handle_result(self):

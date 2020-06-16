@@ -10,8 +10,9 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 01:37:18
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-13 17:35:16
+#LastEditTime : 2020-06-16 18:06:12
 '''
+from xt_Class import item_Class
 
 
 class SqlBase(object):
@@ -34,9 +35,11 @@ class SqlBase(object):
         raise NotImplemented
 
     def select(self, conditions=None, Columns=None, count=None, show=False):
+        print('in select')
         raise NotImplemented
 
     def from_statement(self, sql, conditions=None, show=False):
+        print('in from_statement')
         raise NotImplemented
 
     def filter(self, conditions, show=False):
@@ -49,41 +52,39 @@ class SqlBase(object):
         raise NotImplemented
 
 
-class SqlMeta:
-    # #扩展DB模型的方法,支持下标引用和赋值
-    def __getitem__(self, attr):
-        # return  self.__getattribute__(attr)
-        return getattr(self, attr)
-
-    def __setitem__(self, attr, value):
-        # return  self.__getattribute__(attr)
-        return setattr(self, attr, value)
-
+class SqlMeta(item_Class):
     # #获取字段名列表
     @classmethod
-    def getColumns(cls):
-        ColumnsList = [
+    def _fields(cls):
+        listtmp = [
             attr for attr in dir(cls) if not callable(getattr(cls, attr))
-            and not attr.startswith("__") and not attr == '_sa_class_manager'
-            and not attr == '_decl_class_registry'
-            and not attr == '_sa_instance_state' and not attr == 'metadata'
+            and not attr.startswith("__") and attr not in [
+                '_sa_class_manager', '_decl_class_registry',
+                '_sa_instance_state', 'metadata'
+            ]
         ]
-        return ColumnsList
+        return listtmp
 
     # #数据记录转字典
     @classmethod
-    def ToDict(cls, result):
+    def get_dict(cls, result):
+        '''用于record转字典'''
         if isinstance(result, cls):
-            return {key: getattr(result, key) for key in cls.getColumns()}
+            return {key: getattr(result, key) for key in cls._fields()}
 
-        elif isinstance(result[0], cls):
+        elif isinstance(result, (list, tuple)) and isinstance(result[0], cls):
             return [{key: getattr(item, key)
-                     for key in cls.getColumns()} for item in result]
+                     for key in cls._fields()} for item in result]
+
+    def record_to_dict(self):
+        '''用于record转字典'''
+        # return {key: getattr(self, key) for key in self._fields()}
+        return self.get_dict(self)
 
     # #用于打印显示
     def __repr__(self):
-        return '<' + str(self.__class__) + '>:' + str(
+        return self.__class__.__name__ + str(
             {attr: getattr(self, attr)
-             for attr in self.getColumns()})
+             for attr in self._fields()})
 
     __str__ = __repr__

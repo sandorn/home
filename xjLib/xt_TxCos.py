@@ -8,11 +8,10 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 09:01:46
-@LastEditors: Even.Sand
-@LastEditTime: 2020-02-20 13:53:52
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-06-16 11:03:19
 腾讯对象存储，可以储存文件
 '''
-
 
 from qcloud_cos import CosConfig
 from qcloud_cos import CosS3Client
@@ -28,7 +27,10 @@ class txCos:
         self.region = 'ap-beijing'  # 替换为用户的region
         self.token = None  # 使用临时秘钥需要传入Token，默认为空,可不填
         self.domain = 'https://snad-1253302746.cos.ap-beijing.myqcloud.com'
-        self.config = CosConfig(Region=self.region, SecretId=self.secret_id, SecretKey=self.secret_key, Token=self.token)  # 获取配置对象
+        self.config = CosConfig(Region=self.region,
+                                SecretId=self.secret_id,
+                                SecretKey=self.secret_key,
+                                Token=self.token)  # 获取配置对象
         self.client = CosS3Client(self.config)
 
     def __enter__(self):
@@ -49,14 +51,15 @@ class txCos:
     def up(self, LocalFilePath):
         # 高级上传接口(推荐)
         file_name = str(int(time.time())) + '.' + LocalFilePath.split('.')[-1]
-        response = self.client.upload_file(self.Bucket, Key=file_name, LocalFilePath=LocalFilePath, PartSize=10, MAXThread=10)
+        response = self.client.upload_file(self.Bucket,
+                                           Key=file_name,
+                                           LocalFilePath=LocalFilePath,
+                                           PartSize=10,
+                                           MAXThread=10)
         return response['ETag']
 
 
 if __name__ == '__main__':
-    import logging
-
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     # 创建UploadDownload对象，包含3个属性
     txcoses = txCos()
     # 调用txcoses对象的下载图片方法

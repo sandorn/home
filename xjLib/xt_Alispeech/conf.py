@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
 #FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-06-15 14:02:47
+#LastEditTime : 2020-06-16 16:27:23
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -26,9 +26,10 @@ user2 = {
 
 from ali_speech._create_token import AccessToken
 from xt_Time import get_10_timestamp
-from xt_Class import Singleton_Warp_Class, readonly
+from xt_Class import Singleton_Warp_Class, readonly, attr_Class
 from typing import Any
 from dataclasses import dataclass, field
+from collections import Iterable
 
 
 @Singleton_Warp_Class
@@ -80,7 +81,7 @@ class SpeechArgs:
     pitch_rate: int = 0
 
 
-@dataclass(init=False)
+@dataclass
 class SynResult:
     '''合成结果'''
     response: Any = ''
@@ -88,7 +89,7 @@ class SynResult:
     callback: str = ''
 
 
-@dataclass(init=False)
+@dataclass
 class TransResult:
     '''识别结果'''
     text: str = ''
@@ -98,9 +99,11 @@ class TransResult:
 
 
 if __name__ == "__main__":
-    a = SpeechArgs()
-    b = SpeechArgs()
-    a.sample_rate = 24000
-    print(a)
-    print(f'metadata={b!r},')
-    pass
+    from xt_String import class_to_dict
+    a = TransResult()
+    print('a|', a)
+    print('a.__dict__|', a.__dict__)
+    print('class_to_dict(a)|', class_to_dict(a))
+    print('isinstance(a, Iterable)|', isinstance(a, Iterable))
+    for item in a:
+        print('item|', item)

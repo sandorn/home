@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-03-25 10:13:07
 #FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-#LastEditTime : 2020-06-13 18:23:20
+#LastEditTime : 2020-06-16 17:22:32
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -19,7 +19,6 @@ from sqlalchemy import (TIMESTAMP, Column, DateTime, Enum, Integer, Numeric,
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.ext.declarative import declarative_base, api
 from sqlalchemy.orm import scoped_session, sessionmaker, validates
-# from sqlalchemy.sql import text
 
 # 此处用.引用在其他地方可以操作，本文件不可以
 from .dbconf import make_connect_string
@@ -28,6 +27,8 @@ from xt_Class import typed_property
 
 
 class SqlConnection(SqlBase):
+
+    # #限定参数类型
     baseclass = typed_property('baseclass', api.DeclarativeMeta)
 
     def __init__(self, baseclass, key='default'):
@@ -35,7 +36,7 @@ class SqlConnection(SqlBase):
         # #设置self.params参数
         self.params = {
             attr: getattr(baseclass, attr)
-            for attr in baseclass.getColumns()
+            for attr in baseclass._fields()
         }
         self.engine = create_engine(make_connect_string(key), echo=False)
         self.session = scoped_session(sessionmaker(bind=self.engine))
@@ -72,16 +73,16 @@ class SqlConnection(SqlBase):
             self.session.commit()
         else:
             deleteNum = 0
-        return ('deleteNum', deleteNum)
+        return 'deleteNum', deleteNum
 
-    def update(self, conditions=None, value=None):
+    def update(self, conditions=None, value_dict=None):
         '''
         conditions的格式是个字典。类似self.params
         :param conditions:
-        :param value:也是个字典：{'ip':192.168.0.1}
+        :param value_dict:也是个字典：{'ip':192.168.0.1}
         :return:
         '''
-        if conditions and value:
+        if conditions and value_dict:
             conditon_list = []
             for key in list(conditions.keys()):
                 if self.params.get(key, None):
@@ -92,9 +93,10 @@ class SqlConnection(SqlBase):
             for condition in conditions:
                 query = query.filter(condition)
             updatevalue = {}
-            for key in list(value.keys()):
+            for key in list(value_dict.keys()):
                 if self.params.get(key, None):
-                    updatevalue[self.params.get(key, None)] = value.get(key)
+                    updatevalue[self.params.get(key,
+                                                None)] = value_dict.get(key)
             updateNum = query.update(updatevalue)
             self.session.commit()
         else:
