@@ -7,13 +7,10 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-05-30 14:25:16
-#LastEditTime : 2020-06-15 12:58:30
+#LastEditTime : 2020-06-16 09:49:08
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
-
-Python 类的__getattr__ __setattr__ __getitem__ __setitem__ - Vincen_shen - 博客园
-https://www.cnblogs.com/vincenshen/articles/7107522.html
 '''
 
 import threading
@@ -76,10 +73,10 @@ def Singleton_Warp_Func(cls):
 
 class Singleton_Warp_Class(object):
     '''
-    类装饰器@SingletonWarp
-    或Cls3 = SingletonWarp(Cls3)
+    类装饰器@Singleton_Warp_Class
+    或Cls3 = Singleton_Warp_Class(Cls3)
     '''
-    def __init__(self, cls):
+    def __init__(self, cls=None):
         self._cls = cls
         self._instance = {}
         # print(self.__class__.__name__, id(self))
@@ -203,6 +200,9 @@ if __name__ == "__main__":
     obj1 = Singleton_Warp_Class()
     obj2 = Singleton_Warp_Class()
 '''
+    Python 类的__getattr__ __setattr__ __getitem__ __setitem__ - Vincen_shen - 博客园
+    https://www.cnblogs.com/vincenshen/articles/7107522.html
+
     python中以双下划线的是一些系统定义得名称，让python以更优雅得语法实行一些操作，本质上还是一些函数和变量，与其他函数和变量无二。
     比如x.__add__(y) 等价于 x+y
     有一些很常见，有一些可能比较偏，在这里罗列一下，做个笔记，备忘。

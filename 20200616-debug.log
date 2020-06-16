@@ -1,2 +1,8 @@
 [2020-06-16 09:08:42,012][MainThread:16984][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
 [2020-06-16 09:08:43,474][MainThread:16984][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "GET /get HTTP/1.1" 200 712]
+[2020-06-16 09:44:44,595][MainThread:7512][xt_Log][class--test.py->example1:77]	[DEBUG]	[Person [name=二狗子, age=44]]
+[2020-06-16 09:44:44,595][MainThread:7512][xt_Log][class--test.py->example2:92]	[DEBUG]	[Stock [name=中国石油,shares=600987,price=4.02]]
+[2020-06-16 09:44:44,595][MainThread:7512][xt_Log][class--test.py->example3:113]	[DEBUG]	[Stock_1 [name=中国石油,shares=260987,price=48.32]]
+[2020-06-16 09:44:44,597][MainThread:7512][xt_Log][class--test.py->example4:129]	[DEBUG]	[example4.<locals>.Stock_D(real_name='中国石油', _shares=260987, _Stock_D__price=48.32)]
+[2020-06-16 09:52:09,443][MainThread:16824][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-16 09:52:10,689][MainThread:16824][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "GET /get HTTP/1.1" 200 1222]

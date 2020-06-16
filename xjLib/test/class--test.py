@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-12 16:05:58
 #FilePath     : /xjLib/test/class--test.py
-#LastEditTime : 2020-06-15 13:09:45
+#LastEditTime : 2020-06-16 09:26:14
 #Github       : https://github.com/sandorn/home
 #==============================================================
 8.9 创建新的类或实例属性_w3cschool
@@ -18,11 +18,14 @@ https://www.cnblogs.com/apocelipes/p/10284346.html
 
 '''
 
-from xt_Class import typed_property, typeassert, readonly, Singleton_Warp_Func, Singleton_Warp_Class
 from dataclasses import dataclass
 from functools import partial
+
 from pysnooper import snoop
+
+from xt_Class import readonly, typeassert, typed_property
 from xt_Log import log
+
 log = log()
 snooper = snoop(log.filename)
 print = log.debug

@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-05-25 11:34:01
 #FilePath     : /xjLib/xt_Alispeech/__init__.py
-#LastEditTime : 2020-06-11 14:54:05
+#LastEditTime : 2020-06-16 10:13:24
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -49,13 +49,19 @@ def ReqLongSynthesizer(longtext, savefile=True, method='post', callback=None):
     res_list = []
     long_text_list = string_split_limited_list(longtext)
     for text in long_text_list:
-        res = ReqSynthesizer(text, savefile=savefile, method=method, callback=callback)
+        res = ReqSynthesizer(text,
+                             savefile=savefile,
+                             method=method,
+                             callback=callback)
         res_list.append(res)
     return res_list
 
 
-def ReqSynthesizer(text, format='wav', savefile=True, method='post', callback=None):
-    # text, appkey=Constant().appKey, token=Constant().token, audioFile='', format='wav', sample_rate=16000, voice='Aida', volume=100, speech_rate=0, pitch_rate=0, callback=None):
+def ReqSynthesizer(text,
+                   format='wav',
+                   savefile=True,
+                   method='post',
+                   callback=None):
     result = SynResult()
     url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
     httpHeaders = {'Content-Type': 'application/json'}
@@ -105,9 +111,11 @@ class synthesizeClass:
     def run(self):
 
         if self.method == 'post':
-            self.result.response = self.session.post(self.url, json=self.args_dict)
+            self.result.response = self.session.post(self.url,
+                                                     json=self.args_dict)
         else:
-            self.result.response = self.session.get(self.url, params=self.args_dict)
+            self.result.response = self.session.get(self.url,
+                                                    params=self.args_dict)
         return self._handle_result()
 
     def _handle_result(self):
@@ -120,7 +128,8 @@ class synthesizeClass:
                 print(self.result.filename, 'Request succeed!')
 
             if self.callback:
-                self.result.callback = self.callback(self.result.response.content)
+                self.result.callback = self.callback(
+                    self.result.response.content)
 
         return self.result
 
@@ -144,7 +153,8 @@ class Synthesizer_MyCallback(SpeechSynthesizerCallback):
         self._fout.close()
 
     def on_task_failed(self, message):
-        print('MyCallback.OnRecognitionTaskFailed-task_id:%s, status_text:%s' % (message['header']['task_id'], message['header']['status_text']))
+        print('MyCallback.OnRecognitionTaskFailed-task_id:%s, status_text:%s' %
+              (message['header']['task_id'], message['header']['status_text']))
         self._fout.close()
 
     def on_channel_closed(self):
@@ -189,7 +199,6 @@ class TranscriberCallback(SpeechTranscriberCallback):
     构造函数的参数没有要求，可根据需要设置添加
     示例中的name参数可作为待识别的音频文件名，用于在多线程中进行区分
     """
-
     def __init__(self, name='default'):
         self._name = name
         self.result = TransResult()
@@ -199,21 +208,33 @@ class TranscriberCallback(SpeechTranscriberCallback):
         print('TranscriberCallback.OnRecognitionStarted: %s' % message)
 
     def on_result_changed(self, message):
-        print('TranscriberCallback.OnRecognitionResultChanged: file: %s, task_id: %s, result: %s' % (self._name, message['header']['task_id'], message['payload']['result']))
+        print(
+            'TranscriberCallback.OnRecognitionResultChanged: file: %s, task_id: %s, result: %s'
+            % (self._name, message['header']['task_id'],
+               message['payload']['result']))
 
     def on_sentence_begin(self, message):
-        print('TranscriberCallback.on_sentence_begin: file: %s, task_id: %s, sentence_id: %s, time: %s' % (self._name, message['header']['task_id'], message['payload']['index'], message['payload']['time']))
+        print(
+            'TranscriberCallback.on_sentence_begin: file: %s, task_id: %s, sentence_id: %s, time: %s'
+            % (self._name, message['header']['task_id'],
+               message['payload']['index'], message['payload']['time']))
         self.result.task_id = message['header']['task_id']
 
     def on_sentence_end(self, message):
-        print('TranscriberCallback.on_sentence_end: file: %s, task_id: %s, sentence_id: %s, time: %s, result: %s' % (self._name, message['header']['task_id'], message['payload']['index'], message['payload']['time'], message['payload']['result']))
+        print(
+            'TranscriberCallback.on_sentence_end: file: %s, task_id: %s, sentence_id: %s, time: %s, result: %s'
+            % (self._name, message['header']['task_id'],
+               message['payload']['index'], message['payload']['time'],
+               message['payload']['result']))
         self.result.text = message['payload']['result']
 
     def on_completed(self, message):
         print('TranscriberCallback.OnRecognitionCompleted: %s' % message)
 
     def on_task_failed(self, message):
-        print('TranscriberCallback.OnRecognitionTaskFailed-task_id:%s, status_text:%s' % (message['header']['task_id'], message['header']['status_text']))
+        print(
+            'TranscriberCallback.OnRecognitionTaskFailed-task_id:%s, status_text:%s'
+            % (message['header']['task_id'], message['header']['status_text']))
 
     def on_channel_closed(self):
         print('TranscriberCallback.OnRecognitionChannelClosed')
@@ -266,7 +287,12 @@ def TranscriberProcess(filepath):
         return callback.result
 
 
-def PostTransFile(audioFile, format='wav', sampleRate=16000, enablePunctuationPrediction=False, enableInverseTextNormalization=True, enableVoiceDetection=True):
+def PostTransFile(audioFile,
+                  format='wav',
+                  sampleRate=16000,
+                  enablePunctuationPrediction=False,
+                  enableInverseTextNormalization=True,
+                  enableVoiceDetection=True):
     '''
     一句话识别RESTful API支持以POST方式整段上传不超过一分钟的语音文件
     RESTful API_一句话识别_智能语音交互-阿里云
@@ -299,7 +325,8 @@ def PostTransFile(audioFile, format='wav', sampleRate=16000, enablePunctuationPr
 
     session = SessionClient()
     session.update_headers(httpHeaders)
-    response = session.post(request, data=audioContent)  # "https://httpbin.org/post"
+    response = session.post(request,
+                            data=audioContent)  # "https://httpbin.org/post"
     result.response = response.json
     result.task_id = response.json['task_id']
     status = result.response['status']
@@ -323,7 +350,8 @@ def APITransUrl(urlLink, enable_words=False, auto_split=False):
     result = TransResult()
     result.name = urlLink
     # 创建AcsClient实例
-    client = AcsClient(Constant().accessKeyId, Constant().accessKeySecret, "cn-shanghai")
+    client = AcsClient(Constant().accessKeyId,
+                       Constant().accessKeySecret, "cn-shanghai")
     # 提交录音文件识别请求
     postRequest = CommonRequest()
     postRequest.set_domain(DOMAIN)
@@ -332,7 +360,13 @@ def APITransUrl(urlLink, enable_words=False, auto_split=False):
     postRequest.set_action_name("SubmitTask")
     postRequest.set_method('POST')
 
-    task = {'appkey': Constant().appKey, 'file_link': urlLink, 'version': "4.0", 'enable_words': enable_words, 'auto_split': auto_split}  # 开启智能分轨
+    task = {
+        'appkey': Constant().appKey,
+        'file_link': urlLink,
+        'version': "4.0",
+        'enable_words': enable_words,
+        'auto_split': auto_split
+    }  # 开启智能分轨
     postRequest.add_body_params("Task", json.dumps(task))
 
     try:

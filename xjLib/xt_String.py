@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-02-14 13:57:28
 #FilePath     : /xjLib/xt_String.py
-#LastEditTime : 2020-06-11 13:53:35
+#LastEditTime : 2020-06-16 10:20:13
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 #  string  |  dict  |  list  |  tupe  |  json
@@ -80,7 +80,7 @@ def chain_all(iterobj):
 def align(str1, distance=66, alignment='left'):
     # #居中打印为string类方法
     if alignment == 'center':
-        return(str1.center(distance, ' '))
+        return (str1.center(distance, ' '))
 
     # #print打印对齐
     length = len(str1.encode('gbk', 'ignore'))
@@ -104,22 +104,15 @@ def Ex_Re_Repl(string, trims=None):
     '''
     # 第一种方法
     if trims is None:
-        trims = [
-            (r'\n', ''),
-            (r'\t', ''),
-            (r'\r', ''),
-            (r'  ', ''),
-            (r'\u2018', "'"),
-            (r'\u2019', "'"),
-            (r'\ufeff', ''),
-            (r'\u2022', ":"),
-            (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'),
-            (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''),
-            (r"</?a.*?>", '')
-        ]
+        trims = [(r'\n', ''), (r'\t', ''), (r'\r', ''), (r'  ', ''),
+                 (r'\u2018', "'"), (r'\u2019', "'"), (r'\ufeff', ''),
+                 (r'\u2022', ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'),
+                 (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''),
+                 (r"</?a.*?>", '')]
 
     def run(str_tmp, replacement):
         return re.sub(replacement[0], replacement[1], str_tmp)
+
     return reduce(run, trims, string)
     # 第二种写法，用lamda # string为初始值，最后传入，在lambda中最先接收
     # return reduce(lambda str_tmp, replacement: re.sub(replacement[0], replacement[1], str_tmp), trims, string)
@@ -149,7 +142,8 @@ def Ex_Str_Replace(string, trims):
     # return string
 
     # 第二种方法  # string为初始值，最后传入，在lambda中最先接收
-    return reduce(lambda string, item: string.replace(item[0], item[1]), trims, string)
+    return reduce(lambda string, item: string.replace(item[0], item[1]), trims,
+                  string)
 
 
 def Ex_Re_Clean(oldtext, parlist):
@@ -255,13 +249,17 @@ def random_char(length=20, string=[]):
     return string
 
 
-def class_to_dict(tobj):
+def class_to_dict(in_obj):
     '''把对象转换成字典'''
     dict = {}
-    if len(tobj.__dict__) > 0:
-        dict.update(tobj.__dict__)
+    if len(in_obj.__dict__) > 0:
+        dict.update(in_obj.__dict__)
     else:
-        dict.update({key: getattr(tobj, key) for key in dir(tobj) if not key.startswith('__') and not callable(getattr(tobj, key))})
+        dict.update({
+            key: getattr(in_obj, key)
+            for key in dir(in_obj)
+            if not key.startswith('__') and not callable(getattr(in_obj, key))
+        })
     return dict
 
 
@@ -269,7 +267,6 @@ if __name__ == "__main__":
     print(align('myAliggn1', 66))
     print(align('myAliggn2', 66, alignment='right'))
     print(align('myAliggn3', 66, alignment='center'))
-
 '''
     #统计一个list中各个元素出现的次数
     #方法1，使用字典
