@@ -10,7 +10,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 01:37:18
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-16 18:06:12
+#LastEditTime : 2020-06-16 18:21:25
 '''
 from xt_Class import item_Class
 
@@ -68,7 +68,7 @@ class SqlMeta(item_Class):
     # #数据记录转字典
     @classmethod
     def get_dict(cls, result):
-        '''用于record转字典'''
+        '''基于数据库模型转换记录为字典,使用: dbmode.get_dict(records)'''
         if isinstance(result, cls):
             return {key: getattr(result, key) for key in cls._fields()}
 
@@ -77,7 +77,7 @@ class SqlMeta(item_Class):
                      for key in cls._fields()} for item in result]
 
     def record_to_dict(self):
-        '''用于record转字典'''
+        '''单一记录record转字典,使用:record.record_to_dict()'''
         # return {key: getattr(self, key) for key in self._fields()}
         return self.get_dict(self)
 
