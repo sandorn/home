@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-15 17:44:59
+#LastEditTime : 2020-06-16 19:48:56
 '''
 import asyncio
 import ctypes
@@ -41,13 +41,12 @@ class SessionMeta:
 
     def __getattr__(self, name):
         if name in ['get', 'post']:
-            #, 'put', 'patch', 'delete','options', 'head',
-            new_AyReqTaskMeta = AyReqTaskMeta(headers=self.headers,
-                                              session=self.session,
-                                              cookies=self.cookies)
-            new_AyReqTaskMeta.__getattr__(name)
+            new_AyReqTask = AyReqTaskMeta(headers=self.headers,
+                                          session=self.session,
+                                          cookies=self.cookies)
+            new_AyReqTask.__getattr__(name)
             # self.request_pool.append(new_AyReqTaskMeta)
-            return new_AyReqTaskMeta.get_params
+            return new_AyReqTask.get_params
 
     def __repr__(self):
         return f"<SessionMeta id:[{id(self.session)}] client>"
