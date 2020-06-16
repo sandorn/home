@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-12 16:18:13
 #FilePath     : /xjLib/test/requests--test.py
-#LastEditTime : 2020-06-16 08:59:10
+#LastEditTime : 2020-06-16 09:03:38
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -20,7 +20,7 @@ s = SessionClient()
 s.update_headers({
     'Content-Type': 'application/json',
     'charset': 'UTF-8',
-    **myhead
+    # **myhead
 })
 
 url = "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async"  # 400
