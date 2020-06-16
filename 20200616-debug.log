@@ -1,0 +1,2 @@
+[2020-06-16 09:08:42,012][MainThread:16984][urllib3.connectionpool][connectionpool.py->_new_conn:937]	[DEBUG]	[Starting new HTTPS connection (1): httpbin.org:443]
+[2020-06-16 09:08:43,474][MainThread:16984][urllib3.connectionpool][connectionpool.py->_make_request:433]	[DEBUG]	[https://httpbin.org:443 "GET /get HTTP/1.1" 200 712]
