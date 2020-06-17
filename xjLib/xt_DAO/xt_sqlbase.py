@@ -10,7 +10,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 01:37:18
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-16 18:21:25
+#LastEditTime : 2020-06-17 12:05:06
 '''
 from xt_Class import item_Class
 
@@ -51,6 +51,8 @@ class SqlBase(object):
     def _result_refine(self, result):
         raise NotImplemented
 
+    def close(self):
+        raise NotImplemented
 
 class SqlMeta(item_Class):
     # #获取字段名列表

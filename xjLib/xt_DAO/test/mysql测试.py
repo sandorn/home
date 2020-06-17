@@ -8,13 +8,14 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-17 09:26:49
 #FilePath     : /xjLib/xt_DAO/test/mysql测试.py
-#LastEditTime : 2020-06-17 09:30:19
+#LastEditTime : 2020-06-17 10:17:58
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 import pandas
 from xt_DAO.xt_mysql import engine
 
+engine
 with engine('Jkdoc', 'pymysql') as myDb:
     a = myDb.has_tables('jkdoc')
     print(11111, a)

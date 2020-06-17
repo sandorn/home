@@ -8,11 +8,10 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-03 23:26:06
 #FilePath     : /xjLib/xt_DAO/xt_mysql.py
-#LastEditTime : 2020-06-17 09:27:39
+#LastEditTime : 2020-06-17 10:17:48
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
-
 
 import MySQLdb
 import pandas
@@ -64,7 +63,7 @@ class engine(object):
         """with自动调用,不必调用del"""
         print(f"{ self.odbc}\t{self.db_name}\tIn __exit__()")
         if exc_tb is not None:
-            print('has error %s' % exc_tb)
+            print(f'exc_type:{exc_type}, exc_val:{exc_val}, exc_tb:{exc_tb}')
 
     def __del__(self):
         print(f"{ self.odbc}\t{self.db_name}\tIn __del__()")

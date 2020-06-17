@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-03-25 10:13:07
 #FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-#LastEditTime : 2020-06-16 17:22:32
+#LastEditTime : 2020-06-17 12:05:47
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -77,10 +77,8 @@ class SqlConnection(SqlBase):
 
     def update(self, conditions=None, value_dict=None):
         '''
-        conditions的格式是个字典。类似self.params
-        :param conditions:
-        :param value_dict:也是个字典：{'ip':192.168.0.1}
-        :return:
+        conditions：字典。类似self.params
+        value_dict:字典：{'ip':192.168.0.1}
         '''
         if conditions and value_dict:
             conditon_list = []
@@ -105,10 +103,10 @@ class SqlConnection(SqlBase):
 
     def select(self, count=None, conditions=None, Columns=None):
         '''
-        conditions:条件，where  格式是个字典。类似self.params
-        :param Columns:选择的列名
-        :param count:返回的记录数
-        :return:处理后的list，内含dict(未选择列)，或tuple(选择列)
+        conditions:字典，条件 where。类似self.params
+        Columns:选择的列名
+        count:返回的记录数
+        return:处理后的list，内含dict(未选择列)，或tuple(选择列)
         '''
         if isinstance(Columns, (tuple, list)) and len(Columns) > 0:
             Columns_list = []
@@ -157,8 +155,7 @@ class SqlConnection(SqlBase):
 
     def filter_by(self, conditions):
         '''
-        filter_by用于查询简单的列名，不支持比较运算符,不需要额外指定类名。
-        fitler_by使用的是"="。
+        filter_by用于简单查询，不支持比较运算符,不需要额外指定类名。
         filter_by的参数是**kwargs，直接支持组合查询。
         仅支持[等于]、[and]，无需明示，在参数中以字典形式传入
         '''
