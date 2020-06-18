@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
 #FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-06-16 19:46:14
+#LastEditTime : 2020-06-17 13:02:35
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -96,7 +96,3 @@ class TransResult:
     name: str = ''
     task_id: str = ''
     response: Any = ''
-
-
-if __name__ == "__main__":
-    pass

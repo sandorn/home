@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-15 23:56:43
-#LastEditTime : 2020-06-10 13:40:23
+#LastEditTime : 2020-06-17 16:20:16
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -126,3 +126,13 @@ if __name__ == "__main__":
         color_selection_dark='#660033',
         border_radius='0px',
     )
+'''
+    import sys, qdarkstyle
+    app.setStyleSheet(qdarkstyle.load_stylesheet())
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+
+
+    styleFile = 'd:/CODE/xjLib/xt_ui/white.qss'
+    qssStyle = readQss.all(styleFile)
+    app.setStyleSheet(qssStyle)
+'''

@@ -7,21 +7,24 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-05-30 14:25:16
-#LastEditTime : 2020-06-16 17:01:52
+#LastEditTime : 2020-06-18 16:13:31
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
 '''
+import abc
+from threading import Lock
 
-import threading
 from pysnooper import snoop
+
 from xt_Log import log
+
 log = log()
 snooper = snoop(log.filename)
 # print = log.debug
 
 
-class item_Class:
+class item_MixIn:
     '''下标obj[key]'''
     def __getitem__(self, attr):
         return getattr(self, attr)
@@ -33,59 +36,56 @@ class item_Class:
         return delattr(self, attr)
 
 
-class attr_Class:
+class attr_MixIn:
     '''
     原点调用obj.key
     不可使用init
     '''
     def __getattr__(self, attr):
-        return getattr(self, attr)
+        return super().__getattribute__(attr)
+        # return getattr(self, attr)
 
     def __setattr__(self, attr, value):
-        return setattr(self, attr, value)
+        return super().__setattr__(attr, value)
+        # return setattr(self, attr, value)
 
     def __delattr__(self, attr, value):
         return delattr(self, attr)
 
 
-class iter_Class:
+class dict_MixIn:
+    '''生成类字典'''
+    def __init__(self):
+        self.__dict__ = {
+            key: getattr(self, key)
+            for key in dir(self)
+            if not key.startswith('__') and not callable(getattr(self, key))
+        }
+
+
+class iter_MixIn:
     '''
     # #迭代类，用于继承
     from collections import Iterable
     print(isinstance(a, Iterable))
     '''
     def __iter__(self):
-        dict_tmp = {}
-        if len(self.__dict__) > 0:
-            dict_tmp.update(self.__dict__)
-        else:
-            dict_tmp.update({
-                key: getattr(self, key)
-                for key in dir(self) if not key.startswith('__')
-                and not callable(getattr(self, key))
-            })
-        for attr, value in dict_tmp.items():
+        for attr, value in self.__dict__.items():
             yield attr, value
 
 
-class repr_Class:
+class repr_MixIn:
     '''用于打印显示'''
     def __repr__(self):
-        tmp = ''
-        if len(self.__dict__) > 0:
-            tmp = str(self.__dict__)
-        else:
-            tmp = str({
-                key: getattr(self, key)
-                for key in dir(self) if not key.startswith('__')
-                and not callable(getattr(self, key))
-            }).replace('{', '').replace('}', '')
+        tmp = str(self.__dict__).replace('{', '').replace('}', '')
         return self.__class__.__name__ + '(' + tmp + ')'
 
     __str__ = __repr__
 
 
-class ExMethod__Class(item_Class, attr_Class, iter_Class, repr_Class):
+@snooper
+class Class_Meta(dict_MixIn, item_MixIn, attr_MixIn, iter_MixIn, repr_MixIn):
+    '''metaclass=abc.ABCMeta'''
     pass
 
 
@@ -119,7 +119,7 @@ class Singleton_Warp_Class(object):
         return self._instance[self._cls]
 
 
-class SingletonMeta(object):
+class Singleton_Meta(object):
     '''
     用于继承
     Python单例（Singleton）不完美解决方案之实例创建_A_baobo的专栏-CSDN博客
@@ -130,7 +130,7 @@ class SingletonMeta(object):
 
     def __new__(cls, *args, **kwargs):
         if not cls._instances.get(cls):
-            orig = super(SingletonMeta, cls)
+            orig = super()
             obj = orig.__new__(cls, *args, **kwargs)
             cls._instances[cls] = obj
             cls._obj[obj] = dict(init=False)
@@ -151,7 +151,7 @@ class SingletonMeta(object):
 
 
 class Singleton(object):
-    _instance_lock = threading.Lock()
+    _instance_lock = Lock()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "_instance"):
@@ -232,11 +232,3 @@ def readonly(name):
         return
 
     return prop
-
-
-if __name__ == "__main__":
-
-    obj = Singleton_Warp_Class()
-    obj1 = Singleton_Warp_Class()
-    obj2 = Singleton_Warp_Class()
-    pass

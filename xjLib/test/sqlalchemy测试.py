@@ -8,20 +8,20 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-08 20:30:34
 #FilePath     : /xjLib/xt_DAO/test/sqlalchemy测试.py
-#LastEditTime : 2020-06-16 18:08:13
+#LastEditTime : 2020-06-17 14:52:38
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 
-from xt_DAO.xt_sqlalchemy import SqlConnection, SqlMeta, declarative_base, text, validates, Column, DateTime, String, Enum, Integer, Numeric, INTEGER, TIMESTAMP
+from xt_DAO.xt_sqlalchemy import SqlConnection, declarative_base, text, validates, Column, DateTime, String, Enum, Integer, Numeric, INTEGER, TIMESTAMP
+from xt_DAO.xt_sqlbase import Sql_Meta
 
-Base = declarative_base()  # 生成一个SQLORM基类
+Model = declarative_base()  # 生成一个SQLORM基类
 '''metadata = Base.metadata'''
 
 
-class Users(Base, SqlMeta):
-    # #多个父类，继承SqlMeta的一些方法
-    # #解决下标取值赋值、打印显示、生成字段列表
+class Users(Model, Sql_Meta):
+    # #多个父类，继承Sql_Meta的一些方法
     __tablename__ = 'users2'
 
     ID = Column(INTEGER(6), primary_key=True)

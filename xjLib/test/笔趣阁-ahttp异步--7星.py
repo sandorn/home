@@ -9,14 +9,15 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-03 11:36:51
+#LastEditTime : 2020-06-18 15:28:01
 变更requests为ahttp
 '''
 import os
 
 from xt_Ahttp import ahttpGetAll
-from xt_String import Ex_Re_Sub, savefile, Ex_Str_Replace, fn_timer
-from xt_Ls import get_download_url, arrangeContent
+from xt_File import savefile
+from xt_Time import fn_timer
+from xt_Ls_Bqg import get_download_url, arrangeContent
 
 
 def 结果处理(resps):
@@ -29,7 +30,8 @@ def 结果处理(resps):
         response = resp.element
 
         _title = "".join(response.xpath('//h1/text()'))
-        title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
+        title = _title.strip('\r\n').replace(u'\u3000',
+                                             u' ').replace(u'\xa0', u' ')
         _showtext = response.xpath('//*[@id="content"]/text()')
         content = arrangeContent(_showtext)
         _texts.append([index, title, content])
@@ -48,7 +50,8 @@ def callback(resp):
     response = resp.element
 
     _title = "".join(response.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
+    title = _title.strip('\r\n').replace(u'\u3000',
+                                         u' ').replace(u'\xa0', u' ')
     _showtext = response.xpath('//*[@id="content"]/text()')
     content = arrangeContent(_showtext)
     texts.append([index, title, content])
@@ -81,19 +84,13 @@ def multpool(urls):
     from multiprocessing import Pool
 
     p = Pool(10)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
-    _ = [p.apply_async(main, args=(url,)) for url in urls]
+    _ = [p.apply_async(main, args=(url, )) for url in urls]
 
     p.close()
     p.join()
 
 
 if __name__ == '__main__':
-
-    from xt_Log import MyLog
-
-    mylog = MyLog()
-    # print = mylog.print
-    mylog.setlevel('xjLib.ahttp', 30)
 
     main('https://www.biqukan.com/38_38836/')
     # mainbycall('https://www.biqukan.com/38_38836/')

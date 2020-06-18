@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-16 19:48:56
+#LastEditTime : 2020-06-18 15:29:33
 '''
 import asyncio
 import ctypes
@@ -25,7 +25,7 @@ from xt_Response import ReqResult
 
 log = log()
 snooper = snoop(log.filename)
-# print = log.debug
+print = log.debug
 
 __all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
@@ -37,7 +37,6 @@ class SessionMeta:
         self.session = self
         self.headers = myhead
         self.cookies = {}
-        # self.request_pool = []
 
     def __getattr__(self, name):
         if name in ['get', 'post']:
@@ -45,7 +44,6 @@ class SessionMeta:
                                           session=self.session,
                                           cookies=self.cookies)
             new_AyReqTask.__getattr__(name)
-            # self.request_pool.append(new_AyReqTaskMeta)
             return new_AyReqTask.get_params
 
     def __repr__(self):

@@ -7,14 +7,14 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-06-11 12:27:03
-#FilePath     : /xjLib/xt_Alispeech/test/test.py
-#LastEditTime : 2020-06-16 13:18:15
+#FilePath     : /xjLib/test/alispeech-test.py
+#LastEditTime : 2020-06-18 17:12:28
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
 from xt_Alispeech import synthesizeClass, ReqLongSynthesizer, APITransUrl, PostTransFile, TranscriberProcess, ReqSynthesizer
 from xt_String import string_split_limited_list
-from xt_Alispeech.xt_Pygame import play_callback, ReqSynthesizer_Thread_read
+from xt_Alispeech.xt_Pygame import play_callback, ReqSynthesizer_Thread_read, Synt_Thread_read
 
 longtext = '''
         根据保险专业中介机构公司治理专项视频会议要求，我司按照会议安排，对公司相关业务及经营独立性展开全面自查自纠，现将有关工作情况汇报如下：
@@ -124,7 +124,7 @@ def 合成语音2():
 def 合成长语音():
     # #长文字合成语音
     long_text_list = string_split_limited_list(longtext)
-    ReqSynthesizer_Thread_read(long_text_list)
+    Synt_Thread_read(long_text_list)
     # reses = ReqLongSynthesizer(longtext)
     # print(reses)
 
@@ -153,7 +153,7 @@ def 使用SSML别():
 
 # 合成语音()
 # 合成语音2()
-# 合成长语音()
+合成长语音()
 # 网络音频识别()
 # 本地音频识别()
 # 使用SSML别()

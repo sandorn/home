@@ -7,7 +7,7 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-05-12 11:31:03
-#LastEditTime : 2020-06-14 12:41:28
+#LastEditTime : 2020-06-18 17:42:02
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -18,7 +18,7 @@ from PyQt5.QtCore import QMetaObject, QThread, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMessageBox, QVBoxLayout, qApp
 
 from xt_Ls_Bqg import get_contents, get_title_url
-from xt_Alispeech.xt_Pygame import ReqSynthesizer_QThread_read
+from xt_Alispeech.xt_Pygame import Synt_QThread_read
 from xt_String import string_split_limited_list
 from xt_Ui import EventLoop, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser, xt_QCheckBox
 from pysnooper import snoop
@@ -61,7 +61,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.pushButton_3 = xt_QPushButton("上一章")
         self.pushButton_3.clicked.connect(self.previous)
         self.pushButton_4 = xt_QPushButton("下一章")
-        self.pushButton_4.clicked.connect(self.next)
+        self.pushButton_4.clicked.connect(self.nextpage)
         self.checkbox = xt_QCheckBox('自动翻页')
 
     def setnum(self):
@@ -116,8 +116,8 @@ class Ui_MainWindow(xt_QMainWindow):
         if self.listWidgetCurrentRow > 0:
             self.listWidget.setCurrentRow(self.listWidgetCurrentRow - 1)
 
-    def next(self):
-        if self.listWidgetCurrentRow == 0:
+    def nextpage(self):
+        if self.listWidgetCurrentRow + 1 == self.listWidget.count():
             return
         if self.listWidgetCurrentRow + 1 < self.listWidget.count():
             self.listWidget.setCurrentRow(self.listWidgetCurrentRow + 1)
@@ -164,14 +164,16 @@ class Ui_MainWindow(xt_QMainWindow):
         qApp.processEvents()
         # 处理字符串
         newText = string_split_limited_list(self.QTextEdit.toPlainText())
-        self.runthread = ReqSynthesizer_QThread_read(newText, format='mp3')
-        # #绑定ReqSynthesizer_QThread_read中定义的finished信号
+        self.runthread = Synt_QThread_read(newText, format='mp3')
+        # #绑定RSynt_QThread_read中定义的finished信号
         self.runthread._signal.connect(self.playdone)
 
     def playdone(self):
         self.read_stop()
         if self.checkbox.isChecked():
-            self.next()
+            QThread.msleep(100)
+            self.nextpage()
+            QThread.msleep(100)
             self.read_read()
 
     @EventLoop
@@ -230,7 +232,7 @@ class Ui_MainWindow(xt_QMainWindow):
         nowthread = QThread()
         nowthread.run = self.getcontent
         _text = nowthread.run(self.list[row][1])
-
+        # _text = ''.join(_text.split('\n')[0:1])
         _text = '<font size="4">' + _text.replace("\n", "<br>") + '</font>'
         self.QTextEdit.setText(_text)
 

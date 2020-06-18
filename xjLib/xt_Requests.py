@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-06-16 13:18:01
+#LastEditTime : 2020-06-18 14:37:55
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
@@ -16,16 +16,10 @@ requests 简化调用
 # from __future__ import absolute_import, unicode_literals
 
 import requests
-from pysnooper import snoop
 from retrying import retry
 
 from xt_Head import myhead
-from xt_Log import log
 from xt_Response import ReqResult
-
-log = log()
-snooper = snoop(log.filename)
-# print = log.debug
 
 RETRY_TIME = 6  # 最大重试次数
 Retry = retry(wait_random_min=20,

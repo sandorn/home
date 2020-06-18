@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-03-25 10:13:07
 #FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-#LastEditTime : 2020-06-17 12:05:47
+#LastEditTime : 2020-06-17 13:10:22
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -22,11 +22,11 @@ from sqlalchemy.orm import scoped_session, sessionmaker, validates
 
 # 此处用.引用在其他地方可以操作，本文件不可以
 from .dbconf import make_connect_string
-from .xt_sqlbase import SqlBase, SqlMeta
+from .xt_sqlbase import Sql_Base
 from xt_Class import typed_property
 
 
-class SqlConnection(SqlBase):
+class SqlConnection(Sql_Base):
 
     # #限定参数类型
     baseclass = typed_property('baseclass', api.DeclarativeMeta)

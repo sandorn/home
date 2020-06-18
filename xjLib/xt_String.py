@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-02-14 13:57:28
 #FilePath     : /xjLib/xt_String.py
-#LastEditTime : 2020-06-16 19:13:44
+#LastEditTime : 2020-06-18 16:21:13
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 #  string  |  dict  |  list  |  tupe  |  json
@@ -249,21 +249,11 @@ def random_char(length=20, string=[]):
     return string
 
 
-def class_to_dict(in_obj):
+def class_add_dict(in_obj):
     '''把对象转换成字典'''
-    dict = {}
-    if len(in_obj.__dict__) > 0:
-        dict.update(in_obj.__dict__)
-    else:
-        dict.update({
-            key: getattr(in_obj, key)
-            for key in dir(in_obj)
-            if not key.startswith('__') and not callable(getattr(in_obj, key))
-        })
-    return dict
-
-
-if __name__ == "__main__":
-    print(align('myAliggn1', 66))
-    print(align('myAliggn2', 66, alignment='right'))
-    print(align('myAliggn3', 66, alignment='center'))
+    in_obj.__dict__ = ({
+        key: getattr(in_obj, key)
+        for key in dir(in_obj)
+        if not key.startswith('__') and not callable(getattr(in_obj, key))
+    })
+    return in_obj.__dict__

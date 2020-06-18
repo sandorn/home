@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 11:48:40
 #FilePath     : /xjLib/xt_File.py
-#LastEditTime : 2020-06-13 17:23:36
+#LastEditTime : 2020-06-18 15:23:40
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -80,7 +80,7 @@ def savefile(_filename, _list_texts, br=''):
         each(_list_texts)
 
     size = f"size: {filesize(_filename)}"
-    print('[{}]保存完成\t{}。'.format(_filename, size))
+    print(f'[{_filename}]保存完成\t{size}。')
 
 
 def filedialog(_dir='c:/'):

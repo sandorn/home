@@ -10,12 +10,12 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 01:37:18
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-17 12:05:06
+#LastEditTime : 2020-06-18 14:13:40
 '''
-from xt_Class import item_Class
+from xt_Class import item_MixIn
 
 
-class SqlBase(object):
+class Sql_Base(object):
     def init_db(self):
         raise NotImplemented
 
@@ -54,10 +54,14 @@ class SqlBase(object):
     def close(self):
         raise NotImplemented
 
-class SqlMeta(item_Class):
+
+class Sql_Meta(item_MixIn):
+    '''解决下标取值赋值、打印显示、生成字段列表'''
+
     # #获取字段名列表
     @classmethod
     def _fields(cls):
+        '''获取字段名列表'''
         listtmp = [
             attr for attr in dir(cls) if not callable(getattr(cls, attr))
             and not attr.startswith("__") and attr not in [
@@ -67,7 +71,6 @@ class SqlMeta(item_Class):
         ]
         return listtmp
 
-    # #数据记录转字典
     @classmethod
     def get_dict(cls, result):
         '''基于数据库模型转换记录为字典,使用: dbmode.get_dict(records)'''
@@ -83,7 +86,6 @@ class SqlMeta(item_Class):
         # return {key: getattr(self, key) for key in self._fields()}
         return self.get_dict(self)
 
-    # #用于打印显示
     def __repr__(self):
         return self.__class__.__name__ + str(
             {attr: getattr(self, attr)

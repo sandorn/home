@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-05-25 11:34:01
 #FilePath     : /xjLib/xt_Alispeech/__init__.py
-#LastEditTime : 2020-06-16 13:18:40
+#LastEditTime : 2020-06-18 16:21:43
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -29,7 +29,7 @@ from .conf import SpeechArgs  # 默认参数
 from .conf import SynResult, TransResult
 from xt_Log import log
 from xt_Requests import SessionClient, parse_get, parse_post
-from xt_String import md5, string_split_limited_list, class_to_dict
+from xt_String import md5, string_split_limited_list, class_add_dict
 from xt_Time import get_10_timestamp
 
 log = log()
@@ -64,7 +64,7 @@ def ReqSynthesizer(text,
                    callback=None):
     result = SynResult()
     url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
-    args_dict = class_to_dict(SpeechArgs())
+    args_dict = class_add_dict(SpeechArgs())
     args_dict['format'] = format  # #更新
     args_dict['text'] = text  # 添加
 
@@ -98,7 +98,7 @@ class synthesizeClass:
         self.url = 'https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts'
         self.savefile = savefile
         self.result = SynResult()
-        self.args_dict = class_to_dict(SpeechArgs())
+        self.args_dict = class_add_dict(SpeechArgs())
         self.args_dict['text'] = text  # 添加
 
     def setparams(self, attr, value):
@@ -163,7 +163,7 @@ class Synthesizer_MyCallback(SpeechSynthesizerCallback):
 def Synthesizerprocess(text, callback=Synthesizer_MyCallback):
     client = NlsClient()
     client.set_log_level('INFO')
-    args_dict = class_to_dict(SpeechArgs())
+    args_dict = class_add_dict(SpeechArgs())
     args_dict['format'] = format  # #更新
     args_dict['text'] = text  # 添加
     audioFile = md5(text)

@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-04-28 19:10:26
-#LastEditTime : 2020-05-30 19:58:14
+#LastEditTime : 2020-06-18 14:18:20
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -28,11 +28,12 @@
 import json
 import os
 
-from xjLib.Requests import SessionClient
+from xt_Requests import SessionClient
+from xt_DAO.xt_sqlbase import Sql_Meta
 
-import xjLib.Db.sqlalchemy
-from xjLib.Thread import my_pool
-from xjLib.mystr import random_20char
+import xt_DAO.xt_sqlalchemy
+from xt_Thread import my_pool
+from xt_String import random_char
 
 pool = my_pool(200)
 Session = SessionClient()
@@ -40,13 +41,27 @@ Session = SessionClient()
 
 def get_download_url(connect, stop=None):
     # #登录，并保存cookies
-    _ = Session.post('http://oa.jklife.com/seeyon/main.do?method=login', data={'login_username': 'liuxinjun', 'login_password': 'sand2808',})
+    _ = Session.post('http://oa.jklife.com/seeyon/main.do?method=login',
+                     data={
+                         'login_username': 'liuxinjun',
+                         'login_password': 'sand2808',
+                     })
 
     # #获取公文列表
-    getlistdata = {"managerMethod": "findBulDatas", "method": "ajaxAction", "managerName": "bulDataManager", "rnd": random_20char(5), "arguments": json.dumps([{"pageSize": "9999", "pageNo": 1}])}
+    getlistdata = {
+        "managerMethod": "findBulDatas",
+        "method": "ajaxAction",
+        "managerName": "bulDataManager",
+        "rnd": random_char(5),
+        "arguments": json.dumps([{
+            "pageSize": "9999",
+            "pageNo": 1
+        }])
+    }
     # #"typeId": 区分类别，1为公告
 
-    _itlist = Session.post("http://oa.jklife.com/seeyon/ajax.do", data=getlistdata).json['list']
+    _itlist = Session.post("http://oa.jklife.com/seeyon/ajax.do",
+                           data=getlistdata).json['list']
 
     # #利用set去重,填充数据库已有公文
     db_urls_list = [item[0] for item in connect.select(Columns=['URL'])]
@@ -67,11 +82,14 @@ def down_content(connect, title, url):
     if not os.path.exists(path):
         os.makedirs(path)
 
-    _res = Session.get(f'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId={url}')
+    _res = Session.get(
+        f'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId={url}')
 
     print(_res.json)
 
-    公告正文 = ''.join(_res.html.xpath('//div[@class="contentText"]//text()')).replace('xa0', ' ').replace(' ', ' ').replace('%', '%%')
+    公告正文 = ''.join(
+        _res.html.xpath('//div[@class="contentText"]//text()')).replace(
+            'xa0', ' ').replace(' ', ' ').replace('%', '%%')
 
     # #写数据库
     connect.insert({'TITLE': title, 'URL': url, 'content': 公告正文})
@@ -79,7 +97,8 @@ def down_content(connect, title, url):
     # # 写html文件,二进制文件模式加b
     open(path + '/' + title + '.html', 'wb').write(_res.content)
     # #写txt文件
-    open(path + '/' + title + '.txt', 'w', encoding='utf-8').write(title + '\n\n' + 公告正文)
+    open(path + '/' + title + '.txt', 'w',
+         encoding='utf-8').write(title + '\n\n' + 公告正文)
 
     # #下载附件
     _附件下载 = _res.html.xpath('//div[@id="attFileDomain"]')[0].get('attsdata')
@@ -94,7 +113,8 @@ def down_content(connect, title, url):
                 'filename': item['filename'],
             }
 
-            _res = Session.get('http://oa.jklife.com/seeyon/fileDownload.do', params=formdata)
+            _res = Session.get('http://oa.jklife.com/seeyon/fileDownload.do',
+                               params=formdata)
 
             open(path + '/' + item['filename'], 'wb').write(_res.content)
 
@@ -108,18 +128,19 @@ def main():
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.sql import text
 
-    Base = declarative_base()
+    model = declarative_base()
 
-    class Jkdoc(Base, xjLib.Db.sqlalchemy.model):
+    class Jkdoc(model, Sql_Meta):
         __tablename__ = 'jkdoc'
 
         ID = Column(INTEGER(6), primary_key=True)
         TITLE = Column(String(255, 'utf8mb4_bin'), nullable=False)
         URL = Column(String(64, 'utf8mb4_bin'), nullable=False)
         content = Column(LONGTEXT)
-        update_TIME = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
+        update_TIME = Column(DateTime,
+                             server_default=text("CURRENT_TIMESTAMP"))
 
-    connect = xjLib.Db.sqlalchemy.SqlConnection(Jkdoc, 'Jkdoc')
+    connect = xt_DAO.xt_sqlalchemy.SqlConnection(Jkdoc, 'Jkdoc')
 
     urls = get_download_url(connect)
     print(f'需要下载的公文数量为：{len(urls)}')
@@ -128,9 +149,9 @@ def main():
 
 
 if __name__ == '__main__':
-    from xjLib.Log import MyLog
+    from xt_Log import log
 
-    mylog = MyLog()
-    print = mylog.print
+    mylog = log()
+    print = mylog.debug
 
     main()
