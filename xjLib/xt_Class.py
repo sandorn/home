@@ -7,18 +7,19 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-05-30 14:25:16
-#LastEditTime : 2020-06-18 16:13:31
+#LastEditTime : 2020-06-21 14:35:16
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
 '''
 import abc
 from threading import Lock
+from functools import wraps
+
+from threading import Lock
 
 from pysnooper import snoop
-
 from xt_Log import log
-
 log = log()
 snooper = snoop(log.filename)
 # print = log.debug
@@ -83,91 +84,89 @@ class repr_MixIn:
     __str__ = __repr__
 
 
-@snooper
 class Class_Meta(dict_MixIn, item_MixIn, attr_MixIn, iter_MixIn, repr_MixIn):
     '''metaclass=abc.ABCMeta'''
     pass
 
 
-def Singleton_Warp_Func(cls):
-    """单例装饰器"""
+def singleton(cls):
+    '''单例装饰器，效果不确定，类方法调用有问题'''
+    # 创建一个字典用来保存类的实例对象
     _instance = {}
 
-    def inner(*args, **kargs):
+    def _singleton(*args, **kwargs):
         if cls not in _instance:
-            _instance[cls] = cls(*args, **kargs)
-            print(cls.__class__.__name__, id(cls))
-            # output:type
+            _instance[cls] = cls(*args, **kwargs)  # 创建一个对象,并保存到字典当中
         return _instance[cls]
 
-    return inner
+    return _singleton
 
 
-class Singleton_Warp_Class(object):
-    '''
-    类装饰器@Singleton_Warp_Class
-    或Cls3 = Singleton_Warp_Class(Cls3)
-    '''
-    def __init__(self, cls=None):
-        self._cls = cls
-        self._instance = {}
-        # print(self.__class__.__name__, id(self))
-
-    def __call__(self):
-        if self._cls not in self._instance:
-            self._instance[self._cls] = self._cls()
-        return self._instance[self._cls]
-
-
-class Singleton_Meta(object):
-    '''
-    用于继承
-    Python单例（Singleton）不完美解决方案之实例创建_A_baobo的专栏-CSDN博客
-    https://blog.csdn.net/A_baobo/article/details/43970315
-    '''
-    _instances = {}
-    _obj = {}
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instances.get(cls):
-            orig = super()
-            obj = orig.__new__(cls, *args, **kwargs)
-            cls._instances[cls] = obj
-            cls._obj[obj] = dict(init=False)
-            setattr(cls, '__init__', cls.decorate_init(cls.__init__))
-        return cls._instances[cls]
-
-    @classmethod
-    def decorate_init(cls, fun):
-        def warp_init(*args, **kwargs):
-            if not cls._obj.get(args[0], {}).get('init'):
-                fun(*args, **kwargs)
-
-        return warp_init
-
-    def __init__(self):
-        # print(self.__class__.__name__, id(self))
-        pass
-
-
-class Singleton(object):
-    _instance_lock = Lock()
+class Singleton_Model:
+    '''单例模式，抄写直接应用'''
+    __instance_lock = Lock()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "_instance"):
-            with cls._instance_lock:
+            with cls.__instance_lock:
                 if not hasattr(cls, "_instance"):
-                    cls._instance = super().__new__(cls, *args, **kwargs)
+                    cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self):
-        # print(self.__class__.__name__, id(self))
         pass
 
 
+class Singleton_Meta(type):
+    '''
+    单例模式，用于继承，单次init
+    继承时使用metaclass=Singleton_Meta
+    '''
+    __instance_lock = Lock()
+
+    def __call__(cls, *args, **kwargs):
+        if not hasattr(cls, "_instance"):
+            with cls.__instance_lock:
+                if not hasattr(cls, "_instance"):
+                    cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
+
+
+class Singleton_wraps_class(object):
+    '''单例模式装饰器，效果不确定'''
+
+    objs = {}
+    objs_locker = Lock()
+
+    def __new__(cls, *args, **kv):
+        if cls in cls.objs:
+            return cls.objs[cls]['obj']
+        cls.objs_locker.acquire()
+
+        try:
+            if cls in cls.objs:  ## double checklocking
+                return cls.objs[cls]['obj']
+            obj = object.__new__(cls)
+            cls.objs[cls] = {'obj': obj, 'init': False}
+            setattr(cls, '__init__', cls.decorate_init(cls.__init__))
+            return cls.objs[cls]['obj']
+        finally:
+            cls.objs_locker.release()
+
+    @classmethod
+    def decorate_init(cls, fn):
+        def init_wrap(*args):
+            if not cls.objs[cls]['init']:
+                result = fn(*args)
+                cls.objs[cls]['init'] = True
+            return result
+
+        return init_wrap
+
+
 def typeassert(**kwargs):
-    # Descriptor for a type-checked attribute
-    # @限制属性赋值的类型，因使用__dict__,与slots冲突
+    '''Descriptor for a type-checked attribute
+    #限制属性赋值的类型，因使用__dict__,与slots冲突'''
     class Typed:
         def __init__(self, name, expected_type):
             self.name = name
@@ -198,7 +197,7 @@ def typeassert(**kwargs):
 
 
 def typed_property(name, expected_type):
-    '''class属性生成器'''
+    '''class类property属性生成器,限制赋值类型'''
     storage_name = '_' + name
 
     @property
@@ -207,7 +206,6 @@ def typed_property(name, expected_type):
 
     @prop.setter
     def prop(self, value):
-        # #限制赋值类型
         if not isinstance(value, expected_type):
             raise TypeError('{} must be a {}'.format(name, expected_type))
         setattr(self, storage_name, value)
@@ -217,8 +215,9 @@ def typed_property(name, expected_type):
 
 def readonly(name):
     '''
-    class属性生成器,用于隐藏真实属性名，真实属性名用name定义
-    @dataclass(init=False),不生成类__dict__,使用class_to_dict函数
+    class类property只读属性生成器,隐藏真实属性名:name,
+    #不在__dict__内,需要使用class_to_dict函数生成类__dict__
+    #可配合@dataclass(init=False)
     '''
     storage_name = name
 
@@ -228,7 +227,7 @@ def readonly(name):
 
     @prop.setter
     def prop(self, value):
-        # #赋值：无操作，直接返回
+        '''赋值：无操作，直接返回'''
         return
 
     return prop

@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 20:11:54
-#LastEditTime : 2020-06-18 17:43:02
+#LastEditTime : 2020-06-20 15:56:35
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -23,31 +23,32 @@ import pygame
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from xt_Alispeech import ReqSynthesizer
+from xt_Thread import thread_wraps
 
 
 def play_callback(data, format='wav'):
     # !使用16000和默认,声音不行
     pygame.mixer.init(frequency=8000)
+    pym = ''
+    if format == 'wav':
+        pym = pygame.mixer
+    else:
+        pym = pygame.mixer.music
 
-    if format == 'mp3':
-        print('pygame.mixer.music.loading.....')
-        pygame.mixer.music.load(io.BytesIO(data))
-        pygame.mixer.music.play(1, 0.07)
-        print()
-        while pygame.mixer.music.get_busy():
-            print('pygame.mixer.music.playing.....')
-            time.sleep(0.500)
+    print('py_mixer new loading......')
 
     if format == 'wav':
         pygame.mixer.Sound(data).play()
-        print('pygame.mixer.Sound.loading.....')
-        while pygame.mixer.get_busy():
-            print('pygame.mixer.playing.....')
-            time.sleep(0.500)
-
-    pygame.mixer.stop()
-    print('pygame.mixer.stop!!！')
-    return
+    else:
+        pygame.mixer.music.load(BytesIO(data))
+        pygame.mixer.music.play(1, 0.07)
+    while pym.get_busy():
+        # 正在播放，等待
+        QThread.msleep(500)
+        print('py_mixer.playing......')
+        continue
+    pym.stop()
+    print('py_mixer.stoping!!!!!!')
 
 
 def create_class(obj):
@@ -216,3 +217,9 @@ def create_read_thread(obj):
 
 Synt_QThread_read = create_read_thread(QThread)
 Synt_Thread_read = create_read_thread(Thread)
+'''a = Thread()
+print(isinstance(a, Thread))
+print(Thread is Thread)
+print(Thread == Thread)
+print(type(Thread) == type(Thread))
+'''

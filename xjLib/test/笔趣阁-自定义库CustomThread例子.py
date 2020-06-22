@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-18 14:38:40
+#LastEditTime : 2020-06-21 13:28:44
 根据网络资料，写的threadpool
 '''
 
@@ -20,17 +20,6 @@ from xt_File import savefile
 from xt_Time import fn_timer
 from xt_Requests import parse_get
 from xt_Ls_Bqg import get_download_url, get_contents, arrangeContent
-
-
-def get_contents_noindex(target):
-    response = parse_get(target).html
-
-    _title = "".join(response.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000',
-                                         u' ').replace(u'\xa0', u' ')
-    _showtext = response.xpath('//*[@id="content"]/text()')
-    content = arrangeContent(_showtext)
-    return [title, content]
 
 
 @fn_timer
@@ -68,24 +57,21 @@ def ct(bookname, args):
     ]
     texts = CustomThread.wait_completed()
     texts.sort(key=lambda x: x[0])
-    # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
+    texts = [[row[i] for i in range(1, 3)] for row in texts]
     files = os.path.split(__file__)[-1].split(".")[0]
     savefile(files + '＆' + bookname + 'CustomThread.txt', texts, br='\n')
 
 
-def ct_noindex(bookname, args):
+def ct_sort(bookname, args):
     _ = [
-        CustomThreadSort(get_contents_noindex, index, url)
+        CustomThreadSort(get_contents, index, url)
         for index, url in enumerate(urls)
     ]
     dict_data = CustomThreadSort.wait_completed()
-    texts = sorted(dict_data.items(), key=lambda x: x[0])
-
-    # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
+    texts = sorted(dict_data.items(), key=lambda x: x[0])  # # 按字典key排序
+    texts = [[row[1][i] for i in range(1, 3)] for row in texts]  # # 去除序号及字典key
     files = os.path.split(__file__)[-1].split(".")[0]
-    savefile(files + '＆' + bookname + 'CustomThread_Noindex.txt',
-             texts,
-             br='\n')
+    savefile(files + '＆' + bookname + 'CustomThread_Sort.txt', texts, br='\n')
 
 
 @fn_timer
@@ -132,11 +118,12 @@ def tp(bookname, urls, MaxSem=99):
 if __name__ == "__main__":
     bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
     # #38_38836  #2_2714  #2_2760
+    st(bookname, urls)
 
-    for func in ['st', 'sq', 'ct', 'cq', 'ct_noindex', 'wm', 'tp']:
-        eval(func)(bookname, urls)
-        # locals()[func](bookname, urls)
-        # globals()[func](bookname, urls)
+    # for func in ['st', 'sq', 'ct', 'cq', 'ct_sort', 'wm', 'tp']:
+    #     eval(func)(bookname, urls)
+    #     locals()[func](bookname, urls)
+    #     globals()[func](bookname, urls)
 '''
     # 默认线程数量
     [笔趣阁-自定义库CustomThread例子＆武炼巅峰SingletonThread.txt]保存完成	size：46.47 MB

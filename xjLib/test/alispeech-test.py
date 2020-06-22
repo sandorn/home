@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-06-11 12:27:03
 #FilePath     : /xjLib/test/alispeech-test.py
-#LastEditTime : 2020-06-18 17:12:28
+#LastEditTime : 2020-06-18 18:30:43
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -124,9 +124,8 @@ def 合成语音2():
 def 合成长语音():
     # #长文字合成语音
     long_text_list = string_split_limited_list(longtext)
-    Synt_Thread_read(long_text_list)
-    # reses = ReqLongSynthesizer(longtext)
-    # print(reses)
+    # Synt_Thread_read(long_text_list)
+    ReqLongSynthesizer(longtext, callback=play_callback)
 
 
 def 网络音频识别():

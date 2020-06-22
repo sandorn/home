@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-18 15:47:54
+#LastEditTime : 2020-06-22 12:27:34
 '''
 
 __all__ = [
@@ -25,6 +25,7 @@ __all__ = [
     'WorkThread',  # 继承线程,利用queue；参照htreadpool编写的自定义库
     'my_pool',  # 装饰符方式
     'stop_thread',  # 外部停止线程
+    'thread_wraps',  # 线程装饰器
 ]
 
 import ctypes
@@ -33,7 +34,7 @@ import inspect
 import sys
 import traceback
 from queue import Empty, Queue
-from threading import Event, Lock, RLock, Thread, enumerate, main_thread
+from threading import Event, Lock, Thread, enumerate, main_thread, currentThread, get_ident
 from time import sleep, time
 
 
@@ -116,8 +117,8 @@ class SingletonThread(Thread):
 
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
+
     __instance_lock = Lock()
-    rlock = RLock()
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "_instance"):
@@ -133,7 +134,7 @@ class SingletonThread(Thread):
 
     def run(self):
         # 调用线程函数，并将元组类型的参数值分解为单个的参数值传入线程函数
-        self.Result = self._target(*self._args, self.rlock, **self._kwargs)
+        self.Result = self._target(*self._args, **self._kwargs)
         # 获取结果
         self.result_list.append(self.Result)
 
@@ -155,7 +156,7 @@ class SingletonThread(Thread):
         cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
         finished = True
         while finished:
-            nowlist = enumerate()
+            nowlist = enumerate()  # 线程list
             for index in range(len(nowlist)):
                 if type(nowlist[index]).__name__ == 'SingletonThread':
                     sleep(0.1)
@@ -181,7 +182,6 @@ class SingletonThread_Queue(Thread):
     """单例多线程，继承自threading.Thread"""
     """采用queue传递工作任务，queue不能超出线程数量"""
     __instance_lock = Lock()
-    rlock = RLock()
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
 
@@ -207,9 +207,7 @@ class SingletonThread_Queue(Thread):
             return
         else:
             target = args.pop(0)
-            self.Result = target(*args, self.rlock)  # 获取结果
-            # with SingletonThread_Queue.rlock:
-            #    print(2222, self.name, '\targs:', *args, '\tdone。', flush=True)
+            self.Result = target(*args)  # 运行程序，获取结果
             self.task_queue.task_done()  # 发出此队列完成信号
             self.result_list.append(self.Result)
 
@@ -264,7 +262,6 @@ class CustomThread(Thread):
 
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
-    rlock = RLock()
 
     def __init__(self, func, *args, **kwargs):
         super().__init__(target=func, args=args, kwargs=kwargs)
@@ -274,8 +271,7 @@ class CustomThread(Thread):
 
     def run(self):
         # 调用线程函数，并将元组类型的参数值分解为单个的参数值传入线程函数
-        # !调用时 CustomThread(函数名, 参数1, 参数2)
-        self.Result = self._target(*self._args, self.rlock, **self._kwargs)
+        self.Result = self._target(*self._args, **self._kwargs)
         # 获取结果
         self.result_list.append(self.Result)
 
@@ -310,7 +306,6 @@ class CustomThreadSort(Thread):
 
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = {}  # 结果列表
-    rlock = RLock()
 
     def __init__(self, func, index, *args, **kwargs):
         super().__init__(target=func, args=args, kwargs=kwargs)
@@ -321,7 +316,8 @@ class CustomThreadSort(Thread):
 
     def run(self):
         # 调用线程函数，并将元组类型的参数值分解为单个的参数值传入线程函数
-        self.Result = self._target(*self._args, **self._kwargs)  # 获取结果
+        self.Result = self._target(self.id, *self._args,
+                                   **self._kwargs)  # 获取结果
         self.result_list[self.id] = self.Result
 
     def getResult(self):
@@ -353,7 +349,6 @@ class CustomThreadSort(Thread):
 class Custom_Thread_Queue(Thread):
     """多线程，继承自threading.Thread"""
     """采用queue传递工作任务，queue不能超出线程数量"""
-    rlock = RLock()
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
     task_queue = Queue()
@@ -372,9 +367,7 @@ class Custom_Thread_Queue(Thread):
             return
         else:
             target = args.pop(0)
-            self.Result = target(*args, self.rlock)  # 获取结果
-            # with self.rlock:
-            #    print(self.name, '\targs:', *args, '\tdone。', flush=True)
+            self.Result = target(*args)  # 获取结果
             self.task_queue.task_done()  # 发出此队列完成信号
             self.result_list.append(self.Result)
 
@@ -484,7 +477,6 @@ class WorkManager(object):
                  callback=None,
                  exc_callback=_handle_thread_exception,
                  kwds={}):
-        self.lock = RLock()
         self.work_queue = Queue()  # 任务队列
         self.result_queue = Queue()  # 结果队列
         self.all_Thread = []
@@ -511,7 +503,7 @@ class WorkManager(object):
         # #初始化线程,同时运行线程数量
         for i in range(self.MaxSem):
             self.all_Thread.append(
-                Work(self.lock, self.work_queue, self.result_queue, **kwds))
+                Work(self.work_queue, self.result_queue, **kwds))
 
     def wait_allcomplete(self):
         # #等待所有线程运行完毕
@@ -541,9 +533,8 @@ class WorkManager(object):
 
 
 class Work(Thread):
-    def __init__(self, lock, work_queue, result_queue, kwds={}):
+    def __init__(self, work_queue, result_queue, kwds={}):
         super().__init__(**kwds)
-        self.lock = lock
         self.daemon = True
         self.work_queue = work_queue
         self.result_queue = result_queue
@@ -556,8 +547,7 @@ class Work(Thread):
             except Empty:
                 break
             else:
-                result = task.func(*task.args, self.lock,
-                                   **task.kwds)  # 传递 list 各元素
+                result = task.func(*task.args, **task.kwds)  # 传递 list 各元素
                 self.result_queue.put(result)  # 取得函数返回值
                 self.work_queue.task_done()  # 通知系统任务完成
 
@@ -571,7 +561,6 @@ class thread_pool_maneger(object):
                  exc_callback=_handle_thread_exception,
                  poll_timeout=5,
                  kwds={}):
-        self.lock = RLock()
         self.work_queue = Queue()  # 任务队列
         self.result_queue = Queue()  # 结果队列
         self.all_Thread = []
@@ -598,8 +587,7 @@ class thread_pool_maneger(object):
         """初始化线程,同时运行线程数量"""
         for i in range(MaxSem):
             self.all_Thread.append(
-                WorkThread(self.lock,
-                           self.work_queue,
+                WorkThread(self.work_queue,
                            self.result_queue,
                            poll_timeout=poll_timeout,
                            **kwds))
@@ -682,14 +670,8 @@ class thread_pool_maneger(object):
 
 
 class WorkThread(Thread):
-    def __init__(self,
-                 lock,
-                 work_queue,
-                 result_queue,
-                 poll_timeout=5,
-                 kwds={}):
+    def __init__(self, work_queue, result_queue, poll_timeout=5, kwds={}):
         super().__init__(**kwds)
-        self.lock = lock
         self.daemon = True
         self.work_queue = work_queue
         self.result_queue = result_queue
@@ -718,7 +700,7 @@ class WorkThread(Thread):
 
             # 执行请求队列中的请求
             try:
-                result = task.func(*task.args, self.lock, **task.kwds)
+                result = task.func(*task.args, **task.kwds)
                 self.result_queue.put((task, result))
             except BaseException:
                 task.exception = True
@@ -750,10 +732,11 @@ def stop_thread(thread):
 
 
 def thread_safe(lock):
-    '''对指定函数进行线程安全包装，需要提供锁'''
+    '''函数的线程安全化，需要lock'''
     def decorate(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            '''函数的线程安全化'''
             with lock:
                 return func(*args, **kwargs)
 
@@ -762,6 +745,206 @@ def thread_safe(lock):
     return decorate
 
 
+def thread_wraps(daemon=False):
+    '''
+    函数的线程装饰器，返回线程，
+    # @加括号()，可选参数daemon
+    '''
+    def decorate(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            thr = Thread(target=func,
+                         args=args,
+                         kwargs=kwargs,
+                         name=f"func-{func.__name__}",
+                         daemon=daemon)
+            thr.start()
+            print(f"{thr} start with thread_wraps...")
+
+            return thr
+
+        return _wrapper
+
+    print('in run wraps')
+    return decorate
+
+
+def thread_wrap(func):
+    '''
+    函数的线程装饰器，返回线程，
+    # @不加括号()，无参数
+    '''
+    def wrapper(*args, **kwargs):
+        thr = Thread(target=func,
+                     args=args,
+                     kwargs=kwargs,
+                     name=f"func-{func.__name__}",
+                     daemon=False)
+        thr.start()
+        print(f"{thr} start with thread_wrap...")
+
+        return thr
+
+    return wrapper
+
+
+class thread_wraps_class_temp:
+    '''
+    暂时保留,函数的线程装饰器，返回线程，
+    # @加括号()，可选参数daemon
+    '''
+    def __init__(self, daemon=False):
+        self.daemon = daemon
+
+    def __call__(self, func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            thr = Thread(target=func,
+                         args=args,
+                         kwargs=kwargs,
+                         name=f"func-{func.__name__}",
+                         daemon=self.daemon)
+            thr.start()
+            # print(f"{thr} start...")
+
+            return thr
+
+        return _wrapper
+
+
+class thread_wraps_class_NoneRes:
+    '''
+    函数的线程装饰器，返回线程，
+    # @加括号()，可选参数daemon
+    # !结果集合可以取得，无法取得单个结果
+    '''
+    Result_dict = {}
+    thread_dict = {}
+
+    def __init__(self, daemon=False, **kwargs):
+        self.daemon = daemon
+
+    def __call__(self, func):
+        @wraps(func)
+        def decorate(*args, **kwargs):
+            def _wrapper(*args, **kwargs):
+                self.Result = func(*args, **kwargs)
+                self.ident = str(get_ident())  #@子线程的id
+                self.Result_dict[self.ident] = self.Result
+                return self.Result
+
+            self.thread_dict[str(id(*args, **kwargs))] = self.thr = Thread(
+                target=_wrapper,
+                args=args,
+                kwargs=kwargs,
+                name=f"func-{func.__name__}",
+                daemon=False,
+                **kwargs)
+            self.ident = str(id(*args, **kwargs))
+            self.thr.start()
+            self.thr.getResult = self.getResult  # #为thread对象增加方法
+            self.thr.getAllResult = self.getAllResult  # #为thread对象增加方法
+            print(f"{self.thr} start...")
+            return self.thr
+
+        return decorate
+
+    def getResult(self):
+        self.thr.join()
+        return self.Result
+
+    @classmethod
+    def getAllResult(cls):
+        for k, thr in cls.thread_dict.items():
+            print(3333, k, thr)
+            thr.join()
+        return cls.Result_dict
+
+
+class thread_wraps_class:
+    '''
+    函数的线程装饰器，返回thread线程实例，
+    # @加括号()，可选参数daemon
+    '''
+    Result_dict = {}
+    thread_dict = {}
+
+    class MyThread(Thread):
+        def __init__(self, func, name='', *args, **kwargs):
+            Thread.__init__(self)
+            self.func = func
+            self.name = name
+            self.args = args
+            self.kwargs = kwargs
+
+        def run(self):
+            print('开始执行', self.name)
+            self.res = self.func(*self.args, **self.kwargs)
+            print(self.name, '结束')
+
+        def getResult(self):
+            self.join()
+            return self.res
+
+    def __init__(self, daemon=False, **kwargs):
+        self.daemon = daemon
+
+    def __call__(self, func):
+        @wraps(func)
+        def decorate(*args, **kwargs):
+            t = self.MyThread(func, func.__name__, *args, **kwargs)
+            t.start()
+            return t
+
+        return decorate
+
+
+class thread_wrap_class:
+    '''
+    函数的线程装饰器，返回线程，
+    可执行getResult，获取实例结果，
+    可执行getAllResult，获取类全部结果，
+    key为ident,value为函数返回值
+    # @不加括号()，无参数
+    '''
+    Result_dict = {}
+    thread_list = []
+
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        def _wrapper(*args, **kwargs):
+            self.Result = self.func(*args, **kwargs)
+            self.ident = str(get_ident())  #@子线程的id
+            self.Result_dict[self.ident] = self.Result
+            return self.Result
+
+        self.thr = Thread(target=_wrapper,
+                          args=args,
+                          kwargs=kwargs,
+                          name=f"func-{self.func.__name__}",
+                          daemon=False)
+        self.thr.start()
+        self.thr.getResult = self.getResult  # #为thread对象增加方法
+        self.thr.getAllResult = self.getAllResult  # #为thread对象增加方法
+        self.thread_list.append(self.thr)
+        print(f"{self.thr} start...")
+        return self.thr
+
+    def getResult(self):
+        self.thr.join()
+        return self.Result
+
+    @classmethod
+    def getAllResult(cls):
+        for thr in cls.thread_list:
+            thr.join()
+        return cls.Result_dict
+
+
+_thread_lock = Lock()
+print = thread_safe(_thread_lock)(print)
 '''
     限制线程:
         threadingSum = 200 #同步线程数
@@ -804,6 +987,8 @@ def thread_safe(lock):
     Thread类属性
     name	线程名
     ident	线程的标识符
+    get_ident()	线程的标识符
+    currentThread().ident	线程的标识符
     daemon	布尔值，表示这个线程是否是守护线程
     isDaemon()
     setDaemon()

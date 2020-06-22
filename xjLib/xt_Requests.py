@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-06-18 14:37:55
+#LastEditTime : 2020-06-20 15:28:27
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用

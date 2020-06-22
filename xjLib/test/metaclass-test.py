@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-17 13:46:12
-#FilePath     : /xjLib/test/meta_class--test.py
-#LastEditTime : 2020-06-17 15:38:10
+#FilePath     : /xjLib/test/metaclass-test.py
+#LastEditTime : 2020-06-21 14:45:22
 #Github       : https://github.com/sandorn/home
 #==============================================================
 深刻理解Python中的元类(metaclass)以及元类实现单例模式 - 苍松 - 博客园

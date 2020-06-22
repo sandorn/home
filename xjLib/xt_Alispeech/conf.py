@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
 #FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-06-17 13:02:35
+#LastEditTime : 2020-06-18 19:09:11
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -29,7 +29,6 @@ from xt_Time import get_10_timestamp
 from xt_Class import Singleton_Warp_Class, readonly
 from typing import Any
 from dataclasses import dataclass, field
-from collections import Iterable
 
 
 @Singleton_Warp_Class
@@ -40,29 +39,27 @@ class Constant:
     __token = ''
     __expire_time = 0
 
-    def __init__(self):
-        '''更新Constant.获取token'''
-        self.__gettoken__()
-
-    @classmethod
-    def __gettoken__(cls):
-        now = get_10_timestamp()
-        # #token生命周期缩短3分钟
-        if (cls.__expire_time - 60 * 3) <= now:
-            cls.__token, cls.__expire_time = AccessToken.create_token(
-                cls.__accessKeyId, cls.__accessKeySecret)
-
     appKey = property(lambda cls: cls.__appKey)
     accessKeyId = property(lambda cls: cls.__accessKeyId)
     accessKeySecret = property(lambda cls: cls.__accessKeySecret)
     expire_time = property(lambda cls: cls.__expire_time)
+
     # token = property(lambda cls: cls.__token)
+    def __init__(self):
+        self.__renew_token__()
 
     #第二种方法
     @property
     def token(self):
-        self.__gettoken__()
+        self.__renew_token__()
         return self.__token
+
+    def __renew_token__(self):
+        now = get_10_timestamp()
+        # #token生命周期缩短3分钟
+        if (self.__expire_time - 60 * 3) <= now:
+            self.__token, self.__expire_time = AccessToken.create_token(
+                self.__accessKeyId, self.__accessKeySecret)
 
 
 @dataclass(init=False)

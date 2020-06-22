@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 18:42:56
 #FilePath     : /xjLib/xt_Tools.py
-#LastEditTime : 2020-06-05 22:07:44
+#LastEditTime : 2020-06-20 14:10:21
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -17,9 +17,10 @@ https://zhuanlan.zhihu.com/p/31644562
 https://github.com/ShichaoMa
 '''
 
+import signal
 import time
 import traceback
-import signal
+from copy import deepcopy
 from functools import wraps
 
 
@@ -29,8 +30,12 @@ class ExceptContext(object):
         with ExceptContext(Exception, errback=lambda name, *args:print(name)):
             raise Exception("test. ..")
     """
-
-    def __init__(self, exception=Exception, func_name=None, errback=lambda func_name, *args: traceback.print_exception(*args) is None, finalback=lambda got_err: got_err):
+    def __init__(self,
+                 exception=Exception,
+                 func_name=None,
+                 errback=lambda func_name, *args: traceback.print_exception(
+                     *args) is None,
+                 finalback=lambda got_err: got_err):
         """
         :param exception: 指定要监控的异常
         :param func_name: 可以选择提供当前所在函数的名称，回调函数会提交到函数，用于跟踪
@@ -50,14 +55,14 @@ class ExceptContext(object):
         return_code = False
         if isinstance(exc_val, self.exception):
             self.got_err = True
-            return_code = self.errback(self.func_name, exc_type, exc_val, exc_tb)
+            return_code = self.errback(self.func_name, exc_type, exc_val,
+                                       exc_tb)
         self.finalback(self.got_err)
         return return_code
 
 
 def timeout(timeout_time, default):
     """超时器，装饰函数并指定其超时时间"""
-
     class DecoratorTimeout(Exception):
         pass
 
@@ -94,7 +99,6 @@ def call_later(callback, call_args=tuple(), immediately=True, interval=1):
     :param interval: 调用间隔
     :return:
     """
-
     def decorate(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -113,6 +117,21 @@ def call_later(callback, call_args=tuple(), immediately=True, interval=1):
         return wrapper
 
     return decorate
+
+
+def freshdefault(f):
+    '''
+    Python cookbook中方法，为了避免
+    对每一个函数中每一个可能为None的对象进行一个if not l的判断，
+    使用可更优雅的修饰器方法
+    '''
+    fdefaults = f.func_defaults
+
+    def refresher(*args, **kwds):
+        f.func_defaults = deepcopy(fdefaults)
+        return f(*args, **kwds)
+
+    return refresher
 
 
 if __name__ == '__main__':

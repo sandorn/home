@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-18 15:29:33
+#LastEditTime : 2020-06-20 15:01:05
 '''
 import asyncio
 import ctypes
@@ -25,7 +25,7 @@ from xt_Response import ReqResult
 
 log = log()
 snooper = snoop(log.filename)
-print = log.debug
+# print = log.debug
 
 __all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
@@ -145,10 +145,10 @@ async def AyReqTask_run(self):
         try:
             await _run()
             if times != 0:
-                print(f'{self}\ttimes:{times}\tAyTask Done.')
+                print(f'{self}\ttimes:{times}\tAyReqTask_run Done.')
             break
         except Exception as err:
-            print(f'{self}\ttimes:{times}\tAyTask Err:{ repr(err)}')
+            print(f'{self}\ttimes:{times}\tAyReqTask_run Err:{ repr(err)}')
             max_try -= 1
             times += 1
             await asyncio.sleep(0.1)
@@ -180,6 +180,7 @@ async def multi_req(tasks, pool, result_list, single_session=True):
                                          connector=myconn) as mysession:
             new_tasks = []
             for index, task in enumerate(tasks):
+                task.id = index + 1
                 new_tasks.append(
                     asyncio.ensure_future(
                         fetch_async(task, result_list, mysession)))
@@ -218,13 +219,14 @@ async def fetch_async(task, result_list, session):
             task.session, ctypes.py_object).value.headers or myhead
         async with session.request(task.method,
                                    task.url,
-                                   timeout=timesout,
-                                   headers=headers,
                                    *task.args,
+                                   timeout=timesout,
+                                   verify_ssl=False,
+                                   headers=headers,
                                    **task.kw) as sessReq:
             assert sessReq.status in [200, 201, 302]
             content = await sessReq.read()
-            new_res = ReqResult(sessReq, content, id(task))
+            new_res = ReqResult(sessReq, content, task.id)
             result_list.append(new_res)
 
             if task.callback:
@@ -237,10 +239,10 @@ async def fetch_async(task, result_list, session):
         try:
             await _run()
             if times != 0:
-                print(f'{task}\ttimes:{times}\tFetch_async Done.')
+                print(f'{task}\ttimes:{times}\tasync_Fetch Done.')
             break
         except Exception as err:
-            print(f'{task}\ttimes:{times}\tFetch_async Err:{repr(err)}')
+            print(f'{task}\ttimes:{times}\tasync_Fetch Err:{repr(err)}')
             max_try -= 1
             times += 1
             await asyncio.sleep(random())
