@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-20 15:39:02
 #FilePath     : /线程协程/实际使用多进程完整模板deco.py
-#LastEditTime : 2020-06-20 22:48:45
+#LastEditTime : 2020-06-22 20:25:12
 #Github       : https://github.com/sandorn/home
 #==============================================================
 带装饰器的Python中的简化多进程、多线程并发（装饰并发-Python多线程、进程神器）_陆壹佛爷Tong_T-CSDN博客_python multiprocess 装饰器装饰
@@ -57,6 +57,6 @@ if __name__ == "__main__":
     # d = process_data_set(data)
     # for k, v in d.items():
     #     print(k, v)
-    # !未自动结束
+    # !上面不能自动结束
     print(process_data_set(data))
     print(time.time() - start)

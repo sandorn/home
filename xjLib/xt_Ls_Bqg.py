@@ -8,13 +8,12 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-04-01 10:29:33
 #FilePath     : /xjLib/xt_Ls_Bqg.py
-#LastEditTime : 2020-06-21 12:48:56
+#LastEditTime : 2020-06-23 12:19:00
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
 
 from xt_Ahttp import ahttpGet
-from xt_Log import log
 from xt_Requests import get
 from xt_String import Ex_Re_Clean, Ex_Str_Replace, Ex_Re_Repl
 
@@ -109,7 +108,6 @@ def get_title_url(target):
         _href = item.xpath("@href")[0]  # 章节链接
         _text = item.xpath("string(.)").strip()  # 章节标题
         _list.append([_text, baseurl + _href])  # 获取遍历到的具体文章地址
-
     return bookname, _list
 
 
@@ -124,7 +122,7 @@ def get_biqugeinfo_url(target):
     return _bookname, urls
 
 
-def get_contents(index=None, target=None, lock=None):
+def get_contents(index, target):
     response = get(target).element
 
     _title = "".join(response.xpath('//h1/text()'))
@@ -135,7 +133,7 @@ def get_contents(index=None, target=None, lock=None):
     return [index, title, content]
 
 
-def get_contents_byahttp(index, target, lock=None):
+def _get_contents_ahttp(index, target):
     response = ahttpGet(target).element
 
     _title = "".join(response.xpath('//h1/text()'))
@@ -146,16 +144,9 @@ def get_contents_byahttp(index, target, lock=None):
     return [index, title, content]
 
 
-def map_get_contents_byahttp(*args):
-    index, target = args  # 元组拆包
-    response = ahttpGet(target).element
-
-    _title = "".join(response.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000',
-                                         u' ').replace(u'\xa0', u' ')
-    _showtext = response.xpath('//*[@id="content"]/text()')
-    content = arrangeContent(_showtext)
-    return [index, title, content]
+def map_get_contents(*args):
+    index, target = args[0]  # 元组拆包
+    return _get_contents_ahttp(index, target)
 
 
 if __name__ == "__main__":

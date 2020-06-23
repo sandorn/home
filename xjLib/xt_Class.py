@@ -1,28 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-# ==============================================================
-# Descripttion : None
-# Develop      : VSCode
-# Author       : Even.Sand
-# Contact      : sandorn@163.com
-# Date         : 2020-05-30 14:25:16
-#LastEditTime : 2020-06-21 14:35:16
-# Github       : https://github.com/sandorn/home
-# License      : (C)Copyright 2009-2020, NewSea
-# ==============================================================
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2020-05-30 14:25:16
+#FilePath     : /xjLib/xt_Class.py
+#LastEditTime : 2020-06-23 17:42:25
+#Github       : https://github.com/sandorn/home
+#==============================================================
 '''
-import abc
-from threading import Lock
-from functools import wraps
-
-from threading import Lock
-
-from pysnooper import snoop
-from xt_Log import log
-log = log()
-snooper = snoop(log.filename)
-# print = log.debug
 
 
 class item_MixIn:
@@ -87,81 +76,6 @@ class repr_MixIn:
 class Class_Meta(dict_MixIn, item_MixIn, attr_MixIn, iter_MixIn, repr_MixIn):
     '''metaclass=abc.ABCMeta'''
     pass
-
-
-def singleton(cls):
-    '''单例装饰器，效果不确定，类方法调用有问题'''
-    # 创建一个字典用来保存类的实例对象
-    _instance = {}
-
-    def _singleton(*args, **kwargs):
-        if cls not in _instance:
-            _instance[cls] = cls(*args, **kwargs)  # 创建一个对象,并保存到字典当中
-        return _instance[cls]
-
-    return _singleton
-
-
-class Singleton_Model:
-    '''单例模式，抄写直接应用'''
-    __instance_lock = Lock()
-
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "_instance"):
-            with cls.__instance_lock:
-                if not hasattr(cls, "_instance"):
-                    cls._instance = super().__new__(cls)
-        return cls._instance
-
-    def __init__(self):
-        pass
-
-
-class Singleton_Meta(type):
-    '''
-    单例模式，用于继承，单次init
-    继承时使用metaclass=Singleton_Meta
-    '''
-    __instance_lock = Lock()
-
-    def __call__(cls, *args, **kwargs):
-        if not hasattr(cls, "_instance"):
-            with cls.__instance_lock:
-                if not hasattr(cls, "_instance"):
-                    cls._instance = super().__call__(*args, **kwargs)
-        return cls._instance
-
-
-class Singleton_wraps_class(object):
-    '''单例模式装饰器，效果不确定'''
-
-    objs = {}
-    objs_locker = Lock()
-
-    def __new__(cls, *args, **kv):
-        if cls in cls.objs:
-            return cls.objs[cls]['obj']
-        cls.objs_locker.acquire()
-
-        try:
-            if cls in cls.objs:  ## double checklocking
-                return cls.objs[cls]['obj']
-            obj = object.__new__(cls)
-            cls.objs[cls] = {'obj': obj, 'init': False}
-            setattr(cls, '__init__', cls.decorate_init(cls.__init__))
-            return cls.objs[cls]['obj']
-        finally:
-            cls.objs_locker.release()
-
-    @classmethod
-    def decorate_init(cls, fn):
-        def init_wrap(*args):
-            if not cls.objs[cls]['init']:
-                result = fn(*args)
-                cls.objs[cls]['init'] = True
-            return result
-
-        return init_wrap
 
 
 def typeassert(**kwargs):

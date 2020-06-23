@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 10:04:55
 #FilePath     : /xjLib/xt_Time.py
-#LastEditTime : 2020-06-18 15:31:43
+#LastEditTime : 2020-06-22 19:57:35
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -61,9 +61,3 @@ def get_10_timestamp(timestr=None):
 def get_13_timestamp(timestr=None):
     '''获取当前时间的时间戳（13位）'''
     return get_10_timestamp(timestr) * 1000
-
-
-if __name__ == "__main__":
-    print(get_13_timestamp())
-    print(get_10_timestamp('2020-06-05 11:29:01'))
-    print(get_sql_time())

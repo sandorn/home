@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-20 15:01:05
+#LastEditTime : 2020-06-22 19:38:44
 '''
 import asyncio
 import ctypes
@@ -17,19 +17,13 @@ from functools import partial
 from random import random
 
 import aiohttp
-from pysnooper import snoop
 
 from xt_Head import myhead
-from xt_Log import log
 from xt_Response import ReqResult
-
-log = log()
-snooper = snoop(log.filename)
-# print = log.debug
 
 __all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
-timesout = 20
+TIMEOUT = 20
 
 
 class SessionMeta:
@@ -131,7 +125,7 @@ async def AyReqTask_run(self):
             async with session.request(self.method,
                                        self.url,
                                        *self.args,
-                                       timeout=timesout,
+                                       timeout=TIMEOUT,
                                        verify_ssl=False,
                                        headers=self.headers,
                                        **self.kw) as sessReq:
@@ -220,7 +214,7 @@ async def fetch_async(task, result_list, session):
         async with session.request(task.method,
                                    task.url,
                                    *task.args,
-                                   timeout=timesout,
+                                   timeout=TIMEOUT,
                                    verify_ssl=False,
                                    headers=headers,
                                    **task.kw) as sessReq:

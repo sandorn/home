@@ -8,13 +8,13 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-06-11 12:27:03
 #FilePath     : /xjLib/test/alispeech-test.py
-#LastEditTime : 2020-06-18 18:30:43
+#LastEditTime : 2020-06-23 12:11:03
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
 from xt_Alispeech import synthesizeClass, ReqLongSynthesizer, APITransUrl, PostTransFile, TranscriberProcess, ReqSynthesizer
 from xt_String import string_split_limited_list
-from xt_Alispeech.xt_Pygame import play_callback, ReqSynthesizer_Thread_read, Synt_Thread_read
+from xt_Alispeech.xt_Pygame import pygame_play, ReqSynthesizer_Thread_read, Synt_Thread_read
 
 longtext = '''
         根据保险专业中介机构公司治理专项视频会议要求，我司按照会议安排，对公司相关业务及经营独立性展开全面自查自纠，现将有关工作情况汇报如下：
@@ -108,16 +108,16 @@ def 合成语音():
         'text',
         '根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组，由公司总经理毕永辉任整治小组组长，成员包括公司副总经理刘新军、行政人事部总经理朱立志。'
     )
-    SYC.setparams('callback', play_callback)  # 设置回调
+    SYC.setparams('callback', pygame_play)  # 设置回调
     res = SYC.run()
     print(3333, SYC.result.filename)
     #  处理结果
-    # play_callback(SYC.result.response.content)
+    # pygame_play(SYC.result.response.content)
 
 
 def 合成语音2():
     # #短文字合成语音，限定300字符
-    res = ReqSynthesizer(longtext, savefile=False, callback=play_callback)
+    res = ReqSynthesizer(longtext, savefile=False, callback=pygame_play)
     print(res)
 
 
@@ -125,7 +125,7 @@ def 合成长语音():
     # #长文字合成语音
     long_text_list = string_split_limited_list(longtext)
     # Synt_Thread_read(long_text_list)
-    ReqLongSynthesizer(longtext, callback=play_callback)
+    ReqLongSynthesizer(longtext, callback=pygame_play)
 
 
 def 网络音频识别():

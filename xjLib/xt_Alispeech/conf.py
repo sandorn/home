@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
 #FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-06-18 19:09:11
+#LastEditTime : 2020-06-22 20:44:07
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -26,12 +26,11 @@ user2 = {
 
 from ali_speech._create_token import AccessToken
 from xt_Time import get_10_timestamp
-from xt_Class import Singleton_Warp_Class, readonly
+from xt_Class import readonly
 from typing import Any
 from dataclasses import dataclass, field
 
 
-@Singleton_Warp_Class
 class Constant:
     __appKey = 'Ofm34215thIUdSIX'
     __accessKeyId = 'LTAI4G5TRjsGy8BNKPtctjXQ'
@@ -48,7 +47,7 @@ class Constant:
     def __init__(self):
         self.__renew_token__()
 
-    #第二种方法
+    # 第二种方法
     @property
     def token(self):
         self.__renew_token__()

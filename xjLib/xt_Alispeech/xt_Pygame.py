@@ -7,15 +7,12 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 20:11:54
-#LastEditTime : 2020-06-20 15:56:35
+#LastEditTime : 2020-06-23 12:41:15
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 '''
 
-import io
-import time
-from functools import partial
 from io import BytesIO
 from threading import Thread
 
@@ -23,11 +20,10 @@ import pygame
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from xt_Alispeech import ReqSynthesizer
-from xt_Thread import thread_wraps
 
 
-def play_callback(data, format='wav'):
-    # !使用16000和默认,声音不行
+def pygame_play(data, format='wav'):
+    # @使用16000和默认,声音不行
     pygame.mixer.init(frequency=8000)
     pym = ''
     if format == 'wav':
@@ -83,9 +79,9 @@ def create_class(obj):
                     if not self._running:
                         break
 
-                print('MainMonitor stoping!!!!!!')
+                print('pygame_play MainMonitor stoping!!!!!!')
 
-            ##daemon=True,跟随主线程关闭 ,不能用双QThread嵌套
+            # #daemon=True,跟随主线程关闭 ,不能用双QThread嵌套
             self._MainMonitor = Thread(target=_func,
                                        daemon=True,
                                        name="MainMonitor")
@@ -135,10 +131,7 @@ ReqSynthesizer_Thread_read = create_class(Thread)
 def create_read_thread(obj):
     def __init__(self, textlist=None, format='wav'):
         obj.__init__(self)
-        if (obj == QThread):
-            self.__dict__['_Qobj'] = True
-        else:
-            self.__dict__['_Qobj'] = False
+        self.__dict__['_qobj'] = (obj == QThread)
 
         self.__dict__['_target'] = ReqSynthesizer
         self.__dict__['textlist'] = textlist or []
@@ -164,9 +157,8 @@ def create_read_thread(obj):
                 if not self._running:
                     break
 
-            print('MainMonitor stoping!!!!!!')
+            print('pygame_play MainMonitor stoping!!!!!!')
 
-        ##daemon=True,跟随主线程关闭 ,不能用双QThread嵌套
         self._MainMonitor = Thread(target=_func,
                                    daemon=True,
                                    name="MainMonitor")
@@ -196,7 +188,8 @@ def create_read_thread(obj):
                     if len(self.textlist) == 0 and len(self.datas_list) == 0:
                         self.stop()
                         print('all recod play finished!!!!!!')
-                        if self._Qobj: self._signal.emit()
+                        if self._qobj:
+                            self._signal.emit()
 
         # 停止标记
         self.pym.stop()
@@ -217,9 +210,3 @@ def create_read_thread(obj):
 
 Synt_QThread_read = create_read_thread(QThread)
 Synt_Thread_read = create_read_thread(Thread)
-'''a = Thread()
-print(isinstance(a, Thread))
-print(Thread is Thread)
-print(Thread == Thread)
-print(type(Thread) == type(Thread))
-'''

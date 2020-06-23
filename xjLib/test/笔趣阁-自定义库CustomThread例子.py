@@ -9,44 +9,16 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-21 13:28:44
+#LastEditTime : 2020-06-23 18:02:35
 根据网络资料，写的threadpool
 '''
 
 import os
 
-from xt_Thread import SingletonThread, SingletonThread_Queue, CustomThread, CustomThreadSort, Custom_Thread_Queue, WorkManager, thread_pool_maneger
+from xt_Thread import CustomThread, WorkManager, thread_pool_maneger
 from xt_File import savefile
 from xt_Time import fn_timer
-from xt_Requests import parse_get
-from xt_Ls_Bqg import get_download_url, get_contents, arrangeContent
-
-
-@fn_timer
-def st(bookname, urls):
-    _ = [
-        SingletonThread(get_contents, index, url)
-        for index, url in enumerate(urls)
-    ]
-    texts = SingletonThread.wait_completed()
-    texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'SingletonThread.txt', texts, br='\n')
-
-
-@fn_timer
-def sq(bookname, urls):
-    for index, url in enumerate(urls):
-        SingletonThread_Queue([get_contents, index, url])
-
-    # texts = SingletonThread_Queue.getAllResult()
-    texts = SingletonThread_Queue.wait_completed()
-
-    texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'SingletonThread_Queue.txt',
-             texts,
-             br='\n')
+from xt_Ls_Bqg import get_download_url, get_contents
 
 
 @fn_timer
@@ -57,36 +29,9 @@ def ct(bookname, args):
     ]
     texts = CustomThread.wait_completed()
     texts.sort(key=lambda x: x[0])
-    texts = [[row[i] for i in range(1, 3)] for row in texts]
+    # texts = [[row[i] for i in range(1, 3)] for row in texts]
     files = os.path.split(__file__)[-1].split(".")[0]
     savefile(files + '＆' + bookname + 'CustomThread.txt', texts, br='\n')
-
-
-def ct_sort(bookname, args):
-    _ = [
-        CustomThreadSort(get_contents, index, url)
-        for index, url in enumerate(urls)
-    ]
-    dict_data = CustomThreadSort.wait_completed()
-    texts = sorted(dict_data.items(), key=lambda x: x[0])  # # 按字典key排序
-    texts = [[row[1][i] for i in range(1, 3)] for row in texts]  # # 去除序号及字典key
-    files = os.path.split(__file__)[-1].split(".")[0]
-    savefile(files + '＆' + bookname + 'CustomThread_Sort.txt', texts, br='\n')
-
-
-@fn_timer
-def cq(bookname, args):
-    for index, url in enumerate(urls):
-        Custom_Thread_Queue([get_contents, index, url])
-
-    # texts = Custom_Thread_Queue.getAllResult()
-    texts = Custom_Thread_Queue.wait_completed()
-
-    texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'Custom_Thread_Queue.txt',
-             texts,
-             br='\n')
 
 
 @fn_timer
@@ -116,14 +61,18 @@ def tp(bookname, urls, MaxSem=99):
 
 
 if __name__ == "__main__":
-    bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
-    # #38_38836  #2_2714  #2_2760
-    st(bookname, urls)
 
-    # for func in ['st', 'sq', 'ct', 'cq', 'ct_sort', 'wm', 'tp']:
+    bookname, urls = get_download_url('http://www.biqukan.com/2_2714/')
+    # #38_38836  #2_2714  #2_2760
+
+    ct(bookname, urls)
+    wm(bookname, urls)
+    tp(bookname, urls)
+
+    # for func in ['st', 'ct', ''wm', 'tp']:
     #     eval(func)(bookname, urls)
-    #     locals()[func](bookname, urls)
-    #     globals()[func](bookname, urls)
+    # locals()[func](bookname, urls)
+    # globals()[func](bookname, urls)
 '''
     # 默认线程数量
     [笔趣阁-自定义库CustomThread例子＆武炼巅峰SingletonThread.txt]保存完成	size：46.47 MB

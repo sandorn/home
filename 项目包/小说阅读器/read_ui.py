@@ -7,7 +7,7 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-05-12 11:31:03
-#LastEditTime : 2020-06-18 17:42:02
+#LastEditTime : 2020-06-23 12:22:55
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -21,11 +21,6 @@ from xt_Ls_Bqg import get_contents, get_title_url
 from xt_Alispeech.xt_Pygame import Synt_QThread_read
 from xt_String import string_split_limited_list
 from xt_Ui import EventLoop, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser, xt_QCheckBox
-from pysnooper import snoop
-from xt_Log import log
-log = log()
-snooper = snoop(log.filename)
-print = log.debug
 
 
 class Ui_MainWindow(xt_QMainWindow):
@@ -191,7 +186,7 @@ class Ui_MainWindow(xt_QMainWindow):
     # 从网页提取数据
     @EventLoop
     def getcontent(self, url):
-        index, title, content = get_contents(target=url)
+        index, title, content = get_contents(1, target=url)
         return "《" + self.bookname + '->' + title + "》\n\n" + content
 
     # 将文件显示在Table中（列表显示）

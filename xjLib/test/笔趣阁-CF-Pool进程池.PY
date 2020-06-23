@@ -1,4 +1,3 @@
-
 '''
 @Descripttion: 头部注释None
 @Develop: VSCode
@@ -7,22 +6,21 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-18 05:28:03
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-21 18:19:32
+@LastEditors  : Please set LastEditors
+@LastEditTime : 2020-06-22 20:14:17
 
 python线程池ThreadPoolExecutor与进程池ProcessPoolExecutor - Harvard_Fly - 博客园
 https://www.cnblogs.com/FG123/p/9704233.html
 '''
-
 
 from concurrent.futures import ProcessPoolExecutor as Pool  # 进程池模块
 # from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
 from concurrent.futures import as_completed, wait
 import os
 
-from xjLib.mystr import savefile, fn_timer
-from xjLib.ls import get_download_url, get_contents_byahttp, map_get_contents_byahttp
-
+from xt_File import savefile
+from xt_Time import fn_timer
+from xt_Ls_Bqg import get_download_url, map_get_contents
 
 texts = []
 
@@ -34,11 +32,12 @@ def callback(future):
 
 
 @fn_timer
-def main_add_done_callback(max, bookname, urls):
+def main_callback(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
         _ = [
-            pool.submit(map_get_contents_byahttp, (index, urls[index])).add_done_callback(callback)
+            pool.submit(map_get_contents,
+                        (index, urls[index])).add_done_callback(callback)
             for index in range(len(urls))
         ]
 
@@ -48,10 +47,13 @@ def main_add_done_callback(max, bookname, urls):
 
 
 @fn_timer
-def main_as_completed(max, bookname, urls):
+def main_completed(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = [pool.submit(map_get_contents_byahttp, (index, urls[index])) for index in range(len(urls))]
+        future_tasks = [
+            pool.submit(map_get_contents, (index, urls[index]))
+            for index in range(len(urls))
+        ]
 
     texts = []
     for future in as_completed(future_tasks):  # 迭代生成器
@@ -63,14 +65,19 @@ def main_as_completed(max, bookname, urls):
 
     textssord = sorted(texts, key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
-    savefile(files + '＆' + bookname + 'main_as_completed.txt', textssord, br='\n')
+    savefile(files + '＆' + bookname + 'main_as_completed.txt',
+             textssord,
+             br='\n')
 
 
 @fn_timer
 def main_wait(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = [pool.submit(map_get_contents_byahttp, (index, urls[index])) for index in range(len(urls))]
+        future_tasks = [
+            pool.submit(map_get_contents, (index, urls[index]))
+            for index in range(len(urls))
+        ]
 
     texts = []
 
@@ -92,10 +99,10 @@ def main_wait(max, bookname, urls):
 def main_map(max, bookname, urls):
     args = []
     for index, url in enumerate(urls):
-        args.append([index, url])
+        args.append((index, url))
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = pool.map(map_get_contents_byahttp, args)
+        future_tasks = pool.map(map_get_contents, args)
 
     texts = []
     for resp in future_tasks:  # 此时将阻塞 , 直到线程完成或异常
@@ -109,13 +116,12 @@ def main_map(max, bookname, urls):
 if __name__ == '__main__':
     bookname, urls = get_download_url('https://www.biqukan.com/38_38836/')
 
-    main_map(32, bookname, urls)
-    main_wait(32, bookname, urls)
-    main_as_completed(32, bookname, urls)
-    main_add_done_callback(32, bookname, urls)
+    # main_map(32, bookname, urls)
+    # main_wait(32, bookname, urls)
+    # main_completed(32, bookname, urls)
+    main_callback(32, bookname, urls)
 
     # 38_38836     34.84 seconds
-
     '''
     # "2_2714"   #《武炼巅峰》664万字 99线程。
     [笔趣阁-CF-Pool进程池＆武炼巅峰main_map.txt]保存完成	size：46.46 MB	time:21:18:08.876504。
@@ -138,7 +144,6 @@ if __name__ == '__main__':
     [笔趣阁-CF-Pool进程池＆沧元图add_done_callback.txt]保存完成	size：2.84 MB	time:09:27:49.634125。
     Total time running with [main_add_done_callback]: 19.68 seconds
     '''
-
 '''
 1、建立线程池：executor = ThreadPoolExecutor(max_workers= )
 2、提交执行函数到线程池：task = executor.submit(func,(args))

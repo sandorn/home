@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-05-25 11:34:01
 #FilePath     : /xjLib/xt_Alispeech/__init__.py
-#LastEditTime : 2020-06-20 23:21:33
+#LastEditTime : 2020-06-22 20:37:35
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -19,7 +19,6 @@ from aliyunsdkcore.acs_exception.exceptions import (ClientException,
                                                     ServerException)
 from aliyunsdkcore.client import AcsClient  # 阿里云核心代码库
 from aliyunsdkcore.request import CommonRequest  # 阿里云官方核心代码库
-from pysnooper import snoop
 
 from ali_speech import NlsClient
 from ali_speech.callbacks import (SpeechSynthesizerCallback,
@@ -27,14 +26,8 @@ from ali_speech.callbacks import (SpeechSynthesizerCallback,
 from .conf import Constant  # 常量参数
 from .conf import SpeechArgs  # 默认参数
 from .conf import SynResult, TransResult
-from xt_Log import log
-from xt_Requests import SessionClient, parse_get, parse_post
+from xt_Requests import SessionClient
 from xt_String import md5, string_split_limited_list, class_add_dict
-from xt_Time import get_10_timestamp
-
-log = log()
-snooper = snoop(log.filename)
-# print = log.debug
 
 
 def ReqLongSynthesizer(longtext, savefile=True, method='post', callback=None):

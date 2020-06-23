@@ -8,12 +8,13 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-19 13:52:24
 #FilePath     : /xjLib/test/xt_Thread 线程装饰器-test.py
-#LastEditTime : 2020-06-22 11:45:37
+#LastEditTime : 2020-06-23 17:54:26
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 import time
-from xt_Thread import thread_wrap_class, thread_wraps_class, thread_safe, Lock, thread_wraps, thread_wrap, print
+from xt_Thread import thread_wrap_class, thread_wraps_class
+from xt_Thread import thread_safe, thread_wraps, thread_wrap, print
 from threading import currentThread
 
 from pysnooper import snoop
@@ -42,7 +43,7 @@ def event(s):
     return 'event Result ：' + str(s) + '|' + str(g_a)
 
 
-@thread_wraps_class()
+@thread_wrap_class
 def another_event(s):
     time.sleep(s)
     global g_a
@@ -51,14 +52,17 @@ def another_event(s):
     return 'another event Result ：' + str(s) + '|' + str(g_a)
 
 
-# a = event(5)
-# click(event, 2)
-# print(a.getResult())
-# print(a.getAllResult())
+event(4)
+a = event(5)
+print('a:', a.getResult())
+click(event, 3)
+click(event, 6)
+print('event all:', thread_wrap_class.getAllResult())
 
-b = another_event(4)
-c = another_event(5)
-print('b:', b.getResult())
-click(another_event, 6)
-click(another_event, 4)
-print('all:', b.getResult())
+# b = another_event(7)
+# c = another_event(5)
+# print('b:', b.getResult())
+# click(another_event, 6)
+# click(another_event, 4)
+# print('c:', c.getResult())
+# print('another_event all:', thread_wraps_class.getAllResult())
