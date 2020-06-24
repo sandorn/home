@@ -8,12 +8,11 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-06-20 15:28:27
+#LastEditTime : 2020-06-24 17:28:29
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
 '''
-# from __future__ import absolute_import, unicode_literals
 
 import requests
 from retrying import retry
@@ -21,7 +20,9 @@ from retrying import retry
 from xt_Head import myhead
 from xt_Response import ReqResult
 
+TIMESOUT = (3.3, 10)
 RETRY_TIME = 6  # 最大重试次数
+
 Retry = retry(wait_random_min=20,
               wait_random_max=1000,
               stop_max_attempt_number=RETRY_TIME,
@@ -34,6 +35,7 @@ def parse_get(url, *args, **kwargs):
     response = None
     kwargs.setdefault('headers', myhead)
     kwargs.setdefault('allow_redirects', True)  # @重定向
+    kwargs.setdefault('timeout', TIMESOUT)  # @超时
 
     while attempts < RETRY_TIME:
         try:
@@ -54,6 +56,7 @@ def parse_post(url, *args, **kwargs):
     response = None
     kwargs.setdefault('headers', myhead)
     kwargs.setdefault('allow_redirects', True)  # @重定向
+    kwargs.setdefault('timeout', TIMESOUT)  # @超时
 
     while attempts < RETRY_TIME:
         try:
@@ -73,6 +76,7 @@ def get(url, *args, **kwargs):
     response = None
     kwargs.setdefault('headers', myhead)
     kwargs.setdefault('allow_redirects', True)  # @启动重定向
+    kwargs.setdefault('timeout', TIMESOUT)  # @超时
 
     @Retry
     def _run():
@@ -96,6 +100,7 @@ def post(url, *args, **kwargs):
     response = None
     kwargs.setdefault('headers', myhead)
     kwargs.setdefault('allow_redirects', True)
+    kwargs.setdefault('timeout', TIMESOUT)  # @超时
 
     @Retry
     def _run():
@@ -144,7 +149,8 @@ class SessionClient:
 
     def __create_params(self, *args, **kwargs):
         kwargs.setdefault('headers', myhead)
-        kwargs.setdefault('allow_redirects', True)  # @启动重定向
+        kwargs.setdefault('allow_redirects', True)  # @重定向
+        kwargs.setdefault('timeout', TIMESOUT)  # @超时
         self.url = args[0]
         self.args = args[1:]
         if "callback" in kwargs:

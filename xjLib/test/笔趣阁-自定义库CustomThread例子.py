@@ -9,16 +9,53 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-23 18:02:35
+#LastEditTime : 2020-06-24 17:32:17
 根据网络资料，写的threadpool
 '''
 
 import os
 
-from xt_Thread import CustomThread, WorkManager, thread_pool_maneger
+from xt_Thread import CustomThread, CustomThread_Queue, WorkManager, thread_pool_maneger, SingletonThread, SigThread, SigThreadQ
 from xt_File import savefile
 from xt_Time import fn_timer
 from xt_Ls_Bqg import get_download_url, get_contents
+
+
+@fn_timer
+def st(bookname, urls):
+    thr = [
+        SingletonThread(get_contents, index, url)
+        for index, url in enumerate(urls)
+    ]
+    # print(id(thr[0]), id(thr[1]), id(thr[2]))
+    # print('9999:', thr[0].__class__.__name__, SingletonThread.__name__)
+    texts = SingletonThread.getAllResult(
+    )  # #getAllResult()  # #wait_completed()
+    texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'SingletonThread.txt', texts, br='\n')
+
+
+@fn_timer
+def sq(bookname, urls):
+    for index, url in enumerate(urls):
+        res = SigThreadQ([get_contents, index, url])
+    texts = SigThreadQ.wait_completed()  # #getAllResult()
+    texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'SigThreadQ.txt', texts, br='\n')
+
+
+@fn_timer
+def stm(bookname, urls):
+    thr = [
+        SigThread(get_contents, index, url) for index, url in enumerate(urls)
+    ]
+    # print(id(thr[0]), id(thr[1]), id(thr[2]))
+    texts = SigThread.wait_completed()
+    texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'SigThread.txt', texts, br='\n')
 
 
 @fn_timer
@@ -32,6 +69,16 @@ def ct(bookname, args):
     # texts = [[row[i] for i in range(1, 3)] for row in texts]
     files = os.path.split(__file__)[-1].split(".")[0]
     savefile(files + '＆' + bookname + 'CustomThread.txt', texts, br='\n')
+
+
+@fn_timer
+def cq(bookname, urls):
+    for index, url in enumerate(urls):
+        CustomThread_Queue([get_contents, index, url])
+    texts = CustomThread_Queue.wait_completed()  # #getAllResult()
+    texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'CustomThread_Queue.txt', texts, br='\n')
 
 
 @fn_timer
@@ -62,14 +109,20 @@ def tp(bookname, urls, MaxSem=99):
 
 if __name__ == "__main__":
 
-    bookname, urls = get_download_url('http://www.biqukan.com/2_2714/')
+    bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
     # #38_38836  #2_2714  #2_2760
 
-    ct(bookname, urls)
-    wm(bookname, urls)
-    tp(bookname, urls)
+    for index in range(3):
+        st(bookname, urls)
+        print(1111, index)
+    # sq(bookname, urls)
+    # stm(bookname, urls)
+    # ct(bookname, urls)
+    # cq(bookname, urls)
+    # wm(bookname, urls)
+    # tp(bookname, urls)
 
-    # for func in ['st', 'ct', ''wm', 'tp']:
+    # for func in ['st', 'sq','stm','ct', 'cq',''wm', 'tp']:
     #     eval(func)(bookname, urls)
     # locals()[func](bookname, urls)
     # globals()[func](bookname, urls)

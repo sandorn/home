@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-22 18:48:30
 #FilePath     : /xjLib/xt_Thread/Pool.py
-#LastEditTime : 2020-06-22 19:48:01
+#LastEditTime : 2020-06-24 17:11:05
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -142,7 +142,7 @@ class Work(Thread):
         self.start()
 
     def run(self):
-        while True:
+        while not self.work_queue.empty():
             try:
                 task = self.work_queue.get(False)  # !任务异步出队 get_nowait()
             except Empty:
@@ -231,23 +231,19 @@ class thread_pool_maneger(object):
 
     def poll(self, block=False):
         """拉取数据进行处理, 用于wait"""
-        while True:
+        while not self.result_queue.empty():
             if not self.all_Tasks:
                 raise NoResultsPending
             elif block and not self.work_queue:
                 raise NoWorkersAvailable
 
-            if self.result_queue.empty():
-                break
-            else:
-                task, result = self.result_queue.get(block=block)
-                if task.exception and task.exc_callback:
-                    task.exc_callback(task, result)
-                if task.callback and not (task.exception
-                                          and task.exc_callback):
-                    task.callback(result)
-                self.result_list.append(result)
-                del self.all_Tasks[task.requestID]
+            task, result = self.result_queue.get(block=block)
+            if task.exception and task.exc_callback:
+                task.exc_callback(task, result)
+            if task.callback and not (task.exception and task.exc_callback):
+                task.callback(result)
+            self.result_list.append(result)
+            del self.all_Tasks[task.requestID]
 
     def wait(self):
         """等待所有请求处理完毕"""

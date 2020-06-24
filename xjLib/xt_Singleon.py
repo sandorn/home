@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-23 17:41:52
-#FilePath     : /xjLib/xt_Single.py
-#LastEditTime : 2020-06-23 17:42:47
+#FilePath     : /xjLib/xt_Singleon.py
+#LastEditTime : 2020-06-24 11:14:44
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -98,3 +98,22 @@ class singleton_wrap_class(object):
                 if self._instance is None:
                     self._instance = self._cls(*args, **kwargs)
         return self._instance
+
+
+def singleton_wrap_return_class(_cls):
+    '''单例类装饰器，多次init，返回类，类属性及方法通用'''
+    class class_wrapper(_cls):
+
+        _instance = dict()
+        _lock = Lock()
+
+        def __new__(cls, *args, **kwargs):
+            if cls not in cls._instance.keys():
+                with cls._lock:
+                    if cls not in cls._instance.keys():
+                        cls._instance[cls] = super().__new__(cls)
+                        # cls._instance[cls]._intialed = False
+            return cls._instance[cls]
+
+    class_wrapper.__name__ = _cls.__name__  # 保留原类的名字
+    return class_wrapper

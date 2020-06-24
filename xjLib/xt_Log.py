@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-18 15:27:42
+#LastEditTime : 2020-06-24 17:09:55
 # author:      he.zhiming
 '''
 
@@ -101,6 +101,4 @@ class log(object):
         [commad(item) for item in list(args)]
 
 
-if __name__ == "__main__":
-    log = log()
-    log.print(999)
+mylog = log()

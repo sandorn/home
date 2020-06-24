@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-04-01 10:29:33
 #FilePath     : /xjLib/xt_Ls_Bqg.py
-#LastEditTime : 2020-06-23 12:19:00
+#LastEditTime : 2020-06-24 17:58:19
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -83,7 +83,7 @@ def arrangeContent(string):
 
 def get_download_url(target):
     urls = []  # 存放章节链接
-    response = ahttpGet(target).element
+    response = get(target).element
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
     全部章节节点 = response.xpath(
         '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
@@ -96,7 +96,7 @@ def get_download_url(target):
 
 def get_title_url(target):
     _list = []
-    _res = ahttpGet(target)
+    _res = get(target)
     element = _res.element
 
     bookname = element.xpath('//meta[@property="og:title"]//@content')[0]
@@ -113,7 +113,7 @@ def get_title_url(target):
 
 def get_biqugeinfo_url(target):
     urls = []  # 存放章节链接
-    response = ahttpGet(target).element
+    response = get(target).element
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
     全部章节节点 = response.xpath('//dl/dd/a/@href')
 
