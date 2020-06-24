@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-24 17:32:17
+#LastEditTime : 2020-06-24 18:54:37
 根据网络资料，写的threadpool
 '''
 
@@ -113,8 +113,9 @@ if __name__ == "__main__":
     # #38_38836  #2_2714  #2_2760
 
     for index in range(3):
-        st(bookname, urls)
-        print(1111, index)
+        sq(bookname, urls)
+        print('******************\tfinished:', index)
+    # st(bookname, urls)
     # sq(bookname, urls)
     # stm(bookname, urls)
     # ct(bookname, urls)

@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-04-01 10:29:33
 #FilePath     : /xjLib/xt_Ls_Bqg.py
-#LastEditTime : 2020-06-24 17:58:19
+#LastEditTime : 2020-06-24 19:14:52
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -16,6 +16,7 @@
 from xt_Ahttp import ahttpGet
 from xt_Requests import get
 from xt_String import Ex_Re_Clean, Ex_Str_Replace, Ex_Re_Repl
+from xt_Response import ReqResult
 
 
 def clean_Content(string, repl_list=None):
@@ -83,7 +84,10 @@ def arrangeContent(string):
 
 def get_download_url(target):
     urls = []  # 存放章节链接
-    response = get(target).element
+    res = get(target)
+    assert isinstance(res, ReqResult)
+    response = res.element
+
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
     全部章节节点 = response.xpath(
         '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
@@ -123,7 +127,12 @@ def get_biqugeinfo_url(target):
 
 
 def get_contents(index, target):
-    response = get(target).element
+    res = get(target)
+    assert isinstance(res, ReqResult)
+    t = res.elapsed.total_seconds()  # @运行时间
+    print(f'SessionClient get<{target}> use total_seconds:{t}')
+
+    response = res.element
 
     _title = "".join(response.xpath('//h1/text()'))
     title = _title.strip('\r\n').replace(u'\u3000',

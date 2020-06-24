@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-06-24 17:28:29
+#LastEditTime : 2020-06-24 19:13:57
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
@@ -20,7 +20,7 @@ from retrying import retry
 from xt_Head import myhead
 from xt_Response import ReqResult
 
-TIMESOUT = (3.3, 10)
+TIMESOUT = (3.3, 9.0)
 RETRY_TIME = 6  # 最大重试次数
 
 Retry = retry(wait_random_min=20,
@@ -137,6 +137,8 @@ class SessionClient:
         try:
             response = self._request(self.method, self.url, *self.args,
                                      **self.kwargs)
+            t = response.elapsed.total_seconds()  # @运行时间
+            print(f'SessionClient get<{self.url}> use total_seconds:{t}')
         except Exception as err:
             print(repr(err))
         else:
@@ -145,7 +147,7 @@ class SessionClient:
             return ReqResult(response, response.content, id(response))
 
         # #返回错误结果
-        return ReqResult(self.result, self.result.content, id(self.result))
+        return self.result
 
     def __create_params(self, *args, **kwargs):
         kwargs.setdefault('headers', myhead)

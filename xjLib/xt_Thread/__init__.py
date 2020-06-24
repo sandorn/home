@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-24 18:10:28
+#LastEditTime : 2020-06-24 18:28:39
 '''
 
 __doc__ = [
@@ -147,8 +147,8 @@ class CustomThread(Thread):
     def __init__(self, func, *args, **kwargs):
         super().__init__(target=func, args=args, kwargs=kwargs)
         self.daemon = True
-        self.all_Thread.append(self)
         self.start()
+        self.all_Thread.append(self)
 
     '''下标obj[key]'''
 
@@ -194,8 +194,7 @@ class CustomThread(Thread):
                 type(nowlist[index]).__name__ for index in range(len(nowlist))
             ]
             if cls.__name__ in list_tmp:
-                # print(time(), 'has ', cls.__name__, len(nowlist),
-                #       len(list_tmp))
+                # print(time(), 'has ', cls.__name__, len(nowlist), len(list_tmp))
                 sleep(0.1)
                 continue
             else:
@@ -216,8 +215,8 @@ class CustomThread_Queue(Thread):
     def __init__(self, queue_list, **kwargs):
         super().__init__(**kwargs)
         self.task_queue.put([*queue_list])
-        self.all_Thread.append(self)
         self.start()
+        self.all_Thread.append(self)
 
     '''下标obj[key]'''
 
@@ -295,8 +294,8 @@ class SingletonThread(Thread):
 
     def __init__(self, func, *args, **kwargs):
         super().__init__(target=func, args=args, **kwargs)
-        self.all_Thread.append(self)
         self.start()
+        self.all_Thread.append(self)
 
     '''下标obj[key]'''
 
@@ -341,8 +340,7 @@ class SingletonThread(Thread):
                 type(nowlist[index]).__name__ for index in range(len(nowlist))
             ]
             if cls.__name__ in list_tmp:
-                # print(time(), 'has ', cls.__name__, len(nowlist),
-                #       len(list_tmp))
+                # print(time(), 'has ', cls.__name__, len(nowlist), len(list_tmp))
                 sleep(0.5)
                 continue
             else:

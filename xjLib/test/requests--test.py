@@ -8,11 +8,11 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-12 16:18:13
 #FilePath     : /xjLib/test/requests--test.py
-#LastEditTime : 2020-06-24 15:14:43
+#LastEditTime : 2020-06-24 19:09:24
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
-
+from threading import Thread
 from xt_Requests import SessionClient, get, parse_get
 from xt_Head import myhead
 from xt_String import class_add_dict
@@ -33,13 +33,17 @@ args_dict['text'] = '规范化的请求字符串,URL编码后的签名'  # 添�
 
 # #s.session.auth = ('user', 'pass')
 # res = s.get(
-res = parse_get(
-    url,
-    params=args_dict,
-    json=args_dict,
-    #  headers={'Content-Type': 'application/json'}
-)
+res = parse_get(url, params=args_dict, json=args_dict, timeout=1.01)
+
 print(res)  # print(r['text'])  r.text
-# print(res.text)
-# with open('1.wav', mode='wb') as f:
-#     f.write(res.content)
+print(res.elapsed.total_seconds())
+
+# t = Thread(None,
+#            parse_get,
+#            args=(url, ),
+#            kwargs={
+#                'params': args_dict,
+#                'json': args_dict
+#            })
+# t.start()
+# t.join()
