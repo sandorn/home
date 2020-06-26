@@ -8,14 +8,14 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-04-01 10:29:33
 #FilePath     : /xjLib/xt_Ls_Bqg.py
-#LastEditTime : 2020-06-24 19:14:52
+#LastEditTime : 2020-06-26 01:44:04
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
 
 from xt_Ahttp import ahttpGet
 from xt_Requests import get
-from xt_String import Ex_Re_Clean, Ex_Str_Replace, Ex_Re_Repl
+from xt_String import Ex_Re_Clean, Ex_Re_Repl
 from xt_Response import ReqResult
 
 
@@ -69,7 +69,7 @@ def arrangeContent(string):
         (r'\r\r', '\n'),
         (r'\r', '\n'),
         (r'    ', '\n    '),
-        (r'\n\n\n', '\n'),
+        (r'\n\n', '\n'),
         (r'\n\n', '\n'),
         (r'\n\n', '\n'),
     ]
@@ -78,7 +78,7 @@ def arrangeContent(string):
     string = string.strip("\r\n　  ").replace(u'\u3000',
                                              u' ').replace(u'\xa0', u' ')
     string = Ex_Re_Clean(string, clean_list)
-    string = Ex_Str_Replace(string, repl_dict)
+    string = Ex_Re_Repl(string, repl_dict)
     return string
 
 
@@ -129,8 +129,8 @@ def get_biqugeinfo_url(target):
 def get_contents(index, target):
     res = get(target)
     assert isinstance(res, ReqResult)
-    t = res.elapsed.total_seconds()  # @运行时间
-    print(f'SessionClient get<{target}> use total_seconds:{t}')
+    # t = res.raw.elapsed.total_seconds()  # @运行时间
+    # print(f'SessionClient get<{target}> use total_seconds:{t}')
 
     response = res.element
 
@@ -142,7 +142,7 @@ def get_contents(index, target):
     return [index, title, content]
 
 
-def _get_contents_ahttp(index, target):
+def get_contents_ahttp(index, target):
     response = ahttpGet(target).element
 
     _title = "".join(response.xpath('//h1/text()'))
@@ -155,7 +155,12 @@ def _get_contents_ahttp(index, target):
 
 def map_get_contents(*args):
     index, target = args[0]  # 元组拆包
-    return _get_contents_ahttp(index, target)
+    return get_contents(index, target)
+
+
+def map_get_contents_ahttp(*args):
+    index, target = args[0]  # 元组拆包
+    return get_contents_ahttp(index, target)
 
 
 if __name__ == "__main__":

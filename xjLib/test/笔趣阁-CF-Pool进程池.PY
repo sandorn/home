@@ -7,14 +7,14 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-18 05:28:03
 @LastEditors  : Please set LastEditors
-@LastEditTime : 2020-06-22 20:14:17
+@LastEditTime : 2020-06-25 20:10:33
 
 python线程池ThreadPoolExecutor与进程池ProcessPoolExecutor - Harvard_Fly - 博客园
 https://www.cnblogs.com/FG123/p/9704233.html
 '''
 
-from concurrent.futures import ProcessPoolExecutor as Pool  # 进程池模块
-# from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
+# from concurrent.futures import ProcessPoolExecutor as Pool  # 进程池模块
+from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
 from concurrent.futures import as_completed, wait
 import os
 
@@ -108,18 +108,18 @@ def main_map(max, bookname, urls):
     for resp in future_tasks:  # 此时将阻塞 , 直到线程完成或异常
         texts.append(resp)
 
-    textssord = sorted(texts, key=lambda x: x[0])
+    texts = sorted(texts, key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
-    savefile(files + '＆' + bookname + 'main_map.txt', textssord, br='\n')
+    savefile(files + '＆' + bookname + 'main_map.txt', texts, br='\n')
 
 
 if __name__ == '__main__':
     bookname, urls = get_download_url('https://www.biqukan.com/38_38836/')
 
-    # main_map(32, bookname, urls)
-    # main_wait(32, bookname, urls)
+    # main_map(200, bookname, urls)
+    main_wait(200, bookname, urls)
     # main_completed(32, bookname, urls)
-    main_callback(32, bookname, urls)
+    # main_callback(200, bookname, urls)
 
     # 38_38836     34.84 seconds
     '''

@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-22 15:34:30
 #FilePath     : /xjLib/xt_Thread/wraps.py
-#LastEditTime : 2020-06-23 17:49:43
+#LastEditTime : 2020-06-26 01:38:09
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -77,16 +77,15 @@ def thread_wrap(func):
 class thread_wraps_class:
     '''
     函数的线程装饰器，返回thread线程实例，getResult获取结果,
-    thread_wraps_class.getAllResult 获取结果集合
+    类或实例.getAllResult 获取结果集合
     # @加括号()，可选参数daemon
     '''
     Result_dict = {}
     thread_dict = {}
 
     class MyThread(Thread):
-        def __init__(self, func, name='', *args, **kwargs):
-            super().__init__(target=func, args=args, kwargs=kwargs)
-            self.name = name
+        def __init__(self, func, name, *args, **kwargs):
+            super().__init__(target=func, args=args, kwargs=kwargs, name=name)
 
         def run(self):
             print(f"{self} start with thread_wraps_class...")
@@ -108,6 +107,7 @@ class thread_wraps_class:
         @wraps(func)
         def decorate(*args, **kwargs):
             _mythr = self.MyThread(func, func.__name__, *args, **kwargs)
+            _mythr.getAllResult = self.getAllResult
             _mythr.start()
             self.thread_dict[_mythr.ident] = _mythr
             return _mythr
@@ -116,22 +116,24 @@ class thread_wraps_class:
 
     @classmethod
     def getAllResult(cls):
+        '''获取全部结果，并清空'''
         for thr in cls.thread_dict.values():
             thr.join()
-        return cls.Result_dict
+        res, cls.Result_dict = cls.Result_dict, {}
+        return res
 
 
 class thread_wrap_class:
     '''
     函数的线程装饰器，返回thread线程实例，getResult获取结果,
-    thread_wrap_class.getAllResult 获取结果集合
+    类或实例.getAllResult 获取结果集合
     # @不加括号()，无参数
     '''
     Result_dict = {}
     thread_dict = {}
 
     class MyThread(Thread):
-        def __init__(self, func, name='', *args, **kwargs):
+        def __init__(self, func, name, *args, **kwargs):
             super().__init__(target=func, args=args, kwargs=kwargs, name=name)
 
         def run(self):
@@ -152,16 +154,19 @@ class thread_wrap_class:
 
     def __call__(self, *args, **kwargs):
         _mythr = self.MyThread(self.func, self.func.__name__, *args, **kwargs)
+        _mythr.getAllResult = self.getAllResult
         _mythr.start()
         self.thread_dict[_mythr.ident] = _mythr
         return _mythr
 
     @classmethod
     def getAllResult(cls):
+        '''获取全部结果，并清空'''
         for thr in cls.thread_dict.values():
             thr.join()
-        return cls.Result_dict
+        res, cls.Result_dict = cls.Result_dict, {}
+        return res
 
 
-_thread_lock = Lock()
-print = thread_safe(_thread_lock)(print)
+# _thread_lock = Lock()
+# print = thread_safe(_thread_lock)(print)

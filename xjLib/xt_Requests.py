@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-06-24 19:13:57
+#LastEditTime : 2020-06-26 00:20:22
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
@@ -20,7 +20,7 @@ from retrying import retry
 from xt_Head import myhead
 from xt_Response import ReqResult
 
-TIMESOUT = (3.3, 9.0)
+TIMESOUT = 9  # (3.3, 9.0)
 RETRY_TIME = 6  # 最大重试次数
 
 Retry = retry(wait_random_min=20,
@@ -40,6 +40,8 @@ def parse_get(url, *args, **kwargs):
     while attempts < RETRY_TIME:
         try:
             response = requests.get(url, *args, **kwargs)
+            t = response.elapsed.total_seconds()  # @运行时间
+            # print(f'parse_post <{url}> use total_seconds:{t}')
             response.raise_for_status()
             # $ assert response.status_code in [200, 201, 302]
         except Exception as err:
@@ -61,6 +63,8 @@ def parse_post(url, *args, **kwargs):
     while attempts < RETRY_TIME:
         try:
             response = requests.post(url, *args, **kwargs)
+            t = response.elapsed.total_seconds()  # @运行时间
+            # print(f'parse_post <{url}> use total_seconds:{t}')
             response.raise_for_status()
             # $ assert response.status_code in [200, 201, 302]
         except Exception as err:
@@ -86,6 +90,8 @@ def get(url, *args, **kwargs):
 
     try:
         response = _run()
+        t = response.elapsed.total_seconds()  # @运行时间
+        # print(f'get <{url}> use total_seconds:{t}')
     except Exception as err:
         print(repr(err))
     else:
@@ -110,6 +116,8 @@ def post(url, *args, **kwargs):
 
     try:
         response = _run()
+        t = response.elapsed.total_seconds()  # @运行时间
+        # print(f'post <{url}> use total_seconds:{t}')
     except Exception as err:
         print(repr(err))
     else:
@@ -138,7 +146,7 @@ class SessionClient:
             response = self._request(self.method, self.url, *self.args,
                                      **self.kwargs)
             t = response.elapsed.total_seconds()  # @运行时间
-            print(f'SessionClient get<{self.url}> use total_seconds:{t}')
+            # print(f'SessionClient get<{self.url}> use total_seconds:{t}')
         except Exception as err:
             print(repr(err))
         else:

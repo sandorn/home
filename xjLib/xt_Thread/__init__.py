@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-24 18:28:39
+#LastEditTime : 2020-06-26 01:38:24
 '''
 
 __doc__ = [
@@ -40,9 +40,11 @@ from xt_Singleon import singleton_wrap_return_class
 # #引入装饰器
 from .wraps import thread_wrap_class, thread_wraps_class
 from .wraps import thread_wraps, thread_wrap
-from .wraps import thread_safe, print
+from .wraps import thread_safe
 # #引入自定义thread pool
-from .Pool import WorkManager, thread_pool_maneger
+from .manage import WorkManager
+from .futures_thread import ThreadPoolMap, ThreadPoolSub
+from .futures_process import ProcessPoolMap, ProcessPoolSub
 
 
 def stop_thread(thread):

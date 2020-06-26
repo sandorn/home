@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-22 19:38:44
+#LastEditTime : 2020-06-26 00:27:00
 '''
 import asyncio
 import ctypes
@@ -20,10 +20,9 @@ import aiohttp
 
 from xt_Head import myhead
 from xt_Response import ReqResult
+from xt_Requests import TIMESOUT
 
 __all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
-
-TIMEOUT = 20
 
 
 class SessionMeta:
@@ -74,6 +73,9 @@ class AyReqTaskMeta:
     def get_params(self, *args, **kw):
         self.url = args[0]
         self.args = args[1:]
+        kw.setdefault('timeout', TIMESOUT)  # @超时
+        kw.setdefault('verify_ssl', False)  # @超时
+
         if "callback" in kw:
             self.callback = kw['callback']
             kw.pop("callback")
@@ -125,8 +127,6 @@ async def AyReqTask_run(self):
             async with session.request(self.method,
                                        self.url,
                                        *self.args,
-                                       timeout=TIMEOUT,
-                                       verify_ssl=False,
                                        headers=self.headers,
                                        **self.kw) as sessReq:
                 self.content = await sessReq.read()
@@ -214,8 +214,6 @@ async def fetch_async(task, result_list, session):
         async with session.request(task.method,
                                    task.url,
                                    *task.args,
-                                   timeout=TIMEOUT,
-                                   verify_ssl=False,
                                    headers=headers,
                                    **task.kw) as sessReq:
             assert sessReq.status in [200, 201, 302]

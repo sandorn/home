@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 11:48:40
 #FilePath     : /xjLib/xt_File.py
-#LastEditTime : 2020-06-18 15:23:40
+#LastEditTime : 2020-06-25 17:26:43
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -19,16 +19,16 @@ import os
 class filesize:
     def __init__(self, filePath):
         self.Bytes = os.path.getsize(filePath)
-        self.KB = round(self.Bytes / float(1024), 2)
-        self.MB = round(self.KB / float(1024), 2)
+        self.KB = self.Bytes / 1024
+        self.MB = self.KB / 1024
 
     def __str__(self):
         if self.MB > 10:
-            res = str(format(self.MB, ',')) + ' MB'
+            res = f'{self.MB:.2f} MB'
         elif self.KB > 10:
-            res = str(format(self.KB, ',')) + ' KB'
+            res = f'{self.KB:.2f} KB'
         else:
-            res = str(format(self.Bytes, ',')) + ' Bytes'
+            res = f'{self.Bytes} Bytes'
         return res
 
 
@@ -80,7 +80,7 @@ def savefile(_filename, _list_texts, br=''):
         each(_list_texts)
 
     size = f"size: {filesize(_filename)}"
-    print(f'[{_filename}]保存完成\t{size}。')
+    print(f'[{_filename}]保存完成,\tfile {size}。')
 
 
 def filedialog(_dir='c:/'):

@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 10:04:55
 #FilePath     : /xjLib/xt_Time.py
-#LastEditTime : 2020-06-22 19:57:35
+#LastEditTime : 2020-06-25 13:45:24
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -26,7 +26,7 @@ def fn_timer(function):
         result = function(*args, **kwargs)
         t = time.time() - t0
         print(
-            f"{stack[0][0]} {stack[0][1]} <{function.__name__}> Total running time:{t: .2f} seconds"
+            f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> total run:{t: .2f} seconds"
         )
         return result
 

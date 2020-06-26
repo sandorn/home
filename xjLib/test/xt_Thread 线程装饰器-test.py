@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-19 13:52:24
 #FilePath     : /xjLib/test/xt_Thread 线程装饰器-test.py
-#LastEditTime : 2020-06-23 17:54:26
+#LastEditTime : 2020-06-25 18:29:03
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -54,15 +54,17 @@ def another_event(s):
 
 event(4)
 a = event(5)
+print('a.name:', a.name, a._name, a)
 print('a:', a.getResult())
 click(event, 3)
 click(event, 6)
-print('event all:', thread_wrap_class.getAllResult())
+print('实例获取 event all result:', a.getAllResult())
 
-# b = another_event(7)
-# c = another_event(5)
-# print('b:', b.getResult())
-# click(another_event, 6)
-# click(another_event, 4)
-# print('c:', c.getResult())
-# print('another_event all:', thread_wraps_class.getAllResult())
+b = another_event(7)
+c = another_event(5)
+print('b.name:', b.name, b._name, b)
+print('b:', b.getResult())
+click(another_event, 6)
+click(another_event, 4)
+print('c:', c.getResult())
+print('实例获取 another_event all result:', b.getAllResult())
