@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 11:48:40
 #FilePath     : /xjLib/xt_File.py
-#LastEditTime : 2020-06-25 17:26:43
+#LastEditTime : 2020-06-30 19:02:35
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -65,7 +65,8 @@ def savefile(_filename, _list_texts, br=''):
         return
 
     with open(_filename, 'w', encoding='utf-8') as file:
-        file.write(_filename + '\n')
+        # file.seek(0)  # 定位文件首
+        # file.truncate()  # 清除所有内容
 
         def each(data):
             for index, value in enumerate(data):
@@ -77,6 +78,7 @@ def savefile(_filename, _list_texts, br=''):
             # # 最后一个元素已处理完毕，添加换行
             file.write('\n')
 
+        file.write(_filename + '\n')
         each(_list_texts)
 
     size = f"size: {filesize(_filename)}"

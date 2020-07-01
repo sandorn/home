@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-21 14:40:30
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-05-22 18:14:52
+#LastEditTime : 2020-06-30 15:50:19
 '''
 import sys
 import time
@@ -17,10 +17,10 @@ import time
 from PyQt5.QtCore import QEventLoop, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QTableWidgetItem, qApp)
 
-from xjLib.xt_ahttp import ahttpGetAll
-from xjLib.mystr import savefile
+from xt_Ahttp import ahttpGetAll
+from xt_File import savefile
 
-from xjLib.req import parse_get
+from xt_Requests import parse_get
 from baidu_key_UI import Ui_MainWindow
 from urllib.parse import unquote
 
@@ -41,7 +41,7 @@ class MyWindow(Ui_MainWindow):
 
     def step_valueChanged(self):
         self.pbar.setValue(int(self.step))
-        self.label.setText("进度：{}/{}".format(self.step, _max))
+        self.label.setText("进度：{}/{}".format(self.step, self.pbar.maximum()))
         pass
 
     def update(self, item):
@@ -111,8 +111,7 @@ class MyWindow(Ui_MainWindow):
 
         self.urls = [
             f"https://www.baidu.com/s?wd={key}&pn={page * 10}"
-            for key in self.keys
-            for page in range(pages)
+            for key in self.keys for page in range(pages)
         ]
 
         self.status_bar.showMessage('抓取百度检索信息......')
@@ -139,7 +138,6 @@ class MyWindow(Ui_MainWindow):
         self.label.setText("进度：{}/{}".format(self.step, _max))
         for response in resp_list:
             url = str(response.url)
-            #@print(1111, url)
             key = unquote(
                 url.split("?")[1].split("&")[0].split('=')[1]).replace(
                     '+', ' ')
@@ -159,7 +157,8 @@ class MyWindow(Ui_MainWindow):
                 # #获取真实网址
                 real_url = parse_get(
                     href, allow_redirects=False).headers['Location']  # 网页原始地址
-                if real_url.startswith('http') and '.baidu.com' not in real_url:
+                if real_url.startswith(
+                        'http') and '.baidu.com' not in real_url:
                     _item = [key, pages, index, title, real_url]
                     self._signal.emit(_item)  # 传递更新结果数据表信号
                     self.texts.append(_item)

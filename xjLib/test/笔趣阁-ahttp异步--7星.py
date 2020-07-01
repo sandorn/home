@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-26 00:22:52
+#LastEditTime : 2020-07-01 10:23:38
 变更requests为ahttp
 '''
 import os
@@ -85,17 +85,19 @@ def multpool(urls):
 
 @fn_timer
 def multpoolback(urls):
-    mypool = ProcessPoolMap(mainbycall, urls)
+    # !可能结果串进程
+    mypool = ProcessPoolMap(mainbycall, urls, MaxSem=7)
     mypool.wait_completed()
 
 
 if __name__ == '__main__':
 
-    # main('https://www.biqukan.com/2_2714/')
+    main('https://www.biqukan.com/2_2714/')
     # mainbycall('https://www.biqukan.com/38_38836/')
 
     urls = [
         'https://www.biqukan.com/38_38836/',
+        'https://www.biqukan.com/2_2760/',
         'https://www.biqukan.com/73_73450/',
         'https://www.biqukan.com/76_76015/',
         'https://www.biqukan.com/75_75766/',
@@ -103,8 +105,11 @@ if __name__ == '__main__':
         'https://www.biqukan.com/46_46394/',
         'https://www.biqukan.com/61_61396/',
     ]
-    multpool(urls)
+    # multpool(urls)
     # multpoolback(urls)
 
-    # '38_38836'  #2676KB，#@  6秒
-    # "2_2714"    #武炼巅峰，#@  38秒
+    # '38_38836'  #@  6秒
+    # '2_2760'  #@  9秒
+    # "2_2714"    #@  32秒
+    # multpool(urls)  #@  47.33秒
+    # multpoolback(urls)  #@  35秒

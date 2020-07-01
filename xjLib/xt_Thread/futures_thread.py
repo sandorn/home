@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-25 13:51:58
 #FilePath     : /xjLib/xt_Thread/futures_thread.py
-#LastEditTime : 2020-06-26 00:06:27
+#LastEditTime : 2020-06-28 14:24:39
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -38,18 +38,13 @@ class ThreadPoolMap(ThreadPoolExecutor):
 class ThreadPoolSub(ThreadPoolExecutor):
     def __init__(self, func, args_iter, callback=None, MaxSem=66):
         super().__init__(max_workers=MaxSem)
-        if callback:
-            [
-                self.submit(func, *item).add_done_callback(callback)
-                for item in args_iter
-            ]
-            self.shutdown()
-            self.getAllResult = None
-            self.wait_completed = None
-        else:
-            self.future_tasks = [
-                self.submit(func, *item) for item in args_iter
-            ]
+        self.future_tasks = []
+
+        for item in args_iter:
+            task = self.submit(func, *item)
+            self.future_tasks.append(task)
+            if callback:
+                task.add_done_callback(callback)
 
     def wait_completed(self):
         '''as_completed等待线程池结束，返回全部结果，无序'''

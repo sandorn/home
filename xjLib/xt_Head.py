@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:05:52
-#LastEditTime : 2020-06-16 12:49:20
+#LastEditTime : 2020-06-29 10:06:33
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -15,7 +15,7 @@
 
 from fake_useragent import UserAgent
 
-myhead = {
+MYHEAD = {
     'User-Agent': UserAgent().random,
     'Accept': '*/*,application/*,application/json,text/*,text/html',
     'Accept-Encoding': 'gzip,compress,deflate,br',

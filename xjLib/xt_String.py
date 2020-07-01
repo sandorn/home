@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-02-14 13:57:28
 #FilePath     : /xjLib/xt_String.py
-#LastEditTime : 2020-06-21 15:18:13
+#LastEditTime : 2020-06-30 17:37:01
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 #  string  |  dict  |  list  |  tupe  |  json
@@ -146,33 +146,33 @@ def Ex_Str_Replace(string, trims):
                   string)
 
 
-def Ex_Re_Clean(oldtext, parlist):
+def Ex_Re_Clean(oldtext, par_list):
     '''
     #!正则清除，自写正则表达式
     用法 newtext=Ex_Re_Clean(oldtext,['aaa','bbb'])
     '''
-    pattern = re.compile('|'.join(parlist))
+    pattern = re.compile('|'.join(par_list))
     return pattern.sub('', oldtext)
 
 
-def Ex_Re_Replace(string, REPLACEMENTS):
+def Ex_Re_Replace(string, trims_dict):
     '''
     #!正则替换，自写正则表达式
     用法 newtext=Ex_Re_Replace(oldtext,{'a':aaa','b':bbb'})
     '''
-    pattern = re.compile('|'.join(REPLACEMENTS.keys()))
-    return pattern.sub(lambda m: REPLACEMENTS[m.group(0)], string)
+    pattern = re.compile('|'.join(trims_dict.keys()))
+    return pattern.sub(lambda m: trims_dict[m.group(0)], string)
 
 
-def Ex_Re_Sub(string, REPLACEMENTS):
+def Ex_Re_Sub(string, trims_dict):
     '''
     # @正则替换，不支持正则表达式
     用法 newtext=Ex_Re_Sub(string,{'a':aaa','b':bbb'})
     '''
-    pattern = re.compile('|'.join(map(re.escape, REPLACEMENTS.keys())))
+    pattern = re.compile('|'.join(map(re.escape, trims_dict.keys())))
 
     def one_xlat(match):
-        return REPLACEMENTS[match.group(0)]
+        return trims_dict[match.group(0)]
 
     return pattern.sub(one_xlat, string)
 

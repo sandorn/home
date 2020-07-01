@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
 #FilePath     : /xjLib/xt_Response.py
-#LastEditTime : 2020-06-15 09:31:14
+#LastEditTime : 2020-06-30 18:25:04
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -16,7 +16,6 @@
 import json
 from cchardet import detect
 from lxml import etree
-from xt_Class import readonly
 
 
 class ReqResult:
@@ -40,6 +39,20 @@ class ReqResult:
             self.content = self.content.decode(code_type['encoding'],
                                                'ignore').encode('utf-8')
         return self.content.decode('utf-8', 'ignore')
+
+    @property
+    def elapsed(self):
+        if hasattr(self.raw, 'elapsed'):
+            return self.raw.elapsed
+        else:
+            return None
+
+    @property
+    def seconds(self):
+        if hasattr(self.raw, 'elapsed'):
+            return self.raw.elapsed.total_seconds()
+        else:
+            return 0
 
     @property
     def url(self):
@@ -90,8 +103,7 @@ class ReqResult:
         return element
 
     def __repr__(self):
-        return "< ReqResult status:[{}]， ID:[{}]， url:[{}] >".format(
-            self.status, self.index, self.url)
+        return f"<ReqResult status:[{self.status}]， ID:[{self.index}]， url:[{self.url}] >"
 
 
 '''

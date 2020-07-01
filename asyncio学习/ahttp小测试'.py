@@ -8,13 +8,12 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 08:21:06
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-04 13:53:15
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-06-28 18:47:09
 '''
 
 from cchardet import detect
-from xjLib.ahttp import ahttpGet
-
+from xt_Ahttp import ahttpGet
 
 url = 'https://www.biqukan.com/2_2714/'
 '''
@@ -25,8 +24,7 @@ print(res.html)
 response = HTML(html=res.text)
 print(response)
 '''
-a = ahttpGet(url)
-html = a.html
-print(a.encoding)
-_bookname = html.xpath('//h2', first=True).text
+res = ahttpGet(url)
+element = res.element
+_bookname = element.xpath('//h2', first=True)[0].text
 print(_bookname)

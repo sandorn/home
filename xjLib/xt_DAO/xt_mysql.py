@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-03 23:26:06
 #FilePath     : /xjLib/xt_DAO/xt_mysql.py
-#LastEditTime : 2020-06-17 10:17:48
+#LastEditTime : 2020-06-30 17:57:37
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -103,11 +103,9 @@ class engine(object):
     def insert(self, dt, tb_name):
         # 以字典形式提交插入
         ls = [(k, dt[k]) for k in dt if dt[k] is not None]
-        sql = 'insert into %s (' % tb_name + ','.join(
-            [i[0]
-             for i in ls]) + ') values (' + ','.join(['%r' % i[1]
-                                                      for i in ls]) + ');'
-        # print(sql)  # .replace('%', '%%')
+        sql = f'''insert into `{tb_name}` ({','.join([i[0]
+             for i in ls]) }) values ({','.join(['%r' % i[1]for i in ls])});'''
+        print(1111, sql)  # .replace('%', '%%')
         self.worKon(sql)
 
     def update(self, dt_update, dt_condition, tb_name):

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-24 17:09:55
+#LastEditTime : 2020-06-29 16:37:04
 # author:      he.zhiming
 '''
 
@@ -92,6 +92,7 @@ class log(object):
         self.debug = self.logger.debug
         self.info = self.logger.info
         self.warn = self.logger.warning
+        self.warning = self.logger.warning
         self.error = self.logger.error
         self.critical = self.logger.critical
 

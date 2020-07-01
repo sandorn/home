@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-26 12:32:27
+#LastEditTime : 2020-06-30 09:34:28
 根据网络资料，写的threadpool
 '''
 
@@ -18,8 +18,10 @@ import os
 from xt_Thread import CustomThread, CustomThread_Queue, WorkManager, SingletonThread, SigThread, SigThreadQ, ThreadPoolMap, ThreadPoolSub, ProcessPoolMap, ProcessPoolSub
 from xt_File import savefile
 from xt_Time import fn_timer
-from xt_Ls_Bqg import get_download_url, get_contents, map_get_contents, map_get_contents_ahttp, get_contents_ahttp
-from xt_Thread import thread_wrap_class
+from xt_Ls_Bqg import get_download_url, get_contents, map_get_contents, map_get_contents_ahttp, get_contents_ahttp, arrangeContent
+# from xt_Thread import thread_wrap_class
+from xt_Asyncio import AioCrawl
+from xt_Ahttp import ahttpGetAll
 
 
 @fn_timer
@@ -28,8 +30,6 @@ def st(bookname, urls):
         SingletonThread(get_contents, index, url)
         for index, url in enumerate(urls)
     ]
-    # print(id(thr[0]), id(thr[1]), id(thr[2]))
-    # print('9999:', thr[0].__class__.__name__, SingletonThread.__name__)
     texts = SingletonThread.getAllResult(
     )  # #getAllResult()  # #wait_completed()
     texts.sort(key=lambda x: x[0])
@@ -118,13 +118,16 @@ def pm(bookname, urls):
 
 @fn_timer
 def ps(bookname, urls):
+    def _c_func(task):
+        print(1111, task.result())
+
     mypool = ThreadPoolSub(
         get_contents,
         [[index, url] for index, url in enumerate(urls)],
-        #  callback=callback_func
+        #  callback=_c_func
     )
     texts = mypool.wait_completed()
-    texts.sort(key=lambda x: x[0])  # getAllResult为有序，不需要
+    texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + 'ThreadPoolSub.txt', texts, br='\n')
 
@@ -141,19 +144,72 @@ def cpm(bookname, urls):
 
 @fn_timer
 def cps(bookname, urls):
-
-    mypool = ProcessPoolSub(get_contents,
+    mypool = ProcessPoolSub(get_contents_ahttp,
                             [[index, url] for index, url in enumerate(urls)])
     texts = mypool.wait_completed()
-    texts.sort(key=lambda x: x[0])  # getAllResult为有序，不需要
+    texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + 'ProcessPoolSub.txt', texts, br='\n')
+
+
+def handle_result(resps):
+    # print('handle_result_4444:', resps)
+    texts = []
+    for resp in resps:
+        # print('handle_result_5555:', resp)
+        element = resp.element
+        index = resp.index
+
+        _title = "".join(element.xpath('//h1/text()'))
+        title = _title.strip('\r\n').replace(u'\u3000',
+                                             u' ').replace(u'\xa0', u' ')
+        _showtext = element.xpath('//*[@id="content"]/text()')
+        content = arrangeContent(_showtext)
+        texts.append([index, title, content])
+    return texts
+
+
+@fn_timer
+def aio(bookname, urls):
+    aio = AioCrawl()
+    aio.add_fetch_tasks([[url, index + 1] for index, url in enumerate(urls)])
+    resps = aio.getAllResult()
+    texts = handle_result(resps)
+    texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'AioCrawl.txt', texts, br='\n')
+    # #38_38836 :4seconds  #2_2714:101seconds  #2_2760:7seconds #76_76519:1seconds
+
+
+def aia(bookname, urls):
+    texts = []
+
+    def _h_res(resp):
+        # print('handle_result_5555:', resp)
+        element = resp.element
+        index = resp.index
+
+        _title = "".join(element.xpath('//h1/text()'))
+        title = _title.strip('\r\n').replace(u'\u3000',
+                                             u' ').replace(u'\xa0', u' ')
+        _showtext = element.xpath('//*[@id="content"]/text()')
+        content = arrangeContent(_showtext)
+        print('handle_result_6666:', index, title)
+        texts.append([index, title, content])
+
+        return [index, title, content]
+
+    texts = ahttpGetAll(urls, callback=_h_res)
+    print(len(texts), type(texts))
+    # texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'AioCrawlAll.txt', texts, br='\n')
 
 
 if __name__ == "__main__":
 
     bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
-    # #38_38836  #2_2714  #2_2760
+    # #38_38836  #2_2714  #2_2760  #76_76519
 
     # st(bookname, urls)
     # sq(bookname, urls)
@@ -165,8 +221,10 @@ if __name__ == "__main__":
     # ps(bookname, urls)
     # cpm(bookname, urls)
     # cps(bookname, urls)
+    # aio(bookname, urls)
+    aia(bookname, urls)
 
-    # for f in ['st', 'sq', 'stm', 'ct', 'cq', 'wm', 'pm', 'ps', 'cpm', 'cps']:
+    # for f in ['st', 'sq', 'stm', 'ct', 'cq', 'wm', 'pm', 'ps', 'cpm', 'cps', 'aio', 'aia']:
     #     eval(f)(bookname, urls)
     # locals()[func](bookname, urls)
     # globals()[func](bookname, urls)
@@ -182,6 +240,7 @@ if __name__ == "__main__":
     <ps> total run: 11.02 seconds
     <cpm> total run: 34.88 seconds
     <cps> total run: 41.62 seconds
+    <aio> total run: 6.60 seconds
 
     [笔趣阁-庆余年 2_2714 ] size: 47.54 MB。
     <st> total run: 74.09 seconds
@@ -194,5 +253,6 @@ if __name__ == "__main__":
     <ps> total run: 78.91 seconds
     <cpm> total run: 170.07 seconds
     <cps> total run: 185.84 seconds
+    <aio> total run: 82.05 seconds
 
 '''

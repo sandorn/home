@@ -8,8 +8,9 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 19:16:05
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-13 17:27:58
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-06-29 22:57:10
+aiohttp笔记 - happy_codes - 博客园
 https://www.cnblogs.com/haoabcd2010/p/10615364.html
 '''
 import asyncio
@@ -21,13 +22,16 @@ from aiohttp import ClientSession, ClientTimeout, TCPConnector
 
 # 默认请求头
 HEADERS = {
-    'accept': 'text/javascript, text/html, application/xml, text/xml, */*',
-    'accept-encoding': 'gzip, deflate, br',
-    'accept-language': 'zh-CN,zh;q=0.9',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                  '(KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36',
+    'accept':
+    'text/javascript, text/html, application/xml, text/xml, */*',
+    'accept-encoding':
+    'gzip, deflate, br',
+    'accept-language':
+    'zh-CN,zh;q=0.9',
+    'user-agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+    '(KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36',
 }
-
 
 # 默认超时时间
 TIMEOUT = 15
@@ -39,19 +43,25 @@ def start_loop(loop):
 
 
 class AioCrawl:
-
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
         # 启动事件循环
         self.event_loop = asyncio.new_event_loop()
-        self.t = Thread(target=start_loop, args=(self.event_loop,))
+        self.t = Thread(target=start_loop, args=(self.event_loop, ))
         self.t.setDaemon(True)
         self.t.start()
 
         self.concurrent = 0  # 记录并发数
 
-    async def fetch(self, url, method='GET', headers=None, timeout=TIMEOUT, cookies=None, data=None, proxy=None):
+    async def fetch(self,
+                    url,
+                    method='GET',
+                    headers=None,
+                    timeout=TIMEOUT,
+                    cookies=None,
+                    data=None,
+                    proxy=None):
         """采集纤程
         :param url: str
         :param method: 'GET' or 'POST'
@@ -70,14 +80,18 @@ class AioCrawl:
         data = data if data and isinstance(data, dict) else {}
 
         tcp_connector = TCPConnector(ssl=False)  # 禁用证书验证
-        async with ClientSession(headers=headers, timeout=timeout, cookies=cookies, connector=tcp_connector) as session:
+        async with ClientSession(headers=headers,
+                                 timeout=timeout,
+                                 cookies=cookies,
+                                 connector=tcp_connector) as session:
             try:
                 if method == 'GET':
                     async with session.get(url, proxy=proxy) as response:
                         content = await response.read()
                         return response.status, content
                 else:
-                    async with session.post(url, data=data, proxy=proxy) as response:
+                    async with session.post(url, data=data,
+                                            proxy=proxy) as response:
                         content = await response.read()
                         return response.status, content
             except Exception as e:
@@ -95,8 +109,9 @@ class AioCrawl:
 
         data_len = len(data) if data else 0
         if code == 0 or (status is not None and status != 200):  # 打印小异常
-            self.logger.warning('<url="{}", code={}, msg="{}", status={}, data(len):{}>'.format(
-                future.url, code, msg, status, data_len))
+            self.logger.warning(
+                '<url="{}", code={}, msg="{}", status={}, data(len):{}>'.
+                format(future.url, code, msg, status, data_len))
 
         self.concurrent -= 1  # 并发数-1
 
@@ -109,7 +124,8 @@ class AioCrawl:
         """
         for task in tasks:
             # asyncio.run_coroutine_threadsafe 接收一个协程对象和，事件循环对象
-            future = asyncio.run_coroutine_threadsafe(self.fetch(task), self.event_loop)
+            future = asyncio.run_coroutine_threadsafe(self.fetch(task),
+                                                      self.event_loop)
             future.add_done_callback(self.callback)  # 给future对象添加回调函数
             self.concurrent += 1  # 并发数加 1
 
@@ -120,3 +136,24 @@ if __name__ == '__main__':
     for _ in range(5):
         a.add_tasks(['https://www.baidu.com' for _ in range(2)])  # 模拟动态添加任务
         time.sleep(1)
+'''
+    def callback(self, future):
+        """回调函数,处理并转换成Result对象"""
+        msg = str(future.exception()) if future.exception() else 'success'
+        response = future.result()[0] if msg == 'success' else None
+        status = response.status if msg == 'success' else None
+        content = future.result()[1] if msg == 'success' else b''
+        index = future.result()[2] if msg == 'success' else b''
+
+        if msg == 0 or (status is not None and status != 200):  # 打印小异常
+            self.logger.warning(
+                '<url="{}", msg="{}", status={}, data(len):{}>'.format(
+                    future.url, msg, status,
+                    len(content) if content else 0))
+        new_res = ReqResult(response, content, index)
+        self.result_list.append(new_res)
+        self.concurrent -= 1  # 并发数-1
+        print(3333, len(content))
+        return new_res
+
+'''

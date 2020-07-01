@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-26 00:27:00
+#LastEditTime : 2020-06-30 14:58:29
 '''
 import asyncio
 import ctypes
@@ -18,9 +18,14 @@ from random import random
 
 import aiohttp
 
-from xt_Head import myhead
+from xt_Head import MYHEAD
 from xt_Response import ReqResult
-from xt_Requests import TIMESOUT
+
+# from xt_Log import mylog
+# print = mylog.warn
+
+TIMEOUT = 30  # (30, 9, 9, 9)
+RETRY_TIME = 6  # 最大重试次数
 
 __all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
@@ -28,7 +33,7 @@ __all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 class SessionMeta:
     def __init__(self, *args, **kwargs):
         self.session = self
-        self.headers = myhead
+        self.headers = MYHEAD
         self.cookies = {}
 
     def __getattr__(self, name):
@@ -73,7 +78,7 @@ class AyReqTaskMeta:
     def get_params(self, *args, **kw):
         self.url = args[0]
         self.args = args[1:]
-        kw.setdefault('timeout', TIMESOUT)  # @超时
+        kw.setdefault('timeout', aiohttp.ClientTimeout(TIMEOUT))  # @超时
         kw.setdefault('verify_ssl', False)  # @超时
 
         if "callback" in kw:
@@ -122,31 +127,36 @@ delete = partial(create_session, "delete")
 
 async def AyReqTask_run(self):
     # #单个任务，从task.run()调用
-    async def _run():
+    async def _fetch_run():
         async with aiohttp.ClientSession(cookies=self.cookies) as session:
             async with session.request(self.method,
                                        self.url,
                                        *self.args,
                                        headers=self.headers,
-                                       **self.kw) as sessReq:
-                self.content = await sessReq.read()
-                self.result = sessReq
-                assert sessReq.status in [200, 201, 302]
+                                       **self.kw) as response:
+                self.content = await response.read()
+                self.result = response
+                assert response.status in [200, 201, 302]
+                return self.result, self.content, id(self)
 
-    max_try = 10
-    times = 0
-    while max_try > 0:
+    attempts = 0
+    while attempts < RETRY_TIME:
         try:
-            await _run()
-            if times != 0:
-                print(f'{self}\ttimes:{times}\tAyReqTask_run Done.')
-            break
+            await _fetch_run()
+            if attempts != 0:
+                print(f'{self}; times:{attempts}; AyReqTask_run Done.')
         except Exception as err:
-            print(f'{self}\ttimes:{times}\tAyReqTask_run Err:{ repr(err)}')
-            max_try -= 1
-            times += 1
-            await asyncio.sleep(0.1)
+            print(f'{self}; times:{attempts}; AyReqTask_run Err:{repr(err)}')
+            attempts += 1
             continue  # 继续下一轮循环
+        else:
+            # #返回正确结果
+            new_res = ReqResult(self.result, self.content, id(self))
+            return new_res
+
+    # #返回错误结果
+    new_res = ReqResult(self.result, self.content, id(self))
+    return new_res
 
 
 def run(tasks, pool=0, single_session=True):
@@ -161,7 +171,7 @@ def run(tasks, pool=0, single_session=True):
     return result_list
 
 
-async def multi_req(tasks, pool, result_list, single_session=True):
+async def multi_req(tasks, pool, result_list, single_session=False):
     # 不能传递cookies
     myconn = aiohttp.TCPConnector(use_dns_cache=True,
                                   loop=asyncio.get_event_loop(),
@@ -208,37 +218,44 @@ async def multi_req(tasks, pool, result_list, single_session=True):
 
 
 async def fetch_async(task, result_list, session):
-    async def _run():
+    async def _fetch_run():
         headers = task.headers or ctypes.cast(
-            task.session, ctypes.py_object).value.headers or myhead
+            task.session, ctypes.py_object).value.headers or MYHEAD
         async with session.request(task.method,
                                    task.url,
                                    *task.args,
                                    headers=headers,
-                                   **task.kw) as sessReq:
-            assert sessReq.status in [200, 201, 302]
-            content = await sessReq.read()
-            new_res = ReqResult(sessReq, content, task.id)
-            result_list.append(new_res)
+                                   **task.kw) as response:
+            task.content = await response.read()
+            task.result = response
+            assert response.status in [200, 201, 302]
+            return task.result, task.content, task.id
 
+    attempts = 0
+    while attempts < RETRY_TIME:
+        try:
+            await _fetch_run()
+            if attempts != 0:
+                print(f'{task}; times:{attempts}; async_Fetch Done.')
+        except Exception as err:
+            print(f'{task}; times:{attempts}; async_Fetch Err:{repr(err)}')
+            attempts += 1
+            await asyncio.sleep(0.1)
+            continue  # 继续下一轮循环
+        else:
+            # #返回正确结果
+            new_res = ReqResult(task.result, task.content, task.id)
             if task.callback:
-                task.callback(new_res)  # 有回调则调用
+                new_res = task.callback(new_res)  # 有回调则调用
+            result_list.append(new_res)
             return new_res
 
-    max_try = 10
-    times = 0
-    while max_try > 0:
-        try:
-            await _run()
-            if times != 0:
-                print(f'{task}\ttimes:{times}\tasync_Fetch Done.')
-            break
-        except Exception as err:
-            print(f'{task}\ttimes:{times}\tasync_Fetch Err:{repr(err)}')
-            max_try -= 1
-            times += 1
-            await asyncio.sleep(random())
-            continue  # 继续下一轮循环
+    # #返回错误结果
+    new_res = ReqResult(task.result, task.content, task.id)
+    if task.callback:
+        new_res = task.callback(new_res)  # 有回调则调用
+    result_list.append(new_res)
+    return new_res
 
 
 def ahttpGet(url, *args, **kwargs):
@@ -273,5 +290,7 @@ if __name__ == "__main__":
     print(res.text)
     res = ahttpPost(url_post)
     print(res.text)
-    res = ahttpGetAll([url_get, url])
+    res = ahttpGetAll([url, url_get])
     print(res)
+    # t = aiohttp.ClientTimeout(TIMEOUT)
+    # print(t)
