@@ -7,24 +7,21 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-29 09:51:29
-#FilePath     : /xjLib/test/requests--test.py
-#LastEditTime : 2020-07-01 10:21:46
+#FilePath     : /xjLib/xt_Asyncio.py
+#LastEditTime : 2020-07-07 14:23:56
 #Github       : https://github.com/sandorn/home
 #==============================================================
 aiohttp笔记 - happy_codes - 博客园
 https://www.cnblogs.com/haoabcd2010/p/10615364.html
 '''
 import asyncio
+from asyncio.coroutines import iscoroutine
+from functools import wraps
 from threading import Thread
-
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-
 from xt_Head import MYHEAD
 from xt_Response import ReqResult
-from xt_Requests import TRETRY as RETRY
-
-# from xt_Log import mylog
-# print = mylog.warn
+from xt_Requests import TRETRY
 
 TIMEOUT = 20
 RETRY_TIME = 6  # 最大重试次数
@@ -37,53 +34,57 @@ class AioCrawl:
         self.thr = Thread(target=self.start_loop, args=(self.event_loop, ))
         self.thr.setDaemon(True)
         self.thr.start()
+
         self.future_list = []
         self.result_list = []
         self.concurrent = 0  # 记录并发数
+        self.Timeout_exc = False
 
     def start_loop(self, loop):
         asyncio.set_event_loop(loop)
         loop.run_forever()
         # self.event_loop.stop()
 
-    async def fetch(self,
-                    url,
-                    index=None,
-                    method='GET',
-                    headers=MYHEAD,
-                    timeout=TIMEOUT,
-                    cookies=None,
-                    data=None):
-
-        self.response = self.content = None  # #存放结果
-        # #初始化参数
-        index = index if index else id(url)
-        data = data if data and isinstance(data, dict) else {}
-        timeout = ClientTimeout(timeout)
-
-        @RETRY
+    async def fetch(self, url, index=None, **kwargs):
+        @TRETRY
         async def _fetch_run():
-            tcpc = TCPConnector(ssl=False)  # 禁用证书验证
-            async with ClientSession(headers=headers,
-                                     timeout=timeout,
-                                     cookies=cookies,
-                                     connector=tcpc) as session:
-                async with session.request(method, url, params=data,
-                                           json=data) as self.response:
-                    self.content = await self.response.read()
-                    assert self.response.status in [200, 201, 302]
-                    return self.response, self.content
+            async with TCPConnector(
+                    use_dns_cache=True, ssl=False) as Tconn, ClientSession(
+                        cookies=cookies,
+                        connector=Tconn) as session, session.request(
+                            method, url, **kwargs) as self.response:
+                self.content = await self.response.read()
+                assert self.response.status in [200, 201, 302]
+                return self.response, self.content
+
+        # #初始化参数
+        index = index or id(url)
+        method = kwargs.pop('method')
+        cookies = kwargs.pop('cookies')
+        if "callback" in kwargs:
+            callback = kwargs.pop("callback")
+        else:
+            callback = None
 
         # #循环抓取
         try:
             await _fetch_run()
-        except Exception as err:
-            print(f'AioCrawl.fetch:{url}; Err:{repr(err)}')
-        finally:
-            # #返回结果,不管是否正确
+        except asyncio.exceptions.TimeoutError as err:
+            # #Timeout 错误，返回空
+            print(f'AioCrawl.fetch:{url}; Err:{err!r}')
             self.concurrent -= 1  # 并发数-1
-            new_res = ReqResult(self.response, self.content, index)
-            return new_res
+            self.result = None
+            return None
+        except Exception as err:
+            print(f'AioCrawl.fetch:{url}; Err:{err!r}')
+
+        # #返回结果,不管是否正确
+        self.concurrent -= 1  # 并发数-1
+        new_res = ReqResult(self.response, self.content, index)
+        if callback:
+            new_res = callback(new_res)  # 有回调则调用
+        self.result = new_res
+        return new_res
 
     def getAllResult(self):
         for _ in range(len(self.future_list)):
@@ -110,43 +111,70 @@ class AioCrawl:
         res, self.result_list = self.result_list, []
         return res
 
-    def add_task(self, task):
-        """添加单个任务"""
-        if not self.event_loop.is_running():
-            raise 'event_loop is stop!'
-
-        future = asyncio.run_coroutine_threadsafe(task, self.event_loop)
-        self.future_list.append(future)
-        self.concurrent += 1  # 并发数加 1
-
-    def add_fetch_tasks(self, tasks):
-        """添加任务,传入url+index列表"""
-        if not self.event_loop.is_running():
-            raise 'event_loop is stop!'
+    def add_tasks(self, tasks):
+        """添加纤程任务"""
+        if not isinstance(tasks, (list, tuple)):
+            raise Exception('传入非list或tuple')
 
         for task in tasks:
-            if isinstance(task, (list, tuple)):
-                future = asyncio.run_coroutine_threadsafe(
-                    self.fetch(*task), self.event_loop)
-            else:
-                future = asyncio.run_coroutine_threadsafe(
-                    self.fetch(task), self.event_loop)
+            if not (iscoroutine(task)): continue
+            future = asyncio.run_coroutine_threadsafe(task, self.event_loop)
             self.future_list.append(future)
             self.concurrent += 1  # 并发数加 1
+
+    def add_fetch_tasks(self, tasks, **kwargs):
+        """添加任务,传入url+index列表"""
+        if not isinstance(tasks, (list, tuple)):
+            raise Exception('传入非list或tuple')
+
+        # #初始化参数
+        kwargs.setdefault('method', 'get')
+        kwargs.setdefault('headers', MYHEAD)
+        kwargs.setdefault('cookies', {})
+        kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
+        kwargs.setdefault('verify_ssl', False)
+
+        for index, task in enumerate(tasks):
+            if isinstance(task, (list, tuple)):
+                '''list传入多个参数,拆解'''
+                future = asyncio.run_coroutine_threadsafe(
+                    self.fetch(*task, **kwargs), self.event_loop)
+
+            elif isinstance(task, str):
+                '''单一字符串参数,识别为url,添加序号'''
+                future = asyncio.run_coroutine_threadsafe(
+                    self.fetch(task, index + 1, **kwargs), self.event_loop)
+
+            self.future_list.append(future)
+            self.concurrent += 1  # 并发数加 1
+
+
+def make_future(func):
+    '''协程装饰器，用法不明'''
+    @wraps(func)
+    def _make_future(*args, **kwargs):
+        future = asyncio.Future()
+        result = func(*args, **kwargs)
+        future.set_result(result)
+        return future
+
+    return _make_future
 
 
 if __name__ == '__main__':
     a = AioCrawl()
 
     for _ in range(2):
-        a.add_tasks(['https://www.baidu.com' for _ in range(2)])  # 模拟动态添加任务
+        a.add_fetch_tasks(['https://www.baidu.com'
+                           for _ in range(2)])  # 模拟动态添加任务
 
     t = a.wait_completed()
     for i in t:
         print(i)
 
     for _ in range(2):
-        a.add_tasks(['https://httpbin.org/get' for _ in range(2)])  # 模拟动态添加任务
+        a.add_fetch_tasks(['https://httpbin.org/get'
+                           for _ in range(2)])  # 模拟动态添加任务
 
     t1 = a.wait_completed()
     for i in t1:

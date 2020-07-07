@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-30 17:49:00
+#LastEditTime : 2020-07-07 14:25:32
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -322,3 +322,13 @@ class Pipeline2Csv(object):
     def close_spider(self, spider):
         # 关闭爬虫时顺便将文件保存退出
         self.file.close()
+
+
+if __name__ == '__main__':
+    from xt_ScrapyRun import ScrapyRun
+    import os
+
+    # 获取当前脚本路径
+    filepath = os.path.abspath(__file__)
+    dirpath = os.path.dirname(filepath)
+    ScrapyRun(dirpath, 'xiashu')

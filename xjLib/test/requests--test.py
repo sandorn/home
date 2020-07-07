@@ -8,44 +8,46 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-12 16:18:13
 #FilePath     : /xjLib/test/requests--test.py
-#LastEditTime : 2020-07-01 10:20:56
+#LastEditTime : 2020-07-07 14:23:32
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 from xt_Ahttp import ahttpGet, ahttpGetAll
-from threading import Thread
 from xt_Requests import SessionClient, get, parse_get
-from xt_Head import MYHEAD
-from xt_String import class_add_dict
 from xt_Asyncio import AioCrawl
 import asyncio
+
 s = SessionClient()
-s.update_headers({**MYHEAD})
-
-url = "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async"  # 400
-url_200 = "https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts"
-url_get = "https://httpbin.org/get"  # 返回head及ip等信息
-url_post = "https://httpbin.org/post"  # 返回head及ip等信息
+urls = [
+    "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async",  # status:[400]
+    "https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts",
+    "https://httpbin.org/get",  # 返回head及ip等信息
+    "https://httpbin.org/post",  # 返回head及ip等信息
+    "http://g.cn",  # status:[400]
+    "http://www.google.com",  # status:[400]
+    "https://www.biqukan.com/38_38836/",
+    "https://www.biqukan.com/38_38836/497577681.html",
+]
 args_dict = {}
-
 # #s.session.auth = ('user', 'pass')
-target = url
-# res = parse_get(target, params=args_dict, json=args_dict, timeout=1.01)
-# print('parse_get:', res)  # print(r['text'])  r.text
-# res = get(target, params=args_dict, json=args_dict, timeout=1.01)
-# print('get:', res)
-# res = s.get(target, params=args_dict, json=args_dict, timeout=1.01)
-# print('session:', res)
+target = urls[2]
+tout = 3.01
+# res = parse_get(target, params=args_dict, json=args_dict, timeout=tout)
+# print('parse_get:', res)  # , res.text)
+# res = get(target, params=args_dict, json=args_dict, timeout=tout)
+# print('get:', res)  # , res.text)
 
-# res = ahttpGet(target, params=args_dict, json=args_dict, timeout=1.01)
-# print('ahttpGet:', res)
+# res = s.get(target, params=args_dict, json=args_dict, timeout=tout)
+# print('session:', res)  # , res.text)
 
-# res = ahttpGetAll([
-#     target,
-# ], params=args_dict, json=args_dict, timeout=1.01)
+# res = ahttpGet(target, params=args_dict, json=args_dict, timeout=tout)
+# print('ahttpGet:', res)  # , res.text)
+# print('ahttpGet:', res.text)
 
-# print('ahttpGetAll:', res)
+res = ahttpGetAll([target, urls[5], urls[0]], timeout=tout)
+print('ahttpGetAll:', res)  # , res[0].text)
 
 # aio = AioCrawl()
-# res = asyncio.run(aio.fetch(target))
-# print(res)
+# res = asyncio.run(
+#     aio.fetch(target, params=args_dict, json=args_dict, timeout=tout))
+# print('AioCrawl:', res)  # , res[0].text)

@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-03 23:26:06
 #FilePath     : /xjLib/xt_DAO/xt_mysql.py
-#LastEditTime : 2020-06-30 17:57:37
+#LastEditTime : 2020-07-07 15:19:56
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -83,14 +83,15 @@ class engine(object):
         if len(tablerows) == 0:
             return False
         for rows in tablerows:
-            if table_name == rows[0]:
+            if rows[0] == table_name:
                 return True
         return False
 
     def close(self):
         pass
 
-    def worKon(self, sql, args=[]):
+    def worKon(self, sql, args=None):
+        args = args or []
         try:
             self.cur.execute(sql, args)
             self.conn.commit()
@@ -100,13 +101,20 @@ class engine(object):
             print('\033[', error, ']\033', sep='')
             return False
 
-    def insert(self, dt, tb_name):
-        # 以字典形式提交插入
-        ls = [(k, dt[k]) for k in dt if dt[k] is not None]
-        sql = f'''insert into `{tb_name}` ({','.join([i[0]
-             for i in ls]) }) values ({','.join(['%r' % i[1]for i in ls])});'''
-        print(1111, sql)  # .replace('%', '%%')
-        self.worKon(sql)
+    def insert(self, data, tb_name):
+        # print(11111, data)
+        # # 以字典形式提交插入
+        # ls = [(k, data[k]) for k in data if data[k] is not None]
+        # sql = f'''insert into `{tb_name}` ({','.join([i[0]
+        #      for i in ls]) }) values ({','.join(['%r' % i[1]for i in ls])});'''
+        # print(22222, sql)  # .replace('%', '%%')
+
+        cols = ", ".join('`{}`'.format(k) for k in data.keys())
+        val_cols = ', '.join('%({})s'.format(k) for k in data.keys())
+        print(3333333, val_cols)  # '%(name)s, %(age)s'
+        res_sql = f"insert into {tb_name}({cols}) values({val_cols})"
+        print(9999999, res_sql)
+        self.worKon(res_sql, data)
 
     def update(self, dt_update, dt_condition, tb_name):
         # dt_update,更新的数据

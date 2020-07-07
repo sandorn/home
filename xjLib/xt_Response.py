@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
 #FilePath     : /xjLib/xt_Response.py
-#LastEditTime : 2020-06-30 18:25:04
+#LastEditTime : 2020-07-01 21:24:54
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -19,13 +19,14 @@ from lxml import etree
 
 
 class ReqResult:
-    __slots__ = ('raw', 'clientResponse', 'content', 'index')
+    __slots__ = ('raw', 'clientResponse', '_content', 'index')
 
     # 结构化返回结果
     def __init__(self, response, content=None, index=None):
-        self.raw = self.clientResponse = response
-        self.content = content or self.clientResponse.content
-        self.index = index or id(response)
+        if response is not None:
+            self.raw = self.clientResponse = response
+            self._content = content or self.raw.content
+            self.index = index or id(self)
 
     # #下标obj[key] 获取属性
     def __getitem__(self, attr):
@@ -33,11 +34,15 @@ class ReqResult:
 
     # @property装饰器把方法变成属性,只读
     @property
-    def text(self):
-        code_type = detect(self.content)
+    def content(self):
+        code_type = detect(self._content)
         if code_type != 'utf-8':
-            self.content = self.content.decode(code_type['encoding'],
-                                               'ignore').encode('utf-8')
+            self._content = self._content.decode(code_type['encoding'],
+                                                 'ignore').encode('utf-8')
+        return self._content
+
+    @property
+    def text(self):
         return self.content.decode('utf-8', 'ignore')
 
     @property
@@ -83,27 +88,21 @@ class ReqResult:
 
     @property
     def html(self):
-        def clean(html, filter):
-            data = etree.HTML(html)
+        def _clean(html_text, filter):
+            data = etree.HTML(html_text)
             trashs = data.xpath(filter)
             for item in trashs:
                 item.getparent().remove(item)
             return data
 
-        html = clean(self.text, '//script')
-        return html
+        return _clean(self.text, '//script')
 
     @property
     def element(self):
-        code_type = detect(self.content)
-        if code_type != 'utf-8':
-            self.content = self.content.decode(code_type['encoding'],
-                                               'ignore').encode('utf-8')
-        element = etree.HTML(self.content.decode('utf-8', 'ignore'))
-        return element
+        return etree.HTML(self.text)
 
     def __repr__(self):
-        return f"<ReqResult status:[{self.status}]， ID:[{self.index}]， url:[{self.url}] >"
+        return f"<ReqResult status:[{self.status}]; ID:[{self.index}]， url:[{self.url}] >"
 
 
 '''

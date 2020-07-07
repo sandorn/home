@@ -8,183 +8,164 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-06-30 19:18:46
+#LastEditTime : 2020-07-06 19:22:22
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
 '''
 
+from functools import partial
 import requests
+from tenacity import retry as Tretry
+from tenacity import stop_after_attempt, wait_random
+
 from xt_Head import MYHEAD
 from xt_Response import ReqResult
-from retrying import retry
-from tenacity import retry as tretry
-from tenacity import stop_after_attempt, wait_random
-# from xt_Log import mylog
-# print = mylog.warn
 
-TIMEOUT = 20  # (20, 9, 9)
+TIMEOUT = 20  # (30, 9, 9)
 RETRY_TIME = 6  # 最大重试次数
 
-TRETRY = tretry(stop=stop_after_attempt(RETRY_TIME),
-                wait=wait_random(min=0, max=1))
+TRETRY = Tretry(
+    reraise=True,  # #保留最后一次错误
+    stop=stop_after_attempt(RETRY_TIME),
+    wait=wait_random(min=0, max=1),
+)
 
-RETRY = retry(wait_random_min=20,
-              wait_random_max=1000,
-              stop_max_attempt_number=RETRY_TIME,
-              retry_on_exception=lambda x: True,
-              retry_on_result=lambda ret: not ret)
+# @不能用于协程,未能保留最后错误
+# from retrying import retry as Retry
+# RETRY = Retry(
+#     wait_random_min=0,
+#     wait_random_max=1000,
+#     stop_max_attempt_number=RETRY_TIME,
+#     wrap_exception=True,
+#     retry_on_exception=lambda x: True,
+#     retry_on_result=lambda ret: not ret,
+# )
 
 
-def _setdict(kwargs):
+def _setKw(kwargs):
     kwargs.setdefault('headers', MYHEAD)
-    kwargs.setdefault('allow_redirects', True)  # @重定向
+    # kwargs.setdefault('cookies', {})
     kwargs.setdefault('timeout', TIMEOUT)  # @超时
+    kwargs.setdefault('allow_redirects', True)  # @重定向
+    # kwargs.setdefault('cookies', requests.cookies.RequestsCookieJar())
     return kwargs
 
 
-def parse_get(url, *args, **kwargs):
+def request_parse(method, url, *args, **kwargs):
     attempts = 0
     response = None
-    elapsed = 0
-    kwargs = _setdict(kwargs)
+    Timeout_exc = False
+    Err_msg = None
+    kwargs = _setKw(kwargs)
 
     while attempts < RETRY_TIME:
         try:
-            response = requests.get(url, *args, **kwargs)
+            Timeout_exc = False
+            Err_msg = None
+            response = requests.request(method, url, *args, **kwargs)
             response.raise_for_status()
             # $ assert response.status_code in [200, 201, 302]
+        except requests.Timeout as err:
+            attempts += 1
+            Timeout_exc = True
+            Err_msg = err
+            print(f'parse_{method}:<{url}>; times:{attempts}; Err:{err!r}')
         except Exception as err:
             attempts += 1
-            print(
-                f'parse_get:<{url}>; {attempts} times; Err:{repr(err)}; total_seconds:{response.elapsed.total_seconds()}'
-            )
+            print(f'parse_{method}:<{url}>; times:{attempts}; Err:{err!r}')
         else:
             # #返回正确结果
-            new_res = ReqResult(response, response.content, id(response))
+            new_res = ReqResult(response)
             return new_res
 
+    # #Timeout 错误，返回空
+    if Timeout_exc:
+        print(Err_msg)
+        return None
     # #返回非正确结果
-    new_res = ReqResult(response, response.content, id(response))
+    new_res = ReqResult(response)
     return new_res
 
 
-def parse_post(url, *args, **kwargs):
-    attempts = 0
+def request_retry(method, url, *args, **kwargs):
     response = None
-    elapsed = 0
-    kwargs = _setdict(kwargs)
+    Timeout_exc = False
+    kwargs = _setKw(kwargs)
 
-    while attempts < RETRY_TIME:
-        try:
-            response = requests.post(url, *args, **kwargs)
-            response.raise_for_status()
-            # $ assert response.status_code in [200, 201, 302]
-        except Exception as err:
-            attempts += 1
-            print(
-                f'parse_post:<{url}>; {attempts} times; Err:{repr(err)}; total_seconds:{response.elapsed.total_seconds() }'
-            )
-        else:
-            # #返回正确结果
-            new_res = ReqResult(response, response.content, id(response))
-            return new_res
+    @TRETRY
+    def _fetch_run():
+        nonlocal response, Timeout_exc
+        response = requests.request(method, url, *args, **kwargs)
+        response.raise_for_status()
 
-    # #返回非正确结果
-    new_res = ReqResult(response, response.content, id(response))
+    try:
+        _fetch_run()
+    except requests.Timeout as err:
+        # #Timeout 错误，返回空
+        print(f'requests.{method}:<{url}>; Err:{err!r}')
+        return None
+    except Exception as err:
+        print(f'requests.{method}:<{url}>; Err:{err!r}')
+
+    # #返回结果,不管是否正确
+    new_res = ReqResult(response)
     return new_res
 
 
-def get(url, *args, **kwargs):
-    response = None
-    kwargs = _setdict(kwargs)
-
-    @RETRY
-    def _fetch_run():
-        nonlocal response
-        response = requests.get(url, *args, **kwargs)
-        # response.raise_for_status()
-        # assert response.status_code in [200, 201, 302]
-        return response
-
-    try:
-        _fetch_run()
-    except Exception as err:
-        print(
-            f'requests.get:<{url}>; Err:{repr(err)}; total_seconds:{response.elapsed.total_seconds()}'
-        )
-    finally:
-        # #返回结果,不管是否正确
-        new_res = ReqResult(response, response.content, id(response))
-        return new_res
-
-
-def post(url, *args, **kwargs):
-    response = None
-    kwargs = _setdict(kwargs)
-
-    @RETRY
-    def _fetch_run():
-        nonlocal response
-        response = requests.post(url, *args, **kwargs)
-        return response
-
-    try:
-        _fetch_run()
-    except Exception as err:
-        print(
-            f'requests.post:<{url}>; Err:{repr(err)}; total_seconds:{response.elapsed.total_seconds()}'
-        )
-    finally:
-        # #返回结果,不管是否正确
-        new_res = ReqResult(response, response.content, id(response))
-        return new_res
+parse_get = partial(request_parse, "get")
+parse_post = partial(request_parse, "post")
+get = partial(request_retry, "get")
+post = partial(request_retry, "post")
 
 
 class SessionClient:
-    __slots__ = ('sn', 'headers', 'cookies', 'result', 'url', 'method', 'args',
-                 'kwargs', 'callback')
+    __slots__ = ('sn', 'headers', 'cookies', 'response', 'url', 'method',
+                 'args', 'kwargs', 'callback')
 
     def __init__(self):
         self.sn = requests.session()
-        self.cookies = requests.cookies.RequestsCookieJar()
+        self.cookies = {}
 
-    @RETRY
+    @TRETRY
     def _request(self):
-        res = self.sn.request(self.method, self.url, *self.args, **self.kwargs)
-        self.result = res
-        return self.result
+        self.response = self.sn.request(self.method, self.url, *self.args,
+                                        **self.kwargs)
+        self.response.raise_for_status()
+        return self.response
 
     def _fetch_run(self):
         try:
+            self.response = None
             self._request()
+        except requests.Timeout as err:
+            print(f'SessionClient request:<{self.url}>; Err:{err!r}')
+            return None
         except Exception as err:
-            print(
-                f'SessionClient request:<{self.url}>; Err:{repr(err)}; total_seconds:{self.result.elapsed.total_seconds()}'
-            )
-        finally:
-            # #返回结果,不管是否正确
-            self.update_cookies(self.result.cookies)
-            new_res = ReqResult(self.result, self.result.content,
-                                id(self.result))
-            self.result = None
-            return new_res
+            print(f'SessionClient request:<{self.url}>; Err:{err!r}')
+
+        # #返回结果,不管是否正确
+        if hasattr(self.response, 'cookies'):
+            self.update_cookies(self.response.cookies)
+
+        new_res = ReqResult(self.response)
+        if self.callback:
+            new_res = self.callback(new_res)  # 有回调则调用
+        return new_res
 
     def __create_params(self, *args, **kwargs):
-        kwargs = _setdict(kwargs)
         self.url = args[0]
         self.args = args[1:]
+
+        kwargs = _setKw(kwargs)
+
         if "callback" in kwargs:
             self.callback = kwargs['callback']
             kwargs.pop("callback")
         else:
             self.callback = None
 
-        if "headers" in kwargs:
-            self.headers = kwargs['headers']
-            kwargs.pop("headers")
         self.kwargs = kwargs
-
         return self._fetch_run()
 
     def __getattr__(self, method):
@@ -206,9 +187,11 @@ class SessionClient:
 
     def update_headers(self, header_dict):
         self.sn.headers.update(header_dict)
+        self.headers.update(header_dict)
 
 
 '''
+    self.cookies = requests.cookies.RequestsCookieJar()
     set_cookies(cookies)
 
     # 将CookieJar转为字典：

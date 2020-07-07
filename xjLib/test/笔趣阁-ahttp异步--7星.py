@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-01 10:23:38
+#LastEditTime : 2020-07-07 13:20:27
 变更requests为ahttp
 '''
 import os
@@ -61,7 +61,7 @@ def callback(resp):
 @fn_timer
 def main(url):
     bookname, urls = get_download_url(url)
-    resps = ahttpGetAll(urls, pool=200)
+    resps = ahttpGetAll(urls)
     text_list = 结果处理(resps)
     text_list.sort(key=lambda x: x[0])  # #排序
     files = os.path.basename(__file__).split(".")[0]
@@ -71,7 +71,7 @@ def main(url):
 @fn_timer
 def mainbycall(url):
     bookname, urls = get_download_url(url)
-    resps = ahttpGetAll(urls, pool=200, callback=callback)
+    resps = ahttpGetAll(urls, callback=callback)
     texts.sort(key=lambda x: x[0])  # #排序
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + 'mainbycall.txt', texts, br='\n')
@@ -91,25 +91,26 @@ def multpoolback(urls):
 
 
 if __name__ == '__main__':
-
-    main('https://www.biqukan.com/2_2714/')
-    # mainbycall('https://www.biqukan.com/38_38836/')
+    url = 'https://www.biqukan.com/38_38836/'
+    main(url)
+    # mainbycall(url)
 
     urls = [
         'https://www.biqukan.com/38_38836/',
         'https://www.biqukan.com/2_2760/',
+        'https://www.biqukan.com/2_2714/',
         'https://www.biqukan.com/73_73450/',
         'https://www.biqukan.com/76_76015/',
         'https://www.biqukan.com/75_75766/',
-        'https://www.biqukan.com/2_2714/',
         'https://www.biqukan.com/46_46394/',
         'https://www.biqukan.com/61_61396/',
     ]
     # multpool(urls)
     # multpoolback(urls)
 
-    # '38_38836'  #@  6秒
-    # '2_2760'  #@  9秒
-    # "2_2714"    #@  32秒
-    # multpool(urls)  #@  47.33秒
+    # main                      mainbycall
+    # '38_38836'    #@  2.97秒           4秒
+    # '2_2760'      #@  4.23秒           8秒
+    # "2_2714"      #@  19秒         25秒
+    # multpool(urls)  #@  41.33秒
     # multpoolback(urls)  #@  35秒
