@@ -10,7 +10,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-25 01:37:18
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-18 14:13:40
+#LastEditTime : 2020-07-08 20:22:59
 '''
 from xt_Class import item_MixIn
 
@@ -57,11 +57,16 @@ class Sql_Base(object):
 
 class Sql_Meta(item_MixIn):
     '''解决下标取值赋值、打印显示、生成字段列表'''
+    @classmethod
+    def columns(cls):
+        '''获取字段名列表'''
+        cls._columns = [col.name for col in cls.__table__.columns]
+        return cls._columns
 
     # #获取字段名列表
     @classmethod
     def _fields(cls):
-        '''获取字段名列表'''
+        '''获取字段名列表，弃用'''
         listtmp = [
             attr for attr in dir(cls) if not callable(getattr(cls, attr))
             and not attr.startswith("__") and attr not in [
@@ -72,23 +77,22 @@ class Sql_Meta(item_MixIn):
         return listtmp
 
     @classmethod
-    def get_dict(cls, result):
+    def make_dict(cls, result):
         '''基于数据库模型转换记录为字典,使用: dbmode.get_dict(records)'''
         if isinstance(result, cls):
-            return {key: getattr(result, key) for key in cls._fields()}
+            return {key: getattr(result, key) for key in cls.columns()}
 
         elif isinstance(result, (list, tuple)) and isinstance(result[0], cls):
             return [{key: getattr(item, key)
-                     for key in cls._fields()} for item in result]
+                     for key in cls.columns()} for item in result]
 
-    def record_to_dict(self):
-        '''单一记录record转字典,使用:record.record_to_dict()'''
-        # return {key: getattr(self, key) for key in self._fields()}
+    def to_dict(self):
+        '''单一记录record转字典,使用:record.to_dict()'''
         return self.get_dict(self)
 
     def __repr__(self):
         return self.__class__.__name__ + str(
             {attr: getattr(self, attr)
-             for attr in self._fields()})
+             for attr in self.columns()})
 
     __str__ = __repr__

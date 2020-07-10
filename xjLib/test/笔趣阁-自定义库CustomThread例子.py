@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-02 15:39:19
+#LastEditTime : 2020-07-08 20:06:52
 根据网络资料，写的threadpool
 '''
 
@@ -84,8 +84,8 @@ def cq(bookname, urls):
 @fn_timer
 def wm(bookname, urls):
     mywork = WorkManager()
-    mywork.add_work_queue([[get_contents, index + 1, url]
-                           for index, url in enumerate(urls)])
+    mywork.add_work_queue([get_contents, index + 1, url]
+                          for index, url in enumerate(urls))
     texts = mywork.getAllResult()
 
     texts.sort(key=lambda x: x[0])
@@ -159,12 +159,12 @@ if __name__ == "__main__":
     bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
     # #38_38836  #2_2714  #2_2760  #76_76519
 
-    st(bookname, urls)
+    # st(bookname, urls)
     # sq(bookname, urls)
     # stm(bookname, urls)
     # ct(bookname, urls)
     # cq(bookname, urls)
-    # wm(bookname, urls)
+    wm(bookname, urls)
     # pm(bookname, urls)
     # ps(bookname, urls)
     # cpm(bookname, urls)

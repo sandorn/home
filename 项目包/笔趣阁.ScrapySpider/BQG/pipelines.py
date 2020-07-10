@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-07 14:25:32
+#LastEditTime : 2020-07-07 20:23:06
 
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
@@ -37,13 +37,13 @@ class PipelineCheck(object):
         self.names_seen = set()
 
     def process_item(self, item, spider):
+        item['ZJNAME'] = item['ZJNAME'].strip('\r\n').replace(
+            u'\u3000', u' ').replace(u'\xa0', u' ')
         if item['ZJNAME'] in self.names_seen:
             print("--《%s》%s|章节重复" % ((item['BOOKNAME'], item['ZJNAME'])))
             raise DropItem("PipelineCheck Duplicate item found: %s" % item)
         else:
-            _showtext = item['ZJTEXT'].replace('[笔趣看\xa0\xa0www.biqukan.com]',
-                                               '')
-            item['ZJTEXT'] = arrangeContent(_showtext)
+            item['ZJTEXT'] = arrangeContent(item['ZJTEXT'])
 
             self.names_seen.add(item['ZJNAME'])
             return item
@@ -122,15 +122,14 @@ class PipelineToSql(object):
         _INDEX = item['INDEX']
         _ZJNAME = item['ZJNAME']
         _ZJTEXT = item['ZJTEXT']
-        _sql = {
+        _sql_dict = {
             'BOOKNAME': _BOOKNAME,
             'INDEX': _INDEX,
             'ZJNAME': _ZJNAME,
             'ZJTEXT': _ZJTEXT
         }
-        self.connect.insert(_sql, _BOOKNAME)
+        self.connect.insert(_sql_dict, _BOOKNAME)
         # self.connect.commit()
-
         return item
 
     def process_item0(self, item, spider):
@@ -205,7 +204,7 @@ class PipelineToSqlTwisted(object):
     def do_insert(self, cursor, item):
         # 根据不同的item 构建不同的sql语句并插入到mysql中
         insert_sql = """
-        Insert into % s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`) values('%s', %d, '%s', '%s')
+        Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`) values('%s', %d, '%s', '%s')
         """ % (item['BOOKNAME'], item['BOOKNAME'], item['INDEX'],
                item['ZJNAME'], item['ZJTEXT'])
         cursor.execute(insert_sql)

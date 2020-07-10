@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-04-28 19:10:26
-#LastEditTime : 2020-06-18 14:18:20
+#LastEditTime : 2020-07-08 20:02:43
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -30,12 +30,28 @@ import os
 
 from xt_Requests import SessionClient
 from xt_DAO.xt_sqlbase import Sql_Meta
-
-import xt_DAO.xt_sqlalchemy
-from xt_Thread import my_pool
+from xt_DAO.xt_sqlalchemy import SqlConnection
+from xt_Thread import WorkManager
 from xt_String import random_char
 
-pool = my_pool(200)
+from sqlalchemy import Column, DateTime, String
+from sqlalchemy.dialects.mysql import INTEGER, LONGTEXT
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import text
+
+model = declarative_base()
+
+
+class Jkdoc(model, Sql_Meta):
+    __tablename__ = 'jkdoc'
+
+    ID = Column(INTEGER(6), primary_key=True)
+    TITLE = Column(String(255, 'utf8mb4_bin'), nullable=False)
+    URL = Column(String(64, 'utf8mb4_bin'), nullable=False)
+    content = Column(LONGTEXT)
+    update_TIME = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
+
+
 Session = SessionClient()
 
 
@@ -76,7 +92,6 @@ def get_download_url(connect, stop=None):
     return _urls
 
 
-@pool
 def down_content(connect, title, url):
     path = f'd:/1/{title}'.strip().rstrip("\\")
     if not os.path.exists(path):
@@ -84,8 +99,6 @@ def down_content(connect, title, url):
 
     _res = Session.get(
         f'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId={url}')
-
-    print(_res.json)
 
     公告正文 = ''.join(
         _res.html.xpath('//div[@class="contentText"]//text()')).replace(
@@ -116,42 +129,23 @@ def down_content(connect, title, url):
             _res = Session.get('http://oa.jklife.com/seeyon/fileDownload.do',
                                params=formdata)
 
-            open(path + '/' + item['filename'], 'wb').write(_res.content)
+            open(path + '/' + item['filename'], 'wb').write(_res.raw.content)
 
     print(f'《{title}》\t下载完成')
     return
 
 
 def main():
-    from sqlalchemy import Column, DateTime, String
-    from sqlalchemy.dialects.mysql import INTEGER, LONGTEXT
-    from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy.sql import text
-
-    model = declarative_base()
-
-    class Jkdoc(model, Sql_Meta):
-        __tablename__ = 'jkdoc'
-
-        ID = Column(INTEGER(6), primary_key=True)
-        TITLE = Column(String(255, 'utf8mb4_bin'), nullable=False)
-        URL = Column(String(64, 'utf8mb4_bin'), nullable=False)
-        content = Column(LONGTEXT)
-        update_TIME = Column(DateTime,
-                             server_default=text("CURRENT_TIMESTAMP"))
-
-    connect = xt_DAO.xt_sqlalchemy.SqlConnection(Jkdoc, 'Jkdoc')
-
+    mywork = WorkManager()
+    connect = SqlConnection(Jkdoc, 'Jkdoc')
     urls = get_download_url(connect)
     print(f'需要下载的公文数量为：{len(urls)}')
-    _ = [down_content(connect, item[0], item[1]) for item in urls]
-    pool.wait_completed()
+    mywork.add_work_queue([down_content, connect, item[0], item[1]]
+                          for item in urls)
+    mywork.getAllResult()
 
 
 if __name__ == '__main__':
-    from xt_Log import log
-
-    mylog = log()
-    print = mylog.debug
+    from xt_Log import mylog
 
     main()

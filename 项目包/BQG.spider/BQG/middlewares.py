@@ -5,14 +5,12 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-
 from fake_useragent import UserAgent
 from scrapy import signals
 
 
 class RandomUserAgentMiddleware(object):
     '''使用fake-usergent库，随机更换User-Agent'''
-
     def __init__(self, crawler):
         super(RandomUserAgentMiddleware, self).__init__()
         self.ua = UserAgent()

@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-30 17:21:23
+#LastEditTime : 2020-07-08 20:39:55
 '''
 
 import os
@@ -29,6 +29,7 @@ import scrapy
 from items import BqgItem
 from xt_DAO.dbconf import db_conf
 from xt_String import align, md5
+from copy import deepcopy
 
 
 class Spider(scrapy.Spider):
@@ -48,16 +49,17 @@ class Spider(scrapy.Spider):
         # 填写爬取地址
         # 'https://www.biqukan.com/2_2714/',
         # 'https://www.biqukan.com/76_76519/',
-        # 'https://www.biqukan.com/38_38836/',
+        'https://www.biqukan.com/38_38836/',
         # 'https://www.biqukan.com/0_790/',
-        'https://www.biqukan.com/2_2760/',
+        # 'https://www.biqukan.com/2_2760/',
+        # 'https://www.biqukan.com/32_32061/',
     ]
 
     db = set()
     res_db = {}
-    if 'type' in db_conf['TXbook']:
-        db_conf['TXbook'].pop('type')
-    connect = MySQLdb.connect(**db_conf['TXbook'])
+    config = deepcopy(db_conf['TXbook'])
+    if 'type' in config: config.pop('type')
+    connect = MySQLdb.connect(**config)
 
     def start_requests(self):
         # 循环生成需要爬取的地址
@@ -133,8 +135,10 @@ class Spider(scrapy.Spider):
             '//div[@class="p"]/a[2]/text()').extract_first()
         item['INDEX'] = response.meta['index']
         item['ZJNAME'] = response.xpath('//h1/text()').extract_first()
-        item['ZJTEXT'] = "".join(
-            response.xpath('//*[@id="content"]/text()').extract())
+        # item['ZJTEXT'] = "".join(
+        #     response.xpath('//*[@id="content"]/text()').extract())
+        _ZJTEXT = response.xpath('//*[@id="content"]/text()').extract()
+        item['ZJTEXT'] = '\n'.join([st.strip("\r\n　  ") for st in _ZJTEXT])
         item['ZJHERF'] = response.url
         yield item
 
@@ -148,7 +152,7 @@ if __name__ == '__main__':
     dirpath = os.path.dirname(os.path.dirname(filepath))
     ScrapyRun(dirpath, 'spiler')
 '''
-# #爬取之后，入库之前去重
+    # #爬取之后，入库之前去重
     def start_requests(self):
         # 循环生成需要爬取的地址
         for url in self.start_urls:

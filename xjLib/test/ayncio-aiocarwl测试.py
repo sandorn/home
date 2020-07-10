@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-30 12:50:40
 #FilePath     : /xjLib/test/ayncio-aiocarwl测试.py
-#LastEditTime : 2020-07-07 14:10:06
+#LastEditTime : 2020-07-07 18:06:15
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -111,11 +111,11 @@ def aimq(bookname, urls):
 
 if __name__ == "__main__":
 
-    bookname, urls = get_download_url('http://www.biqukan.com/2_2714/')
+    bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
 
-    aio(bookname, urls)
-    ait(bookname, urls)
-    ahttpall(bookname, urls)
+    # aio(bookname, urls)
+    # ait(bookname, urls)
+    # ahttpall(bookname, urls)
     aimq(bookname, urls)
     # @make_future
     # res = asyncio.run(aia(bookname, urls))

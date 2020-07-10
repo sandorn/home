@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
 #FilePath     : /xjLib/xt_Response.py
-#LastEditTime : 2020-07-01 21:24:54
+#LastEditTime : 2020-07-08 21:38:12
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -16,25 +16,23 @@
 import json
 from cchardet import detect
 from lxml import etree
+from xt_Class import item_MixIn
 
 
-class ReqResult:
+class ReqResult(item_MixIn):
     __slots__ = ('raw', 'clientResponse', '_content', 'index')
 
     # 结构化返回结果
     def __init__(self, response, content=None, index=None):
         if response is not None:
             self.raw = self.clientResponse = response
-            self._content = content or self.raw.content
+            self._content = content or response.content
             self.index = index or id(self)
 
-    # #下标obj[key] 获取属性
-    def __getitem__(self, attr):
-        return getattr(self, attr)
-
-    # @property装饰器把方法变成属性,只读
     @property
     def content(self):
+        if self._content is None: return None
+
         code_type = detect(self._content)
         if code_type != 'utf-8':
             self._content = self._content.decode(code_type['encoding'],

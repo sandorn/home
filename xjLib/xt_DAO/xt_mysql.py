@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-03 23:26:06
 #FilePath     : /xjLib/xt_DAO/xt_mysql.py
-#LastEditTime : 2020-07-07 15:19:56
+#LastEditTime : 2020-07-08 20:40:16
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -16,7 +16,7 @@
 import MySQLdb
 import pandas
 import pymysql
-
+from copy import deepcopy
 from .dbconf import db_conf
 
 
@@ -31,9 +31,9 @@ class engine(object):
         if key not in db_conf:
             raise ('错误提示：检查数据库配置：' + self.db_name)
         else:
-            self.conf = db_conf[self.db_name]
-        if self.conf.get('type'):
-            self.conf.pop('type')
+            self.conf = deepcopy(db_conf[self.db_name])
+
+        if 'type' in self.conf: self.conf.pop('type')
 
         try:
             if odbc == 'pymysql':
@@ -42,7 +42,7 @@ class engine(object):
             else:  # mysqlclient
                 self.conn = MySQLdb.connect(**self.conf)
                 self.DictCursor = MySQLdb.cursors.DictCursor
-            # self.conn.autocommit(True)  ##自动提交
+            # self.conn.autocommit(True)  # #自动提交
         except Exception as error:
             print(f'{self.odbc} connect<{self.db_name}> error:{repr(error)}')
             return None  # raise  # exit(1)
@@ -98,23 +98,33 @@ class engine(object):
             return True
         except Exception as error:
             self.conn.rollback()
-            print('\033[', error, ']\033', sep='')
+            print(f'\033[{error}]\033', f'sql:{sql}', sep='')
+            return False
+
+    def insertMany(self, datas, tb_name, keys=None):
+        if not isinstance(datas, (list, tuple)):
+            raise "must send list|tuple object for me"
+
+        if keys is None: keys = [k for k in datas[0].keys()]
+        cols = ", ".join("`{}`".format(k) for k in keys)
+        val_cols = ", ".join("%({})s".format(k) for k in keys)
+        sql = "insert into `%s`(%s) values(%s)"
+        res_sql = sql % (tb_name, cols, val_cols)
+
+        try:
+            self.cur.executemany(res_sql, datas)
+            self.conn.commit()
+            return True
+        except Exception as error:
+            self.conn.rollback()
+            print(f'\033[{error}]\033', f'sql:{res_sql}', sep='')
             return False
 
     def insert(self, data, tb_name):
-        # print(11111, data)
-        # # 以字典形式提交插入
-        # ls = [(k, data[k]) for k in data if data[k] is not None]
-        # sql = f'''insert into `{tb_name}` ({','.join([i[0]
-        #      for i in ls]) }) values ({','.join(['%r' % i[1]for i in ls])});'''
-        # print(22222, sql)  # .replace('%', '%%')
-
-        cols = ", ".join('`{}`'.format(k) for k in data.keys())
-        val_cols = ', '.join('%({})s'.format(k) for k in data.keys())
-        print(3333333, val_cols)  # '%(name)s, %(age)s'
-        res_sql = f"insert into {tb_name}({cols}) values({val_cols})"
-        print(9999999, res_sql)
-        self.worKon(res_sql, data)
+        cols = ", ".join("`{}`".format(k) for k in data.keys())
+        val_cols = ", ".join("'{}'".format(v) for v in data.values())
+        res_sql = f"insert into `{tb_name}`({cols}) values({val_cols})"
+        self.worKon(res_sql.replace('%', '%%'))
 
     def update(self, dt_update, dt_condition, tb_name):
         # dt_update,更新的数据

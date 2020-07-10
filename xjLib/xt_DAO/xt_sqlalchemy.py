@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-03-25 10:13:07
 #FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-#LastEditTime : 2020-06-17 13:10:22
+#LastEditTime : 2020-07-08 20:47:27
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -17,11 +17,11 @@
 from sqlalchemy import (TIMESTAMP, Column, DateTime, Enum, Integer, Numeric,
                         String, text, create_engine)
 from sqlalchemy.dialects.mysql import INTEGER
-from sqlalchemy.ext.declarative import declarative_base, api
+from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import scoped_session, sessionmaker, validates
 
 # 此处用.引用在其他地方可以操作，本文件不可以
-from .dbconf import make_connect_string
+from .dbconf import make_connect_string, db_conf
 from .xt_sqlbase import Sql_Base
 from xt_Class import typed_property
 
@@ -29,32 +29,32 @@ from xt_Class import typed_property
 class SqlConnection(Sql_Base):
 
     # #限定参数类型
-    baseclass = typed_property('baseclass', api.DeclarativeMeta)
+    dbmodel = typed_property('dbmodel', DeclarativeMeta)
 
-    def __init__(self, baseclass, key='default'):
-        self.baseclass = baseclass  # #定义基础数据类
+    def __init__(self, dbmodel, key='default'):
+        self.dbmodel = dbmodel  # #orm基类
         # #设置self.params参数
         self.params = {
-            attr: getattr(baseclass, attr)
-            for attr in baseclass._fields()
+            attr: getattr(self.dbmodel, attr)
+            for attr in self.dbmodel.columns()
         }
-        self.engine = create_engine(make_connect_string(key), echo=False)
+        self.engine = create_engine(make_connect_string(key))  # echo=True)
         self.session = scoped_session(sessionmaker(bind=self.engine))
         # #单线程 sessionmaker(bind=self.engine)
-        self.baseclass.metadata.create_all(self.engine)
+        self.dbmodel.metadata.create_all(self.engine)
 
     def drop_db(self):
-        self.baseclass.metadata.drop_all(self.engine)
+        self.dbmodel.metadata.drop_all(self.engine)
 
     def insert(self, dict):
         """传入字段与值对应的字典"""
-        item = self.baseclass(**dict)
+        item = self.dbmodel(**dict)
         self.session.add(item)
         self.session.commit()
 
     def insert_all(self, dict_list):
         """传入字段与值对应的字典所构成的list"""
-        item = [self.baseclass(**dict) for dict in dict_list]
+        item = [self.dbmodel(**dict) for dict in dict_list]
         self.session.add_all(item)
         self.session.commit()
 
@@ -66,7 +66,7 @@ class SqlConnection(Sql_Base):
                     conditon_list.append(
                         self.params.get(key) == conditions.get(key))
             conditions = conditon_list
-            query = self.session.query(self.baseclass)
+            query = self.session.query(self.dbmodel)
             for condition in conditions:
                 query = query.filter(condition)
             deleteNum = query.delete()
@@ -87,7 +87,7 @@ class SqlConnection(Sql_Base):
                     conditon_list.append(
                         self.params.get(key) == conditions.get(key))
             conditions = conditon_list
-            query = self.session.query(self.baseclass)
+            query = self.session.query(self.dbmodel)
             for condition in conditions:
                 query = query.filter(condition)
             updatevalue = {}
@@ -99,9 +99,9 @@ class SqlConnection(Sql_Base):
             self.session.commit()
         else:
             updateNum = 0
-        return {'updateNum': updateNum}
+        return updateNum
 
-    def select(self, count=None, conditions=None, Columns=None):
+    def select(self, conditions=None, Columns=None, count=None):
         '''
         conditions:字典，条件 where。类似self.params
         Columns:选择的列名
@@ -115,7 +115,8 @@ class SqlConnection(Sql_Base):
                     Columns_list.append(self.params.get(key))
             Columns = Columns_list
         else:
-            Columns = [self.baseclass]
+            Columns = [self.dbmodel]
+
         query = self.session.query(*Columns)
 
         if isinstance(conditions, dict):
@@ -138,12 +139,9 @@ class SqlConnection(Sql_Base):
             return query.all()
 
     def from_statement(self, sql, conditions=None):
-        '''
-        使用完全基于字符串的语句
-        '''
+        '''使用完全基于字符串的语句'''
         if sql:
-            query = self.session.query(self.baseclass).from_statement(
-                text(sql))
+            query = self.session.query(self.dbmodel).from_statement(text(sql))
         if conditions:
             result = query.params(**conditions).all()
             self.session.commit()
@@ -153,15 +151,17 @@ class SqlConnection(Sql_Base):
 
         return result
 
-    def filter_by(self, conditions):
+    def filter_by(self, kwargs, count=None):
         '''
         filter_by用于简单查询，不支持比较运算符,不需要额外指定类名。
-        filter_by的参数是**kwargs，直接支持组合查询。
+        filter_by的参数直接支持组合查询。
         仅支持[等于]、[and]，无需明示，在参数中以字典形式传入
         '''
-        result = self.session.query(
-            self.baseclass).filter_by(**conditions).all()
-        return result
+        query = self.session.query(self.dbmodel).filter_by(**kwargs)
+        if count:
+            return query.limit(count).all()
+        else:
+            return query.all()
 
     def close(self):
         pass
@@ -182,3 +182,7 @@ def creat_sqlalchemy_db_class(tablename, filename=None, key='default'):
                     shell=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT)
+
+
+if __name__ == "__main__":
+    creat_sqlalchemy_db_class('uuu', 'd:/1.py', 'TXbook')

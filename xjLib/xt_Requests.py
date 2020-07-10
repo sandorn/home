@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-07-06 19:22:22
+#LastEditTime : 2020-07-10 14:18:26
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
@@ -31,7 +31,7 @@ TRETRY = Tretry(
     wait=wait_random(min=0, max=1),
 )
 
-# @不能用于协程,未能保留最后错误
+# @不能用于协程,且不保留最后错误
 # from retrying import retry as Retry
 # RETRY = Retry(
 #     wait_random_min=0,
@@ -53,36 +53,31 @@ def _setKw(kwargs):
 
 
 def request_parse(method, url, *args, **kwargs):
-    attempts = 0
+    attempts = RETRY_TIME
     response = None
     Timeout_exc = False
-    Err_msg = None
     kwargs = _setKw(kwargs)
 
-    while attempts < RETRY_TIME:
+    while attempts:
         try:
             Timeout_exc = False
-            Err_msg = None
             response = requests.request(method, url, *args, **kwargs)
             response.raise_for_status()
-            # $ assert response.status_code in [200, 201, 302]
+            # assert response.status_code in [200, 201, 302]
         except requests.Timeout as err:
-            attempts += 1
+            attempts -= 1
             Timeout_exc = True
-            Err_msg = err
-            print(f'parse_{method}:<{url}>; times:{attempts}; Err:{err!r}')
+            print(f'parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Timeout:{err!r}')
         except Exception as err:
-            attempts += 1
-            print(f'parse_{method}:<{url}>; times:{attempts}; Err:{err!r}')
+            attempts -= 1
+            print(f'parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Err:{err!r}')
         else:
             # #返回正确结果
             new_res = ReqResult(response)
             return new_res
 
     # #Timeout 错误，返回空
-    if Timeout_exc:
-        print(Err_msg)
-        return None
+    if Timeout_exc: return None
     # #返回非正确结果
     new_res = ReqResult(response)
     return new_res
@@ -90,12 +85,11 @@ def request_parse(method, url, *args, **kwargs):
 
 def request_retry(method, url, *args, **kwargs):
     response = None
-    Timeout_exc = False
     kwargs = _setKw(kwargs)
 
     @TRETRY
     def _fetch_run():
-        nonlocal response, Timeout_exc
+        nonlocal response
         response = requests.request(method, url, *args, **kwargs)
         response.raise_for_status()
 
@@ -103,7 +97,7 @@ def request_retry(method, url, *args, **kwargs):
         _fetch_run()
     except requests.Timeout as err:
         # #Timeout 错误，返回空
-        print(f'requests.{method}:<{url}>; Err:{err!r}')
+        print(f'requests.{method}:<{url}>; Timeout:{err!r}')
         return None
     except Exception as err:
         print(f'requests.{method}:<{url}>; Err:{err!r}')
@@ -120,8 +114,7 @@ post = partial(request_retry, "post")
 
 
 class SessionClient:
-    __slots__ = ('sn', 'headers', 'cookies', 'response', 'url', 'method',
-                 'args', 'kwargs', 'callback')
+    __slots__ = ('sn', 'headers', 'cookies', 'response', 'url', 'method', 'args', 'kwargs', 'callback')
 
     def __init__(self):
         self.sn = requests.session()
@@ -129,8 +122,7 @@ class SessionClient:
 
     @TRETRY
     def _request(self):
-        self.response = self.sn.request(self.method, self.url, *self.args,
-                                        **self.kwargs)
+        self.response = self.sn.request(self.method, self.url, *self.args, **self.kwargs)
         self.response.raise_for_status()
         return self.response
 
@@ -139,7 +131,7 @@ class SessionClient:
             self.response = None
             self._request()
         except requests.Timeout as err:
-            print(f'SessionClient request:<{self.url}>; Err:{err!r}')
+            print(f'SessionClient request:<{self.url}>; Timeout:{err!r}')
             return None
         except Exception as err:
             print(f'SessionClient request:<{self.url}>; Err:{err!r}')
@@ -213,4 +205,19 @@ class SessionClient:
     for i in res_cookies_dic.keys():
         cookies[i] = res_cookies_dic[i]
     return cookies
+
+
+    res = get("https://www.biqukan.com/38_38836/")
+    element = res.element
+
+    全部章节节点 = element.xpath(
+        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a')
+
+    for each in 全部章节节点:
+        print(each.xpath("@href")[0])  # 获取属性方法1
+        print(each.attrib['href'])  # 获取属性方法2
+        print(each.get('href'))  # 获取属性方法3
+
+        print(each.xpath("string(.)").strip())  # 获取文本方法1，全
+        print(each.text.strip())  # 获取文本方法2，可能不全
 '''

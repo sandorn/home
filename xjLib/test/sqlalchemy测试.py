@@ -7,13 +7,13 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-08 20:30:34
-#FilePath     : /xjLib/xt_DAO/test/sqlalchemy测试.py
-#LastEditTime : 2020-06-17 14:52:38
+#FilePath     : /xjLib/test/sqlalchemy测试.py
+#LastEditTime : 2020-07-08 17:35:10
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 
-from xt_DAO.xt_sqlalchemy import SqlConnection, declarative_base, text, validates, Column, DateTime, String, Enum, Integer, Numeric, INTEGER, TIMESTAMP
+from xt_DAO.xt_sqlalchemy import SqlConnection, declarative_base, text, validates, Column, DateTime, String, Enum, Integer, Numeric, INTEGER, TIMESTAMP, DeclarativeMeta
 from xt_DAO.xt_sqlbase import Sql_Meta
 
 Model = declarative_base()  # 生成一个SQLORM基类
@@ -42,8 +42,6 @@ class Users(Model, Sql_Meta):
 
 
 sqlhelper = SqlConnection(Users, 'TXbx')
-res = sqlhelper.select(10)
-print(res)
 user2 = [{
     'username': '刘澈',
     'password': '234567',
@@ -57,34 +55,44 @@ user2 = [{
 }]
 
 # sqlhelper.insert_all(user2)
-sqlhelper.update({'手机': '17610786502'}, {'会员到期日': '7777,12,31'})
-sqlhelper.update({'username': '刘澈'}, {'会员到期日': '9999,12,31'})
-res = sqlhelper.filter_by({"username": "刘澈"})
-print(1111, res)
-res[0]['会员级别'] = 'A'
-sqlhelper.session.commit()
-print(res[0]._fields())
-for row in sqlhelper.select(conditions={"username": "刘澈"}):
-    print(row.username, row.ID)
-res = sqlhelper.select(conditions={"username": "刘澈"})
-print(2222, res)
-res = sqlhelper.select(conditions={"username": "刘澈"})
-print(3333, res)
-res = sqlhelper.select(conditions={"username": "刘澈"},
-                       Columns=['username', 'ID'])
-print(4444, res)
-res = sqlhelper.select(2,
-                       conditions={"username": "刘澈"},
-                       Columns=['username', 'ID'])
-print(5555, res)
-res = sqlhelper.select(conditions={"username": "刘澈"}, count=1)
-print(6666, res)
-print(6767, res[0]['username'], res[0].username)
-res = sqlhelper.from_statement(
-    "SELECT username,ID FROM users2 where username=:username limit 4",
-    {"username": "刘澈"})
-print(7777, sqlhelper.baseclass.get_dict(res))
-for item in res:
-    print(7878, item, item.username, item['password'])
-    print(8888, Users.get_dict(item))
-    print(9999, item.record_to_dict())
+# sqlhelper.update({'手机': '17610786502'}, {'会员到期日': '7777,12,31'})
+# sqlhelper.update({'username': '刘澈'}, {'会员到期日': '9999,12,31'})
+# res = sqlhelper.filter_by({"username": "刘澈"})
+# print(1111, res)
+
+# res[0]['会员级别'] = 'A'
+# sqlhelper.session.commit()
+# print(res[0]._fields())
+# for row in sqlhelper.select(conditions={"username": "刘澈"}):
+#     print(row.username, row.ID)
+# res = sqlhelper.select(conditions={"username": "刘澈"})
+# print(2222, res)
+# res = sqlhelper.select(conditions={"username": "刘澈"})
+# print(3333, res)
+
+res = sqlhelper.select(Columns=['username'])
+res = [r[0] for r in res]
+print(4444, type(res), type(res[0]), res)
+for a in res:
+    print(a)
+    print(a[0])
+
+# result = [Users(a, b, c, d, e, f, g, h) for a, b, c, d, e, f, g, h in res[0]]
+# print(result[0])
+# res = sqlhelper.select(2,
+#                        conditions={"username": "刘澈"},
+#                        Columns=['username', 'ID'])
+# print(5555, res)
+# res = sqlhelper.select(conditions={"username": "刘澈"}, count=1)
+# print(6666, res)
+# res = sqlhelper.select({"username": "刘澈"})
+# print(7878, res)
+# print(6767, res[0]['username'], res[0].username)
+# res = sqlhelper.from_statement(
+#     "SELECT username,ID FROM users2 where username=:username limit 4",
+#     {"username": "刘澈"})
+# print(7777, sqlhelper.baseclass.to_dict(res))
+# for item in res:
+#     print(7878, item, item.username, item['password'])
+#     print(8888, Users.make_dict(item))
+#     print(9999, item.to_dict())

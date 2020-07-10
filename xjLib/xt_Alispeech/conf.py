@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
 #FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-06-22 20:44:07
+#LastEditTime : 2020-07-10 11:35:50
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -55,10 +55,9 @@ class Constant:
 
     def __renew_token__(self):
         now = get_10_timestamp()
-        # #token生命周期缩短3分钟
-        if (self.__expire_time - 60 * 3) <= now:
-            self.__token, self.__expire_time = AccessToken.create_token(
-                self.__accessKeyId, self.__accessKeySecret)
+        # #token生命周期缩短30分钟
+        if (self.__expire_time - 60*30) <= now:
+            self.__token, self.__expire_time = AccessToken.create_token(self.__accessKeyId, self.__accessKeySecret)
 
 
 @dataclass(init=False)
@@ -92,3 +91,10 @@ class TransResult:
     name: str = ''
     task_id: str = ''
     response: Any = ''
+
+
+if __name__ == "__main__":
+    print(Constant())
+    print(SpeechArgs())
+    print(SynResult())
+    print(TransResult())

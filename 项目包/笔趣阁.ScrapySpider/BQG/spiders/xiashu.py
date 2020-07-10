@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:45:36
-@LastEditors: Even.Sand
-@LastEditTime: 2020-02-20 19:19:29
+#LastEditors  : Please set LastEditors
+#LastEditTime : 2020-07-07 19:49:51
 '''
 
 import scrapy
@@ -43,21 +43,31 @@ class XiashuSpider(scrapy.Spider):
 
     # 编写爬取方法
     def parse(self, response):
-        self.书名 = response.xpath('//meta[@property="og:title"]//@content').extract_first()
+        self.书名 = response.xpath(
+            '//meta[@property="og:title"]//@content').extract_first()
 
-        全部章节链接 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
+        全部章节链接 = response.xpath(
+            '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href'
+        ).extract()
         #全部章节名称 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
         #3):  #
         for index in range(len(全部章节链接)):
             url = 'https://www.biqukan.com' + str(全部章节链接[index])
-            yield scrapy.Request(url=url, meta={'index': index}, callback=self.parse_content, dont_filter=True)
+            yield scrapy.Request(url=url,
+                                 meta={'index': index},
+                                 callback=self.parse_content,
+                                 dont_filter=True)
 
     def parse_content(self, response):
         item = BqgItem()
-        item['BOOKNAME'] = response.xpath('//div[@class="p"]/a[2]/text()').extract_first()
+        item['BOOKNAME'] = response.xpath(
+            '//div[@class="p"]/a[2]/text()').extract_first()
         item['INDEX'] = response.meta['index']
         item['ZJNAME'] = response.xpath('//h1/text()').extract_first()
-        item['ZJTEXT'] = "".join(response.xpath('//*[@id="content"]/text()').extract())
+        item['ZJTEXT'] = "".join(
+            response.xpath('//*[@id="content"]/text()').extract()).replace(
+                "'", "\\\'").replace('"', '\\\"')
+
         yield item
 
     def parse_detail(self, response):

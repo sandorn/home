@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:44:47
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-03 21:03:57
+#LastEditTime : 2020-07-08 20:24:16
 '''
 
 import xlwt
@@ -37,7 +37,10 @@ LOG_LEVEL = 'ERROR'
 
 class CustomJsonLinesItemExporter(JsonLinesItemExporter):
     def __init__(self, file, **kwargs):
-        super(CustomJsonLinesItemExporter, self).__init__(file, encoding='utf-8', ensure_ascii=False, **kwargs)
+        super(CustomJsonLinesItemExporter, self).__init__(file,
+                                                          encoding='utf-8',
+                                                          ensure_ascii=False,
+                                                          **kwargs)
 
     # 启用新定义的Exporter类\
     FEED_EXPORTERS = {
@@ -50,7 +53,6 @@ class ExcelItemExporter(BaseItemExporter):
     导出为Excel，在执行命令中指定输出格式为excel
     e.g. scrapy crawl -t excel -o books.xls
     """
-
     def __init__(self, file, **kwargs):
         self._configure(kwargs)
         self.file = file
@@ -106,14 +108,13 @@ DOWNLOADER_MIDDLEWARES = {
 RANDOM_UA_TYPE = 'random'
 
 DEFAULT_REQUEST_HEADERS = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept':
+    'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
     'Accept-Charset': 'gb2312,utf-8;q=0.7,*;q=0.7',
     'Connection': 'close',
 }
-
-
 '''
 ITEM_PIPELINES = {
     'BQG.pipelines.PipelineCheck': 100,
