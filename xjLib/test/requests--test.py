@@ -8,12 +8,12 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-12 16:18:13
 #FilePath     : /xjLib/test/requests--test.py
-#LastEditTime : 2020-07-10 14:18:04
+#LastEditTime : 2020-07-10 19:01:29
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 from xt_Ahttp import ahttpGet, ahttpGetAll
-from xt_Requests import SessionClient, get, parse_get
+from xt_Requests import SessionClient, get, get_parse, get_wraps
 from xt_Asyncio import AioCrawl
 import asyncio
 
@@ -24,36 +24,41 @@ urls = [
     "https://httpbin.org/get",  # 2 返回head及ip等信息
     "https://httpbin.org/post",  # 返回head及ip等信息
     "http://g.cn",  # 4 # status:[400]
-    "http://www.google.com",  # 5 status:[400]
+    "http://www.google.com",  # 5 Timeout
     "https://www.biqukan.com/38_38836/",
     "https://www.biqukan.com/38_38836/497577681.html",
 ]
 args_dict = {}
-# #s.session.auth = ('user', 'pass')
-target = urls[5]
-tout = 3.01
-# res = parse_get(target, params=args_dict, json=args_dict, timeout=tout)
-# print('parse_get:', res)  # , res.text)
+tout = 36.01
 
-# res = get(target, params=args_dict, json=args_dict, timeout=tout)
-# print('get:', res)  # , res['text'])
+for url in urls:
+    # res = get_parse(url, params=args_dict, json=args_dict, timeout=tout)
+    # print('get_parse:', res)  # , res.text)
 
-res = s.get(target, params=args_dict, json=args_dict, timeout=tout)
-print('session:', res)  # , res.text)
-res = s.post(urls[3], params=args_dict, json=args_dict, timeout=tout)
-print('session:', res, res.text)
+    # res = get_wraps(url, params=args_dict, json=args_dict, timeout=tout)
+    # print('get_wraps:', res)  # , res['text'])
 
-# res = ahttpGet(target, params=args_dict, json=args_dict, timeout=tout)
-# print('ahttpGet:', res)  # , res.text)
-# print('ahttpGet:', res.text)
+    # res = get(url, params=args_dict, json=args_dict, timeout=tout)
+    # print('get:', res)  # , res['text'])
 
-# res = ahttpGetAll([target, urls[5], urls[0]], timeout=tout)
-# print('ahttpGetAll:', res)  # , res[0].text)
+    # res = s.get(url, params=args_dict, json=args_dict, timeout=tout)
+    # print('session:', res)  # , res.text)
+    # res = s.post(url, params=args_dict, json=args_dict, timeout=tout)
+    # print('session:', res, res.text)
 
-# aio = AioCrawl()
-# res = asyncio.run(
-#     aio.fetch(target, params=args_dict, json=args_dict, timeout=tout))
-# print('AioCrawl:', res)  # , res[0].text)
+    # res = ahttpGet(url, params=args_dict, json=args_dict, timeout=tout)
+    # print('ahttpGet:', res)  # , res.text)
+    #  print('ahttpGet:', res.text)
+
+    # res = ahttpGetAll([
+    #     url,
+    # ], timeout=tout)
+    # print('ahttpGetAll:', res)  # , res[0].text)
+
+    # aio = AioCrawl()
+    # res = asyncio.run(aio.fetch(url, params=args_dict, json=args_dict, timeout=tout))
+    # print('AioCrawl:', res)  # , res[0].text)
+    pass
 
 # #xpath
 # res = get(urls[6])

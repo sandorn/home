@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-29 09:51:29
 #FilePath     : /xjLib/xt_Asyncio.py
-#LastEditTime : 2020-07-07 14:23:56
+#LastEditTime : 2020-07-10 18:46:46
 #Github       : https://github.com/sandorn/home
 #==============================================================
 aiohttp笔记 - happy_codes - 博客园
@@ -48,43 +48,35 @@ class AioCrawl:
     async def fetch(self, url, index=None, **kwargs):
         @TRETRY
         async def _fetch_run():
-            async with TCPConnector(
-                    use_dns_cache=True, ssl=False) as Tconn, ClientSession(
-                        cookies=cookies,
-                        connector=Tconn) as session, session.request(
-                            method, url, **kwargs) as self.response:
+            async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=cookies, connector=Tconn) as session, session.request(method, url, raise_for_status=True, **kwargs) as self.response:
                 self.content = await self.response.read()
-                assert self.response.status in [200, 201, 302]
                 return self.response, self.content
 
         # #初始化参数
+        kwargs.setdefault('headers', MYHEAD)
+        kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
+        kwargs.setdefault('verify_ssl', False)
+
         index = index or id(url)
-        method = kwargs.pop('method')
-        cookies = kwargs.pop('cookies')
-        if "callback" in kwargs:
-            callback = kwargs.pop("callback")
-        else:
-            callback = None
+        cookies = kwargs.pop('cookies', {})
+        method = kwargs.pop('method', 'get')
+        callback = kwargs.pop("callback", None)
 
         # #循环抓取
         try:
             await _fetch_run()
-        except asyncio.exceptions.TimeoutError as err:
-            # #Timeout 错误，返回空
+        except Exception as err:
             print(f'AioCrawl.fetch:{url}; Err:{err!r}')
             self.concurrent -= 1  # 并发数-1
             self.result = None
             return None
-        except Exception as err:
-            print(f'AioCrawl.fetch:{url}; Err:{err!r}')
-
-        # #返回结果,不管是否正确
-        self.concurrent -= 1  # 并发数-1
-        new_res = ReqResult(self.response, self.content, index)
-        if callback:
-            new_res = callback(new_res)  # 有回调则调用
-        self.result = new_res
-        return new_res
+        else:
+            # #返回正确结果
+            self.concurrent -= 1  # 并发数-1
+            self.result = ReqResult(self.response, self.content, index)
+            if callback:  # 有回调则调用
+                self.result = callback(self.result)
+            return self.result
 
     def getAllResult(self):
         for _ in range(len(self.future_list)):
@@ -127,23 +119,14 @@ class AioCrawl:
         if not isinstance(tasks, (list, tuple)):
             raise Exception('传入非list或tuple')
 
-        # #初始化参数
-        kwargs.setdefault('method', 'get')
-        kwargs.setdefault('headers', MYHEAD)
-        kwargs.setdefault('cookies', {})
-        kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
-        kwargs.setdefault('verify_ssl', False)
-
         for index, task in enumerate(tasks):
             if isinstance(task, (list, tuple)):
                 '''list传入多个参数,拆解'''
-                future = asyncio.run_coroutine_threadsafe(
-                    self.fetch(*task, **kwargs), self.event_loop)
+                future = asyncio.run_coroutine_threadsafe(self.fetch(*task, **kwargs), self.event_loop)
 
             elif isinstance(task, str):
                 '''单一字符串参数,识别为url,添加序号'''
-                future = asyncio.run_coroutine_threadsafe(
-                    self.fetch(task, index + 1, **kwargs), self.event_loop)
+                future = asyncio.run_coroutine_threadsafe(self.fetch(task, index + 1, **kwargs), self.event_loop)
 
             self.future_list.append(future)
             self.concurrent += 1  # 并发数加 1
@@ -165,16 +148,14 @@ if __name__ == '__main__':
     a = AioCrawl()
 
     for _ in range(2):
-        a.add_fetch_tasks(['https://www.baidu.com'
-                           for _ in range(2)])  # 模拟动态添加任务
+        a.add_fetch_tasks(['https://www.baidu.com' for _ in range(2)])  # 模拟动态添加任务
 
     t = a.wait_completed()
     for i in t:
         print(i)
 
     for _ in range(2):
-        a.add_fetch_tasks(['https://httpbin.org/get'
-                           for _ in range(2)])  # 模拟动态添加任务
+        a.add_fetch_tasks(['https://httpbin.org/get' for _ in range(2)])  # 模拟动态添加任务
 
     t1 = a.wait_completed()
     for i in t1:

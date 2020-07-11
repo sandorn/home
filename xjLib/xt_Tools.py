@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 18:42:56
 #FilePath     : /xjLib/xt_Tools.py
-#LastEditTime : 2020-07-10 13:57:12
+#LastEditTime : 2020-07-10 18:01:31
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -172,14 +172,14 @@ def catch_wraps(func, bool=False):
         try:
             return func(*args, **keyargs)
         except Exception as err:
-            print(f'Execute Function: [{func.__name__}]\tcatch_except Error: {err!r}')
+            print(f'catch_wraps: [{func.__name__}]\tError: {err!r}')
             if bool: traceback.print_exc()
             return
 
     return wrapper
 
 
-def try_except_wraps(f=None, max_retries: int = 5, delay: (int, float) = 0.1, step: (int, float) = 0.1, exceptions: (BaseException, tuple, list) = BaseException, sleep=time.sleep, process=None, validate=None, callback=None, default=None):
+def try_except_wraps(fn=None, max_retries: int = 6, delay: (int, float) = 0.2, step: (int, float) = 0.1, exceptions: (BaseException, tuple, list) = BaseException, sleep=time.sleep, process=lambda ex: True, validate=None, callback=None, default=None):
     """
         函数执行出现异常时自动重试的简单装饰器
         :param f: function 执行的函数。
@@ -201,60 +201,48 @@ def try_except_wraps(f=None, max_retries: int = 5, delay: (int, float) = 0.1, st
         如验证函数正常执行，没有返回值或返回除False以外的结果，则终止重试，并将函数执行结果返回。
         如验证函数抛出异常，且异常属于被重试装饰器捕获的类型，则继续重试。
         如验证函数抛出异常，且异常不属于被重试装饰器捕获的类型，则将验证函数的异常抛出。
-        :param callback: 回调函数，函数签名应接收一个参数，异常无法处理时，会将异常对象传入。
-        可用于记录异常日志，发送异常日志等。
+        :param callback: 回调函数，处理结果。
         :param default: 默认值/默认值生成函数
         :return: 被装饰函数的执行结果。
     """
-
-    # 带参数的装饰器
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            i = 0
+            attempts = 0
             func_exc = exc_traceback = None
-            # func_exc, exc_traceback = StopRetry, None
-            while i < max_retries:
+            while attempts < max_retries:
                 try:
                     result = func(*args, **kwargs)
-                    # 验证函数返回False时，表示告知装饰器验证不通过，继续重试
+                    # #验证函数返回False时，表示告知装饰器验证不通过，继续重试
                     if callable(validate) and validate(result) is False:
                         continue
                     else:
+                        # #回调函数，处理结果
+                        if callable(callback): result = callback(result)
                         return result
                 except exceptions as ex:
                     func_exc, exc_traceback = ex, traceback.format_exc()
-                    # 处理函数返回True时，表示告知装饰器异常已经处理，终止重试
-                    if callable(process):
-                        try:
-                            if process(ex) is True:
-                                return default() if callable(default) else default
-                        except Exception as e:
-                            func_exc, exc_traceback = e, traceback.format_exc()
-                            print(f'Execute Function: [{func.__name__}]\tEx_catch_except process Error: {e!r}')
-                            break
-                    print(f'Execute Function: [{func.__name__}]\tEx_catch_except Error: {ex!r}')
-                finally:
-                    i += 1
-                    sleep(delay + step * i)
+                    attempts += 1
+                    sleep(delay + step * attempts)
             else:
-                # 回调函数，处理自动无法处理的异常
-                if callable(callback):
-                    callback(func_exc, exc_traceback)
-                return default() if callable(default) else default
+                # #重试次数使用完毕，结果错误，返回默认值
+                print(f'try_except_wraps: [{func.__name__}]\tError: {func_exc!r}')
+                if callable(process) and process(func_exc) is True:
+                    return default() if callable(default) else default
+
             pass
 
         return wrapper
 
-    if callable(f):
-        return decorator(f)
+    if callable(fn):
+        return decorator(fn)
     return decorator
 
 
 try_wraps = try_except_wraps()
 
 
-def myhelp(obj):
+def gethelp(obj):
     '''获取对象帮助'''
     from inspect import signature
     return signature(obj)

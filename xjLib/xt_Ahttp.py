@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-07 14:10:52
+#LastEditTime : 2020-07-10 18:59:51
 '''
 import asyncio
 from functools import partial
@@ -71,20 +71,10 @@ class AsyncTask:
         self.args = args[1:]
 
         kwargs.setdefault('headers', MYHEAD)
-        kwargs.setdefault('cookies', {})
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
         kwargs.setdefault('verify_ssl', False)
-
-        if "callback" in kwargs:
-            self.callback = kwargs['callback']
-            kwargs.pop("callback")
-        else:
-            self.callback = None
-
-        if "cookies" in kwargs:
-            self.cookies = kwargs['cookies']
-            kwargs.pop("cookies")
-
+        self.callback = kwargs.pop("callback", None)
+        self.cookies = kwargs.pop("cookies", {})
         self.kwargs = kwargs
 
         return self
@@ -100,33 +90,21 @@ async def Async_run(self):
     # #单个任务，从AsyncTask.run调用
     @TRETRY
     async def _fetch_run():
-        async with TCPConnector(
-                use_dns_cache=True, ssl=False,
-                limit=self.pool) as Tconn, ClientSession(
-                    cookies=self.cookies,
-                    connector=Tconn) as session, session.request(
-                        self.method, self.url, *self.args,
-                        **self.kwargs) as self.response:
+        async with TCPConnector(ssl=False, limit=self.pool) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as session, session.request(self.method, self.url, *self.args, raise_for_status=True, **self.kwargs) as self.response:
             self.content = await self.response.read()
-            assert self.response.status in [200, 201, 302]
             return self.response, self.content, self.index
 
     try:
         await _fetch_run()
-    except asyncio.exceptions.TimeoutError as err:
-        # #Timeout 错误，返回空
-        print(f'Async_run:{self}; RetryErr:{err!r}')
-        self.result = None
-        return None
     except Exception as err:
         print(f'Async_run:{self}; RetryErr:{err!r}')
-
-    # #返回结果,不管是否正确
-    new_res = ReqResult(self.response, self.content, index=self.index)
-    if self.callback:
-        new_res = self.callback(new_res)  # 有回调则调用
-    self.result = new_res
-    return new_res
+        return None
+    else:
+        # #返回结果,不管是否正确
+        self.result = ReqResult(self.response, self.content, index=self.index)
+        if self.callback:  # 有回调则调用
+            self.result = self.callback(self.result)
+        return self.result
 
 
 def run(tasks, pool):
@@ -142,16 +120,11 @@ def run(tasks, pool):
 
 async def multi_req(tasks, pool, result_list):
     '''多个task使用同一sessionn model == 0'''
-    async with TCPConnector(
-            use_dns_cache=True, ssl=False,
-            limit=pool) as Tconn, ClientSession(connector_owner=False,
-                                                connector=Tconn) as session:
-
+    async with TCPConnector(ssl=False, limit=pool) as Tconn, ClientSession(connector=Tconn) as session:
         new_tasks = []
         for index, task in enumerate(tasks):
             task.index = index + 1
-            new_tasks.append(
-                asyncio.ensure_future(Async_Fetch(task, result_list, session)))
+            new_tasks.append(asyncio.ensure_future(Async_Fetch(task, result_list, session)))
 
         # #等待纤程结束
         await asyncio.wait(new_tasks)
@@ -162,33 +135,25 @@ async def multi_req(tasks, pool, result_list):
 async def Async_Fetch(task, result_list, session):
     @TRETRY
     async def _fetch_run():
-        async with session.request(task.method,
-                                   task.url,
-                                   *task.args,
-                                   cookies=task.cookies,
-                                   **task.kwargs) as task.response:
+        async with session.request(task.method, task.url, *task.args, cookies=task.cookies, raise_for_status=True, **task.kwargs) as task.response:
             task.content = await task.response.read()
-            assert task.response.status in [200, 201, 302]
             return task.response, task.content, task.index
 
     try:
         await _fetch_run()
-    except asyncio.exceptions.TimeoutError as err:
-        # #Timeout 错误，返回空
+    except Exception as err:
         print(f'Async_Fetch:{task}; RetryErr:{err!r}')
         task.response = task.content = task.result = None
         result_list.append(None)
         return None
-    except Exception as err:
-        print(f'Async_Fetch:{task}; RetryErr:{err!r}')
-
-    # #返回结果,不管是否正确
-    new_res = ReqResult(task.response, task.content, task.index)
-    if task.callback:
-        new_res = task.callback(new_res)  # 有回调则调用
-    task.result = new_res
-    result_list.append(new_res)
-    return new_res
+    else:
+        # #返回正确结果
+        new_res = ReqResult(task.response, task.content, task.index)
+        if task.callback:
+            new_res = task.callback(new_res)  # 有回调则调用
+        task.result = new_res
+        result_list.append(new_res)
+        return new_res
 
 
 def ahttp_parse(method, url, *args, **kwargs):

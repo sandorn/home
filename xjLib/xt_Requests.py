@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-07-10 14:18:26
+#LastEditTime : 2020-07-11 09:50:55
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
@@ -18,7 +18,7 @@ from functools import partial
 import requests
 from tenacity import retry as Tretry
 from tenacity import stop_after_attempt, wait_random
-
+from xt_Tools import try_except_wraps
 from xt_Head import MYHEAD
 from xt_Response import ReqResult
 
@@ -45,45 +45,57 @@ TRETRY = Tretry(
 
 def _setKw(kwargs):
     kwargs.setdefault('headers', MYHEAD)
-    # kwargs.setdefault('cookies', {})
+    kwargs.setdefault('cookies', {})
     kwargs.setdefault('timeout', TIMEOUT)  # @超时
-    kwargs.setdefault('allow_redirects', True)  # @重定向
     # kwargs.setdefault('cookies', requests.cookies.RequestsCookieJar())
     return kwargs
 
 
-def request_parse(method, url, *args, **kwargs):
+def _request_parse(method, url, *args, **kwargs):
     attempts = RETRY_TIME
     response = None
-    Timeout_exc = False
+    func_exc = False
     kwargs = _setKw(kwargs)
 
     while attempts:
         try:
-            Timeout_exc = False
+            func_exc = False
             response = requests.request(method, url, *args, **kwargs)
             response.raise_for_status()
             # assert response.status_code in [200, 201, 302]
         except requests.Timeout as err:
             attempts -= 1
-            Timeout_exc = True
+            func_exc = True
             print(f'parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Timeout:{err!r}')
         except Exception as err:
             attempts -= 1
+            func_exc = True
             print(f'parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Err:{err!r}')
         else:
             # #返回正确结果
-            new_res = ReqResult(response)
-            return new_res
+            return ReqResult(response)
 
-    # #Timeout 错误，返回空
-    if Timeout_exc: return None
-    # #返回非正确结果
-    new_res = ReqResult(response)
-    return new_res
+    # #错误返回None
+    if func_exc: return None
 
 
-def request_retry(method, url, *args, **kwargs):
+def _request_try_wraps(method, url, *args, **kwargs):
+    kwargs = _setKw(kwargs)
+
+    @try_except_wraps()
+    def _fetch_run():
+        response = requests.request(method, url, *args, **kwargs)
+        response.raise_for_status()
+        return response
+
+    response = _fetch_run()
+    # #错误返回None
+    if response is None: return None
+    # #返回正确结果
+    return ReqResult(response)
+
+
+def _request_tretry(method, url, *args, **kwargs):
     response = None
     kwargs = _setKw(kwargs)
 
@@ -95,22 +107,20 @@ def request_retry(method, url, *args, **kwargs):
 
     try:
         _fetch_run()
-    except requests.Timeout as err:
-        # #Timeout 错误，返回空
-        print(f'requests.{method}:<{url}>; Timeout:{err!r}')
-        return None
     except Exception as err:
         print(f'requests.{method}:<{url}>; Err:{err!r}')
+        return None
+    else:
+        # #返回正确结果
+        return ReqResult(response)
 
-    # #返回结果,不管是否正确
-    new_res = ReqResult(response)
-    return new_res
 
-
-parse_get = partial(request_parse, "get")
-parse_post = partial(request_parse, "post")
-get = partial(request_retry, "get")
-post = partial(request_retry, "post")
+get_parse = partial(_request_parse, "get")
+post_parse = partial(_request_parse, "post")
+get_wraps = partial(_request_try_wraps, "get")
+post_wraps = partial(_request_try_wraps, "post")
+get = partial(_request_tretry, "get")
+post = partial(_request_tretry, "post")
 
 
 class SessionClient:
@@ -118,7 +128,7 @@ class SessionClient:
 
     def __init__(self):
         self.sn = requests.session()
-        self.cookies = {}
+        # self.cookies = {}
 
     @TRETRY
     def _request(self):
@@ -130,33 +140,25 @@ class SessionClient:
         try:
             self.response = None
             self._request()
-        except requests.Timeout as err:
-            print(f'SessionClient request:<{self.url}>; Timeout:{err!r}')
-            return None
         except Exception as err:
             print(f'SessionClient request:<{self.url}>; Err:{err!r}')
-
-        # #返回结果,不管是否正确
-        if hasattr(self.response, 'cookies'):
+            return None
+        else:
+            # #返回正确结果
             self.update_cookies(self.response.cookies)
 
-        new_res = ReqResult(self.response)
-        if self.callback:
-            new_res = self.callback(new_res)  # 有回调则调用
-        return new_res
+            new_res = ReqResult(self.response)
+            if self.callback:  # 有回调则调用
+                new_res = self.callback(new_res)
+            return new_res
 
     def __create_params(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
 
         kwargs = _setKw(kwargs)
-
-        if "callback" in kwargs:
-            self.callback = kwargs['callback']
-            kwargs.pop("callback")
-        else:
-            self.callback = None
-
+        self.cookies = kwargs.pop("cookies")
+        self.callback = kwargs.pop("callback", None)
         self.kwargs = kwargs
         return self._fetch_run()
 
@@ -183,6 +185,8 @@ class SessionClient:
 
 
 '''
+    # #s.session.auth = ('user', 'pass')
+
     self.cookies = requests.cookies.RequestsCookieJar()
     set_cookies(cookies)
 

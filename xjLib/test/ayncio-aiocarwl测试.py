@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-30 12:50:40
 #FilePath     : /xjLib/test/ayncio-aiocarwl测试.py
-#LastEditTime : 2020-07-07 18:06:15
+#LastEditTime : 2020-07-10 18:19:14
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -35,8 +35,7 @@ def handle_result(resps):
         element = resp.element
 
         _title = "".join(element.xpath('//h1/text()'))
-        title = _title.strip('\r\n').replace(u'\u3000',
-                                             u' ').replace(u'\xa0', u' ')
+        title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
         _showtext = element.xpath('//*[@id="content"]/text()')
         content = arrangeContent(_showtext)
         texts.append([index, title, content])
@@ -63,8 +62,7 @@ def handle_resp(resp):
     element = resp.element
 
     _title = "".join(element.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000',
-                                         u' ').replace(u'\xa0', u' ')
+    title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     _showtext = element.xpath('//*[@id="content"]/text()')
     content = arrangeContent(_showtext)
     return [index, title, content]
