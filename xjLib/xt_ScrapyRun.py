@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2020-02-12 15:30:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-30 16:55:16
+#LastEditTime : 2020-07-11 11:02:43
 '''
 
 import os
@@ -30,3 +30,4 @@ def ScrapyRun(dirpath, spilername):
 
 if __name__ == '__main__':
     pass
+    # #scrapy startproject Demo

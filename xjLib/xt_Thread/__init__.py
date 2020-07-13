@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-26 01:38:24
+#LastEditTime : 2020-07-13 11:44:30
 '''
 
 __doc__ = [
@@ -33,10 +33,11 @@ __doc__ = [
 ]
 
 import inspect
-from threading import Lock, Thread, enumerate, main_thread
+from threading import Lock, Thread, enumerate, main_thread, Event
 from time import sleep, time
 from queue import Empty, Queue
-from xt_Singleon import singleton_wrap_return_class
+from xt_Class import item_get_MixIn
+from xt_Singleon import singleton_wrap_return_class, Singleton_MiXin
 # #引入装饰器
 from .wraps import thread_wrap_class, thread_wraps_class
 from .wraps import thread_wraps, thread_wrap
@@ -55,8 +56,7 @@ def stop_thread(thread):
         tid = ctypes.c_long(tid)
         if not inspect.isclass(exctype):
             exctype = type(exctype)
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
-            tid, ctypes.py_object(exctype))
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
         if res == 0:
             raise ValueError("invalid thread id")
         elif res != 1:
@@ -140,22 +140,18 @@ class thread_pool:
         self.change_thread_num(0)
 
 
-class CustomThread(Thread):
+class CustomThread(Thread, item_get_MixIn):
     """多线程，继承自threading.Thread"""
 
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
+    finished = Event()
 
     def __init__(self, func, *args, **kwargs):
         super().__init__(target=func, args=args, kwargs=kwargs)
         self.daemon = True
         self.start()
         self.all_Thread.append(self)
-
-    '''下标obj[key]'''
-
-    def __getitem__(self, attr):
-        return getattr(self, attr)
 
     def run(self):
         self.Result = self._target(*self._args, **self._kwargs)
@@ -189,25 +185,22 @@ class CustomThread(Thread):
     def getAllResult(cls):
         """利用enumerate,根据类名判断线程结束，返回结果"""
         cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
-        finished = True
-        while finished:
+        # finished = True
+        while not cls.finished.is_set():
             nowlist = enumerate()  # 线程list
-            list_tmp = [
-                type(nowlist[index]).__name__ for index in range(len(nowlist))
-            ]
+            list_tmp = [type(nowlist[index]).__name__ for index in range(len(nowlist))]
             if cls.__name__ in list_tmp:
-                # print(time(), 'has ', cls.__name__, len(nowlist), len(list_tmp))
-                sleep(0.1)
+                cls.finished.wait(0.1)  # sleep(0.1)
                 continue
             else:
-                finished = False  # while结束标识
+                cls.finished.set()
                 break
 
         res, cls.result_list = cls.result_list, []
         return res
 
 
-class CustomThread_Queue(Thread):
+class CustomThread_Queue(Thread, item_get_MixIn):
     """单例多线程，继承自threading.Thread"""
     """采用queue传递工作任务"""
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
@@ -219,11 +212,6 @@ class CustomThread_Queue(Thread):
         self.task_queue.put([*queue_list])
         self.start()
         self.all_Thread.append(self)
-
-    '''下标obj[key]'''
-
-    def __getitem__(self, attr):
-        return getattr(self, attr)
 
     def run(self):
         try:
@@ -249,8 +237,7 @@ class CustomThread_Queue(Thread):
             while self.task_queue.unfinished_tasks:
                 remaining = endtime - time()
                 if remaining <= 0.0:
-                    print('unfinished_tasks in task_queue : ',
-                          self.task_queue.unfinished_tasks)
+                    print('unfinished_tasks in task_queue : ', self.task_queue.unfinished_tasks)
                     break
                 self.task_queue.all_tasks_done.wait(0.2)
         finally:
@@ -281,28 +268,18 @@ class CustomThread_Queue(Thread):
         return res
 
 
-class SingletonThread(Thread):
+class SingletonThread(Thread, item_get_MixIn, Singleton_MiXin):
     """单例多线程，继承自threading.Thread"""
+
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
-    _lock = Lock()
-
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "_instance"):
-            with cls._lock:
-                if not hasattr(cls, "_instance"):
-                    cls._instance = super().__new__(cls)
-        return cls._instance
+    finished = Event()
 
     def __init__(self, func, *args, **kwargs):
-        super().__init__(target=func, args=args, **kwargs)
+        super().__init__(target=func, args=args, kwargs=kwargs)
+        self.daemon = True
         self.start()
         self.all_Thread.append(self)
-
-    '''下标obj[key]'''
-
-    def __getitem__(self, attr):
-        return getattr(self, attr)
 
     def run(self):
         self.Result = self._target(*self._args, **self._kwargs)
@@ -310,6 +287,7 @@ class SingletonThread(Thread):
 
     def getResult(self):
         try:
+            self.join()
             return self.Result
         except Exception:
             return None
@@ -318,7 +296,7 @@ class SingletonThread(Thread):
         """停止线程池， 所有线程停止工作"""
         for _ in range(len(self.all_Thread)):
             thread = self.all_Thread.pop()
-            thread.join()  # !单例此处无效果
+            thread.join()  # @单例无效
 
     @classmethod
     def wait_completed(cls):
@@ -335,33 +313,21 @@ class SingletonThread(Thread):
     def getAllResult(cls):
         """利用enumerate,根据类名判断线程结束，返回结果"""
         cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
-        finished = True
-        while finished:
+        # finished = True
+        while not cls.finished.is_set():
             nowlist = enumerate()  # 线程list
-            list_tmp = [
-                type(nowlist[index]).__name__ for index in range(len(nowlist))
-            ]
+            list_tmp = [type(nowlist[index]).__name__ for index in range(len(nowlist))]
             if cls.__name__ in list_tmp:
-                # print(time(), 'has ', cls.__name__, len(nowlist), len(list_tmp))
-                sleep(0.5)
+                cls.finished.wait(0.1)  # sleep(0.1)
                 continue
             else:
-                finished = False  # 结束while
+                cls.finished.set()
                 break
-            # nowlist = enumerate()  # 线程list
-            # for index in range(len(nowlist)):
-            #     if type(nowlist[index]).__name__ == cls.__name__:
-            #         sleep(0.1)
-            #         finished = True  # 继续while
-            #         break  # 跳出for
-            #     elif index + 1 == len(nowlist):
-            #         finished = False  # 结束while
-            #         break  # 跳出for
-            #     else:
-            #         continue  # 继续for
 
         res, cls.result_list = cls.result_list, []
         return res
+
+    # wait_completed, getAllResult = getAllResult, wait_completed
 
 
 def make_singleton_thread_class(name):
@@ -381,3 +347,19 @@ def make_queue_singleton_thread_class():
 SigThread = make_singleton_thread_class('SigThread')
 
 SigThreadQ = make_queue_singleton_thread_class()
+
+
+class CustomThread_Singleton(CustomThread, Singleton_MiXin):
+    pass
+
+
+class CustomThread_Queue_Singleton(CustomThread_Queue, Singleton_MiXin):
+    pass
+
+
+'''
+类转为单例模式：
+    1.照写 from xt_Singleon import Singleton_Model
+    2.使用类装饰器 from xt_Singleon import singleton_wrap_return_class
+    3.混入继承 from xt_Singleon import Singleton_MiXin
+'''

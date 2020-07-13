@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 14:25:16
 #FilePath     : /xjLib/xt_Class.py
-#LastEditTime : 2020-07-10 13:20:29
+#LastEditTime : 2020-07-13 11:50:03
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -69,6 +69,10 @@ class dict_MixIn:
     def __init__(self):
         self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
 
+    @property
+    def __dict__(self):
+        return {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
+
 
 class iter_MixIn:
     '''
@@ -77,7 +81,7 @@ class iter_MixIn:
     print(isinstance(a, Iterable))
     '''
     def __iter__(self):
-        if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
+        if not hasattr(self, '__dict__'):
             self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
 
         return iter(self.__dict__.items())
@@ -88,7 +92,7 @@ class iter_MixIn:
 class repr_MixIn:
     '''用于打印显示'''
     def __repr__(self):
-        if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
+        if not hasattr(self, '__dict__'):
             self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
 
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in self.__dict__.items()])})"
@@ -186,6 +190,20 @@ def readonly(name):
 
 
 if __name__ == "__main__":
+    from xt_Singleon import Singleton_MiXin
+
+    class mixinsingleton(item_MixIn, iter_MixIn, repr_MixIn, Singleton_MiXin):
+        def __init__(self):
+            self.name = 'na98888me'
+            self.age = 12
+            self._i = 787
+            self.姓名 = '行云流水'
+
+    aa = mixinsingleton()
+    bb = mixinsingleton()
+    print(aa is bb, id(aa), id(bb))
+    print(aa, bb)
+
     my_dict = SetOnceDict()
     try:
         my_dict['username'] = '1111'
@@ -195,15 +213,15 @@ if __name__ == "__main__":
         print(err)
     print(99999, my_dict)
 
-    class Animal(iter_MixIn, repr_MixIn):
+    class Animal(iter_MixIn, repr_MixIn, Singleton_MiXin):
         def __init__(self):
             self.name = 'na98888me'
             self.age = 12
             self._i = 787
             self.姓名 = '行云流水'
 
-    print(Animal().__dict__)
-    print(Animal())
+    print(Animal().__dict__, id(Animal()))
+    print(Animal(), id(Animal()))
     for k, v in Animal():
         print(k.ljust(8), ':', v)
         pass

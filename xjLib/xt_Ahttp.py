@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-04 09:01:10
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-10 18:59:51
+#LastEditTime : 2020-07-11 10:58:25
 '''
 import asyncio
 from functools import partial
@@ -73,8 +73,8 @@ class AsyncTask:
         kwargs.setdefault('headers', MYHEAD)
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
         kwargs.setdefault('verify_ssl', False)
-        self.callback = kwargs.pop("callback", None)
         self.cookies = kwargs.pop("cookies", {})
+        self.callback = kwargs.pop("callback", None)
         self.kwargs = kwargs
 
         return self
@@ -179,9 +179,11 @@ if __name__ == "__main__":
     url = "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async"  # 400
     url_get = "https://httpbin.org/get"  # 返回head及ip等信息
     url_post = "https://httpbin.org/post"  # 返回head及ip等信息
-    res = ahttpGet(url_get)
-    print(res.text)
+    url_g = "http://g.cn"  # 返回head及ip等信息
+
+    res = ahttpGet(url_g)
+    print(res)
     res = ahttpPost(url_post)
-    print(res.text)
-    res = ahttpGetAll([url, url_get])
+    print(res)
+    res = ahttpGetAll([url_g, url_get])
     print(res)

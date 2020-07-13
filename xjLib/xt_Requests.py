@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
 #FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-07-11 09:50:55
+#LastEditTime : 2020-07-11 11:08:16
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
@@ -18,7 +18,7 @@ from functools import partial
 import requests
 from tenacity import retry as Tretry
 from tenacity import stop_after_attempt, wait_random
-from xt_Tools import try_except_wraps
+from xt_Tools import try_wraps
 from xt_Head import MYHEAD
 from xt_Response import ReqResult
 
@@ -31,23 +31,11 @@ TRETRY = Tretry(
     wait=wait_random(min=0, max=1),
 )
 
-# @不能用于协程,且不保留最后错误
-# from retrying import retry as Retry
-# RETRY = Retry(
-#     wait_random_min=0,
-#     wait_random_max=1000,
-#     stop_max_attempt_number=RETRY_TIME,
-#     wrap_exception=True,
-#     retry_on_exception=lambda x: True,
-#     retry_on_result=lambda ret: not ret,
-# )
-
 
 def _setKw(kwargs):
     kwargs.setdefault('headers', MYHEAD)
     kwargs.setdefault('cookies', {})
     kwargs.setdefault('timeout', TIMEOUT)  # @超时
-    # kwargs.setdefault('cookies', requests.cookies.RequestsCookieJar())
     return kwargs
 
 
@@ -82,7 +70,7 @@ def _request_parse(method, url, *args, **kwargs):
 def _request_try_wraps(method, url, *args, **kwargs):
     kwargs = _setKw(kwargs)
 
-    @try_except_wraps()
+    @try_wraps
     def _fetch_run():
         response = requests.request(method, url, *args, **kwargs)
         response.raise_for_status()
@@ -185,6 +173,16 @@ class SessionClient:
 
 
 '''
+    # @不能用于协程,且不保留最后错误
+    # from retrying import retry as Retry
+    # RETRY = Retry(
+    #     wait_random_min=0,
+    #     wait_random_max=1000,
+    #     stop_max_attempt_number=RETRY_TIME,
+    #     wrap_exception=True,
+    #     retry_on_exception=lambda x: True,
+    #     retry_on_result=lambda ret: not ret,
+    # )
     # #s.session.auth = ('user', 'pass')
 
     self.cookies = requests.cookies.RequestsCookieJar()

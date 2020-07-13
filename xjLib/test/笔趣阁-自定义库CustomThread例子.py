@@ -9,13 +9,13 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-08 20:06:52
+#LastEditTime : 2020-07-13 11:37:31
 根据网络资料，写的threadpool
 '''
 
 import os
 
-from xt_Thread import CustomThread, CustomThread_Queue, WorkManager, SingletonThread, SigThread, SigThreadQ, ThreadPoolMap, ThreadPoolSub, ProcessPoolMap, ProcessPoolSub
+from xt_Thread import CustomThread, CustomThread_Queue, WorkManager, SingletonThread, SigThread, SigThreadQ, ThreadPoolMap, ThreadPoolSub, ProcessPoolMap, ProcessPoolSub, CustomThread_Singleton
 from xt_File import savefile
 from xt_Time import fn_timer
 from xt_Ls_Bqg import get_download_url, get_contents, map_get_contents, map_get_contents_ahttp, get_contents_ahttp, arrangeContent
@@ -24,12 +24,9 @@ from xt_Ls_Bqg import get_download_url, get_contents, map_get_contents, map_get_
 
 @fn_timer
 def st(bookname, urls):
-    thr = [
-        SingletonThread(get_contents, index + 1, url)
-        for index, url in enumerate(urls)
-    ]
-    texts = SingletonThread.getAllResult(
-    )  # #getAllResult()  # #wait_completed()
+    thr = [SingletonThread(get_contents, index + 1, url) for index, url in enumerate(urls)]
+    print(id(thr[0]), id(thr[1]), id(thr[2]))
+    texts = SingletonThread.getAllResult()  # #getAllResult()  # #wait_completed()
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + 'SingletonThread.txt', texts, br='\n')
@@ -37,8 +34,8 @@ def st(bookname, urls):
 
 @fn_timer
 def sq(bookname, urls):
-    for index, url in enumerate(urls):
-        res = SigThreadQ([get_contents, index + 1, url])
+    thr = [SigThreadQ([get_contents, index + 1, url]) for index, url in enumerate(urls)]
+    # print(id(thr[0]), id(thr[1]), id(thr[2]))
     texts = SigThreadQ.wait_completed()  # #getAllResult()
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
@@ -47,23 +44,17 @@ def sq(bookname, urls):
 
 @fn_timer
 def stm(bookname, urls):
-    thr = [
-        SigThread(get_contents, index + 1, url)
-        for index, url in enumerate(urls)
-    ]
-    # print(id(thr[0]), id(thr[1]), id(thr[2]))
+    thr = [SigThread(get_contents, index + 1, url) for index, url in enumerate(urls)]
+    print(id(thr[0]), id(thr[1]), id(thr[2]))
     texts = SigThread.wait_completed()
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'SigThread.txt', texts, br='\n')
+    savefile(files + '＆' + bookname + 'SingletonThread_make.txt', texts, br='\n')
 
 
 @fn_timer
 def ct(bookname, args):
-    _ = [
-        CustomThread(get_contents, index + 1, url)
-        for index, url in enumerate(urls)
-    ]
+    _ = [CustomThread(get_contents, index + 1, url) for index, url in enumerate(urls)]
     texts = CustomThread.wait_completed()
     texts.sort(key=lambda x: x[0])
     # texts = [[row[i] for i in range(1, 3)] for row in texts]
@@ -84,8 +75,7 @@ def cq(bookname, urls):
 @fn_timer
 def wm(bookname, urls):
     mywork = WorkManager()
-    mywork.add_work_queue([get_contents, index + 1, url]
-                          for index, url in enumerate(urls))
+    mywork.add_work_queue([get_contents, index + 1, url] for index, url in enumerate(urls))
     texts = mywork.getAllResult()
 
     texts.sort(key=lambda x: x[0])
@@ -107,9 +97,7 @@ def wm(bookname, urls):
 
 @fn_timer
 def pm(bookname, urls):
-    mypool = ThreadPoolMap(map_get_contents,
-                           [[index + 1, url]
-                            for index, url in enumerate(urls)])
+    mypool = ThreadPoolMap(map_get_contents, [[index + 1, url] for index, url in enumerate(urls)])
     texts = mypool.wait_completed()
     # texts.sort(key=lambda x: x[0])  # @map默认有序
     files = os.path.basename(__file__).split(".")[0]
@@ -134,9 +122,7 @@ def ps(bookname, urls):
 
 @fn_timer
 def cpm(bookname, urls):
-    mypool = ProcessPoolMap(map_get_contents_ahttp,
-                            [[index + 1, url]
-                             for index, url in enumerate(urls)])
+    mypool = ProcessPoolMap(map_get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
     texts = mypool.wait_completed()
     # texts.sort(key=lambda x: x[0])  # @map默认有序
     files = os.path.basename(__file__).split(".")[0]
@@ -145,9 +131,7 @@ def cpm(bookname, urls):
 
 @fn_timer
 def cps(bookname, urls):
-    mypool = ProcessPoolSub(get_contents_ahttp,
-                            [[index + 1, url]
-                             for index, url in enumerate(urls)])
+    mypool = ProcessPoolSub(get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
     texts = mypool.wait_completed()
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
@@ -159,12 +143,12 @@ if __name__ == "__main__":
     bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
     # #38_38836  #2_2714  #2_2760  #76_76519
 
-    # st(bookname, urls)
+    st(bookname, urls)
     # sq(bookname, urls)
     # stm(bookname, urls)
     # ct(bookname, urls)
     # cq(bookname, urls)
-    wm(bookname, urls)
+    # wm(bookname, urls)
     # pm(bookname, urls)
     # ps(bookname, urls)
     # cpm(bookname, urls)

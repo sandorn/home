@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 18:42:56
 #FilePath     : /xjLib/xt_Tools.py
-#LastEditTime : 2020-07-10 18:01:31
+#LastEditTime : 2020-07-13 09:45:53
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -22,7 +22,7 @@ import time
 import traceback
 from copy import deepcopy
 from functools import wraps
-from types import FunctionType, CodeType
+from types import FunctionType
 
 
 class ExceptContext(object):
@@ -115,7 +115,7 @@ def call_later(callback, call_args=tuple(), immediately=True, interval=1):
 
 
 def freshdefault(func):
-    '''装饰函数，使之可以用可变对象作为默认值'''
+    '''装饰函数，使可变对象可以作为默认值'''
     fdefaults = func.__defaults__
 
     def refresher(*args, **kwds):
@@ -125,13 +125,14 @@ def freshdefault(func):
     return refresher
 
 
-def _create_func(funcstr, filename='_create_func', execstr='exec', g=None):
+def _create_func(code_body, **kwargs):
     '''动态函数创建器'''
-    module_code = compile(funcstr, filename, execstr)
-    g = g or {}
-    return FunctionType(module_code.co_consts[0], g)  # globals()
+    kwargs.setdefault('globals', {})
+    filename = kwargs.pop('filename', 'xt_Tools._create_func')
+    exmethod = kwargs.pop('exmethod', 'exec')
+    module_code = compile(code_body, filename, exmethod)
+    return FunctionType(module_code.co_consts[0], **kwargs)
 
-    # function_code = [c for c in module_code.co_consts if isinstance(c, CodeType)][0]
     # FunctionType(code, globals, name=None, argdefs=None, closure=None)
 
 
@@ -250,9 +251,10 @@ def gethelp(obj):
 
 if __name__ == '__main__':
 
-    @try_wraps
+    # @try_wraps
     def simple():
-        return 5 / 0
+        with ExceptContext():
+            return 5 / 0
 
     @catch_wraps
     def readFile(filename):
@@ -274,12 +276,12 @@ if __name__ == '__main__':
         if len(keyargs) < 3:
             raise Exception('Number of key args should more than 3.')
 
-    simple()
-    readFile("UnexistFile.txt")
-    assertSumIsPositive(1, 2, -3, -4)
-    checkLen(a=5, b=2)
-    c = add(1, 2)
-    print(3333, c)
+    # readFile("UnexistFile.txt")
+    # assertSumIsPositive(1, 2, -3, -4)
+    # checkLen(a=5, b=2)
+    # c = add(1, 2)
+    # print(3333, c)
+    # simple()
 
     # #可变对象默认装饰器
     # @freshdefault
@@ -299,13 +301,13 @@ if __name__ == '__main__':
 
     # #函数创建器
 
-    # foo_func = _create_func('def foo():a=3;return 3')
+    foo_func = _create_func('def foo():a=3;return 3')
 
-    # print(foo_func())
+    print(foo_func())
 
-    # for attr in func_attr_name_list:
-    #     print(attr, ':', getattr(foo_func, attr))
+    for attr in func_attr_name_list:
+        print(attr, ':', getattr(foo_func, attr))
 
-    # for attr in func_code_name_list:
-    #     print('foo_func.__code__.' + attr.ljust(33), ':', getattr(foo_func.__code__, attr))
-    # print(_create_func.__dict__)
+    for attr in func_code_name_list:
+        print('foo_func.__code__.' + attr.ljust(33), ':', getattr(foo_func.__code__, attr))
+    print(_create_func.__dict__)

@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-12 16:18:13
 #FilePath     : /xjLib/test/requests--test.py
-#LastEditTime : 2020-07-10 19:01:29
+#LastEditTime : 2020-07-11 11:16:57
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -19,34 +19,34 @@ import asyncio
 
 s = SessionClient()
 urls = [
-    "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async",  # 0 status:[400]
-    "https://nls-gateway.cn-shanghai.aliyuncs.com/stream/v1/tts",
-    "https://httpbin.org/get",  # 2 返回head及ip等信息
-    "https://httpbin.org/post",  # 返回head及ip等信息
+    "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async",  # 0 s:[400]
+    "https://httpbin.org/get",  # 1 返回head及ip等信息
+    "https://httpbin.org/post",  #2 返回head及ip等信息
+    "https://httpbin.org/cookies",  #3 返回head及ip等信息
     "http://g.cn",  # 4 # status:[400]
     "http://www.google.com",  # 5 Timeout
-    "https://www.biqukan.com/38_38836/",
-    "https://www.biqukan.com/38_38836/497577681.html",
+    # "https://www.biqukan.com/38_38836/",
+    # "https://www.biqukan.com/38_38836/497577681.html",
 ]
 args_dict = {}
-tout = 36.01
+tout = 2.01
 
 for url in urls:
-    # res = get_parse(url, params=args_dict, json=args_dict, timeout=tout)
+    # res = get_parse(url, params=args_dict,  timeout=tout)
     # print('get_parse:', res)  # , res.text)
 
-    # res = get_wraps(url, params=args_dict, json=args_dict, timeout=tout)
-    # print('get_wraps:', res)  # , res['text'])
+    res = get_wraps(url, params=args_dict, timeout=tout)
+    print('get_wraps:', res)  # , res['text'])
 
-    # res = get(url, params=args_dict, json=args_dict, timeout=tout)
+    # res = get(url, params=args_dict,  timeout=tout)
     # print('get:', res)  # , res['text'])
 
-    # res = s.get(url, params=args_dict, json=args_dict, timeout=tout)
+    # res = s.get(url, params=args_dict,  timeout=tout)
     # print('session:', res)  # , res.text)
-    # res = s.post(url, params=args_dict, json=args_dict, timeout=tout)
+    # res = s.post(url, params=args_dict,  timeout=tout)
     # print('session:', res, res.text)
 
-    # res = ahttpGet(url, params=args_dict, json=args_dict, timeout=tout)
+    # res = ahttpGet(url, params=args_dict,  timeout=tout)
     # print('ahttpGet:', res)  # , res.text)
     #  print('ahttpGet:', res.text)
 
@@ -56,7 +56,7 @@ for url in urls:
     # print('ahttpGetAll:', res)  # , res[0].text)
 
     # aio = AioCrawl()
-    # res = asyncio.run(aio.fetch(url, params=args_dict, json=args_dict, timeout=tout))
+    # res = asyncio.run(aio.fetch(url, params=args_dict,  timeout=tout))
     # print('AioCrawl:', res)  # , res[0].text)
     pass
 

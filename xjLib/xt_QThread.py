@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-28 21:06:12
-#LastEditTime : 2020-06-01 14:51:27
+#LastEditTime : 2020-07-13 12:30:53
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -35,6 +35,7 @@ class CustomQThread(QThread):
         self._args = args
         self._kwargs = kwargs
         self._running = True
+        self.result_list = []
         self.start()
 
     def run(self):
@@ -46,9 +47,28 @@ class CustomQThread(QThread):
     def __del__(self):
         # 线程状态改变与线程终止
         self._running = False
-        self.wait()
+        self.wait()  # # 线程不退出
 
     def stop(self):
         self._running = False
         self.terminate()  # #强制结束线程
-        ##quit()  exit() 均无效
+        # # quit()  exit() 均无效
+
+
+if __name__ == "__main__":
+
+    def f(*args):
+        print(*args)
+
+    from PyQt5 import QtWidgets
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+
+    a = CustomQThread(f, 4)
+    b = CustomQThread(f, 6)
+    print(a is b, id(a), id(b), a, b)
+
+    nowthread = QThread()
+    nowthread.run = f
+    nowthread.run(1, 2, 3)
+    sys.exit(app.exec_())

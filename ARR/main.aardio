@@ -5,7 +5,7 @@ winform.add()
 /*}}*/
 
 import web.layout;
-import web.layout.behavior.windowCommand;//导入behavior:windowCommand; 
+import web.layout.behavior.windowCommand;//导入behavior:windowCommand;
 var wbLayout = web.layout( winform );//在窗体上创建HTMLayout对象
 
 //开发环境中启用HTMLayout调试功能
@@ -14,22 +14,22 @@ if( _STUDIO_INVOKED ){
 	wbLayout.attachEventHandler( web.layout.debug );
 }
 
-wbLayout.html = /**  
+wbLayout.html = /**
 <!doctype html>
 <html>
 <body>
 	<!-- 界面顶栏 -->
     <div id="header">
-    
-    	<!-- 下面是标题栏按钮,必须使用a标记表示,command属性指示该按钮执行的命令,可在窗体设计器中禁用最大化、最小化按钮 --> 
+
+    	<!-- 下面是标题栏按钮,必须使用a标记表示,command属性指示该按钮执行的命令,可在窗体设计器中禁用最大化、最小化按钮 -->
         <div class="titlebox">
             <a command="window-min">0</a><a command="window-max">1</a><a command="window-close" >r</a>
         </div>
-        
+
        	<!-- 标题栏弹出菜单,需要弹出节点的最好用div或button等元素,不要使用a,li等元素 -->
 		<div .window-menu>u
 			<menu .popup> <!-- .popup是内置的弹出菜单样式 -->
-    			<li>在线帮助</li> 
+    			<li>在线帮助</li>
     			<li>子菜单
       			<menu >
         			<li>这是子菜单</li>
@@ -37,30 +37,30 @@ wbLayout.html = /**
     			</li>
     			<li #exit>退出</li>
   			</menu>
-		</div> 
-		
+		</div>
+
 		<!-- 下面是标题栏文本,凡在CSS中指定 behavior:windowCommand 的节点(含子节点) 可用 command 属性指明命令类型 -->
         <div class="title-bar" command="window-caption"> <span class=title> 我 的 软 件 </span></div>
-    </div> 
-    
+    </div>
+
     <!-- 界面中部内容栏 -->
-    <div id="container"> 
-    
+    <div id="container">
+
     	<!-- 左边栏,固定宽度 -->
-    	<div class="lside"> </div> 
-    	
+    	<div class="lside"> </div>
+
     	<!-- 右边栏,自适应宽度 -->
     	<div class="rside"> </div>
     	<img src="http://www.tanginsure.com/img/index/logo2.png" >
     </div>
-    
+
     <!-- 界面底栏 -->
     <div id="footer">
     	<button id="help">盛唐融信官网</button>
     </div>
 </body>
 </html>
-**/ 
+**/
 
 wbLayout.css = /**
 html,body{
@@ -74,7 +74,7 @@ body{
 }
 
 /*最大化后body会自动添加maximize属性,如果是圆角界面可以在这里移除圆角*/
-body[maximize]{ 
+body[maximize]{
 	border-radius:0;
 }
 
@@ -96,48 +96,48 @@ body[maximize] #header{
     height:28px;
     line-height: 28px;
     font:system;
-    color:#fff; 
-} 
+    color:#fff;
+}
 
-#header .titlebox{  
-    width:max-intrinsic; 
-    height:28px; 
-    float:right; 
-    margin-right:8px; 
+#header .titlebox{
+    width:max-intrinsic;
+    height:28px;
+    float:right;
+    margin-right:8px;
     overflow-x:hidden;
 }
 
-#header .titlebox a{ 
-    display:inline-block; //显示为块节点 
-    width:max-intrinsic; 
+#header .titlebox a{
+    display:inline-block; //显示为块节点
+    width:max-intrinsic;
     height:14px;
-    font-family:"Marlett";/*该字体显示按钮符号*/  
+    font-family:"Marlett";/*该字体显示按钮符号*/
     font-size:14px;
     padding:4px;
-    color:#fff; 
-    cursor:default; 
+    color:#fff;
+    cursor:default;
 }
 
 /*CSS选择器中,方括号指定节点拥有的属性*/
-#header .titlebox a[command]:hover{ 
-    background:#6ebccf; 
+#header .titlebox a[command]:hover{
+    background:#6ebccf;
 }
 
-#header .titlebox a[command]:active{ 
-    background:#FF0000; 
-} 
+#header .titlebox a[command]:active{
+    background:#FF0000;
+}
 
-#header a[command="window-restore"]{ 
-    content:"2";/*Marlett字体为还原按钮符号*/ 
-} 
+#header a[command="window-restore"]{
+    content:"2";/*Marlett字体为还原按钮符号*/
+}
 
-#header .window-menu{ 
-	display:block;  
+#header .window-menu{
+	display:block;
 	float:right;
-	behavior:popup-menu; 
-	width:max-intrinsic; 
+	behavior:popup-menu;
+	width:max-intrinsic;
 	height:14px;
-	font-family:"Marlett";/*该字体显示按钮符号*/  
+	font-family:"Marlett";/*该字体显示按钮符号*/
 	font-size:14px;
 	padding:4px;
 	color:#fff;
@@ -148,29 +148,29 @@ body[maximize] #header{
 }
 
 #header .window-menu:owns-popup /*菜单已弹出*/
-{ 
+{
     background-color: #FF0000;
     color: #FFFFFF;
 }
 
 #container{
-    width:100%; 
+    width:100%;
     height:100%%; /*撑满剩余可用空间*/
     flow: horizontal; /*将容器内部块元素变为横向布局 - 比具有破坏性的float浮动布局更方便*/
-    margin:0 auto; 
-    overflow:hidden;  
+    margin:0 auto;
+    overflow:hidden;
     background:#ac0;
 }
 
 #container .lside{
     height:100%;
-    width:150px;  
+    width:150px;
     background:rgb(110,179,210);
 }
 
 #container .rside{
-    height:100%; 
-    background:#FFF; 
+    height:100%;
+    background:#FFF;
 }
 
 #container .lside > *{
@@ -191,26 +191,26 @@ body[maximize] #header{
 
 #footer button{
 	padding:4px 13px;
-	font-size:12px; 
+	font-size:12px;
 	background:rgb(27,174,93);
-	color:white; 
+	color:white;
 }
 
-#footer button:hover { 
+#footer button:hover {
 	background:rgb(33,127,188);
 	outline: 1px glow rgb(91,171,230) 1px;
 	cursor:pointer;
-} 
+}
 **/
 
 // 响应菜单点击事件
 wbLayout.onMenuItemClick =  {
 
-	// 事件可以是一个函数或列表,如果是列表键名匹配节点的id或name属性 
+	// 事件可以是一个函数或列表,如果是列表键名匹配节点的id或name属性
 	exit = function (ltTarget,ltOwner,reason,behaviorParams) {
 		winform.close();
 	}
-	
+
 	//匹配不到id的节点会触发default函数*/
 	default = function (ltTarget,ltOwner,reason,behaviorParams) {
 		var ltPopupOwner = web.layout.element( behaviorParams.he );//这是弹出菜单的按钮节点
@@ -229,16 +229,16 @@ wbLayout.onButtonClick = {
 import win.ui.shadow;
 win.ui.shadow(winform); //添加阴影边框
 
-var loginForm = winform.loadcode("\res\login.aardio" );
+var loginForm = winform.loadcode("/res/login.aardio" )
 var logined = loginForm.doModal(winform)
 
 //如果没有登录,直接退出主程序
-if( ! logined ) 
+if( ! logined )
     return;
 
 //所有需要登录后才能执行的函数、事件都写在这后面
-    
-//显示主窗口    
+
+//显示主窗口
 /**
 _ARGV   ;   _CMDLINE
 解析后的进程启动参数表，已解析双引号、命令行参数转义符等并转换为数组,
@@ -263,10 +263,10 @@ if(!db.existsTable("homepage2") ){
 }
 
 //使用命令参数 - 参数化可避免SQL注入
-var cmd = db.createCommand( "INSERT INTO homepage2(url,comment) VALUES(@url,@comment)" );  
+var cmd = db.createCommand( "INSERT INTO homepage2(url,comment) VALUES(@url,@comment)" );
 
 //设置所有参数的值
-cmd.bind( 
+cmd.bind(
 	url = "http://www.aardio.com";
 	comment = "hi!";
 )
@@ -285,12 +285,12 @@ db.exec("DELETE * FROM homepage2 WHERE url='%s'","http://www.aardio.com");
 
 //改
 db.exec("UPDATE homepage2 SET url='%s' WHERE comment='%s' ","http://www.aardio.com","这是说明")
- 
+
 //查
-for(rs,fields in db.each("SELECT * FROM homepage2") ){ 
-	console.log( rs("url").value,rs("comment").value )  
+for(rs,fields in db.each("SELECT * FROM homepage2") ){
+	console.log( rs("url").value,rs("comment").value )
 }
- 
+
 //将查询结果转换为普通数组
 var tab = db.getTable("SELECT * FROM homepage2");
 console.dump(tab);

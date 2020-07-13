@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-23 17:41:52
 #FilePath     : /xjLib/xt_Singleon.py
-#LastEditTime : 2020-06-24 11:14:44
+#LastEditTime : 2020-07-13 12:13:54
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -117,3 +117,31 @@ def singleton_wrap_return_class(_cls):
 
     class_wrapper.__name__ = _cls.__name__  # 保留原类的名字
     return class_wrapper
+
+
+class Singleton_MiXin:
+    '''混入方式继承单例，部分无效'''
+    _lock = Lock()
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, "_instance"):
+            with cls._lock:
+                if not hasattr(cls, "_instance"):
+                    cls._instance = super().__new__(cls)
+        return cls._instance
+
+
+if __name__ == "__main__":
+
+    class sample(Singleton_MiXin):
+        def __init__(self):
+            self.name = 'na98888me'
+            self.age = 12
+            self._i = 787
+            self.姓名 = '行云流水'
+
+    aa = sample()
+    bb = sample()
+    print(aa is bb, id(aa), id(bb))
+    print(aa, bb)
+    print(sample.__mro__)
