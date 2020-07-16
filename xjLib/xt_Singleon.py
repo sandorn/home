@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-23 17:41:52
 #FilePath     : /xjLib/xt_Singleon.py
-#LastEditTime : 2020-07-13 12:13:54
+#LastEditTime : 2020-07-14 09:08:33
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -35,14 +35,21 @@ def singleton_wrap(cls):
 
 class Singleton_Model:
     '''单例模式，可继承，多次init，
-    可用类调用classmethod，可照写'''
+    可用类调用classmethod，可照写
+    # 单次初始化，增加下列语句
+    # if not self._intialed:
+    #     self._intialed = True
+    '''
     _lock = Lock()
+    _instance = None
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, "_instance"):
             with cls._lock:
                 if not hasattr(cls, "_instance"):
                     cls._instance = super().__new__(cls)
+                    # #__init__标志，可避免重复初始化
+                    cls._instance._intialed = False
         return cls._instance
 
     def __init__(self):
@@ -53,25 +60,28 @@ class Singleton_Base:
     '''
     单例模式基类，用于继承，多次init，
     可用类调用classmethod
+    # 单次初始化，增加下列语句
+    # if not self._intialed:
+    #     self._intialed = True
     '''
     _instance = dict()
     _lock = Lock()
 
     def __new__(cls, *args, **kwargs):
-        if cls not in cls._instance.keys():
+        if cls not in cls._instance:
             with cls._lock:
-                if cls not in cls._instance.keys():
+                if cls not in cls._instance:
                     cls._instance[cls] = super().__new__(cls)
-                    # 需给出一个标志，从而__init__方法可以根据此标志避免重复初始化成员变量
+                    # #__init__标志，可避免重复初始化
                     cls._instance[cls]._intialed = False
+
         return cls._instance[cls]
 
 
 class Singleton_Meta(type):
     '''
-    单例模式元类，单次init，
-    metaclass=Singleton_Meta，
-    可用类调用classmethod
+    单例模式元类，metaclass=Singleton_Meta，
+    # @单次init，可用类调用classmethod
     '''
 
     _lock = Lock()
@@ -119,7 +129,7 @@ def singleton_wrap_return_class(_cls):
     return class_wrapper
 
 
-class Singleton_MiXin:
+class Singleton_Mixin:
     '''混入方式继承单例，部分无效'''
     _lock = Lock()
 
@@ -133,15 +143,22 @@ class Singleton_MiXin:
 
 if __name__ == "__main__":
 
-    class sample(Singleton_MiXin):
-        def __init__(self):
-            self.name = 'na98888me'
-            self.age = 12
-            self._i = 787
-            self.姓名 = '行云流水'
+    class sss:
+        def __init__(self, string, age=12):
+            self.name = string
+            self.age = age
 
-    aa = sample()
-    bb = sample()
+    class sample(sss, Singleton_Mixin):
+        pass
+
+    aa = sample('张三')
+    print(aa.__dict__)
+    bb = sample('李四', 28)
     print(aa is bb, id(aa), id(bb))
-    print(aa, bb)
-    print(sample.__mro__)
+    print(aa.__dict__, bb.__dict__)
+    print(11111, sample.__mro__)
+    print(22222, sample.__base__)
+    print(33333, sample.__bases__)
+    sample.__bases__ += (Singleton_Model, )
+    print(44444, sample.__bases__)
+    print(55555, sample.__mro__)

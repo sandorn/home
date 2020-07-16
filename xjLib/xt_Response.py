@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
 #FilePath     : /xjLib/xt_Response.py
-#LastEditTime : 2020-07-08 21:38:12
+#LastEditTime : 2020-07-14 14:35:27
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -16,10 +16,10 @@
 import json
 from cchardet import detect
 from lxml import etree
-from xt_Class import item_MixIn
+from xt_Class import item_Mixin
 
 
-class ReqResult(item_MixIn):
+class ReqResult(item_Mixin):
     __slots__ = ('raw', 'clientResponse', '_content', 'index')
 
     # 结构化返回结果
@@ -35,8 +35,7 @@ class ReqResult(item_MixIn):
 
         code_type = detect(self._content)
         if code_type != 'utf-8':
-            self._content = self._content.decode(code_type['encoding'],
-                                                 'ignore').encode('utf-8')
+            self._content = self._content.decode(code_type['encoding'], 'ignore').encode('utf-8')
         return self._content
 
     @property

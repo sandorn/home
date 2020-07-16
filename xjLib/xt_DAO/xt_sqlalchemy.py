@@ -8,25 +8,38 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-03-25 10:13:07
 #FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-#LastEditTime : 2020-07-08 20:47:27
+#LastEditTime : 2020-07-16 11:15:28
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
 '''
 
-from sqlalchemy import (TIMESTAMP, Column, DateTime, Enum, Integer, Numeric,
-                        String, text, create_engine)
+from sqlalchemy import (TIMESTAMP, Column, DateTime, Enum, Integer, Numeric, String, create_engine, text)
 from sqlalchemy.dialects.mysql import INTEGER
-from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
+from sqlalchemy.ext.declarative import DeclarativeMeta  # 类;declarative_base类工厂
 from sqlalchemy.orm import scoped_session, sessionmaker, validates
 
-# 此处用.引用在其他地方可以操作，本文件不可以
-from .dbconf import make_connect_string, db_conf
-from .xt_sqlbase import Sql_Base
 from xt_Class import typed_property
+from .dbconf import make_connect_string
+from .xt_chemyMeta import Base_Model, Orm_Meta
 
 
-class SqlConnection(Sql_Base):
+def get_engine(key='default', dbmodel=None):
+    engine = create_engine(
+        make_connect_string(key),
+        max_overflow=0,  # 超过连接池大小外最多创建的连接
+        pool_size=5,  # 连接池大小
+        pool_timeout=30,  # 池中没有线程最多等待的时间，否则报错
+        pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
+        echo=False  # echo参数为True时，会显示每条执行的SQL语句，可以关闭
+    )
+    session = sessionmaker(bind=engine)  # #单线程
+    # #实现user.query.xxxx  # FROM tablename
+    if dbmodel is not None: dbmodel.query = session.query_property()
+    return engine, session
+
+
+class SqlConnection(Orm_Meta):
 
     # #限定参数类型
     dbmodel = typed_property('dbmodel', DeclarativeMeta)
@@ -34,17 +47,24 @@ class SqlConnection(Sql_Base):
     def __init__(self, dbmodel, key='default'):
         self.dbmodel = dbmodel  # #orm基类
         # #设置self.params参数
-        self.params = {
-            attr: getattr(self.dbmodel, attr)
-            for attr in self.dbmodel.columns()
-        }
-        self.engine = create_engine(make_connect_string(key))  # echo=True)
+        self.params = {attr: getattr(self.dbmodel, attr) for attr in self.dbmodel.columns()}
+        self.engine = create_engine(
+            make_connect_string(key),
+            max_overflow=0,  # 超过连接池大小外最多创建的连接
+            pool_size=5,  # 连接池大小
+            pool_timeout=30,  # 池中没有线程最多等待的时间，否则报错
+            pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
+            echo=False  # echo参数为True时，会显示每条执行的SQL语句，可以关闭
+        )
         self.session = scoped_session(sessionmaker(bind=self.engine))
-        # #单线程 sessionmaker(bind=self.engine)
         self.dbmodel.metadata.create_all(self.engine)
 
     def drop_db(self):
-        self.dbmodel.metadata.drop_all(self.engine)
+        """删除init传入的self.dbmodel"""
+        drop_sql = "DROP TABLE if exists {}".format(self.dbmodel.__tablename__)
+        self.session.execute(drop_sql)
+        # self.dbmodel.__table__.drop(self.engine)# 未生效
+        # self.dbmodel.metadata.drop_all(self.engine) # 未生效
 
     def insert(self, dict):
         """传入字段与值对应的字典"""
@@ -63,8 +83,7 @@ class SqlConnection(Sql_Base):
             conditon_list = []
             for key in list(conditions.keys()):
                 if self.params.get(key, None):
-                    conditon_list.append(
-                        self.params.get(key) == conditions.get(key))
+                    conditon_list.append(self.params.get(key) == conditions.get(key))
             conditions = conditon_list
             query = self.session.query(self.dbmodel)
             for condition in conditions:
@@ -84,8 +103,7 @@ class SqlConnection(Sql_Base):
             conditon_list = []
             for key in list(conditions.keys()):
                 if self.params.get(key, None):
-                    conditon_list.append(
-                        self.params.get(key) == conditions.get(key))
+                    conditon_list.append(self.params.get(key) == conditions.get(key))
             conditions = conditon_list
             query = self.session.query(self.dbmodel)
             for condition in conditions:
@@ -93,8 +111,7 @@ class SqlConnection(Sql_Base):
             updatevalue = {}
             for key in list(value_dict.keys()):
                 if self.params.get(key, None):
-                    updatevalue[self.params.get(key,
-                                                None)] = value_dict.get(key)
+                    updatevalue[self.params.get(key, None)] = value_dict.get(key)
             updateNum = query.update(updatevalue)
             self.session.commit()
         else:
@@ -123,8 +140,7 @@ class SqlConnection(Sql_Base):
             conditon_list = []
             for key in list(conditions.keys()):
                 if self.params.get(key, None):
-                    conditon_list.append(
-                        self.params.get(key) == conditions.get(key))
+                    conditon_list.append(self.params.get(key) == conditions.get(key))
             conditions = conditon_list
         else:
             conditions = []
@@ -165,24 +181,3 @@ class SqlConnection(Sql_Base):
 
     def close(self):
         pass
-
-
-def creat_sqlalchemy_db_class(tablename, filename=None, key='default'):
-    '''
-    根据已有数据库生成模型
-    sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf
-    '''
-    import subprocess
-
-    if filename is None:
-        filename = tablename
-    com_list = f'sqlacodegen --tables {tablename} --outfile {filename}_db.py {make_connect_string(key)}'
-
-    subprocess.call(com_list,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
-
-
-if __name__ == "__main__":
-    creat_sqlalchemy_db_class('uuu', 'd:/1.py', 'TXbook')

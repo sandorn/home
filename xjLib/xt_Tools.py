@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 '''
 #==============================================================
-#Descripttion : None
+#Descripttion : 函数超时、函数默认值装饰、动态创建函数、重试装饰器2种、获取对象帮助
 #Develop      : VSCode
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 18:42:56
 #FilePath     : /xjLib/xt_Tools.py
-#LastEditTime : 2020-07-13 09:45:53
+#LastEditTime : 2020-07-16 11:10:39
 #Github       : https://github.com/sandorn/home
 #==============================================================
 

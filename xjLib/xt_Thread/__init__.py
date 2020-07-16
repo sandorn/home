@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-13 11:44:30
+#LastEditTime : 2020-07-13 16:53:49
 '''
 
 __doc__ = [
@@ -36,16 +36,16 @@ import inspect
 from threading import Lock, Thread, enumerate, main_thread, Event
 from time import sleep, time
 from queue import Empty, Queue
-from xt_Class import item_get_MixIn
-from xt_Singleon import singleton_wrap_return_class, Singleton_MiXin
+from xt_Class import item_get_Mixin
+from xt_Singleon import singleton_wrap_return_class, Singleton_Mixin
 # #引入装饰器
 from .wraps import thread_wrap_class, thread_wraps_class
 from .wraps import thread_wraps, thread_wrap
 from .wraps import thread_safe
 # #引入自定义thread pool
 from .manage import WorkManager
-from .futures_thread import ThreadPoolMap, ThreadPoolSub
-from .futures_process import ProcessPoolMap, ProcessPoolSub
+from .futures_thread import ThreadPoolMap, ThreadPoolSub, ExThreadPool
+from .futures_process import ProcessPoolMap, ProcessPoolSub, ExProcesPool
 
 
 def stop_thread(thread):
@@ -140,7 +140,7 @@ class thread_pool:
         self.change_thread_num(0)
 
 
-class CustomThread(Thread, item_get_MixIn):
+class CustomThread(Thread, item_get_Mixin):
     """多线程，继承自threading.Thread"""
 
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
@@ -200,7 +200,7 @@ class CustomThread(Thread, item_get_MixIn):
         return res
 
 
-class CustomThread_Queue(Thread, item_get_MixIn):
+class CustomThread_Queue(Thread, item_get_Mixin):
     """单例多线程，继承自threading.Thread"""
     """采用queue传递工作任务"""
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
@@ -268,7 +268,7 @@ class CustomThread_Queue(Thread, item_get_MixIn):
         return res
 
 
-class SingletonThread(Thread, item_get_MixIn, Singleton_MiXin):
+class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
     """单例多线程，继承自threading.Thread"""
 
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
@@ -349,11 +349,11 @@ SigThread = make_singleton_thread_class('SigThread')
 SigThreadQ = make_queue_singleton_thread_class()
 
 
-class CustomThread_Singleton(CustomThread, Singleton_MiXin):
+class CustomThread_Singleton(CustomThread, Singleton_Mixin):
     pass
 
 
-class CustomThread_Queue_Singleton(CustomThread_Queue, Singleton_MiXin):
+class CustomThread_Queue_Singleton(CustomThread_Queue, Singleton_Mixin):
     pass
 
 

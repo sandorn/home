@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-02-27 11:40:29
 #FilePath     : /项目包/BQG.spider/BQG/spiders/spilerByset.py
-#LastEditTime : 2020-07-08 20:55:33
+#LastEditTime : 2020-07-15 10:16:03
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -32,11 +32,24 @@ from xt_DAO.dbconf import db_conf
 from xt_String import align, md5
 
 from sqlalchemy import Column
-from xt_DAO.xt_sqlbase import Sql_Meta
+from xt_DAO.xt_sqlbase import Base_Model
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 from xt_DAO.xt_sqlalchemy import SqlConnection
-Model = declarative_base()  # 生成一个SQLORM基类
+
+
+def make_model(_BOOKNAME):
+    class table_model(Base_Model):
+        __tablename__ = _BOOKNAME
+
+        ID = Column(INTEGER(10), primary_key=True)
+        BOOKNAME = Column(VARCHAR(255), nullable=False)
+        INDEX = Column(INTEGER(10), nullable=False)
+        ZJNAME = Column(VARCHAR(255), nullable=False)
+        ZJTEXT = Column(TEXT, nullable=False)
+        ZJHERF = Column(VARCHAR(255), nullable=False)
+
+    return table_model
 
 
 class Spider(scrapy.Spider):
@@ -75,20 +88,9 @@ class Spider(scrapy.Spider):
 
     def parse(self, response):
         # #获取书籍名称
-        _BOOKNAME = response.xpath(
-            '//meta[@property="og:title"]//@content').extract_first()
+        _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
         self.bookdb.add(md5(_BOOKNAME))  # k相当于字典名称
-
-        class DBtable(Model, Sql_Meta):
-            __tablename__ = _BOOKNAME
-
-            ID = Column(INTEGER(10), primary_key=True)
-            BOOKNAME = Column(VARCHAR(255), nullable=False)
-            INDEX = Column(INTEGER(10), nullable=False)
-            ZJNAME = Column(VARCHAR(255), nullable=False)
-            ZJTEXT = Column(TEXT, nullable=False)
-            ZJHERF = Column(VARCHAR(255), nullable=False)
-
+        DBtable = make_model(_BOOKNAME)
         sqlhelper = SqlConnection(DBtable, 'TXbook')
 
         if _BOOKNAME not in self.zjurls:
@@ -100,92 +102,31 @@ class Spider(scrapy.Spider):
             for _ZJHERF in pandasData:
                 self.zjurls[_BOOKNAME].add(md5(_ZJHERF))
 
-        全部章节节点 = response.xpath(
-            '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a'
-        ).extract()
+        全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a').extract()
 
         for index in range(len(全部章节节点)):
             _ZJHERF = re.match('<a href="(.*?)">', 全部章节节点[index]).group(1)
             _ZJHERF = response.urljoin(_ZJHERF)
-            _ZJNAME = re.match('<a href=".*?">(.*?)</a>',
-                               全部章节节点[index]).group(1)
+            _ZJNAME = re.match('<a href=".*?">(.*?)</a>', 全部章节节点[index]).group(1)
 
             if md5(_ZJHERF) not in self.zjurls[_BOOKNAME]:
                 self.zjurls[_BOOKNAME].add(md5(_ZJHERF))
-                request = scrapy.Request(_ZJHERF,
-                                         meta={'index': index},
-                                         callback=self.parse_content)
+                # @meta={}传递参数,给callback
+                request = scrapy.Request(_ZJHERF, meta={'index': index}, callback=self.parse_content)
                 yield request
             else:
-                print('--《' + align(_BOOKNAME, 20, 'center') + '》\t' +
-                      align(_ZJNAME, 40) + '\t|记录重复入库！')
-                pass
-
-    def parse_mysql存档(self, response):
-        # #获取书籍名称，判断是否需要创建数据库
-        _BOOKNAME = response.xpath(
-            '//meta[@property="og:title"]//@content').extract_first()
-
-        self.res_key = md5(_BOOKNAME)  # k相当于字典名称
-
-        if _BOOKNAME not in self.db:
-            # #创建数据库,用于储存爬取到的数据
-            CreateDb_sql = ('''
-            Create Table If Not Exists %s(
-            `ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-            `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-            `INDEX` int(10) NOT NULL,
-            `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-            `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-            `ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-            PRIMARY KEY (`ID`) USING BTREE)
-            ''' % _BOOKNAME)
-            self.connect.cursor().execute(CreateDb_sql)
-            self.connect.commit()
-            self.db.add(_BOOKNAME)
-
-        if _BOOKNAME not in self.zjurls:
-            # #构建set字典，用于去重
-            self.zjurls[_BOOKNAME] = set()
-            sql = "SELECT ZJHERF FROM %s;" % _BOOKNAME  # 从MySQL里提数据
-            pandasData = pandas.read_sql(sql, self.connect)  # 读MySQL数据
-
-            # #set字典填充数据
-            for _ZJHERF in pandasData['ZJHERF']:
-                self.zjurls[_BOOKNAME].add(md5(_ZJHERF))
-
-        全部章节节点 = response.xpath(
-            '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a'
-        ).extract()
-
-        for index in range(len(全部章节节点)):
-            _ZJHERF = re.match('<a href="(.*?)">', 全部章节节点[index]).group(1)
-            _ZJHERF = response.urljoin(_ZJHERF)
-            _ZJNAME = re.match('<a href=".*?">(.*?)</a>',
-                               全部章节节点[index]).group(1)
-
-            if md5(_ZJHERF) not in self.zjurls[_BOOKNAME]:
-                self.zjurls[_BOOKNAME].add(md5(_ZJHERF))
-                request = scrapy.Request(_ZJHERF,
-                                         meta={'index': index},
-                                         callback=self.parse_content)
-                yield request
-            else:
-                print('--《' + align(_BOOKNAME, 20, 'center') + '》\t' +
-                      align(_ZJNAME, 40) + '\t|记录重复入库！')
+                print('--《' + align(_BOOKNAME, 20, 'center') + '》\t' + align(_ZJNAME, 40) + '\t|记录重复入库！')
                 pass
 
     def parse_content(self, response):
         item = BqgItem()
-        item['BOOKNAME'] = response.xpath(
-            '//div[@class="p"]/a[2]/text()').extract_first()
-        item['INDEX'] = response.meta['index']
-        item['ZJNAME'] = response.xpath(
-            '//h1/text()').extract_first()  # .replace('\xa0', ' ')  # '�0�2 '
+        item['BOOKNAME'] = response.xpath('//div[@class="p"]/a[2]/text()').extract_first()
+        item['INDEX'] = response.meta['index']  # @接收meta={}传递的参数
+        item['ZJNAME'] = response.xpath('//h1/text()').extract_first()
+        # .replace('\xa0', ' ')  # '�0�2 '
         _ZJTEXT = response.xpath('//*[@id="content"]/text()').extract()
         item['ZJTEXT'] = '\n'.join([st.strip("\r\n　  ") for st in _ZJTEXT])
-        item['ZJTEXT'].replace('%', '%%').replace("'",
-                                                  "\\\'").replace('"', '\\\"')
+        item['ZJTEXT'].replace('%', '%%').replace("'", "\\\'").replace('"', '\\\"')
         item['ZJHERF'] = response.url
         yield item
 

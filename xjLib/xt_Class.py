@@ -8,62 +8,61 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 14:25:16
 #FilePath     : /xjLib/xt_Class.py
-#LastEditTime : 2020-07-13 11:50:03
+#LastEditTime : 2020-07-14 14:52:06
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 
 
-class item_get_MixIn:
+class item_get_Mixin:
     '''下标obj[key]'''
-    def __getitem__(self, attr):
-        return getattr(self, attr)
+    def __getitem__(self, key):
+        # return getattr(self, key)
+        return self.__dict__.get(key)
 
 
-class item_set_MixIn:
+class item_set_Mixin:
     '''下标obj[key]'''
-    def __setitem__(self, attr, value):
-        return setattr(self, attr, value)
+    def __setitem__(self, key, value):
+        self.__dict__[key] = value
 
 
-class item_del_MixIn:
+class item_del_Mixin:
     '''下标obj[key]'''
-    def __delitem__(self, attr):
-        return delattr(self, attr)
+    def __delitem__(self, key):
+        return self.__dict__.pop(key)
 
 
-class item_MixIn(item_get_MixIn, item_set_MixIn, item_del_MixIn):
+class item_Mixin(item_get_Mixin, item_set_Mixin, item_del_Mixin):
     '''下标obj[key]'''
     pass
 
 
-class attr_get_MixIn:
+class attr_get_Mixin:
     '''原点调用obj.key'''
-    def __getattr__(self, attr):
-        return super().__getattribute__(attr)
-        # return getattr(self, attr)
+    def __getattr__(self, key):
+        return self[key]
+        # return super().__getattribute__(key)
 
 
-class attr_set_MixIn:
+class attr_set_Mixin:
     '''原点调用obj.key'''
-    def __setattr__(self, attr, value):
-        return super().__setattr__(attr, value)
-        # return setattr(self, attr, value)
+    def __setattr__(self, key, value):
+        return super().__setattr__(key, value)
 
 
-class attr_del_MixIn:
+class attr_del_Mixin:
     '''原点调用obj.key'''
-    def __setattr__(self, attr, value):
-        return super().__setattr__(attr, value)
-        # return setattr(self, attr, value)
+    def __delattr__(self, key):
+        return super().__delattr__(key)
 
 
-class attr_MixIn(attr_get_MixIn, attr_set_MixIn, attr_del_MixIn):
+class attr_Mixin(attr_get_Mixin, attr_set_Mixin, attr_del_Mixin):
     '''原点调用obj.key'''
     pass
 
 
-class dict_MixIn:
+class dict_Mixin:
     '''生成类字典
     # @暂时弃用'''
     def __init__(self):
@@ -74,11 +73,11 @@ class dict_MixIn:
         return {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
 
 
-class iter_MixIn:
+class iter_Mixin:
     '''
     # #迭代类，用于继承，不支持next
     from collections import Iterable
-    print(isinstance(a, Iterable))
+    isinstance(a, Iterable)
     '''
     def __iter__(self):
         if not hasattr(self, '__dict__'):
@@ -89,7 +88,7 @@ class iter_MixIn:
         #     yield attr, value
 
 
-class repr_MixIn:
+class repr_Mixin:
     '''用于打印显示'''
     def __repr__(self):
         if not hasattr(self, '__dict__'):
@@ -100,12 +99,12 @@ class repr_MixIn:
     # __str__ = __repr__
 
 
-class Class_Meta(item_MixIn, iter_MixIn, repr_MixIn):
+class Class_Meta(item_Mixin, iter_Mixin, repr_Mixin):
     '''metaclass=abc.ABCMeta'''
     pass
 
 
-class SetOnce_MixIn:
+class SetOnce_Mixin:
     """限制key赋值一次，key不存在时可赋值"""
     __slots__ = ()
 
@@ -115,7 +114,7 @@ class SetOnce_MixIn:
         raise Exception(str(key) + ' already set')
 
 
-class SetOnceDict(SetOnce_MixIn, dict):
+class SetOnceDict(SetOnce_Mixin, dict):
     """自定义字典,限制key只能赋值一次，key不存在时可添加"""
     pass
 
@@ -190,38 +189,41 @@ def readonly(name):
 
 
 if __name__ == "__main__":
-    from xt_Singleon import Singleton_MiXin
+    # my_dict = SetOnceDict()
+    # try:
+    #     my_dict['username'] = '1111'
+    #     my_dict['me'] = 'sandorn'
+    #     my_dict['username'] = 'hellokitty'
+    # except Exception as err:
+    #     print(err)
+    # print(99999, my_dict)
 
-    class mixinsingleton(item_MixIn, iter_MixIn, repr_MixIn, Singleton_MiXin):
+    # class Animal(iter_Mixin, repr_Mixin):
+    #     def __init__(self):
+    #         self.name = 'na98888me'
+    #         self.age = 12
+    #         self._i = 787
+    #         self.姓名 = '行云流水'
+
+    # print(Animal())
+    # for k, v in Animal():
+    #     print(k.ljust(8), ':', v)
+    #     pass
+
+    class Anima(item_Mixin, attr_Mixin):
         def __init__(self):
             self.name = 'na98888me'
             self.age = 12
             self._i = 787
             self.姓名 = '行云流水'
 
-    aa = mixinsingleton()
-    bb = mixinsingleton()
-    print(aa is bb, id(aa), id(bb))
-    print(aa, bb)
-
-    my_dict = SetOnceDict()
-    try:
-        my_dict['username'] = '1111'
-        my_dict['me'] = 'sandorn'
-        my_dict['username'] = 'hellokitty'
-    except Exception as err:
-        print(err)
-    print(99999, my_dict)
-
-    class Animal(iter_MixIn, repr_MixIn, Singleton_MiXin):
-        def __init__(self):
-            self.name = 'na98888me'
-            self.age = 12
-            self._i = 787
-            self.姓名 = '行云流水'
-
-    print(Animal().__dict__, id(Animal()))
-    print(Animal(), id(Animal()))
-    for k, v in Animal():
-        print(k.ljust(8), ':', v)
-        pass
+    a = Anima()
+    a['name'] = '张三李四'
+    print(a['names'])
+    del a['_i']
+    b = Anima()
+    b._i = 567
+    print(a.name555s)
+    del b.name
+    print(a.__dict__, a['age'], id(a))
+    print(b.__dict__, b.age, id(b))
