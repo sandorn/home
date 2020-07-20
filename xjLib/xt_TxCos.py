@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 09:01:46
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-16 11:03:19
+#LastEditTime : 2020-07-16 17:41:43
 腾讯对象存储，可以储存文件
 '''
 
@@ -19,49 +19,59 @@ import time
 import sys
 
 
+class txConfig:
+    SecretId = 'AKIDV0Xy0fpYzNeEh1SX8e6UipldkjrpgIn7'
+    SecretKey = 'PyX0Ocv7bzDHA890ocGoiTfU9zqbBN9q'
+    Region = 'ap-beijing'  # 用户的Region地域信息
+    # Domain = 'https://snad-1253302746.cos.ap-beijing.myqcloud.com'
+
+
 class txCos:
     def __init__(self):
         self.Bucket = 'snad-1253302746'
-        self.secret_id = 'AKIDV0Xy0fpYzNeEh1SX8e6UipldkjrpgIn7'  # 替换为用户的secret_id
-        self.secret_key = 'PyX0Ocv7bzDHA890ocGoiTfU9zqbBN9q'  # 替换为用户的secret_key
-        self.region = 'ap-beijing'  # 替换为用户的region
-        self.token = None  # 使用临时秘钥需要传入Token，默认为空,可不填
-        self.domain = 'https://snad-1253302746.cos.ap-beijing.myqcloud.com'
-        self.config = CosConfig(Region=self.region,
-                                SecretId=self.secret_id,
-                                SecretKey=self.secret_key,
-                                Token=self.token)  # 获取配置对象
-        self.client = CosS3Client(self.config)
+        self.client = CosS3Client(CosConfig(
+            Region=txConfig.Region,
+            SecretId=txConfig.SecretId,
+            SecretKey=txConfig.SecretKey,
+        ))
 
-    def __enter__(self):
-        print("In __enter__()")
+    def __enter__(self, *args):
+        print("In __enter__()", args)
         return self
 
-    def __exit__(self, args):
-        print("In __exit__()")
+    def __exit__(self, *args):
+        print("In __exit__()", args)
 
-    # 下载文件
-    def down(self, file_name, LocalFilePath):
-        #! 文件下载 获取文件到本地,第二个参数为网络文件名(不能写domain)，第三个参数为本地文件名
-        response = self.client.get_object(self.Bucket, file_name)
-        response['Body'].get_stream_to_file(LocalFilePath)
-        return True
+    def down(self, file_url_name, LocalFilePath):
+        '''获取文件到本地,file_url_name为网络文件名，LocalFilePath为本地文件名'''
+        try:
+            response = self.client.get_object(
+                self.Bucket,
+                file_url_name,
+            )
+            response['Body'].get_stream_to_file(LocalFilePath)
+            return response
+        except Exception as err:
+            print(err)
 
-    # 上传文件
     def up(self, LocalFilePath):
-        # 高级上传接口(推荐)
-        file_name = str(int(time.time())) + '.' + LocalFilePath.split('.')[-1]
-        response = self.client.upload_file(self.Bucket,
-                                           Key=file_name,
-                                           LocalFilePath=LocalFilePath,
-                                           PartSize=10,
-                                           MAXThread=10)
-        return response['ETag']
+        '''高级上传接口(推荐)'''
+        file_name = str(int(time.time())) + '_' + LocalFilePath.split('/')[-1]
+        try:
+            response = self.client.upload_file(
+                self.Bucket,
+                Key=file_name,
+                LocalFilePath=LocalFilePath,
+                PartSize=10,
+                MAXThread=10,
+            )
+            return response
+        except Exception as err:
+            print(err)
+            pass
 
 
 if __name__ == '__main__':
-    # 创建UploadDownload对象，包含3个属性
-    txcoses = txCos()
-    # 调用txcoses对象的下载图片方法
-    print(txcoses.up('d:/26.png'))
-    print(txcoses.down('1582177854.png', 'd:/27.jpg'))
+    with txCos() as tx:
+        print(tx.up('d:/26.png'))
+        print(tx.down('1582177854.png', 'd:/28.jpg'))

@@ -2,23 +2,18 @@
 # -*- coding: utf-8 -*-
 '''
 #==============================================================
-#Descripttion : None
+#Descripttion : # #暂时无用，废弃
 #Develop      : VSCode
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-18 09:39:04
 #FilePath     : /xjLib/xt_MetaClass.py
-#LastEditTime : 2020-06-18 09:40:03
+#LastEditTime : 2020-07-16 18:40:52
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 
 import abc
-from pysnooper import snoop
-from xt_Log import log
-log = log()
-snooper = snoop(log.filename)
-# print = log.debug
 import itertools
 
 META_CLS = 0
@@ -88,20 +83,15 @@ def _combined_metaclass(*metas):
 
 
 def generate_base(*mixins):
-    mixin_metaclass_list, mixin_has_metaclass_list, mixin_common_list = _get_three_kinds_of_classes(
-        *mixins)
+    mixin_metaclass_list, mixin_has_metaclass_list, mixin_common_list = _get_three_kinds_of_classes(*mixins)
 
-    meta_and_common_list = [
-        _get_meta_cls_and_original_class(mixin_has_metaclass)
-        for mixin_has_metaclass in mixin_has_metaclass_list
-    ]
+    meta_and_common_list = [_get_meta_cls_and_original_class(mixin_has_metaclass) for mixin_has_metaclass in mixin_has_metaclass_list]
 
     for metacls, commoncls in meta_and_common_list:
         mixin_metaclass_list.append(metacls)
         mixin_common_list.append(commoncls)
 
-    meta_cls = _combined_metaclass(
-        *mixin_metaclass_list) if mixin_metaclass_list else type
+    meta_cls = _combined_metaclass(*mixin_metaclass_list) if mixin_metaclass_list else type
 
     class BaseClass(metaclass=meta_cls, *mixin_common_list):
         @classmethod

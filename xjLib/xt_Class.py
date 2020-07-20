@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 14:25:16
 #FilePath     : /xjLib/xt_Class.py
-#LastEditTime : 2020-07-14 14:52:06
+#LastEditTime : 2020-07-20 14:04:01
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -41,7 +41,7 @@ class item_Mixin(item_get_Mixin, item_set_Mixin, item_del_Mixin):
 class attr_get_Mixin:
     '''原点调用obj.key'''
     def __getattr__(self, key):
-        return self[key]
+        return self.__dict__.get(key)
         # return super().__getattribute__(key)
 
 
@@ -62,15 +62,12 @@ class attr_Mixin(attr_get_Mixin, attr_set_Mixin, attr_del_Mixin):
     pass
 
 
-class dict_Mixin:
-    '''生成类字典
-    # @暂时弃用'''
-    def __init__(self):
+class dict_mothed_Mixin:
+    '''生成类字典,用于readonly限制'''
+    def get_dict(self):
+        '''把对象转换成字典'''
         self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
-
-    @property
-    def __dict__(self):
-        return {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
+        return self.__dict__
 
 
 class iter_Mixin:

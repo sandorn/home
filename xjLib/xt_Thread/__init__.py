@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-02 09:07:36
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-13 16:53:49
+#LastEditTime : 2020-07-17 12:39:54
 '''
 
 __doc__ = [
@@ -21,7 +21,7 @@ __doc__ = [
     'NoWorkersAvailable',  # 无工作线程可用
     'WorkManager',  # 线程池管理，参照htreadpool编写的自定义库
     'Work',  # 线程池任务结构，参照htreadpool编写的自定义库
-    'thread_pool_maneger',
+    'thread_pool',  # 线程装饰器
     'WorkThread',  # 继承线程,利用queue；参照htreadpool编写的自定义库
     'my_pool',  # 装饰符方式
     'stop_thread',  # 外部停止线程
@@ -69,10 +69,7 @@ def stop_thread(thread):
 
 
 class thread_pool:
-    '''
-    仿写vthread
-    @thread_pool(200)
-    '''
+    '''仿写vthread,# @thread_pool(200)'''
     def __init__(self, pool_num=10):
         self._pool_queue = Queue()  # #任务存储,组内queue
         self.main_monitor()  # # 开启监视器线程

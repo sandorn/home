@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-29 23:19:51
-#LastEditTime : 2020-05-29 23:42:51
+#LastEditTime : 2020-07-16 18:48:22
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -19,7 +19,7 @@ AppID:20135333
 API_KEY = 'EoDsIfOQn2yCV3qMWGtW9iWb'
 SECRET_KEY = 'BNGGimQZUfTFKxHkm5Cm0QZw0nMLBTCX'
 '''
-# coding=utf-8
+
 import sys
 import json
 
@@ -75,11 +75,7 @@ SCOPE = 'audio_tts_post'  # 有此scope表示有tts能力，没有请在网页�
 
 def fetch_token():
     print("fetch token begin")
-    params = {
-        'grant_type': 'client_credentials',
-        'client_id': API_KEY,
-        'client_secret': SECRET_KEY
-    }
+    params = {'grant_type': 'client_credentials', 'client_id': API_KEY, 'client_secret': SECRET_KEY}
     post_data = urlencode(params)
     if (IS_PY3):
         post_data = post_data.encode('utf-8')
@@ -97,15 +93,12 @@ def fetch_token():
     result = json.loads(result_str)
     print(result)
     if ('access_token' in result.keys() and 'scope' in result.keys()):
-        if not SCOPE in result['scope'].split(' '):
+        if SCOPE not in result['scope'].split(' '):
             raise DemoError('scope is not correct')
-        print('SUCCESS WITH TOKEN: %s ; EXPIRES IN SECONDS: %s' %
-              (result['access_token'], result['expires_in']))
+        print('SUCCESS WITH TOKEN: %s ; EXPIRES IN SECONDS: %s' % (result['access_token'], result['expires_in']))
         return result['access_token']
     else:
-        raise DemoError(
-            'MAYBE API_KEY or SECRET_KEY not correct: access_token or scope not found in token response'
-        )
+        raise DemoError('MAYBE API_KEY or SECRET_KEY not correct: access_token or scope not found in token response')
 
 
 """  TOKEN end """
@@ -114,18 +107,7 @@ if __name__ == '__main__':
     token = fetch_token()
     tex = quote_plus(TEXT)  # 此处TEXT需要两次urlencode
     print(tex)
-    params = {
-        'tok': token,
-        'tex': tex,
-        'per': PER,
-        'spd': SPD,
-        'pit': PIT,
-        'vol': VOL,
-        'aue': AUE,
-        'cuid': CUID,
-        'lan': 'zh',
-        'ctp': 1
-    }  # lan ctp 固定参数
+    params = {'tok': token, 'tex': tex, 'per': PER, 'spd': SPD, 'pit': PIT, 'vol': VOL, 'aue': AUE, 'cuid': CUID, 'lan': 'zh', 'ctp': 1}  # lan ctp 固定参数
 
     data = urlencode(params)
     print('test on Web Browser' + TTS_URL + '?' + data)
@@ -136,11 +118,9 @@ if __name__ == '__main__':
         f = urlopen(req)
         result_str = f.read()
 
-        headers = dict(
-            (name.lower(), value) for name, value in f.headers.items())
+        headers = dict((name.lower(), value) for name, value in f.headers.items())
 
-        has_error = ('content-type' not in headers.keys() or
-                     headers['content-type'].find('audio/') < 0)
+        has_error = ('content-type' not in headers.keys() or headers['content-type'].find('audio/') < 0)
     except URLError as err:
         print('asr http response http code : ' + str(err.code))
         result_str = err.read()

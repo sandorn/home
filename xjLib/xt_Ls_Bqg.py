@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-04-01 10:29:33
 #FilePath     : /xjLib/xt_Ls_Bqg.py
-#LastEditTime : 2020-06-26 01:44:04
+#LastEditTime : 2020-07-16 15:40:43
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -25,8 +25,7 @@ def clean_Content(string, repl_list=None):
             ("', '", ''),
             ('&nbsp;', ''),
             (r';\[笔趣看  www.biqukan.com\]', ''),
-            (r'\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)',
-             ''),
+            (r'\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)', ''),
             ('www.biqukan.com。', ''),
             ('wap.biqukan.com', ''),
             ('www.biqukan.com', ''),
@@ -56,14 +55,7 @@ def clean_Content(string, repl_list=None):
 
 
 def arrangeContent(string):
-    clean_list = [
-        "', '", '&nbsp;', r';\[笔趣看  www.biqukan.com\]',
-        r'\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)',
-        'www.biqukan.com。', 'wap.biqukan.com', 'www.biqukan.com',
-        'm.biqukan.com', 'n.biqukan.com', '百度搜索“笔趣看小说网”手机阅读:',
-        '百度搜索“笔趣看小说网”手机阅读：', '请记住本书首发域名:', '请记住本书首发域名：', '笔趣阁手机版阅读网址:',
-        '笔趣阁手机版阅读网址：', '<br />', r';\[笔趣看  \]', r'\[笔趣看 \]'
-    ]
+    clean_list = ["', '", '&nbsp;', r';\[笔趣看  www.biqukan.com\]', r'\(https://www.biqukan.com/[0-9]{1,4}_[0-9]{3,8}/[0-9]{3,14}.html\)', 'www.biqukan.com。', 'wap.biqukan.com', 'www.biqukan.com', 'm.biqukan.com', 'n.biqukan.com', '百度搜索“笔趣看小说网”手机阅读:', '百度搜索“笔趣看小说网”手机阅读：', '请记住本书首发域名:', '请记住本书首发域名：', '笔趣阁手机版阅读网址:', '笔趣阁手机版阅读网址：', '<br />', r';\[笔趣看  \]', r'\[笔趣看 \]']
     repl_dict = [
         (r'<br />', '\n'),
         (r'\r\r', '\n'),
@@ -75,8 +67,7 @@ def arrangeContent(string):
     ]
     if isinstance(string, (list, tuple)):
         string = '\n'.join([item.strip("\r\n　  ") for item in string])
-    string = string.strip("\r\n　  ").replace(u'\u3000',
-                                             u' ').replace(u'\xa0', u' ')
+    string = string.strip("\r\n　  ").replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     string = Ex_Re_Clean(string, clean_list)
     string = Ex_Re_Repl(string, repl_dict)
     return string
@@ -89,8 +80,7 @@ def get_download_url(target):
     response = res.element
 
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
-    全部章节节点 = response.xpath(
-        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
+    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
     for item in 全部章节节点:
         _ZJHERF = 'https://www.biqukan.com' + item
@@ -105,8 +95,7 @@ def get_title_url(target):
 
     bookname = element.xpath('//meta[@property="og:title"]//@content')[0]
 
-    全部章节节点 = element.xpath(
-        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a')
+    全部章节节点 = element.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a')
     baseurl = '/'.join(target.split('/')[0:-2])
     for item in 全部章节节点:  # 遍历文章列表
         _href = item.xpath("@href")[0]  # 章节链接
@@ -135,8 +124,7 @@ def get_contents(index, target):
     response = res.element
 
     _title = "".join(response.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000',
-                                         u' ').replace(u'\xa0', u' ')
+    title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     _showtext = response.xpath('//*[@id="content"]/text()')
     content = arrangeContent(_showtext)
     return [index, title, content]
@@ -146,8 +134,7 @@ def get_contents_ahttp(index, target):
     response = ahttpGet(target).element
 
     _title = "".join(response.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000',
-                                         u' ').replace(u'\xa0', u' ')
+    title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     _showtext = response.xpath('//*[@id="content"]/text()')
     content = arrangeContent(_showtext)
     return [index, title, content]
@@ -168,8 +155,7 @@ if __name__ == "__main__":
     res = get(url)
     response = res.element
     _title = "".join(response.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000',
-                                         u' ').replace(u'\xa0', u' ')
+    title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     _showtext = response.xpath('//*[@id="content"]/text()')
 
     print(arrangeContent(_showtext), '*' * 88)

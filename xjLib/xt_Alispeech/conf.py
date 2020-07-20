@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
 #FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-07-10 18:49:49
+#LastEditTime : 2020-07-20 13:58:43
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -26,12 +26,13 @@ user2 = {
 
 from ali_speech._create_token import AccessToken
 from xt_Time import get_10_timestamp
-from xt_Class import readonly
+from xt_Class import readonly, dict_mothed_Mixin
 from typing import Any
 from dataclasses import dataclass, field
+from xt_Singleon import Singleton_Mixin
 
 
-class Constant:
+class Constant(Singleton_Mixin):
     __appKey = 'Ofm34215thIUdSIX'
     __accessKeyId = 'LTAI4G5TRjsGy8BNKPtctjXQ'
     __accessKeySecret = 'hS8Kl0b9orxNUW7IOeBIFUfzgcVn00'
@@ -58,10 +59,12 @@ class Constant:
         # #token生命周期缩短30分钟
         if (self.__expire_time - 60 * 30) <= now:
             self.__token, self.__expire_time = AccessToken.create_token(self.__accessKeyId, self.__accessKeySecret)
+        return self.__expire_time
 
 
-@dataclass(init=False)
-class SpeechArgs:
+# (init=False) 不做初始化，避免生成.__dict__
+@dataclass
+class SpeechArgs(dict_mothed_Mixin):
     '''默认参数'''
     appkey = readonly('_appkey')
     token = readonly('_token')
@@ -94,7 +97,12 @@ class TransResult:
 
 
 if __name__ == "__main__":
-    print(Constant())
+    print(Constant(), 22222, id(Constant()))
     print(SpeechArgs())
     print(SynResult())
     print(TransResult())
+    print(22222, id(Constant()), Constant().__dict__)
+    a = Constant()
+    print(22222, id(a))
+    print(SynResult().__dict__)
+    print(TransResult().__dict__)

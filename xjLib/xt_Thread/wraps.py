@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-22 15:34:30
 #FilePath     : /xjLib/xt_Thread/wraps.py
-#LastEditTime : 2020-06-26 01:38:09
+#LastEditTime : 2020-07-17 11:28:42
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -39,11 +39,7 @@ def thread_wraps(daemon=False):
     def decorate(func):
         @wraps(func)
         def _wrapper(*args, **kwargs):
-            thr = Thread(target=func,
-                         args=args,
-                         kwargs=kwargs,
-                         name=f"func-{func.__name__}",
-                         daemon=daemon)
+            thr = Thread(target=func, args=args, kwargs=kwargs, name=f"func-{func.__name__}", daemon=daemon)
             thr.start()
             print(f"{thr} start with thread_wraps...")
 
@@ -61,11 +57,7 @@ def thread_wrap(func):
     # @不加括号()，无参数
     '''
     def wrapper(*args, **kwargs):
-        thr = Thread(target=func,
-                     args=args,
-                     kwargs=kwargs,
-                     name=f"func-{func.__name__}",
-                     daemon=False)
+        thr = Thread(target=func, args=args, kwargs=kwargs, name=f"func-{func.__name__}", daemon=False)
         thr.start()
         print(f"{thr} start with thread_wrap...")
 
@@ -100,14 +92,15 @@ class thread_wraps_class:
             except Exception:
                 return None
 
-    def __init__(self, daemon=False, **kwargs):
+    def __init__(self, daemon=True, **kwargs):
         self.daemon = daemon
 
     def __call__(self, func):
         @wraps(func)
         def decorate(*args, **kwargs):
             _mythr = self.MyThread(func, func.__name__, *args, **kwargs)
-            _mythr.getAllResult = self.getAllResult
+            _mythr.setDaemon(self.daemon)  # #传递装饰器参数
+            _mythr.getAllResult = self.getAllResult  # # 添加方法
             _mythr.start()
             self.thread_dict[_mythr.ident] = _mythr
             return _mythr
@@ -127,7 +120,7 @@ class thread_wrap_class:
     '''
     函数的线程装饰器，返回thread线程实例，getResult获取结果,
     类或实例.getAllResult 获取结果集合
-    # @不加括号()，无参数
+    # @不加括号()，无参数,可在调用被装饰函数添加daemon=参数
     '''
     Result_dict = {}
     thread_dict = {}
@@ -153,7 +146,9 @@ class thread_wrap_class:
         self.func = func
 
     def __call__(self, *args, **kwargs):
+        self.daemon = kwargs.pop('daemon', False)
         _mythr = self.MyThread(self.func, self.func.__name__, *args, **kwargs)
+        _mythr.setDaemon(self.daemon)  # #传递装饰器参数
         _mythr.getAllResult = self.getAllResult
         _mythr.start()
         self.thread_dict[_mythr.ident] = _mythr
@@ -168,5 +163,5 @@ class thread_wrap_class:
         return res
 
 
-# _thread_lock = Lock()
-# print = thread_safe(_thread_lock)(print)
+_thread_lock = Lock()
+print = thread_safe(_thread_lock)(print)

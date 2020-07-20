@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 11:48:40
 #FilePath     : /xjLib/xt_File.py
-#LastEditTime : 2020-06-30 19:02:35
+#LastEditTime : 2020-07-16 18:44:00
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -48,11 +48,8 @@ def file_to_List(filepath):
     res_list = []
     with open(filepath, 'r') as file_to_read:
         while True:
-            line = file_to_read.readline()
-            if not line:
-                break
-            line = line.strip('\n')
-            res_list.append(line)
+            line = file_to_read.readline().strip('\n')
+            if line: res_list.append(line)
     return res_list
 
 

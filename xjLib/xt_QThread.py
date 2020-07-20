@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-28 21:06:12
-#LastEditTime : 2020-07-13 12:30:53
+#LastEditTime : 2020-07-16 15:42:43
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -15,9 +15,10 @@
 
 from threading import Lock
 from PyQt5.QtCore import QThread
+from xt_Class import repr_Mixin
 
 
-class CustomQThread(QThread):
+class CustomQThread(QThread, repr_Mixin):
     """单例多线程，继承自threading.Thread"""
 
     __instance_lock = Lock()
@@ -65,6 +66,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
     a = CustomQThread(f, 4)
+    print(a)
     b = CustomQThread(f, 6)
     print(a is b, id(a), id(b), a, b)
 

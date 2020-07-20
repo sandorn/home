@@ -1,15 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-14 10:31:24
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-04 17:11:48
+#==============================================================
+#Descripttion : 域名失效状态，需要更新domain_prefix
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2019-05-14 10:31:24
+#FilePath     : /xjLib/xt_QiniuCos.py
+#LastEditTime : 2020-07-16 18:25:30
+#Github       : https://github.com/sandorn/home
+#==============================================================
 '''
 
 import requests
@@ -30,6 +31,7 @@ class qiniuCos:
         image_name = str(int(time.time()))
         # key = str(hash("logo.png")) + ".png"
         r = requests.get(self.domain_prefix + url, "d:/" + image_name + "." + url.split('.')[-1])
+        print(r.text)
         assert r.status_code == 200
         return "d:/" + image_name + "." + url.split('.')[-1]
 

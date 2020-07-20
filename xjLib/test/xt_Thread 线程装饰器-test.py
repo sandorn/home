@@ -8,22 +8,15 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-19 13:52:24
 #FilePath     : /xjLib/test/xt_Thread 线程装饰器-test.py
-#LastEditTime : 2020-06-25 18:29:03
+#LastEditTime : 2020-07-17 11:27:28
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 import time
 from xt_Thread import thread_wrap_class, thread_wraps_class
-from xt_Thread import thread_safe, thread_wraps, thread_wrap, print
+from xt_Thread import thread_safe, thread_wraps, thread_wrap
 from threading import currentThread
 
-from pysnooper import snoop
-from xt_Log import log
-log = log()
-snooper = snoop(log.filename)
-# print = log.debug
-# import dis
-# dis.dis(event) # 反汇编
 # @thread_async
 # @thread_wraps()
 g_a = 100
@@ -53,7 +46,7 @@ def another_event(s):
 
 
 event(4)
-a = event(5)
+a = event(5, daemon=True)
 print('a.name:', a.name, a._name, a)
 print('a:', a.getResult())
 click(event, 3)

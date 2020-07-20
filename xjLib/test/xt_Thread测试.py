@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-13 14:30:49
+#LastEditTime : 2020-07-17 10:49:05
 根据网络资料，写的threadpool
 '''
 
@@ -165,11 +165,11 @@ if __name__ == "__main__":
 
     # st(bookname, urls)
     # sq(bookname, urls)
-    # stm(bookname, urls)
+    stm(bookname, urls)
     # ct(bookname, urls)
     # cq(bookname, urls)
     # wm(bookname, urls)
-    pm(bookname, urls)
+    # pm(bookname, urls)
     # ps(bookname, urls)
     # cpm(bookname, urls)
     # cps(bookname, urls)

@@ -2,16 +2,15 @@
 # -*- coding: utf-8 -*-
 '''
 # ==============================================================
-# Descripttion : None
+# Descripttion :  string  |  dict  |  list  |  tupe  |  json
 # Develop      : VSCode
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-02-14 13:57:28
 #FilePath     : /xjLib/xt_String.py
-#LastEditTime : 2020-06-30 17:37:01
+#LastEditTime : 2020-07-16 18:08:56
 # Github       : https://github.com/sandorn/home
 # ==============================================================
-#  string  |  dict  |  list  |  tupe  |  json
 '''
 
 import hashlib
@@ -96,7 +95,7 @@ def align(str1, distance=66, alignment='left'):
 def Ex_Re_Repl(string, trims=None):
     '''
         格式化html string, 去掉多余的字符，类，script等。
-        #!正则替换，自写正则表达式
+        # !正则替换，自写正则表达式
         string:欲处理的字符串
         trims:list内包含tuple或list
         tuple[0]:被替换
@@ -104,11 +103,7 @@ def Ex_Re_Repl(string, trims=None):
     '''
     # 第一种方法
     if trims is None:
-        trims = [(r'\n', ''), (r'\t', ''), (r'\r', ''), (r'  ', ''),
-                 (r'\u2018', "'"), (r'\u2019', "'"), (r'\ufeff', ''),
-                 (r'\u2022', ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'),
-                 (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''),
-                 (r"</?a.*?>", '')]
+        trims = [(r'\n', ''), (r'\t', ''), (r'\r', ''), (r'  ', ''), (r'\u2018', "'"), (r'\u2019', "'"), (r'\ufeff', ''), (r'\u2022', ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'), (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''), (r"</?a.*?>", '')]
 
     def run(str_tmp, replacement):
         return re.sub(replacement[0], replacement[1], str_tmp)
@@ -142,13 +137,12 @@ def Ex_Str_Replace(string, trims):
     # return string
 
     # 第二种方法  # string为初始值，最后传入，在lambda中最先接收
-    return reduce(lambda string, item: string.replace(item[0], item[1]), trims,
-                  string)
+    return reduce(lambda string, item: string.replace(item[0], item[1]), trims, string)
 
 
 def Ex_Re_Clean(oldtext, par_list):
     '''
-    #!正则清除，自写正则表达式
+    # !正则清除，自写正则表达式
     用法 newtext=Ex_Re_Clean(oldtext,['aaa','bbb'])
     '''
     pattern = re.compile('|'.join(par_list))
@@ -157,7 +151,7 @@ def Ex_Re_Clean(oldtext, par_list):
 
 def Ex_Re_Replace(string, trims_dict):
     '''
-    #!正则替换，自写正则表达式
+    # !正则替换，自写正则表达式
     用法 newtext=Ex_Re_Replace(oldtext,{'a':aaa','b':bbb'})
     '''
     pattern = re.compile('|'.join(trims_dict.keys()))
@@ -251,9 +245,5 @@ def random_char(length=20, string=[]):
 
 def class_add_dict(in_obj):
     '''把对象转换成字典'''
-    in_obj.__dict__ = ({
-        key: getattr(in_obj, key)
-        for key in dir(in_obj)
-        if not key.startswith('__') and not callable(getattr(in_obj, key))
-    })
+    in_obj.__dict__ = ({key: getattr(in_obj, key) for key in dir(in_obj) if not key.startswith('__') and not callable(getattr(in_obj, key))})
     return in_obj.__dict__

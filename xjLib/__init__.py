@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-14 08:40:32
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-03 11:27:43
+#LastEditTime : 2020-07-16 18:54:08
 '''
 # package
 # __init__.py
@@ -17,4 +17,4 @@
 __author__ = 'Even.Sand'
 __license__ = 'NewSea'
 
-xjLib_VERSION = __version__ = '0.1.9'
+xjLib_VERSION = __version__ = '0.2.5'

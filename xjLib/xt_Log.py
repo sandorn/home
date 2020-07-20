@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-28 09:23:00
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-29 16:37:04
+#LastEditTime : 2020-07-16 18:41:19
 # author:      he.zhiming
 '''
 
@@ -33,8 +33,7 @@ _levelToName = {
 class log(object):
     def __init__(self, level=logging.DEBUG, logger=__name__):
         self.level = level
-        self.filename = datetime.today().strftime(
-            '%Y%m%d') + '-' + _levelToName.get(level) + '.log'
+        self.filename = datetime.today().strftime('%Y%m%d') + '-' + _levelToName.get(level) + '.log'
         # #定义字典
         self.conf_dic = {
             'version': 1,

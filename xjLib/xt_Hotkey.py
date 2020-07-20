@@ -8,12 +8,13 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-28 19:16:13
 #FilePath     : /xjLib/xt_Hotkey.py
-#LastEditTime : 2020-06-14 19:30:39
+#LastEditTime : 2020-07-16 18:42:31
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
 原文链接：https://blog.csdn.net/lsjweiyi/article/details/79137931
 '''
+
 import win32con
 import ctypes
 import ctypes.wintypes
@@ -21,14 +22,7 @@ import threading
 
 user32 = ctypes.windll.user32  # 加载user32.dll
 
-from pysnooper import snoop
-from xt_Log import log
-log = log()
-snooper = snoop(log.filename)
-# print = log.debug
 
-
-@snooper
 class Hotkey(threading.Thread):  # 创建一个Thread.threading的扩展类
     def __init__(self, ikey1=105, ikey2=106):
         super().__init__()
