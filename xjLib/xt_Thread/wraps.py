@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-22 15:34:30
 #FilePath     : /xjLib/xt_Thread/wraps.py
-#LastEditTime : 2020-07-17 11:28:42
+#LastEditTime : 2020-07-22 18:28:15
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -17,8 +17,10 @@ from functools import wraps
 from threading import Lock, Thread
 
 
-def thread_safe(lock):
+def thread_safe(lock=None):
     '''函数的线程安全化，需要lock'''
+    lock = lock or Lock()
+
     def decorate(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -31,123 +33,86 @@ def thread_safe(lock):
     return decorate
 
 
-def thread_wraps(daemon=False):
-    '''
-    函数的线程装饰器，返回线程，
-    # @加括号()，可选参数daemon
-    '''
-    def decorate(func):
-        @wraps(func)
-        def _wrapper(*args, **kwargs):
-            thr = Thread(target=func, args=args, kwargs=kwargs, name=f"func-{func.__name__}", daemon=daemon)
-            thr.start()
-            print(f"{thr} start with thread_wraps...")
+class MyThread(Thread):
+    '''供线程装饰器调用'''
+    def __init__(self, func, name, *args, **kwargs):
+        super().__init__(target=func, args=args, kwargs=kwargs, name=name)
 
-            return thr
+    def run(self):
+        self.callback = self._kwargs.pop('callback', None)
+        self.Result_dict = self._kwargs.pop('results', None)
+        self.Result = self._target(*self._args, **self._kwargs)
 
-        return _wrapper
+        if self.callback is not None and callable(self.callback):
+            self.Result = self.callback(self.Result)
+        if self.Result_dict is not None:
+            self.Result_dict[self.ident] = self.Result
 
-    print('in run wraps')
-    return decorate
-
-
-def thread_wrap(func):
-    '''
-    函数的线程装饰器，返回线程，
-    # @不加括号()，无参数
-    '''
-    def wrapper(*args, **kwargs):
-        thr = Thread(target=func, args=args, kwargs=kwargs, name=f"func-{func.__name__}", daemon=False)
-        thr.start()
-        print(f"{thr} start with thread_wrap...")
-
-        return thr
-
-    return wrapper
+    def getResult(self):
+        """获取当前线程结果"""
+        try:
+            self.join()
+            return self.Result
+        except Exception:
+            return None
 
 
-class thread_wraps_class:
-    '''
-    函数的线程装饰器，返回thread线程实例，getResult获取结果,
-    类或实例.getAllResult 获取结果集合
-    # @加括号()，可选参数daemon
-    '''
-    Result_dict = {}
-    thread_dict = {}
+def thread_wrap(func=None):
+    '''函数的线程装饰器，返回线程，有无括号都可以，\n
+    getResult获取结果，类或实例getAllResult获取结果集合，\n
+    可在调用被装饰函数添加daemon=True,callback等参数'''
 
-    class MyThread(Thread):
-        def __init__(self, func, name, *args, **kwargs):
-            super().__init__(target=func, args=args, kwargs=kwargs, name=name)
+    # 需要再次嵌套一层装饰器，才可以供下面运行时使用
+    def wrapper(fun):
+        def inner(*args, **kwargs):
+            daemon = kwargs.pop('daemon', False)
 
-        def run(self):
-            print(f"{self} start with thread_wraps_class...")
-            self.Result = self._target(*self._args, **self._kwargs)
-            thread_wraps_class.Result_dict[self.ident] = self.Result
+            _mythr = MyThread(
+                fun,
+                func.__name__,
+                *args,
+                **kwargs,
+            )
 
-        def getResult(self):
-            """获取当前线程结果"""
-            try:
-                self.join()
-                return self.Result
-            except Exception:
-                return None
-
-    def __init__(self, daemon=True, **kwargs):
-        self.daemon = daemon
-
-    def __call__(self, func):
-        @wraps(func)
-        def decorate(*args, **kwargs):
-            _mythr = self.MyThread(func, func.__name__, *args, **kwargs)
-            _mythr.setDaemon(self.daemon)  # #传递装饰器参数
-            _mythr.getAllResult = self.getAllResult  # # 添加方法
+            _mythr.setDaemon(daemon)  # #传递装饰器参数
             _mythr.start()
-            self.thread_dict[_mythr.ident] = _mythr
+
+            print(f"{_mythr} start with thread_wrap...")
             return _mythr
 
-        return decorate
+        return inner
 
-    @classmethod
-    def getAllResult(cls):
-        '''获取全部结果，并清空'''
-        for thr in cls.thread_dict.values():
-            thr.join()
-        res, cls.Result_dict = cls.Result_dict, {}
-        return res
+    # 判断func(参数)
+    if func is None:
+        return wrapper
+
+    # 如果func是可以调用的函数
+    elif callable(func):
+        return wrapper(func)
 
 
 class thread_wrap_class:
-    '''
-    函数的线程装饰器，返回thread线程实例，getResult获取结果,
-    类或实例.getAllResult 获取结果集合
-    # @不加括号()，无参数,可在调用被装饰函数添加daemon=参数
-    '''
+    '''函数的线程装饰器，无括号()，返回线程实例，\n
+    getResult获取结果，类或实例getAllResult获取结果集合，\n
+    可在调用被装饰函数添加daemon=True，callback等参数'''
     Result_dict = {}
     thread_dict = {}
-
-    class MyThread(Thread):
-        def __init__(self, func, name, *args, **kwargs):
-            super().__init__(target=func, args=args, kwargs=kwargs, name=name)
-
-        def run(self):
-            print(f"{self} start with thread_wrap_class...")
-            self.Result = self._target(*self._args, **self._kwargs)
-            thread_wrap_class.Result_dict[self.ident] = self.Result
-
-        def getResult(self):
-            """获取当前线程结果"""
-            try:
-                self.join()
-                return self.Result
-            except Exception:
-                return None
 
     def __init__(self, func):
         self.func = func
 
     def __call__(self, *args, **kwargs):
+        print(f"{self.func.__name__} start with thread_wrap_class...")
         self.daemon = kwargs.pop('daemon', False)
-        _mythr = self.MyThread(self.func, self.func.__name__, *args, **kwargs)
+
+        _mythr = MyThread(
+            self.func,
+            self.func.__name__,
+            *args,
+            results=thread_wrap_class.Result_dict,
+            **kwargs,
+        )
+
         _mythr.setDaemon(self.daemon)  # #传递装饰器参数
         _mythr.getAllResult = self.getAllResult
         _mythr.start()
@@ -163,5 +128,4 @@ class thread_wrap_class:
         return res
 
 
-_thread_lock = Lock()
-print = thread_safe(_thread_lock)(print)
+print = thread_safe()(print)

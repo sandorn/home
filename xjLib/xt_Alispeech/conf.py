@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 16:57:09
 #FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-07-20 13:58:43
+#LastEditTime : 2020-07-22 13:27:36
 #Github       : https://github.com/sandorn/home
 #==============================================================
 

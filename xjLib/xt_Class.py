@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 14:25:16
 #FilePath     : /xjLib/xt_Class.py
-#LastEditTime : 2020-07-20 14:04:01
+#LastEditTime : 2020-07-22 14:39:06
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -63,7 +63,7 @@ class attr_Mixin(attr_get_Mixin, attr_set_Mixin, attr_del_Mixin):
 
 
 class dict_mothed_Mixin:
-    '''生成类字典,用于readonly限制'''
+    '''get_dict重新生成__dict__类字典,用于readonly限制'''
     def get_dict(self):
         '''把对象转换成字典'''
         self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
@@ -87,11 +87,16 @@ class iter_Mixin:
 
 class repr_Mixin:
     '''用于打印显示'''
+    def get_dict(self):
+        '''把对象转换成字典'''
+        self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
+        return self.__dict__
+
     def __repr__(self):
         if not hasattr(self, '__dict__'):
             self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
 
-        return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in self.__dict__.items()])})"
+        return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in self.get_dict.items()])})"
 
     # __str__ = __repr__
 
@@ -223,4 +228,4 @@ if __name__ == "__main__":
     print(a.name555s)
     del b.name
     print(a.__dict__, a['age'], id(a))
-    print(b.__dict__, b.age, id(b))
+    print(id(b.__dict__), b.__dict__, b.age, id(b))

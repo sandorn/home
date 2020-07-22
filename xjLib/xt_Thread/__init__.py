@@ -1,17 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-02 09:07:36
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-17 12:39:54
+#==============================================================
+#Descripttion : None
+#Develop      : VSCode
+#Author       : Even.Sand
+#Contact      : sandorn@163.com
+#Date         : 2020-03-02 09:07:36
+#FilePath     : /xjLib/xt_Thread/__init__.py
+#LastEditTime : 2020-07-22 18:29:57
+#Github       : https://github.com/sandorn/home
+#==============================================================
 '''
-
 __doc__ = [
     'SingletonThread',  # 单例
     'SingletonThread_Queue',
@@ -39,11 +39,9 @@ from queue import Empty, Queue
 from xt_Class import item_get_Mixin
 from xt_Singleon import singleton_wrap_return_class, Singleton_Mixin
 # #引入装饰器
-from .wraps import thread_wrap_class, thread_wraps_class
-from .wraps import thread_wraps, thread_wrap
-from .wraps import thread_safe
+from .wraps import thread_wrap_class, thread_wrap, thread_safe
 # #引入自定义thread pool
-from .manage import WorkManager
+from .manage import WorkManager, thread_pool
 from .futures_thread import ThreadPoolMap, ThreadPoolSub, ExThreadPool
 from .futures_process import ProcessPoolMap, ProcessPoolSub, ExProcesPool
 
@@ -66,75 +64,6 @@ def stop_thread(thread):
             raise SystemError("PyThreadState_SetAsyncExc failed")
 
     _async_raise(thread.ident, SystemExit)
-
-
-class thread_pool:
-    '''仿写vthread,# @thread_pool(200)'''
-    def __init__(self, pool_num=10):
-        self._pool_queue = Queue()  # #任务存储,组内queue
-        self.main_monitor()  # # 开启监视器线程
-        self._pool_max_num = pool_num  # #最大线程数,字典存储
-        self._run(pool_num)  # #运行伺服线程
-        self._result_list = []  # #任务结果存储
-
-    def __call__(self, func):
-        @wraps(func)
-        def _run_threads(*args, **kw):
-            self._pool_queue.put((func, args, kw))
-
-        return _run_threads
-
-    def change_thread_num(self, num):
-        x = self._pool_max_num - num
-        if x < 0:
-            self._run(abs(x))
-        if x > 0:
-            for _ in range(abs(x)):
-                self._pool_queue.put('KillThreadParams')
-        self._pool_max_num = num
-
-    def _run(self, num):
-        def _pools_pull():
-            while True:
-                args_list = self._pool_queue.get()
-                if args_list == 'KillThreadParams':
-                    return
-                try:
-                    func, args, kw = args_list
-                    Result = func(*args, **kw)  # 获取结果
-                    self._result_list.append(Result)
-                except BaseException as e:
-                    print(" - thread stop_by_error - ", e)
-                    break
-                finally:
-                    self._pool_queue.task_done()  # 发出此队列完成信号
-
-        # 线程的开启
-        for _ in range(num):
-            Thread(target=_pools_pull).start()
-
-    def main_monitor(self):
-        def _func():
-            while True:
-
-                sleep(0.25)
-                if not main_thread().isAlive():
-                    self.close_all()
-                    break
-
-        self._MainMonitor = Thread(target=_func, name="MainMonitor")
-        self._MainMonitor.start()
-
-    def joinall(self):
-        self._pool_queue.join()
-
-    def wait_completed(self):
-        """等待全部线程结束，返回结果"""
-        self._pool_queue.join()
-        return self._result_list
-
-    def close_all(self):
-        self.change_thread_num(0)
 
 
 class CustomThread(Thread, item_get_Mixin):

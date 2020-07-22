@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-29 09:51:29
 #FilePath     : /xjLib/xt_Asyncio.py
-#LastEditTime : 2020-07-10 18:46:46
+#LastEditTime : 2020-07-22 13:28:33
 #Github       : https://github.com/sandorn/home
 #==============================================================
 aiohttp笔记 - happy_codes - 博客园
@@ -133,7 +133,7 @@ class AioCrawl:
 
 
 def make_future(func):
-    '''协程装饰器，用法不明'''
+    '''协程装饰器'''
     @wraps(func)
     def _make_future(*args, **kwargs):
         future = asyncio.Future()

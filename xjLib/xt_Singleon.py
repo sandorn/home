@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-23 17:41:52
-#FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-07-20 13:23:35
+#FilePath     : /xjLib/xt_Singleon.py
+#LastEditTime : 2020-07-22 18:43:19
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -20,9 +20,7 @@ from functools import wraps
 class Singleton_Mixin:
     '''单例模式，可混入继承，可多次init，
     可用类调用classmethod，可照写
-    # 单次初始化，增加下列语句
-    # if not self._intialed:
-    #     self._intialed = True
+    # 可通过self._intialed判断，设定初始化次数
     '''
     _lock = Lock()
     _instance = None
@@ -31,7 +29,7 @@ class Singleton_Mixin:
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
-                    cls._instance = super().__new__(cls)
+                    cls._instance = super().__new__(cls, *args, **kwargs)
                     # #__init__标志，可避免重复初始化
                     cls._instance._intialed = False
         return cls._instance
@@ -41,9 +39,7 @@ class Singleton_Base:
     '''
     单例模式基类，用于继承，可多次init，
     可用类调用classmethod
-    # 单次初始化，增加下列语句
-    # if not self._intialed:
-    #     self._intialed = True
+    # 可通过self._intialed判断，设定初始化次数
     '''
     _instance = dict()
     _lock = Lock()
@@ -52,7 +48,7 @@ class Singleton_Base:
         if cls not in cls._instance:
             with cls._lock:
                 if cls not in cls._instance:
-                    cls._instance[cls] = super().__new__(cls)
+                    cls._instance[cls] = super().__new__(cls, *args, **kwargs)
                     # #__init__标志，可避免重复初始化
                     cls._instance[cls]._intialed = False
 
@@ -60,7 +56,8 @@ class Singleton_Base:
 
 
 def singleton_wrap_return_class(_cls):
-    '''单例类装饰器，多次init，返回类，类属性及方法通用'''
+    '''单例类装饰器，多次init，返回类，类属性及方法通用
+    # 可通过self._intialed判断，设定初始化次数'''
     class class_wrapper(_cls):
 
         _instance = dict()

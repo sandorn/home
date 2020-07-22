@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
 #FilePath     : /xjLib/xt_Response.py
-#LastEditTime : 2020-07-14 14:35:27
+#LastEditTime : 2020-07-22 13:32:42
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -34,8 +34,10 @@ class ReqResult(item_Mixin):
         if self._content is None: return None
 
         code_type = detect(self._content)
+
         if code_type != 'utf-8':
-            self._content = self._content.decode(code_type['encoding'], 'ignore').encode('utf-8')
+            self._content = self._content.decode(code_type['encoding'], 'ignore')
+            self._content = self._content.encode('utf-8')
         return self._content
 
     @property

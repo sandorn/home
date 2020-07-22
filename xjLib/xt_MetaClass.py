@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-18 09:39:04
 #FilePath     : /xjLib/xt_MetaClass.py
-#LastEditTime : 2020-07-16 18:40:52
+#LastEditTime : 2020-07-22 14:47:58
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -108,3 +108,38 @@ def generate_base(*mixins):
             return metas
 
     return BaseClass
+
+
+class DelegateMetaClass(type):
+    def __new__(cls, name, bases, attrs):
+        methods = attrs.pop('delegated_methods', ())
+        for m in methods:
+
+            def make_func(m):
+                def func(self, *args, **kwargs):
+                    return getattr(self.delegate, m)(*args, **kwargs)
+
+                return func
+
+            attrs[m] = make_func(m)
+        return super(DelegateMetaClass, cls).__new__(cls, name, bases, attrs)
+
+
+class Delegate(metaclass=DelegateMetaClass):
+    def __init__(self, delegate):
+        self.delegate = delegate
+
+
+class ImmutableList(Delegate):
+    delegated_methods = ('__contains__', '__eq__', '__getitem__', '__getslice__', '__str__', '__len__', 'index', 'count')
+
+
+class ImmutableDict(Delegate):
+    delegated_methods = ('__contains__', '__getitem__', '__eq__', '__len__', '__str__', 'get', 'has_key', 'items', 'iteritems', 'iterkeys', 'itervalues', 'keys', 'values')
+
+
+if __name__ == "__main__":
+    di = ImmutableList([1, 1, 2, 3, 4])
+    print(type(di), dir(di), di)
+    for a in di:
+        print(a)

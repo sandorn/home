@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-22 18:48:30
 #FilePath     : /xjLib/xt_Thread/manage.py
-#LastEditTime : 2020-06-25 18:41:58
+#LastEditTime : 2020-07-22 15:02:22
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -27,12 +27,7 @@ def _handle_thread_exception(request, exc_info):
 
 class task_object:
     '''任务处理的对象类'''
-    def __init__(self,
-                 func,
-                 args=None,
-                 kwds=None,
-                 callback=None,
-                 exc_callback=_handle_thread_exception):
+    def __init__(self, func, args=None, kwds=None, callback=None, exc_callback=_handle_thread_exception):
         self.requestID = id(self)
         self.exception = False
         self.callback = callback
@@ -47,13 +42,9 @@ class task_object:
 
 class WorkManager(object):
     '''自编线程池，可以再次添加任务;\n
-    获取阶段结果：getAllResult();关闭线程获取最终结果：wait_completed()'''
-    def __init__(self,
-                 items=None,
-                 MaxSem=66,
-                 callback=None,
-                 exc_callback=_handle_thread_exception,
-                 **kwds):
+    获取阶段结果：getAllResult();\n
+    关闭线程获取最终结果：wait_completed()'''
+    def __init__(self, items=None, MaxSem=66, callback=None, exc_callback=_handle_thread_exception, **kwds):
         self.work_queue = Queue()  # 任务队列
         self.result_queue = Queue()  # 结果队列
         self.all_Thread = []
@@ -69,27 +60,21 @@ class WorkManager(object):
         for args in args_list:
             assert isinstance(args, (list, tuple))
             func = args.pop(0)
-            task = task_object(func,
-                               args,
-                               callback=self.callback,
-                               exc_callback=self.exc_callback)
+            task = task_object(func, args, callback=self.callback, exc_callback=self.exc_callback)
             self.work_queue.put(task)
 
     def setMaxcs(self, MaxSem):
         """修改最大工作线程数，根据差额创建或关闭工作线程"""
         self.MaxSem = MaxSem
         if self.MaxSem > len(self.all_Thread):
-            self.create_work_thread(self.MaxSem - len(self.all_Thread),
-                                    **self.kwds)
+            self.create_work_thread(self.MaxSem - len(self.all_Thread), **self.kwds)
         elif self.MaxSem < len(self.all_Thread):
-            self.close_work_thread(
-                len(self.all_Thread) - self.MaxSem, **self.kwds)
+            self.close_work_thread(len(self.all_Thread) - self.MaxSem, **self.kwds)
 
     def create_work_thread(self, MaxSem, **kwds):
         """按照设计数量，初始化线程并运行"""
         for i in range(MaxSem):
-            self.all_Thread.append(
-                Work(self.work_queue, self.result_queue, **kwds))
+            self.all_Thread.append(Work(self.work_queue, self.result_queue, **kwds))
 
     def close_work_thread(self, num_workers):
         """关闭要求数量的工作线程"""
@@ -158,3 +143,73 @@ class Work(Thread):
     def stop_work(self):
         """停止工作线程"""
         self._stop_event.set()
+
+
+class thread_pool:
+    '''仿写vthread,
+    # thread_pool(200)'''
+    def __init__(self, pool_num=10):
+        self._pool_queue = Queue()  # #任务存储,组内queue
+        self.main_monitor()  # # 开启监视器线程
+        self._pool_max_num = pool_num  # #最大线程数,字典存储
+        self._run(pool_num)  # #运行伺服线程
+        self._result_list = []  # #任务结果存储
+
+    def __call__(self, func):
+        @wraps(func)
+        def _run_threads(*args, **kw):
+            self._pool_queue.put((func, args, kw))
+
+        return _run_threads
+
+    def change_thread_num(self, num):
+        x = self._pool_max_num - num
+        if x < 0:
+            self._run(abs(x))
+        if x > 0:
+            for _ in range(abs(x)):
+                self._pool_queue.put('KillThreadParams')
+        self._pool_max_num = num
+
+    def _run(self, num):
+        def _pools_pull():
+            while True:
+                args_list = self._pool_queue.get()
+                if args_list == 'KillThreadParams':
+                    return
+                try:
+                    func, args, kw = args_list
+                    Result = func(*args, **kw)  # 获取结果
+                    self._result_list.append(Result)
+                except BaseException as e:
+                    print(" - thread stop_by_error - ", e)
+                    break
+                finally:
+                    self._pool_queue.task_done()  # 发出此队列完成信号
+
+        # 线程的开启
+        for _ in range(num):
+            Thread(target=_pools_pull).start()
+
+    def main_monitor(self):
+        def _func():
+            while True:
+
+                sleep(0.25)
+                if not main_thread().isAlive():
+                    self.close_all()
+                    break
+
+        self._MainMonitor = Thread(target=_func, name="MainMonitor")
+        self._MainMonitor.start()
+
+    def joinall(self):
+        self._pool_queue.join()
+
+    def wait_completed(self):
+        """等待全部线程结束，返回结果"""
+        self._pool_queue.join()
+        return self._result_list
+
+    def close_all(self):
+        self.change_thread_num(0)

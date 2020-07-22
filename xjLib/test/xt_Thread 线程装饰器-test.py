@@ -8,17 +8,16 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-19 13:52:24
 #FilePath     : /xjLib/test/xt_Thread 线程装饰器-test.py
-#LastEditTime : 2020-07-17 11:27:28
+#LastEditTime : 2020-07-22 18:13:33
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 import time
-from xt_Thread import thread_wrap_class, thread_wraps_class
-from xt_Thread import thread_safe, thread_wraps, thread_wrap
+from xt_Thread import thread_wrap_class
+from xt_Thread import thread_safe, thread_wrap
 from threading import currentThread
 
-# @thread_async
-# @thread_wraps()
+# @thread_wrap_class
 g_a = 100
 
 
@@ -27,7 +26,11 @@ def click(callback, *args, **kwargs):
     return callback(*args, **kwargs)
 
 
-@thread_wrap_class
+def callbac(*args, **kwargs):
+    print('callbac:', *args, **kwargs)
+
+
+@thread_wrap
 def event(s):
     time.sleep(s)
     global g_a
@@ -46,18 +49,17 @@ def another_event(s):
 
 
 event(4)
-a = event(5, daemon=True)
+a = event(5, daemon=True, callback=callbac)
 print('a.name:', a.name, a._name, a)
 print('a:', a.getResult())
 click(event, 3)
-click(event, 6)
-print('实例获取 event all result:', a.getAllResult())
+print(22222, (click(event, 6).getResult()))
 
-b = another_event(7)
+b = another_event(7, daemon=True, callback=callbac)
 c = another_event(5)
-print('b.name:', b.name, b._name, b)
+print('b.name:', b.name, b._name, b, b.getResult())
 print('b:', b.getResult())
 click(another_event, 6)
 click(another_event, 4)
 print('c:', c.getResult())
-print('实例获取 another_event all result:', b.getAllResult())
+print('实例获取 another_event all result:', thread_wrap_class.getAllResult())
