@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 20:11:54
-#LastEditTime : 2020-06-23 12:41:15
+#LastEditTime : 2020-07-23 15:29:45
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -18,7 +18,6 @@ from threading import Thread
 
 import pygame
 from PyQt5.QtCore import QThread, pyqtSignal
-
 from xt_Alispeech import ReqSynthesizer
 
 
@@ -34,10 +33,12 @@ def pygame_play(data, format='wav'):
     print('py_mixer new loading......')
 
     if format == 'wav':
-        pygame.mixer.Sound(data).play()
+        pym.Sound(data).play()
+        # pygame.mixer.Sound(data).play()
     else:
-        pygame.mixer.music.load(BytesIO(data))
-        pygame.mixer.music.play(1, 0.07)
+        pym.load(BytesIO(data)).play(1, 0.07)
+        # pygame.mixer.music.load(BytesIO(data))
+        # pygame.mixer.music.play(1, 0.07)
     while pym.get_busy():
         # 正在播放，等待
         QThread.msleep(500)
@@ -47,89 +48,9 @@ def pygame_play(data, format='wav'):
     print('py_mixer.stoping!!!!!!')
 
 
-def create_class(obj):
-    class class_meta(obj):
-        '''传入字符list,连续朗读'''
-
-        _signal = pyqtSignal()
-
-        def __init__(self, textlist=None, format='wav'):
-            super().__init__()
-            self._target = ReqSynthesizer
-            self.textlist = textlist or []
-            self.datas_list = []
-            self._running = True
-            pygame.mixer.init(frequency=8000)  # !使用16000和默认,声音不行
-            self.format = format
-            if self.format == 'wav':
-                self.pym = pygame.mixer
-            else:
-                self.pym = pygame.mixer.music
-            self.main_monitor()  # 启动语音生成
-            self.start()
-
-        def main_monitor(self):
-            def _func():
-                while len(self.textlist) > 0:
-                    text = self.textlist.pop(0)
-                    data = self._target(text,
-                                        format=self.format,
-                                        savefile=False).response.content
-                    self.datas_list.append(data)
-                    if not self._running:
-                        break
-
-                print('pygame_play MainMonitor stoping!!!!!!')
-
-            # #daemon=True,跟随主线程关闭 ,不能用双QThread嵌套
-            self._MainMonitor = Thread(target=_func,
-                                       daemon=True,
-                                       name="MainMonitor")
-            self._MainMonitor.start()
-
-        def run(self):
-            while self._running:
-                if self.pym.get_busy():
-                    # 正在播放，等待
-                    QThread.msleep(500)
-                    print('self.py_mixer.playing......')
-                    continue
-                else:
-                    if len(self.datas_list) > 0:
-                        # 朗读完毕，有未加载数据
-                        _data = self.datas_list.pop(0)
-                        if self.format == 'wav':
-                            pygame.mixer.Sound(_data).play()
-                        else:
-                            pygame.mixer.music.load(BytesIO(_data))
-                            pygame.mixer.music.play(1, 0.07)
-                        print('self.py_mixer new loading......')
-                        continue
-
-                    if not self._MainMonitor.is_alive():
-                        # #合成语音线程结束，朗读完毕，且无未加载数据
-                        if len(self.textlist) == 0 and len(
-                                self.datas_list) == 0:
-                            self.stop()
-                            print('all recod play finished!!!!!!')
-                            self._signal.emit()
-
-            # 停止标记
-            self.pym.stop()
-            print('self.py_mixer.stoping!!!!!!')
-
-        def stop(self):
-            self._running = False
-
-    return class_meta
-
-
-ReqSynthesizer_QThread_read = create_class(QThread)
-ReqSynthesizer_Thread_read = create_class(Thread)
-
-
-def create_read_thread(obj):
-    def __init__(self, textlist=None, format='wav'):
+def create_read_thread(obj: object) -> object:
+    '''type完全动态构建类'''
+    def __init__fn(self, textlist=None, format='wav'):
         obj.__init__(self)
         self.__dict__['_qobj'] = (obj == QThread)
 
@@ -137,7 +58,7 @@ def create_read_thread(obj):
         self.__dict__['textlist'] = textlist or []
         self.__dict__['datas_list'] = []
         self.__dict__['_running'] = True
-        pygame.mixer.init(frequency=8000)  # !使用16000和默认,声音不行
+        pygame.mixer.init(frequency=8000)  # !不能使用16000和默认
         self.__dict__['format'] = format
         if self.__dict__['format'] == 'wav':
             self.__dict__['pym'] = pygame.mixer
@@ -151,17 +72,14 @@ def create_read_thread(obj):
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
-                data = self._target(text, format=self.format,
-                                    savefile=False).response.content
+                data = self._target(text, format=self.format, savefile=False).response.content
                 self.datas_list.append(data)
                 if not self._running:
                     break
 
             print('pygame_play MainMonitor stoping!!!!!!')
 
-        self._MainMonitor = Thread(target=_func,
-                                   daemon=True,
-                                   name="MainMonitor")
+        self._MainMonitor = Thread(target=_func, daemon=True, name="MainMonitor")
         self._MainMonitor.start()
 
     def run(self):
@@ -198,15 +116,114 @@ def create_read_thread(obj):
     def stop(self):
         self._running = False
 
-    return type(
-        'Syn_read_class', (obj, ), {
-            '_signal': pyqtSignal(),
-            '__init__': __init__,
-            'main_monitor': main_monitor,
-            'run': run,
-            'stop': stop,
-        })
+    _name = 'QThread' if obj is QThread else 'Thread'
+    return type(f'Synt_Read_{_name}', (obj, ), {
+        '_signal': pyqtSignal(),
+        '__init__': __init__fn,
+        'main_monitor': main_monitor,
+        'run': run,
+        'stop': stop,
+    })
 
 
-Synt_QThread_read = create_read_thread(QThread)
 Synt_Thread_read = create_read_thread(Thread)
+Synt_QThread_read = create_read_thread(QThread)
+
+
+class _read_class_meta:
+    '''传入字符list,连续朗读'''
+
+    _signal = pyqtSignal()
+
+    def __init__(self, textlist=None, format='wav'):
+        super().__init__()
+        self._qobj = isinstance(self, QThread)
+        self._target = ReqSynthesizer
+        self.textlist = textlist or []
+        self.datas_list = []
+        self._running = True
+        pygame.mixer.init(frequency=8000)  # !不可使用默认16000
+        self.format = format
+        if self.format == 'wav':
+            self.pym = pygame.mixer
+        else:
+            self.pym = pygame.mixer.music
+        self.main_monitor()  # 启动语音生成
+        self.start()
+
+    def main_monitor(self):
+        def _func():
+            while len(self.textlist) > 0:
+                text = self.textlist.pop(0)
+                data = self._target(text, format=self.format, savefile=False).response.content
+                self.datas_list.append(data)
+                if not self._running:
+                    break
+
+            print('pygame_play MainMonitor stoping!!!!!!')
+
+        # #daemon=True,跟随主线程关闭 ,不能用双QThread嵌套
+        self._MainMonitor = Thread(target=_func, daemon=True, name="MainMonitor")
+        self._MainMonitor.start()
+
+    def run(self):
+        while self._running:
+            if self.pym.get_busy():
+                # 正在播放，等待
+                QThread.msleep(500)
+                print('self.py_mixer.playing......')
+                continue
+            else:
+                if len(self.datas_list) > 0:
+                    # 朗读完毕，有未加载数据
+                    _data = self.datas_list.pop(0)
+                    if self.format == 'wav':
+                        pygame.mixer.Sound(_data).play()
+                    else:
+                        pygame.mixer.music.load(BytesIO(_data))
+                        pygame.mixer.music.play(1, 0.07)
+                    print('self.py_mixer new loading......')
+                    continue
+
+                if not self._MainMonitor.is_alive():
+                    # #合成语音线程结束，朗读完毕，且无未加载数据
+                    if len(self.textlist) == 0 and len(self.datas_list) == 0:
+                        self.stop()
+                        print('all recod play finished!!!!!!')
+                        if self._qobj:
+                            self._signal.emit()
+
+        # 停止标记
+        self.pym.stop()
+        print('self.py_mixer.stoping!!!!!!')
+
+    def stop(self):
+        self._running = False
+
+
+def get_read_class(obj: object) -> object:
+    '''type 动态混入继承，实质是调整bases'''
+    _name = 'QThread' if obj is QThread else 'Thread'
+    ocl = type(f'Synt_Read_{_name}', (_read_class_meta, obj), {})
+    return ocl
+
+
+ReqSynthesizer_Thread_read = get_read_class(Thread)
+ReqSynthesizer_QThread_read = get_read_class(QThread)
+'''
+# 方法1：工厂函数
+def createClass(cls):
+    class CustomizedClass(cls):
+        .......
+    return CustomizedClass
+
+ClassList = createClass(list)
+
+# 方法2：type动态构造，见上面两种
+
+# 方法3：明示重置class.__bases__  = (指定父类,) class 要隔代继承object，QThread出错
+
+print(QThread.__mro__)
+(<class 'PyQt5.QtCore.QThread'>, <class 'PyQt5.QtCore.QObject'>, <class 'sip.wrapper'>, <class 'sip.simplewrapper'>, <class 'object'>)
+
+'''

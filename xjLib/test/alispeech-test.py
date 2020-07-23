@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-06-11 12:27:03
 #FilePath     : /xjLib/test/alispeech-test.py
-#LastEditTime : 2020-07-20 13:37:44
+#LastEditTime : 2020-07-23 12:50:58
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -145,9 +145,9 @@ def 使用SSML别():
     ReqSynthesizer_Thread_read(ssml_text_list)
 
 
-合成语音()
+# 合成语音()
 # 合成语音2()
 # 合成长语音()
 # 网络音频识别()
 # 本地音频识别()
-# 使用SSML别()
+使用SSML别()

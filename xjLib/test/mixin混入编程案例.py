@@ -8,19 +8,19 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-07-13 17:20:00
 #FilePath     : /xjLib/test/mixin混入编程案例.py
-#LastEditTime : 2020-07-14 09:12:46
+#LastEditTime : 2020-07-23 15:30:05
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
 
 
-class cl:
+class obj:
     pass
 
 
-# @此类要继承自非object
-class Coder(cl):
-    def __init__(self, coder_type):
+class Coder(obj):
+    '''# @此类要与object隔代继承'''
+    def __init__(self):
         self.getIde()
         self.writecode()
         print("-----" * 10)
@@ -65,9 +65,7 @@ coder_dict = {
 
 def get_coder(coder_name=None):
     Coder.__bases__ = (coder_dict.get(coder_name, BaseCoder), )
-    if coder_name is None:
-        coder_name = "Finder"
-    return Coder(coder_name)
+    return Coder()
 
 
 # print(11111, Coder.__mro__)
