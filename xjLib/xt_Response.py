@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
 #FilePath     : /xjLib/xt_Response.py
-#LastEditTime : 2020-07-22 13:32:42
+#LastEditTime : 2020-07-24 11:55:35
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -23,11 +23,11 @@ class ReqResult(item_Mixin):
     __slots__ = ('raw', 'clientResponse', '_content', 'index')
 
     # 结构化返回结果
-    def __init__(self, response, content=None, index=None):
+    def __init__(self, response: object, content: bytes = None, index: int = None) -> object:
         if response is not None:
             self.raw = self.clientResponse = response
-            self._content = content or response.content
-            self.index = index or id(self)
+            self._content: bytes = content or response.content
+            self.index: int = index or id(self)
 
     @property
     def content(self):

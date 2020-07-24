@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-18 09:39:04
 #FilePath     : /xjLib/xt_MetaClass.py
-#LastEditTime : 2020-07-22 14:47:58
+#LastEditTime : 2020-07-24 12:05:51
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -138,8 +138,42 @@ class ImmutableDict(Delegate):
     delegated_methods = ('__contains__', '__getitem__', '__eq__', '__len__', '__str__', 'get', 'has_key', 'items', 'iteritems', 'iterkeys', 'itervalues', 'keys', 'values')
 
 
+class Mymeta(type):
+    def __init__(self, name, bases, dic):
+        super().__init__(name, bases, dic)
+        print('===>Mymeta.__init__')
+        print(self.__name__)
+        print(dic)
+        print(self.yaml_tag)
+
+    def __new__(cls, *args, **kwargs):
+        print('===>Mymeta.__new__')
+        print(cls.__name__)
+        return type.__new__(cls, *args, **kwargs)
+
+    def __call__(cls, *args, **kwargs):
+        print('===>Mymeta.__call__')
+        obj = cls.__new__(cls)
+        cls.__init__(cls, *args, **kwargs)
+        return obj
+
+
+class Foo(metaclass=Mymeta):
+    yaml_tag = '!Foo'
+
+    def __init__(self, name):
+        print('Foo.__init__')
+        self.name = name
+
+    def __new__(cls, *args, **kwargs):
+        print('Foo.__new__')
+        return object.__new__(cls)
+
+
 if __name__ == "__main__":
-    di = ImmutableList([1, 1, 2, 3, 4])
-    print(type(di), dir(di), di)
-    for a in di:
-        print(a)
+    # di = ImmutableList([1, 1, 2, 3, 4])
+    # print(type(di), dir(di), di)
+    # for a in di:
+    #     print(a)
+    foo = Foo('foo')
+    print(Foo.__mro__)

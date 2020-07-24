@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 20:11:54
-#LastEditTime : 2020-07-23 15:29:45
+#LastEditTime : 2020-07-24 13:12:39
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -48,7 +48,7 @@ def pygame_play(data, format='wav'):
     print('py_mixer.stoping!!!!!!')
 
 
-def create_read_thread(obj: object) -> object:
+def create_read_thread(obj):
     '''type完全动态构建类'''
     def __init__fn(self, textlist=None, format='wav'):
         obj.__init__(self)
@@ -209,7 +209,16 @@ def get_read_class(obj: object) -> object:
 
 
 ReqSynthesizer_Thread_read = get_read_class(Thread)
-ReqSynthesizer_QThread_read = get_read_class(QThread)
+
+# ReqSynthesizer_QThread_read = get_read_class(QThread)
+# class ReqSynthesizer_Thread_read(_read_class_meta, Thread):
+#     pass
+
+
+class ReqSynthesizer_QThread_read(_read_class_meta, QThread):
+    pass
+
+
 '''
 # 方法1：工厂函数
 def createClass(cls):
@@ -219,7 +228,9 @@ def createClass(cls):
 
 ClassList = createClass(list)
 
-# 方法2：type动态构造，见上面两种
+# 方法2：type完全动态构造
+# 方法3：type混入继承，动态修改
+# 方法4：class 混入继承
 
 # 方法3：明示重置class.__bases__  = (指定父类,) class 要隔代继承object，QThread出错
 
