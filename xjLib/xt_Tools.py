@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 18:42:56
 #FilePath     : /xjLib/xt_Tools.py
-#LastEditTime : 2020-07-22 18:26:15
+#LastEditTime : 2020-07-25 10:22:38
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -249,12 +249,10 @@ def gethelp(obj):
     return signature(obj)
 
 
-if __name__ == '__main__':
-
-    # @try_wraps
+def trys():
+    @catch_wraps
     def simple():
-        with ExceptContext():
-            return 5 / 0
+        return 5 / 0
 
     @catch_wraps
     def readFile(filename):
@@ -262,9 +260,10 @@ if __name__ == '__main__':
         print(len(f.readlines()))
         f.close()
 
-    @try_wraps
+    @catch_wraps
     def add(a, b):
-        return (int(a) + int(b))
+        with ExceptContext():
+            return (int(a) + int(b))
 
     @catch_wraps
     def assertSumIsPositive(*args):
@@ -276,31 +275,33 @@ if __name__ == '__main__':
         if len(keyargs) < 3:
             raise Exception('Number of key args should more than 3.')
 
-    # readFile("UnexistFile.txt")
-    # assertSumIsPositive(1, 2, -3, -4)
-    # checkLen(a=5, b=2)
-    # c = add(1, 2)
-    # print(3333, c)
-    # simple()
+    readFile("UnexistFile.txt")
+    assertSumIsPositive(1, 2, -3, -4)
+    checkLen(a=5, b=2)
+    print(add(1, 2))
+    simple()
 
-    # #可变对象默认装饰器
-    # @freshdefault
-    # def extend_list(v, li=[]):
-    #     li.append(v)
-    #     # print(li)
-    #     return li
 
-    # list1 = extend_list(10)
-    # list2 = extend_list(123, [])
-    # list3 = extend_list('a')
-    # print(list1)
-    # print(list2)
-    # print(list3)
+def fre():
+    # 可变对象默认装饰器
+    @freshdefault
+    def extend_list(v, li=[]):
+        li.append(v)
+        # print(li)
+        return li
 
-    # print(list1 is list3)
+    list1 = extend_list(10)
+    list2 = extend_list(123, [])
+    list3 = extend_list('a')
+    print(list1)
+    print(list2)
+    print(list3)
 
+    print(list1 is list3)
+
+
+def fu():
     # #函数创建器
-
     foo_func = _create_func('def foo():a=3;return 3')
 
     print(foo_func())
@@ -311,3 +312,9 @@ if __name__ == '__main__':
     for attr in func_code_name_list:
         print('foo_func.__code__.' + attr.ljust(33), ':', getattr(foo_func.__code__, attr))
     print(_create_func.__dict__)
+
+
+if __name__ == '__main__':
+    trys()
+    # fre()
+    # fu()

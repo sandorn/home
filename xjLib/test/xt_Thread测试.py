@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
 #LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-17 10:49:05
+#LastEditTime : 2020-07-24 13:41:36
 根据网络资料，写的threadpool
 '''
 
@@ -163,10 +163,10 @@ if __name__ == "__main__":
     bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
     # #38_38836  #2_2714  #2_2760  #76_76519
 
-    # st(bookname, urls)
-    # sq(bookname, urls)
+    st(bookname, urls)
+    sq(bookname, urls)
     stm(bookname, urls)
-    # ct(bookname, urls)
+    ct(bookname, urls)
     # cq(bookname, urls)
     # wm(bookname, urls)
     # pm(bookname, urls)

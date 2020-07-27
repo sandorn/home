@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-23 17:41:52
 #FilePath     : /xjLib/xt_Singleon.py
-#LastEditTime : 2020-07-22 18:43:19
+#LastEditTime : 2020-07-25 09:43:01
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -29,10 +29,14 @@ class Singleton_Mixin:
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
-                    cls._instance = super().__new__(cls, *args, **kwargs)
+                    cls._instance = super().__new__(cls)  # ! *args, **kwargs出错
                     # #__init__标志，可避免重复初始化
                     cls._instance._intialed = False
         return cls._instance
+
+    def __del__(self):
+        self.__class__._instance = None
+        self.__class__._intialed = False
 
 
 class Singleton_Base:
@@ -48,7 +52,7 @@ class Singleton_Base:
         if cls not in cls._instance:
             with cls._lock:
                 if cls not in cls._instance:
-                    cls._instance[cls] = super().__new__(cls, *args, **kwargs)
+                    cls._instance[cls] = super().__new__(cls)  # ! *args, **kwargs出错
                     # #__init__标志，可避免重复初始化
                     cls._instance[cls]._intialed = False
 
@@ -60,16 +64,20 @@ def singleton_wrap_return_class(_cls):
     # 可通过self._intialed判断，设定初始化次数'''
     class class_wrapper(_cls):
 
-        _instance = dict()
+        _instance = None
         _lock = Lock()
 
         def __new__(cls, *args, **kwargs):
-            if cls not in cls._instance.keys():
+            if cls._instance is None:
                 with cls._lock:
-                    if cls not in cls._instance.keys():
-                        cls._instance[cls] = super().__new__(cls)
-                        cls._instance[cls]._intialed = False
-            return cls._instance[cls]
+                    if cls._instance is None:
+                        cls._instance = super().__new__(cls)  # ! *args, **kwargs出错
+                        cls._instance._intialed = False
+            return cls._instance
+
+        def __del__(self):
+            self.__class__._instance = None
+            self.__class__._intialed = False
 
     class_wrapper.__name__ = _cls.__name__  # 保留原类的名字
     return class_wrapper
@@ -108,10 +116,8 @@ class singleton_wrap_class:
 
 
 class Singleton_Meta(type):
-    '''
-    单例模式元类，metaclass=Singleton_Meta，
-    # @单次init，可用类调用classmethod
-    '''
+    '''单例模式元类，metaclass=Singleton_Meta，
+    # @单次init，可用类调用classmethod'''
 
     _lock = Lock()
 
