@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 14:25:16
 #FilePath     : /xjLib/xt_Class.py
-#LastEditTime : 2020-07-22 14:39:06
+#LastEditTime : 2020-07-30 12:04:54
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -70,33 +70,32 @@ class dict_mothed_Mixin:
         return self.__dict__
 
 
-class iter_Mixin:
+class iter_Mixin(dict_mothed_Mixin):
     '''
     # #迭代类，用于继承，不支持next
     from collections import Iterable
     isinstance(a, Iterable)
     '''
     def __iter__(self):
-        if not hasattr(self, '__dict__'):
-            self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
-
-        return iter(self.__dict__.items())
+        if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
+            return iter(self.get_dict().items())
+        else:
+            return iter(self.__dict__.items())
         # for attr, value in self.__dict__.items():
         #     yield attr, value
 
 
-class repr_Mixin:
+class repr_Mixin(dict_mothed_Mixin):
     '''用于打印显示'''
-    def get_dict(self):
-        '''把对象转换成字典'''
-        self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
-        return self.__dict__
-
     def __repr__(self):
-        if not hasattr(self, '__dict__'):
-            self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
+        dic = None
+        if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
+            dic = self.get_dict()
+        else:
+            dic = self.__dict__
 
-        return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in self.get_dict.items()])})"
+        # # __class__.__name__
+        return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
     # __str__ = __repr__
 
@@ -191,41 +190,50 @@ def readonly(name):
 
 
 if __name__ == "__main__":
-    # my_dict = SetOnceDict()
-    # try:
-    #     my_dict['username'] = '1111'
-    #     my_dict['me'] = 'sandorn'
-    #     my_dict['username'] = 'hellokitty'
-    # except Exception as err:
-    #     print(err)
-    # print(99999, my_dict)
 
-    # class Animal(iter_Mixin, repr_Mixin):
-    #     def __init__(self):
-    #         self.name = 'na98888me'
-    #         self.age = 12
-    #         self._i = 787
-    #         self.姓名 = '行云流水'
+    def one():
+        my_dict = SetOnceDict()
+        try:
+            my_dict['username'] = '1111'
+            my_dict['me'] = 'sandorn'
+            my_dict['username'] = 'hellokitty'
+        except Exception as err:
+            print(err)
+        print(99999, my_dict)
 
-    # print(Animal())
-    # for k, v in Animal():
-    #     print(k.ljust(8), ':', v)
-    #     pass
+    def itre():
+        class Animal(iter_Mixin, repr_Mixin):
+            def __init__(self):
+                self.name = 'na98888me'
+                self.age = 12
+                self._i = 787
+                self.姓名 = '行云流水'
 
-    class Anima(item_Mixin, attr_Mixin):
-        def __init__(self):
-            self.name = 'na98888me'
-            self.age = 12
-            self._i = 787
-            self.姓名 = '行云流水'
+        bb = Animal()
+        print(bb)
+        for k, v in bb:
+            print(k.ljust(8), ':', v)
+            pass
 
-    a = Anima()
-    a['name'] = '张三李四'
-    print(a['names'])
-    del a['_i']
-    b = Anima()
-    b._i = 567
-    print(a.name555s)
-    del b.name
-    print(a.__dict__, a['age'], id(a))
-    print(id(b.__dict__), b.__dict__, b.age, id(b))
+    def itat():
+        class Anima(item_Mixin, attr_Mixin):
+            def __init__(self):
+                self.name = 'na98888me'
+                self.age = 12
+                self._i = 787
+                self.姓名 = '行云流水'
+
+        a = Anima()
+        a['name'] = '张三李四'
+        print(a['names'])
+        del a['_i']
+        b = Anima()
+        b._i = 567
+        print(a.name555s)
+        del b.name
+        print(a.__dict__, a['age'], id(a))
+        print(id(b.__dict__), b.__dict__, b.age, id(b))
+
+    # one()
+    itre()
+    # itat()

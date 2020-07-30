@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-03 18:42:56
 #FilePath     : /xjLib/xt_Tools.py
-#LastEditTime : 2020-07-25 10:22:38
+#LastEditTime : 2020-07-30 12:43:08
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
@@ -240,81 +240,78 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: (int, float) = 0.2, s
     return decorator
 
 
-try_wraps = try_except_wraps()
-
-
 def gethelp(obj):
     '''获取对象帮助'''
     from inspect import signature
     return signature(obj)
 
 
-def trys():
-    @catch_wraps
-    def simple():
-        return 5 / 0
-
-    @catch_wraps
-    def readFile(filename):
-        f = open(filename, "r")
-        print(len(f.readlines()))
-        f.close()
-
-    @catch_wraps
-    def add(a, b):
-        with ExceptContext():
-            return (int(a) + int(b))
-
-    @catch_wraps
-    def assertSumIsPositive(*args):
-        sum = reduce(add, *args)
-        assert sum >= 0
-
-    @catch_wraps
-    def checkLen(**keyargs):
-        if len(keyargs) < 3:
-            raise Exception('Number of key args should more than 3.')
-
-    readFile("UnexistFile.txt")
-    assertSumIsPositive(1, 2, -3, -4)
-    checkLen(a=5, b=2)
-    print(add(1, 2))
-    simple()
-
-
-def fre():
-    # 可变对象默认装饰器
-    @freshdefault
-    def extend_list(v, li=[]):
-        li.append(v)
-        # print(li)
-        return li
-
-    list1 = extend_list(10)
-    list2 = extend_list(123, [])
-    list3 = extend_list('a')
-    print(list1)
-    print(list2)
-    print(list3)
-
-    print(list1 is list3)
-
-
-def fu():
-    # #函数创建器
-    foo_func = _create_func('def foo():a=3;return 3')
-
-    print(foo_func())
-
-    for attr in func_attr_name_list:
-        print(attr, ':', getattr(foo_func, attr))
-
-    for attr in func_code_name_list:
-        print('foo_func.__code__.' + attr.ljust(33), ':', getattr(foo_func.__code__, attr))
-    print(_create_func.__dict__)
-
-
 if __name__ == '__main__':
+
+    def trys():
+        @catch_wraps
+        def simple():
+            return 5 / 0
+
+        @catch_wraps
+        def readFile(filename):
+            f = open(filename, "r")
+            print(len(f.readlines()))
+            f.close()
+
+        @catch_wraps
+        def add(a, b):
+            with ExceptContext():
+                return (int(a) + int(b))
+
+        @try_except_wraps
+        def assertSumIsPositive(*args):
+            print('222222,assertSumIsPositive')
+            sum = reduce(add, *args)
+            assert sum >= 0
+
+        @try_except_wraps()
+        def checkLen(**keyargs):
+            print('333333,checkLen')
+            if len(keyargs) < 3:
+                raise Exception('Number of key args should more than 3.')
+
+        simple()
+        readFile("UnexistFile.txt")
+        print(add(1, 2))
+        assertSumIsPositive(1, 2, -3, -4)
+        checkLen(a=5, b=2)
+
+    def fre():
+        # 可变对象默认装饰器
+        @freshdefault
+        def extend_list(v, li=[]):
+            li.append(v)
+            # print(li)
+            return li
+
+        list1 = extend_list(10)
+        list2 = extend_list(123, [])
+        list3 = extend_list('a')
+        print(list1)
+        print(list2)
+        print(list3)
+
+        print(list1 is list3)
+
+    def fu():
+        # #函数创建器
+        foo_func = _create_func('def foo():a=3;return 3')
+
+        print(foo_func())
+
+        for attr in func_attr_name_list:
+            print(attr, ':', getattr(foo_func, attr))
+
+        for attr in func_code_name_list:
+            print('foo_func.__code__.' + attr.ljust(33), ':', getattr(foo_func.__code__, attr))
+        print(_create_func.__dict__)
+
     trys()
     # fre()
     # fu()
