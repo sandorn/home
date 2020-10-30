@@ -7,8 +7,8 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-03-25 10:13:07
-#FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-#LastEditTime : 2020-07-16 11:15:28
+FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
+LastEditTime : 2020-08-20 10:47:09
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -31,7 +31,7 @@ def get_engine(key='default', dbmodel=None):
         pool_size=5,  # 连接池大小
         pool_timeout=30,  # 池中没有线程最多等待的时间，否则报错
         pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-        echo=False  # echo参数为True时，会显示每条执行的SQL语句，可以关闭
+        echo=False  # echo参数为True时，会显示每条执行的SQL语句
     )
     session = sessionmaker(bind=engine)  # #单线程
     # #实现user.query.xxxx  # FROM tablename
@@ -54,7 +54,7 @@ class SqlConnection(Orm_Meta):
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间，否则报错
             pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-            echo=False  # echo参数为True时，会显示每条执行的SQL语句，可以关闭
+            echo=False  # echo参数为True时，会显示每条执行的SQL语句
         )
         self.session = scoped_session(sessionmaker(bind=self.engine))
         self.dbmodel.metadata.create_all(self.engine)

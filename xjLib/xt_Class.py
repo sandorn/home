@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-30 14:25:16
-#FilePath     : /xjLib/xt_Class.py
-#LastEditTime : 2020-07-30 12:04:54
+FilePath     : /xjLib/xt_Class.py
+LastEditTime : 2020-09-01 12:57:50
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -63,10 +63,11 @@ class attr_Mixin(attr_get_Mixin, attr_set_Mixin, attr_del_Mixin):
 
 
 class dict_mothed_Mixin:
-    '''get_dict重新生成__dict__类字典,用于readonly限制'''
+    '''get_dict重新生成__dict__类字典,主要用于readonly限制'''
     def get_dict(self):
         '''把对象转换成字典'''
-        self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
+        if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
+            self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
         return self.__dict__
 
 
@@ -77,10 +78,7 @@ class iter_Mixin(dict_mothed_Mixin):
     isinstance(a, Iterable)
     '''
     def __iter__(self):
-        if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
-            return iter(self.get_dict().items())
-        else:
-            return iter(self.__dict__.items())
+        return iter(self.get_dict().items())
         # for attr, value in self.__dict__.items():
         #     yield attr, value
 
@@ -88,11 +86,7 @@ class iter_Mixin(dict_mothed_Mixin):
 class repr_Mixin(dict_mothed_Mixin):
     '''用于打印显示'''
     def __repr__(self):
-        dic = None
-        if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
-            dic = self.get_dict()
-        else:
-            dic = self.__dict__
+        dic = self.__dict__
 
         # # __class__.__name__
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"

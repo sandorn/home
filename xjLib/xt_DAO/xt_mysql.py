@@ -130,10 +130,7 @@ class engine(object):
         # dt_update,更新的数据
         # dt_condition，匹配的数据
         # tb_name,表名
-        sql = 'UPDATE %s SET ' % tb_name + ','.join(
-            ['%s=%r' % (k, dt_update[k])
-             for k in dt_update]) + ' WHERE ' + ' AND '.join(
-                 ['%s=%r' % (k, dt_condition[k]) for k in dt_condition]) + ';'
+        sql = 'UPDATE %s SET ' % tb_name + ','.join(['%s=%r' % (k, dt_update[k]) for k in dt_update]) + ' WHERE ' + ' AND '.join(['%s=%r' % (k, dt_condition[k]) for k in dt_condition]) + ';'
         self.worKon(sql)
 
     def ver(self):

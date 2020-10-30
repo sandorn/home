@@ -7,8 +7,8 @@
 @Author       : Even.Sand
 @Contact      : sandorn@163.com
 @Date         : 2020-02-14 20:38:57
-@FilePath     : /xjLib/xt_DAO/dbconf.PY
-@LastEditTime : 2020-07-08 20:30:42
+FilePath     : /xjLib/xt_DAO/dbconf.PY
+LastEditTime : 2020-08-24 13:56:46
 @Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -19,7 +19,7 @@ db_conf = {
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
         'user': 'sandorn',
-        'passwd': '123456',
+        'password': '123456',
         'db': 'biqukan',
         'charset': 'utf8mb4'
     },
@@ -28,7 +28,7 @@ db_conf = {
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
         'user': 'sandorn',
-        'passwd': '123456',
+        'password': '123456',
         'db': 'bxflb',
         'charset': 'utf8mb4'
     },
@@ -37,7 +37,7 @@ db_conf = {
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
         'user': 'root',
-        'passwd': 'Sand2808',
+        'password': 'Sand2808',
         'db': 'bxflb',
         'charset': 'utf8mb4'
     },
@@ -46,7 +46,7 @@ db_conf = {
         'host': 'db4free.net',
         'port': 3306,
         'user': 'sandorn',
-        'passwd': 'eeM3sh4KPkp4sJ8A',
+        'password': 'eeM3sh4KPkp4sJ8A',
         'db': 'baoxianjihuashu',
         'charset': 'utf8mb4'
     },
@@ -61,7 +61,7 @@ db_conf = {
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
         'user': 'sandorn',
-        'passwd': '123456',
+        'password': '123456',
         'db': 'Jkdoc',
         'charset': 'utf8mb4'
     },
@@ -70,7 +70,7 @@ db_conf = {
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
         'port': 10014,
         'user': 'sandorn',
-        'passwd': '123456',
+        'password': '123456',
         'db': 'dbtest',
         'charset': 'utf8mb4'
     }
@@ -96,7 +96,7 @@ def make_connect_string(key, odbc=None):
             drver = 'mysql+oursql'
         else:
             drver = 'mysql'
-        return f"{drver}://{db_conf[key]['user']}:{db_conf[key]['passwd']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
+        return f"{drver}://{db_conf[key]['user']}:{db_conf[key]['password']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
 
     if types == 'PostgreSQL':
         if odbc == 'psycopg2':
@@ -105,14 +105,14 @@ def make_connect_string(key, odbc=None):
             drver = 'postgresql+pg8000'
         else:
             drver = 'postgresql'
-        return f"{drver}://{db_conf[key]['user']}:{db_conf[key]['passwd']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
+        return f"{drver}://{db_conf[key]['user']}:{db_conf[key]['password']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
 
     if types == 'Oracle':
         if odbc == 'cx_oracle':
             drver = 'oracle+cx_oracle'
         else:
             drver = 'oracle'
-        return f"{drver}//{db_conf[key]['user']}:{db_conf[key]['passwd']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
+        return f"{drver}//{db_conf[key]['user']}:{db_conf[key]['password']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
         # cx_oracle:'oracle+cx_oracle://scott:tiger@tnsname'
 
     if types == 'SQLServer':
@@ -120,7 +120,7 @@ def make_connect_string(key, odbc=None):
             drver = 'mssql+pyodbc'
         else:
             drver = 'mssql+pymssql'
-        return f"{drver}://{db_conf[key]['user']}:{db_conf[key]['passwd']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
+        return f"{drver}://{db_conf[key]['user']}:{db_conf[key]['password']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
         # pyodbc:'mssql+pyodbc://scott:tiger@mydsn'
 
     if types == 'SQLite':

@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2019-05-16 12:57:23
-#FilePath     : /xjLib/xt_Requests.py
-#LastEditTime : 2020-07-16 18:20:28
+FilePath     : /xjLib/xt_Requests.py
+LastEditTime : 2020-08-14 11:11:12
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
@@ -18,7 +18,7 @@ from functools import partial
 import requests
 from tenacity import retry as Tretry
 from tenacity import stop_after_attempt, wait_random
-from xt_Tools import try_wraps
+from xt_Tools import try_except_wraps
 from xt_Head import MYHEAD
 from xt_Response import ReqResult
 
@@ -40,6 +40,7 @@ def _setKw(kwargs):
 
 
 def _request_parse(method, url, *args, **kwargs):
+    '''自实现重试'''
     attempts = RETRY_TIME
     response = None
     func_exc = False
@@ -68,9 +69,10 @@ def _request_parse(method, url, *args, **kwargs):
 
 
 def _request_try_wraps(method, url, *args, **kwargs):
+    '''利用自编重试装饰器，实现重试'''
     kwargs = _setKw(kwargs)
 
-    @try_wraps
+    @try_except_wraps
     def _fetch_run():
         response = requests.request(method, url, *args, **kwargs)
         response.raise_for_status()
@@ -84,6 +86,7 @@ def _request_try_wraps(method, url, *args, **kwargs):
 
 
 def _request_tretry(method, url, *args, **kwargs):
+    '''利用TRETRY三方库实现重试'''
     response = None
     kwargs = _setKw(kwargs)
 
@@ -112,11 +115,11 @@ post = partial(_request_tretry, "post")
 
 
 class SessionClient:
+    '''封装session，保存cookies，利用TRETRY三方库实现重试'''
     __slots__ = ('sn', 'headers', 'cookies', 'response', 'url', 'method', 'args', 'kwargs', 'callback')
 
     def __init__(self):
         self.sn = requests.session()
-        # self.cookies = {}
 
     @TRETRY
     def _request(self):

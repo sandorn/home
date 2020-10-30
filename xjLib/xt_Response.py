@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-05-06 11:23:14
-#FilePath     : /xjLib/xt_Response.py
-#LastEditTime : 2020-07-24 11:55:35
+FilePath     : /xjLib/xt_Response.py
+LastEditTime : 2020-08-14 11:08:33
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -20,6 +20,7 @@ from xt_Class import item_Mixin
 
 
 class ReqResult(item_Mixin):
+    '''封装网页抓取结果,使之标准化'''
     __slots__ = ('raw', 'clientResponse', '_content', 'index')
 
     # 结构化返回结果

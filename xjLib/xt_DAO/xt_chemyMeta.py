@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-03-25 01:37:18
-#FilePath     : /xjLib/xt_DAO/xt_chemyMeta.py
-#LastEditTime : 2020-07-16 11:08:40
+FilePath     : /xjLib/xt_DAO/xt_chemyMeta.py
+LastEditTime : 2020-08-20 10:56:33
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -117,6 +117,7 @@ def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict={}):
             {
                 '__table_args__': {
                     "extend_existing": True,  # 允许表已存在
+                    # '__abstract__': True,  # 父类模式
                 },
                 '__tablename__': target_table_name,
             })

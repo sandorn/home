@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-08 20:30:34
-#FilePath     : /xjLib/test/sqlalchemy测试.py
-#LastEditTime : 2020-07-16 11:15:43
+FilePath     : /xjLib/test/sqlalchemy测试.py
+LastEditTime : 2020-08-20 10:56:59
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -115,7 +115,7 @@ def sqlalchemy测试():
     #     print(9999, item.to_dict())
 
 
-sqlalchemy测试()
+# sqlalchemy测试()
 
 
 class tab(Base_Model, parent_model_Mixin):
@@ -146,7 +146,7 @@ def ceshi2():
     cls2 = inherit_table_cls('users2', tab)
     sqlhelper = SqlConnection(cls2, 'TXbx')
     res = sqlhelper.select()
-    print(2222, res)
+    print(3333, res)
 
 
-# ceshi2()
+ceshi2()
