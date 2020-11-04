@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-04-28 19:10:26
-#LastEditTime : 2020-07-08 20:02:43
+LastEditTime : 2020-11-04 13:20:53
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -29,7 +29,7 @@ import json
 import os
 
 from xt_Requests import SessionClient
-from xt_DAO.xt_sqlbase import Sql_Meta
+from xt_DAO.xt_chemyMeta import Model_Method_Mixin
 from xt_DAO.xt_sqlalchemy import SqlConnection
 from xt_Thread import WorkManager
 from xt_String import random_char
@@ -42,7 +42,7 @@ from sqlalchemy.sql import text
 model = declarative_base()
 
 
-class Jkdoc(model, Sql_Meta):
+class Jkdoc(model, Model_Method_Mixin):
     __tablename__ = 'jkdoc'
 
     ID = Column(INTEGER(6), primary_key=True)
@@ -57,27 +57,16 @@ Session = SessionClient()
 
 def get_download_url(connect, stop=None):
     # #登录，并保存cookies
-    _ = Session.post('http://oa.jklife.com/seeyon/main.do?method=login',
-                     data={
-                         'login_username': 'liuxinjun',
-                         'login_password': 'sand2808',
-                     })
+    _ = Session.post('http://oa.jklife.com/seeyon/main.do?method=login', data={
+        'login_username': 'liuxinjun',
+        'login_password': 'sand2808',
+    })
 
     # #获取公文列表
-    getlistdata = {
-        "managerMethod": "findBulDatas",
-        "method": "ajaxAction",
-        "managerName": "bulDataManager",
-        "rnd": random_char(5),
-        "arguments": json.dumps([{
-            "pageSize": "9999",
-            "pageNo": 1
-        }])
-    }
+    getlistdata = {"managerMethod": "findBulDatas", "method": "ajaxAction", "managerName": "bulDataManager", "rnd": random_char(5), "arguments": json.dumps([{"pageSize": "9999", "pageNo": 1}])}
     # #"typeId": 区分类别，1为公告
 
-    _itlist = Session.post("http://oa.jklife.com/seeyon/ajax.do",
-                           data=getlistdata).json['list']
+    _itlist = Session.post("http://oa.jklife.com/seeyon/ajax.do", data=getlistdata).json['list']
 
     # #利用set去重,填充数据库已有公文
     db_urls_list = [item[0] for item in connect.select(Columns=['URL'])]
@@ -97,12 +86,9 @@ def down_content(connect, title, url):
     if not os.path.exists(path):
         os.makedirs(path)
 
-    _res = Session.get(
-        f'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId={url}')
+    _res = Session.get(f'http://oa.jklife.com/seeyon/bulData.do?method=bulView&bulId={url}')
 
-    公告正文 = ''.join(
-        _res.html.xpath('//div[@class="contentText"]//text()')).replace(
-            'xa0', ' ').replace(' ', ' ').replace('%', '%%')
+    公告正文 = ''.join(_res.html.xpath('//div[@class="contentText"]//text()')).replace('xa0', ' ').replace(' ', ' ').replace('%', '%%')
 
     # #写数据库
     connect.insert({'TITLE': title, 'URL': url, 'content': 公告正文})
@@ -110,8 +96,7 @@ def down_content(connect, title, url):
     # # 写html文件,二进制文件模式加b
     open(path + '/' + title + '.html', 'wb').write(_res.content)
     # #写txt文件
-    open(path + '/' + title + '.txt', 'w',
-         encoding='utf-8').write(title + '\n\n' + 公告正文)
+    open(path + '/' + title + '.txt', 'w', encoding='utf-8').write(title + '\n\n' + 公告正文)
 
     # #下载附件
     _附件下载 = _res.html.xpath('//div[@id="attFileDomain"]')[0].get('attsdata')
@@ -126,8 +111,7 @@ def down_content(connect, title, url):
                 'filename': item['filename'],
             }
 
-            _res = Session.get('http://oa.jklife.com/seeyon/fileDownload.do',
-                               params=formdata)
+            _res = Session.get('http://oa.jklife.com/seeyon/fileDownload.do', params=formdata)
 
             open(path + '/' + item['filename'], 'wb').write(_res.raw.content)
 
@@ -140,8 +124,7 @@ def main():
     connect = SqlConnection(Jkdoc, 'Jkdoc')
     urls = get_download_url(connect)
     print(f'需要下载的公文数量为：{len(urls)}')
-    mywork.add_work_queue([down_content, connect, item[0], item[1]]
-                          for item in urls)
+    mywork.add_work_queue([down_content, connect, item[0], item[1]] for item in urls)
     mywork.getAllResult()
 
 
