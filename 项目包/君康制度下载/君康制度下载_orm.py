@@ -7,7 +7,7 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-04-28 19:10:26
-LastEditTime : 2020-11-04 13:20:53
+LastEditTime : 2020-11-04 16:05:47
 #Github       : https://github.com/sandorn/home
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
@@ -29,7 +29,7 @@ import json
 import os
 
 from xt_Requests import SessionClient
-from xt_DAO.xt_chemyMeta import Model_Method_Mixin
+from xt_DAO.xt_chemyMeta import Base_Model
 from xt_DAO.xt_sqlalchemy import SqlConnection
 from xt_Thread import WorkManager
 from xt_String import random_char
@@ -39,10 +39,8 @@ from sqlalchemy.dialects.mysql import INTEGER, LONGTEXT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import text
 
-model = declarative_base()
 
-
-class Jkdoc(model, Model_Method_Mixin):
+class Jkdoc(Base_Model):
     __tablename__ = 'jkdoc'
 
     ID = Column(INTEGER(6), primary_key=True)

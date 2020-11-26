@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-03-25 01:37:18
 FilePath     : /xjLib/xt_DAO/xt_chemyMeta.py
-LastEditTime : 2020-08-20 10:56:33
+LastEditTime : 2020-11-04 13:42:32
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -93,6 +93,8 @@ class Model_Method_Mixin(item_Mixin):
 
 Base_Model = declarative_base(cls=Model_Method_Mixin)  # #生成SQLORM基类,已混入继承了方法
 '''metadata = Base.metadata'''
+
+# #定义table  引用方式: from xt_DAO.xt_chemyMeta import Base_Model
 
 
 class parent_model_Mixin:

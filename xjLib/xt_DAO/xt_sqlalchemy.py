@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-03-25 10:13:07
 FilePath     : /xjLib/xt_DAO/xt_sqlalchemy.py
-LastEditTime : 2020-08-20 10:47:09
+LastEditTime : 2020-11-04 13:33:59
 # Github       : https://github.com/sandorn/home
 # License      : (C)Copyright 2009-2020, NewSea
 # ==============================================================
@@ -21,7 +21,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker, validates
 
 from xt_Class import typed_property
 from .dbconf import make_connect_string
-from .xt_chemyMeta import Base_Model, Orm_Meta
+from .xt_chemyMeta import Orm_Meta
 
 
 def get_engine(key='default', dbmodel=None):

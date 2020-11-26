@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-08 20:30:34
 FilePath     : /xjLib/test/sqlalchemy测试.py
-LastEditTime : 2020-08-20 10:56:59
+LastEditTime : 2020-11-05 14:22:56
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -115,9 +115,6 @@ def sqlalchemy测试():
     #     print(9999, item.to_dict())
 
 
-# sqlalchemy测试()
-
-
 class tab(Base_Model, parent_model_Mixin):
     ID = Column(INTEGER(6), primary_key=True)
     username = Column(String(24), nullable=False)
@@ -149,4 +146,5 @@ def ceshi2():
     print(3333, res)
 
 
+sqlalchemy测试()
 ceshi2()
