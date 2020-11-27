@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-25 13:51:58
 FilePath     : /xjLib/xt_Thread/futures_thread.py
-LastEditTime : 2020-11-27 18:13:00
+LastEditTime : 2020-11-27 18:22:19
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -109,4 +109,4 @@ class ExThreadPool(ThreadPoolExecutor):
         return result_list
 
 
-##测试2222
+# #测试2222
