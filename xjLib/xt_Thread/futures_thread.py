@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-25 13:51:58
-#FilePath     : /xjLib/xt_Thread/futures_thread.py
-LastEditTime: 2020-11-27 16:28:33
+FilePath     : /xjLib/xt_Thread/futures_thread.py
+LastEditTime : 2020-11-27 18:13:00
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -107,3 +107,6 @@ class ExThreadPool(ThreadPoolExecutor):
                 print('exception :', err)
 
         return result_list
+
+
+##测试2222
