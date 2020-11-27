@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-07-24 13:31:44
-#FilePath     : /xjLib/xt_Thread/Custom.py
-#LastEditTime : 2020-07-24 13:36:24
+FilePath     : /xjLib/xt_Thread/Custom.py
+LastEditTime : 2020-11-27 18:34:42
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -171,6 +171,7 @@ class CustomThread_Queue(Thread, item_get_Mixin):
 
 class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
     """单例多线程，继承自threading.Thread"""
+    # #照写 from xt_Singleon import Singleton_Model
 
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
@@ -232,6 +233,7 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
 
 
 def make_singleton_thread_class(name):
+    # #使用类装饰器 from xt_Singleon import singleton_wrap_return_class，转换为单例类
     _cls = singleton_wrap_return_class(CustomThread)
     _cls.__name__ = name  # @单例线程运行结束判断依据
     _cls.result_list = []  # @单独配置结果字典
@@ -240,6 +242,7 @@ def make_singleton_thread_class(name):
 
 
 def make_queue_singleton_thread_class():
+    # #使用类装饰器 from xt_Singleon import singleton_wrap_return_class，转换为单例类
     _cls = singleton_wrap_return_class(CustomThread_Queue)
     _cls.result_list = []  # @单独配置结果字典
     return _cls
@@ -251,10 +254,12 @@ SigThreadQ = make_queue_singleton_thread_class()
 
 
 class CustomThread_Singleton(CustomThread, Singleton_Mixin):
+    # #混入继承Singleton_Mixin，转换为单例类
     pass
 
 
 class CustomThread_Queue_Singleton(CustomThread_Queue, Singleton_Mixin):
+    # #混入继承Singleton_Mixin，转换为单例类
     pass
 
 

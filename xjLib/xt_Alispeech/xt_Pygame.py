@@ -219,22 +219,3 @@ class ReqSynthesizer_QThread_read(_read_class_meta, QThread):
     pass
 
 
-'''
-# 方法1：工厂函数
-def createClass(cls):
-    class CustomizedClass(cls):
-        .......
-    return CustomizedClass
-
-ClassList = createClass(list)
-
-# 方法2：type完全动态构造
-# 方法3：type混入继承，动态修改
-# 方法4：class 混入继承
-
-# 方法3：明示重置class.__bases__  = (指定父类,) class 要隔代继承object，QThread出错
-
-print(QThread.__mro__)
-(<class 'PyQt5.QtCore.QThread'>, <class 'PyQt5.QtCore.QObject'>, <class 'sip.wrapper'>, <class 'sip.simplewrapper'>, <class 'object'>)
-
-'''
