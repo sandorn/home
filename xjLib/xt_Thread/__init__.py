@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-03-02 09:07:36
-#FilePath     : /xjLib/xt_Thread/__init__.py
-#LastEditTime : 2020-07-24 13:34:33
+FilePath     : /xjLib/xt_Thread/__init__.py
+LastEditTime : 2020-12-08 12:35:35
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -40,3 +40,5 @@ from .wraps import thread_wrap_class, thread_wrap, thread_safe
 from .manage import WorkManager, thread_pool
 from .futures_thread import ThreadPoolMap, ThreadPoolSub, ExThreadPool
 from .futures_process import ProcessPoolMap, ProcessPoolSub, ExProcesPool
+
+from .futures import T_Map, T_Sub, T_Pool, P_Map, P_Sub, P_Pool

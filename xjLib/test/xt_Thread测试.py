@@ -8,14 +8,14 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-16 21:49:56
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-24 13:41:36
+LastEditors  : Please set LastEditors
+LastEditTime : 2020-12-09 10:32:58
 根据网络资料，写的threadpool
 '''
 
 import os
 
-from xt_Thread import CustomThread, CustomThread_Queue, WorkManager, SingletonThread, SigThread, SigThreadQ, ThreadPoolMap, ThreadPoolSub, ProcessPoolMap, ProcessPoolSub, CustomThread_Singleton, ExThreadPool, ExProcesPool
+from xt_Thread import CustomThread, CustomThread_Queue, WorkManager, SingletonThread, SigThread, SigThreadQ, ThreadPoolMap, ThreadPoolSub, ProcessPoolMap, ProcessPoolSub, CustomThread_Singleton, ExThreadPool, ExProcesPool, T_Map, T_Sub, T_Pool, P_Map, P_Sub, P_Pool
 from xt_File import savefile
 from xt_Time import fn_timer
 from xt_Ls_Bqg import get_download_url, get_contents, map_get_contents, map_get_contents_ahttp, get_contents_ahttp, arrangeContent
@@ -122,6 +122,33 @@ def pm(bookname, urls):
 
 
 @fn_timer
+def pm1(bookname, urls):
+    m = T_Map()
+    mypool = m(map_get_contents, [[index + 1, url] for index, url in enumerate(urls)])
+    texts = mypool.wait_completed()
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'T_Map.txt', texts, br='\n')
+
+    # # ------------------------------------------------------------------------
+    mypool = T_Pool()()
+    mypool.add_map(map_get_contents, [[index + 1, url] for index, url in enumerate(urls)])
+    texts = mypool.getAllResult()
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'T_Pool.map.txt', texts, br='\n')
+
+    # # ------------------------------------------------------------------------
+    mypool.add_sub(
+        get_contents,
+        [[index + 1, url] for index, url in enumerate(urls)],
+        #  callback=_c_func
+    )
+    texts = mypool.wait_completed()
+    texts.sort(key=lambda x: x[0])  # @map默认有序
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'T_Pool.submit.txt', texts, br='\n')
+
+
+@fn_timer
 def ps(bookname, urls):
     def _c_func(task):
         print(1111, task.result())
@@ -138,13 +165,54 @@ def ps(bookname, urls):
 
 
 @fn_timer
-def cpm(bookname, urls):
-    mypool = ExProcesPool()
+def ps1(bookname, urls):
+    def _c_func(task):
+        print(1111, task.result())
+
+    s = T_Sub()
+    mypool = s(
+        get_contents,
+        [[index + 1, url] for index, url in enumerate(urls)],
+        #  callback=_c_func
+    )
+    texts = mypool.wait_completed()
+    texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'T_Sub.txt', texts, br='\n')
+
+
+@fn_timer
+def cpm0(bookname, urls):
+    # #无法获取数据
+    mypool = P_Pool()()  # mypool = ExProcesPool()
     mypool.add_map(map_get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
-    texts = mypool.getAllResult()
-    # mypool = ProcessPoolMap(map_get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
-    # texts = mypool.wait_completed()
-    # texts.sort(key=lambda x: x[0])  # @map默认有序
+    texts = mypool.wait_completed()
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'ProcessPoolMap.txt', texts, br='\n')
+
+
+@fn_timer
+def cpm(bookname, urls):
+    mypool = P_Pool()()  # mypool = ExProcesPool()
+    mypool.add_sub(get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
+    texts = mypool.wait_completed()
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'ProcessPoolMap.txt', texts, br='\n')
+
+
+@fn_timer
+def cpm1(bookname, urls):
+    mypool = ProcessPoolMap(map_get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
+    texts = mypool.wait_completed()
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'ProcessPoolMap.txt', texts, br='\n')
+
+
+@fn_timer
+def cpm2(bookname, urls):
+    m = P_Map()
+    mypool = m(map_get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
+    texts = mypool.wait_completed()
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + 'ProcessPoolMap.txt', texts, br='\n')
 
@@ -158,21 +226,37 @@ def cps(bookname, urls):
     savefile(files + '＆' + bookname + 'ProcessPoolSub.txt', texts, br='\n')
 
 
+@fn_timer
+def cps2(bookname, urls):
+    s = P_Sub()
+    mypool = s(get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
+    texts = mypool.wait_completed()
+    texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(files + '＆' + bookname + 'P_Sub.txt', texts, br='\n')
+
+
 if __name__ == "__main__":
 
-    bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
+    bookname, urls = get_download_url('http://www.biqukan.com/2_2760/')
     # #38_38836  #2_2714  #2_2760  #76_76519
 
-    st(bookname, urls)
-    sq(bookname, urls)
-    stm(bookname, urls)
-    ct(bookname, urls)
+    # st(bookname, urls)
+    # sq(bookname, urls)
+    # stm(bookname, urls)
+    # ct(bookname, urls)
     # cq(bookname, urls)
     # wm(bookname, urls)
     # pm(bookname, urls)
+    # pm1(bookname, urls)
     # ps(bookname, urls)
+    # ps1(bookname, urls)
+    cpm0(bookname, urls)
     # cpm(bookname, urls)
+    # cpm1(bookname, urls)
+    # cpm2(bookname, urls)
     # cps(bookname, urls)
+    # cps2(bookname, urls)
 
     # for f in ['st', 'sq', 'stm', 'ct', 'cq', 'wm', 'pm', 'ps', 'cpm', 'cps']:
     #     eval(f)(bookname, urls)

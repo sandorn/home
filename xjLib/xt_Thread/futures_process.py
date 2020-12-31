@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-25 22:57:00
-#FilePath     : /xjLib/xt_Thread/futures_process.py
-#LastEditTime : 2020-07-16 12:14:28
+FilePath     : /xjLib/xt_Thread/futures_process.py
+LastEditTime : 2020-12-08 14:28:31
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -18,7 +18,8 @@ from concurrent.futures import as_completed
 
 
 class ProcessPoolMap(ProcessPoolExecutor):
-    def __init__(self, func, args_iter, MaxSem=6):
+    def __init__(self, func, args_iter, MaxSem=8):
+        if MaxSem > 61: MaxSem = 8
         super().__init__(max_workers=MaxSem)
         self.future_generator = self.map(func, args_iter)
 
@@ -35,7 +36,8 @@ class ProcessPoolMap(ProcessPoolExecutor):
 
 
 class ProcessPoolSub(ProcessPoolExecutor):
-    def __init__(self, func, args_iter, callback=None, MaxSem=6):
+    def __init__(self, func, args_iter, callback=None, MaxSem=8):
+        if MaxSem > 61: MaxSem = 8
         super().__init__(max_workers=MaxSem)
         self.future_tasks = []
 
@@ -72,7 +74,8 @@ class ProcessPoolSub(ProcessPoolExecutor):
 
 
 class ExProcesPool(ProcessPoolExecutor):
-    def __init__(self, MaxSem=6):
+    def __init__(self, MaxSem=8):
+        if MaxSem > 61: MaxSem = 8
         super().__init__(max_workers=MaxSem)
         self.future_tasks = []
 

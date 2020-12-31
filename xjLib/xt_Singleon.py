@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-23 17:41:52
-#FilePath     : /xjLib/xt_Singleon.py
-#LastEditTime : 2020-07-25 09:43:01
+FilePath     : /xjLib/xt_Singleon.py
+LastEditTime : 2020-12-08 12:30:49
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
