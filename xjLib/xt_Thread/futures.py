@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-12-08 11:35:18
 FilePath     : /xjLib/xt_Thread/futures.py
-LastEditTime : 2020-12-08 14:58:29
+LastEditTime : 2021-01-04 15:59:02
 Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -74,17 +74,17 @@ def futuresSub(_cls):
 
             return result_list
 
-    def getAllResult(self):
-        '''等待线程池结束，返回全部有序结果'''
-        self.shutdown(wait=True)
-        result_list = []
-        for future in self.future_tasks:
-            try:
-                res = future.result()
-                result_list.append(res)
-            except Exception as err:
-                print('exception :', err)
-        return result_list
+        def getAllResult(self):
+            '''等待线程池结束，返回全部有序结果'''
+            self.shutdown(wait=True)
+            result_list = []
+            for future in self.future_tasks:
+                try:
+                    res = future.result()
+                    result_list.append(res)
+                except Exception as err:
+                    print('exception :', err)
+            return result_list
 
     class_wrapper.__name__ = _cls.__name__  # 保留原类的名字
     return class_wrapper
@@ -107,15 +107,15 @@ def futuresPool(_cls):
                 if callback:
                     task.add_done_callback(callback)
 
-        def getAllResult(self):
-            '''add_map返回结果，有序'''
+        def wait_map(self):
+            # !add_map返回结果，有序
             result_list = []
             for resp in self.future_generator:  # 此时将阻塞 , 直到线程完成或异常
                 result_list.append(resp)
             return result_list
 
-        def wait_completed(self):
-            '''add_sub方式获取结果，无序'''
+        def wait_sub(self):
+            # !add_sub方式获取结果，无序
             self.shutdown(wait=True)
             result_list = []
             for future in as_completed(self.future_tasks):  # 迭代生成器,统一结束'
@@ -132,30 +132,9 @@ def futuresPool(_cls):
     return class_wrapper
 
 
-def T_Map():
-    return futuresMap(ThreadPoolExecutor)
-
-
-def T_Sub():
-    return futuresSub(ThreadPoolExecutor)
-    pass
-
-
-def T_Pool():
-    return futuresPool(ThreadPoolExecutor)
-    pass
-
-
-def P_Map():
-    return futuresMap(ProcessPoolExecutor)
-    pass
-
-
-def P_Sub():
-    return futuresSub(ProcessPoolExecutor)
-    pass
-
-
-def P_Pool():
-    return futuresPool(ProcessPoolExecutor)
-    pass
+T_Map = futuresMap(ThreadPoolExecutor)
+P_Map = futuresMap(ProcessPoolExecutor)
+T_Sub = futuresSub(ThreadPoolExecutor)
+P_Sub = futuresSub(ProcessPoolExecutor)
+T_Pool = futuresPool(ThreadPoolExecutor)
+P_Pool = futuresPool(ProcessPoolExecutor)

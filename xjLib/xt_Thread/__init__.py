@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-03-02 09:07:36
 FilePath     : /xjLib/xt_Thread/__init__.py
-LastEditTime : 2020-12-08 12:35:35
+LastEditTime : 2021-01-04 14:14:07
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -38,7 +38,5 @@ from .Custom import stop_thread, CustomThread, CustomThread_Queue, SingletonThre
 from .wraps import thread_wrap_class, thread_wrap, thread_safe
 # #引入自定义thread pool
 from .manage import WorkManager, thread_pool
-from .futures_thread import ThreadPoolMap, ThreadPoolSub, ExThreadPool
-from .futures_process import ProcessPoolMap, ProcessPoolSub, ExProcesPool
 
 from .futures import T_Map, T_Sub, T_Pool, P_Map, P_Sub, P_Pool

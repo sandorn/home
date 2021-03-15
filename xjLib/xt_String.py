@@ -7,8 +7,8 @@
 # Author       : Even.Sand
 # Contact      : sandorn@163.com
 # Date         : 2020-02-14 13:57:28
-#FilePath     : /xjLib/xt_String.py
-#LastEditTime : 2020-07-16 18:08:56
+FilePath     : /xjLib/xt_String.py
+LastEditTime : 2021-03-15 16:32:03
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -98,8 +98,8 @@ def Ex_Re_Repl(string, trims=None):
         # !正则替换，自写正则表达式
         string:欲处理的字符串
         trims:list内包含tuple或list
-        tuple[0]:被替换
-        tuple[1]:替换为
+        trims[0]:查找字符串
+        trims[1]:替换字符串
     '''
     # 第一种方法
     if trims is None:
@@ -123,27 +123,29 @@ def Ex_Re_Repl(string, trims=None):
     '''
 
 
-def Ex_Str_Replace(string, trims):
+def Ex_Str_Replace(oldstr, trims):
     '''
         # @字符替换，不支持正则表达式
-        string:欲处理的字符串
+        oldstr:欲处理的字符串
         trims:list内包含tuple或list
-        tuple[0]:被替换
-        tuple[1]:替换为
+        trims[0]:查找字符串
+        trims[1]:替换字符串
     '''
     # 第一种方法
     # for item in trims:
-    #     string = string.replace(item[0], item[1])
-    # return string
+    #     oldstr = oldstr.replace(item[0], item[1])
+    # return oldstr
 
-    # 第二种方法  # string为初始值，最后传入，在lambda中最先接收
-    return reduce(lambda string, item: string.replace(item[0], item[1]), trims, string)
+    # 第二种方法  # oldstr 为初始值，最后传入，在lambda中最先接收
+    return reduce(lambda strtmp, item: strtmp.replace(item[0], item[1]), trims, oldstr)
 
 
 def Ex_Re_Clean(oldtext, par_list):
     '''
     # !正则清除，自写正则表达式
+    par_list:tuple或list
     用法 newtext=Ex_Re_Clean(oldtext,['aaa','bbb'])
+    用法 newtext=Ex_Re_Clean(oldtext,('aaa','bbb'))
     '''
     pattern = re.compile('|'.join(par_list))
     return pattern.sub('', oldtext)
@@ -152,6 +154,7 @@ def Ex_Re_Clean(oldtext, par_list):
 def Ex_Re_Replace(string, trims_dict):
     '''
     # !正则替换，自写正则表达式
+    trims_dict:dict
     用法 newtext=Ex_Re_Replace(oldtext,{'a':aaa','b':bbb'})
     '''
     pattern = re.compile('|'.join(trims_dict.keys()))
@@ -161,6 +164,7 @@ def Ex_Re_Replace(string, trims_dict):
 def Ex_Re_Sub(string, trims_dict):
     '''
     # @正则替换，不支持正则表达式
+    trims_dict:dict
     用法 newtext=Ex_Re_Sub(string,{'a':aaa','b':bbb'})
     '''
     pattern = re.compile('|'.join(map(re.escape, trims_dict.keys())))

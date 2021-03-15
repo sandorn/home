@@ -8,15 +8,16 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 13:34:20
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-13 19:52:26
+LastEditors  : Please set LastEditors
+LastEditTime : 2021-03-15 16:33:55
 '''
 # 使用多线程：在协程中集成阻塞io
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
-from xjLib.mystr import Ex_Re_Sub, savefile
-from xjLib.req import parse_get
+from xt_String import Ex_Re_Sub
+from xt_File import savefile
+from xt_Requests import get_parse as parse_get
 
 
 def get_url(target):
@@ -40,34 +41,35 @@ def get_contents(target):
     _name = response.xpath('//h1/text()', first=True)[0]
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
 
-    name = Ex_Re_Sub(_name, {'\'': '', ' ': ' ', '\xa0': ' ', })
-    text = Ex_Re_Sub(
-        _showtext,
-        {
-            '\'': '',
-            ' ': ' ',
-            '\xa0': ' ',
-            '\b;': '\n',
-            '&nbsp;': ' ',
-            'app2();': '',
-            '笔趣看;': '',
-            '\u3000': '',
-            'chaptererror();': '',
-            'readtype!=2&&(\'vipchapter\n(\';\n\n}': '',
-            'm.biqukan.com': '',
-            'wap.biqukan.com': '',
-            'www.biqukan.com': '',
-            'www.biqukan.com。': '',
-            '百度搜索“笔趣看小说网”手机阅读:': '',
-            '请记住本书首发域名:': '',
-            '请记住本书首发域名：': '',
-            '笔趣阁手机版阅读网址:': '',
-            '笔趣阁手机版阅读网址：': '',
-            '[]': '',
-            '\r': '\n',
-            '\n\n': '\n',
-        }
-    )
+    name = Ex_Re_Sub(_name, {
+        '\'': '',
+        ' ': ' ',
+        '\xa0': ' ',
+    })
+    text = Ex_Re_Sub(_showtext, {
+        '\'': '',
+        ' ': ' ',
+        '\xa0': ' ',
+        '\b;': '\n',
+        '&nbsp;': ' ',
+        'app2();': '',
+        '笔趣看;': '',
+        '\u3000': '',
+        'chaptererror();': '',
+        'readtype!=2&&(\'vipchapter\n(\';\n\n}': '',
+        'm.biqukan.com': '',
+        'wap.biqukan.com': '',
+        'www.biqukan.com': '',
+        'www.biqukan.com。': '',
+        '百度搜索“笔趣看小说网”手机阅读:': '',
+        '请记住本书首发域名:': '',
+        '请记住本书首发域名：': '',
+        '笔趣阁手机版阅读网址:': '',
+        '笔趣阁手机版阅读网址：': '',
+        '[]': '',
+        '\r': '\n',
+        '\n\n': '\n',
+    })
 
     return [name, '    ' + text]
 
@@ -108,8 +110,12 @@ if __name__ == "__main__":
             nameandtext = new_tasks[_bookname][i].result()
             text[_bookname].append(nameandtext)
         savefile(_bookname + '.txt', text[_bookname], br='\n')
-
-
+    # 沧元图 734
+    # [沧元图.txt]保存完成,	file size: 5317.39 KB。
+    # 九星霸体诀 4221
+    # [九星霸体诀.txt]保存完成,	file size: 33.80 MB。
+    # 武炼巅峰 5821
+    # [武炼巅峰.txt]保存完成,	file size: 50.39 MB。
 '''
 # asyncio run_in_executor与线程池配合_Python_mixintu的博客-CSDN博客
 # https://blog.csdn.net/mixintu/article/details/102472276

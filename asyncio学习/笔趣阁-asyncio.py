@@ -8,8 +8,8 @@
 @Github: https://github.com/sandorn/home
 @License: (C)Copyright 2009-2019, NewSea
 @Date: 2019-05-12 14:52:44
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-30 02:41:33
+LastEditors  : Please set LastEditors
+LastEditTime : 2021-03-15 16:03:11
 顺讯，单独，速度慢
 '''
 
@@ -39,8 +39,7 @@ async def get_download_url(url):
     html = resp.element
 
     _bookname = html.xpath('//meta[@property="og:title"]//@content')[0]
-    全部章节节点 = html.xpath(
-        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
+    全部章节节点 = html.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
     for item in 全部章节节点:
         _ZJHERF = 'https://www.biqukan.com' + item
@@ -56,8 +55,7 @@ async def get_contents(*args):
     resp = await fetch(url)
     html = resp.element
     _title = "".join(html.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000',
-                                         u' ').replace(u'\xa0', u' ')
+    title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     _showtext = html.xpath('//*[@id="content"]/text()')
     content = arrangeContent(_showtext)
 
@@ -84,10 +82,7 @@ def main_thread(url):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    tasks = [
-        asyncio.ensure_future(get_contents(index, url))
-        for index, url in enumerate(urls)
-    ]
+    tasks = [asyncio.ensure_future(get_contents(index, url)) for index, url in enumerate(urls)]
 
     loop.run_until_complete(asyncio.wait(tasks))
 

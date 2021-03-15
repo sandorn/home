@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 11:48:40
-#FilePath     : /xjLib/xt_File.py
-#LastEditTime : 2020-07-16 18:44:00
+FilePath     : /xjLib/xt_File.py
+LastEditTime : 2021-03-15 16:25:03
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -89,3 +89,6 @@ def filedialog(_dir='c:/'):
     _dlg.DoModal()
     filename = _dlg.GetPathName()  # 获取选择的文件名称
     return filename
+
+
+# print(filedialog())
