@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-08-17 11:53:01
 FilePath     : /xjLib/xt_DAO/xt_Aiomysql.py
-LastEditTime : 2020-11-06 13:36:44
+LastEditTime : 2021-03-25 11:18:16
 Github       : https://github.com/sandorn/home
 #==============================================================
 https://www.yangyanxing.com/article/aiomysql_in_python.html
@@ -65,22 +65,21 @@ async def AiomysqlCls(key='default'):
 
 if __name__ == '__main__':
 
-    async def test(mysqlobj):
-        r = await mysqlobj.query("select * from users2")
+    async def test(mysqlobj, sql):
+        r = await mysqlobj.query(*sql)
         return r
 
-    async def test2(mysqlobj):
-        r = await mysqlobj.query("select * from users2 where id = (%s)", (1, ))
-        return r
-
-    async def querysum():
-        mysqlobj = await AiomysqlCls('TXbx')
-        result = await asyncio.gather(test(mysqlobj), test2(mysqlobj))
+    async def querysum(dbo, sql1, attr):
+        mysqlobj = await AiomysqlCls(dbo)
+        result = await asyncio.gather(test(mysqlobj, sql1), test(mysqlobj, attr))
         for i in result:
             print(i)
 
+    dbo = 'TXbx'
+    sql1 = ("select * from users2", )
+    attr = "select * from users2 where id = (%s)", (1, )
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(querysum())
+    loop.run_until_complete(querysum(dbo, sql1, attr))
 '''
 python并发编程之asyncio协程(三) - 天宇之游 - 博客园
 https://www.cnblogs.com/cwp-bg/p/9590700.html

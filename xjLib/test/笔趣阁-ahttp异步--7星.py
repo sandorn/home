@@ -9,7 +9,7 @@
 @License: (C)Copyright 2009-2020, NewSea
 @Date: 2020-03-03 23:35:58
 LastEditors  : Please set LastEditors
-LastEditTime : 2020-08-14 10:55:47
+LastEditTime : 2021-03-19 11:14:31
 变更requests为ahttp
 '''
 import os
@@ -18,7 +18,8 @@ from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
 from xt_Time import fn_timer
 from xt_Ls_Bqg import get_download_url, arrangeContent
-from xt_Thread import ProcessPoolMap, ProcessPoolSub
+from xt_Thread import P_Map, P_Sub
+# T_Map, T_Sub, T_Pool, P_Map, P_Sub, P_Pool
 
 
 def 结果处理(resps):
@@ -31,8 +32,7 @@ def 结果处理(resps):
         response = resp.element
 
         _title = "".join(response.xpath('//h1/text()'))
-        title = _title.strip('\r\n').replace(u'\u3000',
-                                             u' ').replace(u'\xa0', u' ')
+        title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
         _showtext = response.xpath('//*[@id="content"]/text()')
         content = arrangeContent(_showtext)
         _texts.append([index, title, content])
@@ -51,8 +51,7 @@ def callback(resp):
     response = resp.element
 
     _title = "".join(response.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000',
-                                         u' ').replace(u'\xa0', u' ')
+    title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     _showtext = response.xpath('//*[@id="content"]/text()')
     content = arrangeContent(_showtext)
     texts.append([index, title, content])
@@ -79,20 +78,20 @@ def mainbycall(url):
 
 @fn_timer
 def multpool(urls):
-    mypool = ProcessPoolMap(main, urls)
+    mypool = P_Map(main, urls)
     mypool.wait_completed()
 
 
 @fn_timer
 def multpoolback(urls):
     # !可能结果串进程
-    mypool = ProcessPoolMap(mainbycall, urls, MaxSem=7)
+    mypool = P_Map(mainbycall, urls, MaxSem=7)
     mypool.wait_completed()
 
 
 if __name__ == '__main__':
     url = 'https://www.biqukan.com/38_38836/'
-    main(url)
+    # main(url)
     # mainbycall(url)
 
     urls = [

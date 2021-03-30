@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-24 14:31:02
-#FilePath     : /xjLib/test/six_add_metaclass利用元类给继承类增加装饰器.py
-#LastEditTime : 2020-06-24 14:40:20
+FilePath     : /xjLib/test/six_add_metaclass利用元类给继承类增加装饰器.py
+LastEditTime : 2021-03-19 11:57:24
 #Github       : https://github.com/sandorn/home
 #==============================================================
 python3利用元类批量给所有继承类增加装饰器_这天鹅肉有毒-CSDN博客_python 给类的所有函数增加装饰器
@@ -41,17 +41,13 @@ class Meta(type):
         # 循环自己的所有属性
         for key, value in attrs.items():
             # 对各种类型的方法进行分别处理
-            if hasattr(value, '__func__') or isinstance(
-                    value, types.FunctionType):
+            if hasattr(value, '__func__') or isinstance(value, types.FunctionType):
                 if isinstance(value, staticmethod):
                     new_attrs[key] = staticmethod(cls.func(value.__func__))
                 elif isinstance(value, classmethod):
                     new_attrs[key] = classmethod(cls.func(value.__func__))
                 elif isinstance(value, property):
-                    new_attrs[key] = property(fget=cls.func(value.fget),
-                                              fset=cls.func(value.fset),
-                                              fdel=cls.func(value.fdel),
-                                              doc=value.__doc__)
+                    new_attrs[key] = property(fget=cls.func(value.fget), fset=cls.func(value.fset), fdel=cls.func(value.fdel), doc=value.__doc__)
                 elif not key.startswith('__'):
                     new_attrs[key] = cls.func(value)
                 continue
@@ -61,19 +57,13 @@ class Meta(type):
         for base in bases:
             for key, value in base.__dict__.items():
                 if key not in new_attrs:
-                    if hasattr(value, '__func__') or isinstance(
-                            value, types.FunctionType):
+                    if hasattr(value, '__func__') or isinstance(value, types.FunctionType):
                         if isinstance(value, staticmethod):
-                            new_attrs[key] = staticmethod(
-                                cls.func(value.__func__))
+                            new_attrs[key] = staticmethod(cls.func(value.__func__))
                         elif isinstance(value, classmethod):
                             new_attrs[key] = classmethod(xx(value.__func__))
                         elif isinstance(value, property):
-                            new_attrs[key] = property(
-                                fget=cls.func(value.fget),
-                                fset=cls.func(value.fset),
-                                fdel=cls.func(value.fdel),
-                                doc=value.__doc__)
+                            new_attrs[key] = property(fget=cls.func(value.fget), fset=cls.func(value.fset), fdel=cls.func(value.fdel), doc=value.__doc__)
                         elif not key.startswith('__'):
                             new_attrs[key] = xx(value)
                         continue

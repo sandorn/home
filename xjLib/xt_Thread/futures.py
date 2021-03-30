@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-12-08 11:35:18
 FilePath     : /xjLib/xt_Thread/futures.py
-LastEditTime : 2021-01-04 15:59:02
+LastEditTime : 2021-03-15 17:13:09
 Github       : https://github.com/sandorn/home
 #==============================================================
 '''
