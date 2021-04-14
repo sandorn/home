@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-08-17 11:53:01
 FilePath     : /xjLib/xt_DAO/xt_Aiomysql.py
-LastEditTime : 2021-03-25 11:18:16
+LastEditTime : 2021-04-14 16:15:59
 Github       : https://github.com/sandorn/home
 #==============================================================
 https://www.yangyanxing.com/article/aiomysql_in_python.html

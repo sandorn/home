@@ -8,7 +8,7 @@
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 11:48:40
 FilePath     : /xjLib/xt_File.py
-LastEditTime : 2021-03-15 16:25:03
+LastEditTime : 2021-04-14 18:19:43
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -49,15 +49,16 @@ def file_to_List(filepath):
     with open(filepath, 'r') as file_to_read:
         while True:
             line = file_to_read.readline().strip('\n')
-            if line: res_list.append(line)
+            if line:
+                res_list.append(line)
     return res_list
 
 
 def savefile(_filename, _list_texts, br=''):
-    '''
+    """
     函数说明:将多层次的list 或 tupl写入文件,迭代多层
     br为元素结束标志，可以用'\t'  '\n'  等
-    '''
+    """
     if not isinstance(_list_texts, (list, tuple)):
         return
 
@@ -84,11 +85,9 @@ def savefile(_filename, _list_texts, br=''):
 
 def filedialog(_dir='c:/'):
     import win32ui
+
     _dlg = win32ui.CreateFileDialog(1)  # 1表示打开文件对话框
     _dlg.SetOFNInitialDir(_dir)  # 设置打开文件对话框中的初始显示目录
     _dlg.DoModal()
     filename = _dlg.GetPathName()  # 获取选择的文件名称
     return filename
-
-
-# print(filedialog())

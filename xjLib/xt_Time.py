@@ -7,8 +7,8 @@
 #Author       : Even.Sand
 #Contact      : sandorn@163.com
 #Date         : 2020-06-05 10:04:55
-#FilePath     : /xjLib/xt_Time.py
-#LastEditTime : 2020-06-25 13:45:24
+FilePath     : /xjLib/xt_Time.py
+LastEditTime : 2021-04-14 18:19:18
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
@@ -20,14 +20,13 @@ import traceback
 
 def fn_timer(function):
     '''定义一个装饰器来测量函数的执行时间'''
+
     @wraps(function)
     def function_timer(*args, **kwargs):
         t0 = time.time()
         result = function(*args, **kwargs)
         t = time.time() - t0
-        print(
-            f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> total run:{t: .2f} seconds"
-        )
+        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> total run:{t: .2f} seconds")
         return result
 
     stack = traceback.extract_stack()

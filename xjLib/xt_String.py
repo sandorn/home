@@ -8,7 +8,7 @@
 # Contact      : sandorn@163.com
 # Date         : 2020-02-14 13:57:28
 FilePath     : /xjLib/xt_String.py
-LastEditTime : 2021-03-15 16:32:03
+LastEditTime : 2021-04-14 18:05:09
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
@@ -79,7 +79,7 @@ def chain_all(iterobj):
 def align(str1, distance=66, alignment='left'):
     # #居中打印为string类方法
     if alignment == 'center':
-        return (str1.center(distance, ' '))
+        return str1.center(distance, ' ')
 
     # #print打印对齐
     length = len(str1.encode('gbk', 'ignore'))
@@ -93,14 +93,14 @@ def align(str1, distance=66, alignment='left'):
 
 
 def Ex_Re_Repl(string, trims=None):
-    '''
-        格式化html string, 去掉多余的字符，类，script等。
-        # !正则替换，自写正则表达式
-        string:欲处理的字符串
-        trims:list内包含tuple或list
-        trims[0]:查找字符串
-        trims[1]:替换字符串
-    '''
+    """
+    格式化html string, 去掉多余的字符，类，script等。
+    # !正则替换，自写正则表达式
+    string:欲处理的字符串
+    trims:list内包含tuple或list
+    trims[0]:查找字符串
+    trims[1]:替换字符串
+    """
     # 第一种方法
     if trims is None:
         trims = [(r'\n', ''), (r'\t', ''), (r'\r', ''), (r'  ', ''), (r'\u2018', "'"), (r'\u2019', "'"), (r'\ufeff', ''), (r'\u2022', ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'), (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''), (r"</?a.*?>", '')]
@@ -124,13 +124,13 @@ def Ex_Re_Repl(string, trims=None):
 
 
 def Ex_Str_Replace(oldstr, trims):
-    '''
-        # @字符替换，不支持正则表达式
-        oldstr:欲处理的字符串
-        trims:list内包含tuple或list
-        trims[0]:查找字符串
-        trims[1]:替换字符串
-    '''
+    """
+    # @字符替换，不支持正则表达式
+    oldstr:欲处理的字符串
+    trims:list内包含tuple或list
+    trims[0]:查找字符串
+    trims[1]:替换字符串
+    """
     # 第一种方法
     # for item in trims:
     #     oldstr = oldstr.replace(item[0], item[1])
@@ -141,32 +141,32 @@ def Ex_Str_Replace(oldstr, trims):
 
 
 def Ex_Re_Clean(oldtext, par_list):
-    '''
+    """
     # !正则清除，自写正则表达式
     par_list:tuple或list
     用法 newtext=Ex_Re_Clean(oldtext,['aaa','bbb'])
     用法 newtext=Ex_Re_Clean(oldtext,('aaa','bbb'))
-    '''
+    """
     pattern = re.compile('|'.join(par_list))
     return pattern.sub('', oldtext)
 
 
 def Ex_Re_Replace(string, trims_dict):
-    '''
+    """
     # !正则替换，自写正则表达式
     trims_dict:dict
     用法 newtext=Ex_Re_Replace(oldtext,{'a':aaa','b':bbb'})
-    '''
+    """
     pattern = re.compile('|'.join(trims_dict.keys()))
     return pattern.sub(lambda m: trims_dict[m.group(0)], string)
 
 
 def Ex_Re_Sub(string, trims_dict):
-    '''
+    """
     # @正则替换，不支持正则表达式
     trims_dict:dict
     用法 newtext=Ex_Re_Sub(string,{'a':aaa','b':bbb'})
-    '''
+    """
     pattern = re.compile('|'.join(map(re.escape, trims_dict.keys())))
 
     def one_xlat(match):
@@ -224,10 +224,10 @@ def dict2qss(dict_tmp):
 
 
 def groupby(iterobj, key):
-    '''
+    """
     自实现groupby，return: 字典对象
     itertool的groupby不能合并不连续但是相同的组, 且返回值是iter
-    '''
+    """
     groups = dict()
     for item in iterobj:
         groups.setdefault(key(item), []).append(item)
@@ -249,5 +249,5 @@ def random_char(length=20, string=[]):
 
 def class_add_dict(in_obj):
     '''把对象转换成字典'''
-    in_obj.__dict__ = ({key: getattr(in_obj, key) for key in dir(in_obj) if not key.startswith('__') and not callable(getattr(in_obj, key))})
+    in_obj.__dict__ = {key: getattr(in_obj, key) for key in dir(in_obj) if not key.startswith('__') and not callable(getattr(in_obj, key))}
     return in_obj.__dict__
