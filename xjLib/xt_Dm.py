@@ -8,26 +8,27 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2021-04-14 17:24:09
 FilePath     : /xjLib/xt_Dm.py
-LastEditTime : 2021-04-14 18:20:47
+LastEditTime : 2021-04-14 19:36:51
 Github       : https:# github.com/sandorn/home
 # ==============================================================
 '''
-import win32com.client
-import time
 import random
+import time
+
+import win32com.client
 
 sleep = time.sleep
 ran = random.randrange
 # random.randrange(100, 1000, 2)
 
-
-t0 = time.time()
-result = function(*args, **kwargs)
-t = time.time() - t0
+tim = time.time
 
 
 
-class dmobject():
+
+
+
+class dmobject()     :
     def __init__(self):
         # 调用大漠插件
         self.dm = win32com.client.Dispatch("dm.dmsoft")
@@ -62,6 +63,8 @@ class dmobject():
             win.delay(延迟)
         while(控制开关)
 
+
+'''
     ## -------------------------找字单击------------------------#
     找字单击 = function(x_1, y_1, x_2, y_2, 字名, 颜色值, t=0, 中心点=False):
         控制开关 = False
@@ -350,31 +353,27 @@ class dmobject():
             m += 1
             win.delay(1)
 
-
-## -------------------------------------------------#
+'''
 
 
 '''
-
-/**intellisense()
-!dm_object.close() = 删除大漠对象
-!dm_object.绑定窗口 = @.绑定窗口(hwnd/*窗口句柄*/\n, display/*显示参数:"normal", "gdi", "gdi2", "dx2", "dx3", "dx"*/\n, mouse/*鼠标参数:"normal", "windows", "windows2", "windows3", "dx"*/\n, keypad/*键盘参数:"normal", "windows", "dx"*/\n, mode/*绑定模式:0, 2, 4*/)
-!dm_object.找字单击至消失 = @.找字单击至消失(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/, False/*中心点*/)
-!dm_object.找字单击 = @.找字单击(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/, False/*中心点*/)
-!dm_object.简易找字 = @.简易找字(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/)
-!dm_object.找字返回坐标 = @ret, intx, inty = ??.找字返回坐标(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/)
-!dm_object.找图单击至消失 = @.找图单击至消失(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/, False/*中心点*/)
-!dm_object.找图单击 = @.找图单击(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/, False/*中心点*/)
-!dm_object.简易找图 = @.简易找图(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/)
-!dm_object.找图返回坐标 = @ret, intx, inty = ??.找图返回坐标(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/)
-!dm_object.鼠标移动单击 = @.鼠标移动单击(x, y, False/*中心点*/)
-!dm_object.简易识字 = @.简易识字(x_1, y_1, x_2, y_2, 颜色, 0.9/*相似度*/, 0/*循环毫秒*/)
-!dm_object.圆形渐开找鼠标 = @.圆形渐开找鼠标(起点坐标X, 起点坐标Y, 鼠标特征码, 1/*半径*/, 1/*半径步长*/, 6/*圈数判定*/)
-!dm_object.散点渐开找鼠标 = @.散点渐开找鼠标(起点坐标X, 起点坐标Y, 鼠标特征码, 2/*半径, 0.6/*半径步长*/, 80/*圈数判定*/)
-!dm_object.椭圆渐开找鼠标 = @.椭圆渐开找鼠标(起点坐标X, 起点坐标Y, 鼠标特征码, 0.5/*宽度半径*/, 8/*高度半径*/, 0.5/*半径步长*/, 6/*圈数判定*/)
-!dm_object.方形渐开找鼠标 = @.方形渐开找鼠标(起点坐标X, 起点坐标Y, 鼠标特征码, 6/*圈数判定*/)
-?xJlib.dm  =!dm_object.
-xJlib.dm() = 创建大漠对象\n!dm_object.
+dm_object.绑定窗口 = @.绑定窗口(hwnd/*窗口句柄*/\n, display/*显示参数:"normal", "gdi", "gdi2", "dx2", "dx3", "dx"*/\n, mouse/*鼠标参数:"normal", "windows", "windows2", "windows3", "dx"*/\n, keypad/*键盘参数:"normal", "windows", "dx"*/\n, mode/*绑定模式:0, 2, 4*/)
+dm_object.找字单击至消失 = @.找字单击至消失(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/, False/*中心点*/)
+dm_object.找字单击 = @.找字单击(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/, False/*中心点*/)
+dm_object.简易找字 = @.简易找字(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/)
+dm_object.找字返回坐标 = @ret, intx, inty = ??.找字返回坐标(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/)
+dm_object.找图单击至消失 = @.找图单击至消失(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/, False/*中心点*/)
+dm_object.找图单击 = @.找图单击(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/, False/*中心点*/)
+dm_object.简易找图 = @.简易找图(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/)
+dm_object.找图返回坐标 = @ret, intx, inty = ??.找图返回坐标(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/)
+dm_object.鼠标移动单击 = @.鼠标移动单击(x, y, False/*中心点*/)
+dm_object.简易识字 = @.简易识字(x_1, y_1, x_2, y_2, 颜色, 0.9/*相似度*/, 0/*循环毫秒*/)
+dm_object.圆形渐开找鼠标 = @.圆形渐开找鼠标(起点坐标X, 起点坐标Y, 鼠标特征码, 1/*半径*/, 1/*半径步长*/, 6/*圈数判定*/)
+dm_object.散点渐开找鼠标 = @.散点渐开找鼠标(起点坐标X, 起点坐标Y, 鼠标特征码, 2/*半径, 0.6/*半径步长*/, 80/*圈数判定*/)
+dm_object.椭圆渐开找鼠标 = @.椭圆渐开找鼠标(起点坐标X, 起点坐标Y, 鼠标特征码, 0.5/*宽度半径*/, 8/*高度半径*/, 0.5/*半径步长*/, 6/*圈数判定*/)
+dm_object.方形渐开找鼠标 = @.方形渐开找鼠标(起点坐标X, 起点坐标Y, 鼠标特征码, 6/*圈数判定*/)
+?xJlib.dm  =dm_object.
+xJlib.dm() = 创建大漠对象\ndm_object.
 xJlib.dm = 自定义大漠库
 
 # dm内部函数
