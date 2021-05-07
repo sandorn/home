@@ -1,0 +1,248 @@
+﻿namespace web.cef;
+import web.cef;
+import util.metaProperty;
+
+browser = class {
+	ctor( winform,url){
+		if(_STUDIO_INVOKED)
+			..io.print("调试模式_正在启用单进程模式，单进程对flash插件和v8引擎不支持,");	
+	};
+	go = function(url){
+		if(this.pBrowser)
+			..web.cef.Chrome_LoadUrl(this.pBrowser,toUnicode(url));
+		
+	}
+	execJS = function(js){
+	
+		if(this.pBrowser)
+			..web.cef.Chrome_ExecJS(this.pBrowser,..string.toUnicode(js));
+		
+	}
+	["eval"] = function(js,retVal = "noVal"){
+		var tml = /*
+			try{
+        		%s
+        		var retVal = %s;
+        		if(!retVal){
+        			getReturnValue(1,"noVal")
+        		}else {
+        			getReturnValue(1,retVal.toString())
+        		}	
+    		}catch(e){
+       			var re = e;
+       			getReturnValue(0,re.toString())
+    		}
+    		
+		*/
+		if(this.pBrowser){
+			..thread.set("result",null)
+			this.execJS(..string.format(tml, js,retVal));
+			var reDate = ..win.invoke(
+				function(){
+					import win;
+					var tick = 0;
+					while(!thread.get("result")){ tick++;if (tick>=200 ) return {0;"null"};win.delay(1) }
+					return thread.get("result"); 
+				} 
+			)
+			return reDate[1] = 1,reDate[2]; 
+		}
+		
+	}
+	
+	goBack= function(url){
+		if(this.pBrowser)
+			..web.cef.Chrome_GoBack(this.pBrowser);
+		
+	}
+	stop = function(){
+		if(this.pBrowser)
+			..web.cef.Chrome_Stop(this.pBrowser);
+		
+	}
+	
+	goForward = function(url){
+		if(this.pBrowser)
+			..web.cef.Chrome_GoForward(this.pBrowser);
+		
+	}
+	showDevTools = function(){
+		if(this.pBrowser)
+			..web.cef.Chrome_ShowDevTools(this.pBrowser);
+	}
+	getHwnd = function(){
+		if(this.pBrowser){
+			return ..web.cef.Chrome_Window(this.pBrowser);
+		}
+	}
+	
+	close = function(){
+		if(this.pBrowser){
+			..web.cef.Chrome_Close(this.pBrowser);
+			this.pBrowser = null;
+		}
+	}
+	refresh = function(){
+		if(this.pBrowser)
+			..web.cef.Chrome_Refresh(this.pBrowser);	
+	}
+	isCreated = function(){
+		return !!this.pBrowser; 
+	}
+	setPos = function(x,y,w,h,redraw = false){
+		if(this.pBrowser){
+			var hwnd = ..web.cef.Chrome_Window(this.pBrowser)
+			::MoveWindow(hwnd,x,y,w,h,redraw) 
+		} 
+	}
+	creatBrowser = function(rect){
+		this.pOnBrowserCreated = ..raw.tostdcall(function(id,browser){
+			this.pBrowser = browser;
+			call(this.onBrowserCreated,id,browser);
+		},"(int,int)");
+		
+		var id = tonumber(..time());
+		rect := ..win.getRect(winform.hwnd);
+		..web.cef.Chrome_CreateBrowserEx(
+			id,
+			toUnicode(url),
+			winform.hwnd,
+			rect,
+			this.pOnBrowserCreated,
+			this.pOnChangeURL : topointer(0),
+			this.pOnNewWindow : topointer(0),
+			this.pOnDownload : topointer(0),
+			this.pOnChangeState : topointer(0),
+			this.pOnJSDialog : topointer(0),
+			this.pOnError : topointer(0),
+			this.pOnRButtonDown : topointer(0),
+			this.pOnChangeTitle : topointer(0),
+			topointer(0),
+			0
+		)
+
+	}
+	reload = this.refresh;
+	loopMessage = ..web.cef.Chrome_MessageLoop;
+	@$;
+
+}
+namespace browser{
+	toUnicode = ..string.toUnicode;
+	class BROWSER_CALLBACKS{
+		int cbSize= 44;
+		pointer created_callback;
+		pointer churl_callback;
+		pointer newwindow_callback;
+		pointer download_callback;
+		pointer chstate_callback;
+		pointer jsdialog_callback;
+		pointer error_callback;
+		pointer rbuttondown_callback;
+		pointer chtitle_callback;
+		pointer canloadurl_callback;
+	}
+	
+	class RBUTTON_DOWN_INFOMATION{
+		int cbSize= 28;
+		int Flag;
+		int pFrame;
+		int SelectionText;
+		int LinkUrl;
+		int SourceUrl;
+		int Retention;
+	}
+	
+	class NEW_WINDOW_INFOMATION{
+		int cbSize= 28;
+		int lpFrame;
+		int szNewWindowUrl;
+		int szCurrentWindowUrl;
+		int szTargetFrameName;
+		bool bUserGesture;
+		int dwOpenDisposition;
+	}
+	$ = ..util.metaProperty(
+		onChangeURL = {
+			_set = function( value ){
+				if(type(value) == type.function){
+					owner.pOnChangeURL = ..raw.tostdcall(value,"(int,pointer)")
+				}
+			} 	
+		};
+		onNewWindow = {
+			_set = function( value ){
+				if(type(value) == type.function){
+					owner.pOnNewWindow = ..raw.tostdcall(value,"bool(int,int,int,int)")
+				}
+			} 	
+		};
+		onDownload = {
+			_set = function( value ){
+				if(type(value) == type.function){
+					owner.pOnDownload = ..raw.tostdcall(value,"(int,int)")
+				}
+			} 	
+		};
+		
+		onChangeState = {
+			_set = function( value ){
+				if(type(value) == type.function){
+					owner.pOnChangeState = ..raw.tostdcall(value,"(int,bool,bool,bool)")
+				}
+			} 	
+		};
+		onJSDialog = {
+			_set = function( value ){
+				if(type(value) == type.function){
+					owner.pOnJSDialog = ..raw.tostdcall(value,"(int,int)")
+				}
+			} 	
+		};
+		onError = {
+			_set = function( value ){
+				if(type(value) == type.function){
+					owner.pOnError = ..raw.tostdcall(value,"(int,int,bool)")
+				}
+			} 	
+		};
+		onRButtonDown = {
+			_set = function( value ){
+				if(type(value) == type.function){
+					owner.pOnRButtonDown = ..raw.tostdcall(value,"(int,int,int,int)")
+					//No node is selected. = 0
+					//The top page is selected.  = 1 << 0
+					//A subframe page is selected.   = 1 << 1
+					//A link is selected.  = 1 << 2
+					//A media node is selected.  = 1 << 3
+					//There is a textual or mixed selection that is selected.  = 1 << 4
+					//An editable element is selected. = 1 << 5
+				}
+			} 	
+		};
+		onChangeTitle = {
+			_set = function( value ){
+				if(type(value) == type.function){
+					owner.pOnChangeTitle = ..raw.tostdcall(value,"(int,pointer)")
+				}
+			} 	
+		};
+	)
+
+
+
+}
+
+
+/**intellisense()
+cef.browser(.(winform窗体,初始化网址) = hgeSprite是一个精灵实体的HGE帮助类
+?cef.browser = !cefBrowser.
+
+!cefBrowser.execJS(.(js代码) = 执行js不返回结果
+!cefBrowser.eval(.(js代码,返回变量值) = 执行并指定的js变量作为返回。返回结果1为是否执行js成功,2为返回结果。返回的结果只支持文本。
+!cefBrowser.onChangeURL = @.onChangeURL(function(browserID,url){\n\n__/*当改变网址事件,url为unicode自行转换*/})
+!cefBrowser.onChangeTitle = @.onChangeURL(function(browserID,title){\n\n__/*当改变网址事件,title为unicode自行转换*/})
+
+
+
+end intellisense**/

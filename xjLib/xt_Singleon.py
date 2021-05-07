@@ -68,6 +68,11 @@ def singleton_wrap_return_class(_cls):
         _lock = Lock()
 
         def __new__(cls, *args, **kwargs):
+            '''
+            description:
+            param {*}
+            return {*}
+            '''
             if cls._instance is None:
                 with cls._lock:
                     if cls._instance is None:

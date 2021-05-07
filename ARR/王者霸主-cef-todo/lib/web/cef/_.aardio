@@ -1,0 +1,89 @@
+﻿namespace web.cef;
+import process.command;
+import string;
+import win;
+CEF_DLL_PATH = ..io.exist("\lib\web\cef\.res\syfch49.dll") : ..io.exist("~\lib\web\cef\.res\syfch49.dll")
+_FLASH_PAPI_DLL= ..io.exist("\lib\web\cef\.res\PepperFlash\pepflashplayer.dll") : ..io.exist("~\lib\web\cef\.res\PepperFlash\pepflashplayer.dll");
+
+if(!CEF_DLL_PATH){
+	return win.msgbox("丢失文件请重新下载安装"); 
+}
+::Kernel32.SetDllDirectory(..io.splitpath(CEF_DLL_PATH).dir);
+CEF = ..raw.loadDll(CEF_DLL_PATH);
+::Kernel32.SetDllDirectory(null);
+Chrome_InitializeEx = CEF.api("Chrome_InitializeEx","void(pointer,int,bool,string,INT)" )
+Chrome_IsUIThread = CEF.api("Chrome_IsUIThread","bool()" )
+Chrome_CreateBrowserEx = CEF.api("Chrome_CreateBrowserEx","int(int,string,int,struct,pointer,pointer,pointer,pointer,pointer,pointer,pointer,pointer,pointer,pointer,INT)" )
+Chrome_MessageLoop = CEF.api("Chrome_MessageLoop","()" )
+Chrome_Shutdown = CEF.api("Chrome_Shutdown","()" )
+Chrome_Window = CEF.api("Chrome_Window","int(int)" )
+Chrome_Close = CEF.api("Chrome_Close","(int)" )
+Chrome_GoBack = CEF.api("Chrome_GoBack","(int)" )
+Chrome_Stop = CEF.api("Chrome_Stop","(int)" )
+Chrome_ShowDevTools = CEF.api("Chrome_ShowDevTools","(int)" )
+Chrome_Refresh = CEF.api("Chrome_Refresh","(int)" )
+Chrome_GoForward = CEF.api("Chrome_GoForward","(int)" )
+Chrome_GoBack = CEF.api("Chrome_GoBack","(int)" )
+Chrome_LoadUrl = CEF.api("Chrome_LoadUrl","(int,string)" )
+Chrome_EnableSystemFlash = CEF.api("Chrome_EnableSystemFlash","()" )
+Chrome_LoadFlashPlugin = CEF.api("Chrome_LoadFlashPlugin","(string,string)" )
+Chrome_ExecJS = CEF.api("Chrome_ExecJS","(int,string)" )
+Chrome_EnableCookieStorageEx = CEF.api("Chrome_EnableCookieStorageEx","(string)" )
+Chrome_SetV8ContextCallback = CEF.api("Chrome_SetV8ContextCallback","(pointer,pointer)" )
+Chrome_AddJSFunction = CEF.api("Chrome_AddJSFunction","(int,string)" )
+Chrome_GetV8ValueStringLength = CEF.api("Chrome_GetV8ValueStringLength","int(int,int)" )
+Chrome_GetV8ValueString = CEF.api("Chrome_GetV8ValueString","(int,int,string,int)" )
+Chrome_SetV8ReturnValueInt = CEF.api("Chrome_SetV8ReturnValueInt","(pointer,int)" )
+Chrome_SetV8ReturnValueString = CEF.api("Chrome_SetV8ReturnValueString","(pointer,string)" )
+Chrome_GetV8ValueInt = CEF.api("Chrome_GetV8ValueInt","int(int,int)" )
+
+toUnicode = ..string.toUnicode;
+..process.command.join("4A60D25D-DE5E-4484-9F41-9649EB1277D4");
+pV8Context_Create = ..raw.tostdcall(
+	function(lpContext){
+		Chrome_AddJSFunction(lpContext,string.toUnicode("getReturnValue"))
+	},"(int)"
+)
+pV8Handler = ..raw.tostdcall(
+	function(name,arguments,retval){
+		if(string.fromUnicode(name,,true) == "getReturnValue"){
+			var bResult =  Chrome_GetV8ValueInt(arguments,0)
+			var length = Chrome_GetV8ValueStringLength(arguments,1)+1
+			var mStr = string.repeat(length*2);
+			Chrome_GetV8ValueString(arguments,1,mStr,length)
+			..process.command.setResult(bResult,string.fromUnicode(mStr))
+			return true; 
+		}
+		return false; 
+	},"bool(pointer,int,pointer)"
+)
+
+
+Chrome_SetV8ContextCallback(pV8Context_Create,pV8Handler)
+
+
+init = function(strCookies,bflashPapai){
+	if ( bflashPapai && !_STUDIO_INVOKED && _FLASH_PAPI_DLL  ) 	Chrome_LoadFlashPlugin(toUnicode(_FLASH_PAPI_DLL),toUnicode("21.0.0.242"))
+	Chrome_InitializeEx(_HINSTANSE,(_STUDIO_INVOKED?4:0) ,false,toUnicode("zh-CN"),0);	
+	if ( strCookies ) 	Chrome_EnableCookieStorageEx(toUnicode(..io.fullpath(strCookies)));
+	..subscribe("beforeUnload",
+		function(){
+			Chrome_Shutdown();
+		} 
+	);
+	
+	..process.command().setResult = function( ... ) {
+		..thread.set("result",{...} );
+	}
+
+}
+
+isUIThread = Chrome_IsUIThread;
+
+/**intellisense(cef)
+cef.isUIThread() = 查询是否为UI线程
+cef.init(.(cookies地址空不启用,是否启用自带flash插件 ) = 初始化内核
+
+
+
+end intellisense**/

@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-06 11:05:52
-#LastEditTime : 2020-06-29 10:06:33
-#Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
-#==============================================================
+==============================================================
+Descripttion : None
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
+FilePath     : /xjLib/xt_Head.py
+LastEditTime : 2021-04-16 12:19:28
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 from fake_useragent import UserAgent

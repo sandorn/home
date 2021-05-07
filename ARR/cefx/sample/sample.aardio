@@ -1,0 +1,20 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="cef3";right=1315;bottom=795)
+winform.add()
+/*}}*/
+
+import web.cefx;
+var cef3 = web.cefx(winform)
+winform.show();
+
+//这是最简单的用法
+cef3.go("http://www.so.com")
+
+//调用js的querySelector函数搜索节点，并且改变节点的value属性(控件的值)
+cef3.waitQuerySelector("#input").value = "aardio site:aardio.com";
+
+//调用js的querySelector函数搜索节点，并且调用click函数模拟点击按钮。
+cef3.getEle("search-button").click();
+
+win.loopMessage();
