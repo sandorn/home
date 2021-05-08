@@ -12,6 +12,7 @@ if(!CEF_DLL_PATH){
 CEF = ..raw.loadDll(CEF_DLL_PATH);
 ::Kernel32.SetDllDirectory(null);
 Chrome_InitializeEx = CEF.api("Chrome_InitializeEx","void(pointer,int,bool,string,INT)" )
+Chrome_SetZoomLevel = CEF.api("Chrome_SetZoomLevel","int(int,int,int") 
 Chrome_IsUIThread = CEF.api("Chrome_IsUIThread","bool()" )
 Chrome_CreateBrowserEx = CEF.api("Chrome_CreateBrowserEx","int(int,string,int,struct,pointer,pointer,pointer,pointer,pointer,pointer,pointer,pointer,pointer,pointer,INT)" )
 Chrome_MessageLoop = CEF.api("Chrome_MessageLoop","()" )

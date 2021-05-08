@@ -1,0 +1,34 @@
+<!--
+ This ribbon document contains a group of buttons for the Custom Task Pane examples.
+ It gets merged into the main example ribbon toolbar.
+
+ In the pyxll.cfg file both ribbon documents are listed and they are merged
+ automatically by the PyXLL add-in.
+ -->
+<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" loadImage="pyxll.load_image">
+    <ribbon>
+        <tabs>
+            <tab id="pyxll" label="PyXLL Example Tab">
+                <group id="CustomTaskPanes"
+                       label="Custom Task Pane Examples"
+                       insertAfter="Tools"> <!-- groups can have hints to position them in an existing tab -->
+                    <button id="TkCTP"
+                            size="large"
+                            label="Tk"
+                            onAction="custom_task_panes.tk_ctp_ribbon_action"
+                            image="icons/tk.png"/>
+                    <button id="QtCTP"
+                            size="large"
+                            label="Qt"
+                            onAction="custom_task_panes.qt_ctp_ribbon_action"
+                            image="icons/qt.png"/>
+                    <button id="WxCTP"
+                            size="large"
+                            label="Wx"
+                            onAction="custom_task_panes.wx_ctp_ribbon_action"
+                            image="icons/wx.png"/>
+                </group>
+            </tab>
+        </tabs>
+    </ribbon>
+</customUI>

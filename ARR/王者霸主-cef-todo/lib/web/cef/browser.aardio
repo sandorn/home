@@ -122,6 +122,10 @@ browser = class {
 		)
 
 	}
+	setZoomLevel = function(x1,x2,x3){
+		ret = ..web.cef.Chrome_SetZoomLevel(x1,x2,x3)
+		return ret; 
+	}
 	reload = this.refresh;
 	loopMessage = ..web.cef.Chrome_MessageLoop;
 	@$;

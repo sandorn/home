@@ -5,91 +5,49 @@ import winex;
 import mouse;
 import web.cef.browser;
 /*DSG{{*/
-var winform = win.form(text = "王者霸业"; right = 1222; bottom = 775)
+var winform = win.form(text="王者霸业";right=1222;bottom=775)
 winform.add(
-    buttonBack = {
-        cls = "button";text = '\u2190';left = 478;top = 4;right = 526;bottom = 29;disabled = 1;dl = 1;dt = 1;z = 4
-    }; buttonForward = {
-        cls = "button";text = '\u2192';left = 537;top = 4;right = 585;bottom = 29;disabled = 1;dl = 1;dt = 1;z = 5
-    }; buttonGo = {
-        cls = "button";text = "go";left = 411;top = 4;right = 466;bottom = 29;dl = 1;dt = 1;z = 2
-    }; buttonMouse = {
-        cls = "button";text = "模拟鼠标";left = 1038;top = 342;right = 1115;bottom = 367;dr = 1;dt = 1;z = 7
-    }; buttonPractice = {
-        cls = "button";text = "技能修炼";left = 1038;top = 4;right = 1115;bottom = 29;dr = 1;dt = 1;z = 3
-    }; buttonRefresh = {
-        cls = "button";text = "refresh";left = 597;top = 4;right = 645;bottom = 29;disabled = 1;dl = 1;dt = 1;z = 6
-    }; buttonStop = {
-        cls = "button";text = "停止修炼";left = 1133;top = 4;right = 1210;bottom = 29;disabled = 1;dr = 1;dt = 1;z = 9
-    }; buttonStopMouse = {
-        cls = "button";text = "停止模拟";left = 1133;top = 342;right = 1210;bottom = 367;disabled = 1;dr = 1;dt = 1;z = 33
-    }; checkbox1 = {
-        cls = "checkbox";text = "1键 间隔毫秒";left = 1045;top = 72;right = 1139;bottom = 94;dr = 1;dt = 1;z = 11
-    }; checkbox2 = {
-        cls = "checkbox";text = "2键 间隔毫秒";left = 1045;top = 104;right = 1139;bottom = 126;dr = 1;dt = 1;z = 12
-    }; checkbox3 = {
-        cls = "checkbox";text = "3键 间隔毫秒";left = 1045;top = 137;right = 1139;bottom = 159;dr = 1;dt = 1;z = 15
-    }; checkbox4 = {
-        cls = "checkbox";text = "4键 间隔毫秒";left = 1045;top = 169;right = 1139;bottom = 191;dr = 1;dt = 1;z = 17
-    }; checkbox5 = {
-        cls = "checkbox";text = "5键 间隔毫秒";left = 1045;top = 202;right = 1139;bottom = 224;dr = 1;dt = 1;z = 19
-    }; checkbox6 = {
-        cls = "checkbox";text = "6键 间隔毫秒";left = 1045;top = 234;right = 1139;bottom = 256;dr = 1;dt = 1;z = 21
-    }; checkbox7 = {
-        cls = "checkbox";text = "7键 间隔毫秒";left = 1045;top = 267;right = 1139;bottom = 289;dr = 1;dt = 1;z = 23
-    }; checkbox8 = {
-        cls = "checkbox";text = "8键 间隔毫秒";left = 1045;top = 299;right = 1139;bottom = 321;dr = 1;dt = 1;z = 25
-    }; customBackground = {
-        cls = "custom";text = "customBackground";left = 10;top = 31;right = 1021;bottom = 766;clipch = 1;db = 1;dl = 1;dr = 1;dt = 1;edge = 1;z = 8
-    }; edit1 = {
-        cls = "edit";text = "100";left = 1151;top = 69;right = 1191;bottom = 92;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 13
-    }; edit2 = {
-        cls = "edit";text = "100";left = 1151;top = 102;right = 1191;bottom = 123;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 14
-    }; edit3 = {
-        cls = "edit";text = "100";left = 1151;top = 135;right = 1191;bottom = 156;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 16
-    }; edit4 = {
-        cls = "edit";text = "100";left = 1151;top = 167;right = 1191;bottom = 188;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 18
-    }; edit5 = {
-        cls = "edit";text = "100";left = 1151;top = 200;right = 1191;bottom = 221;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 20
-    }; edit6 = {
-        cls = "edit";text = "100";left = 1151;top = 232;right = 1191;bottom = 253;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 22
-    }; edit7 = {
-        cls = "edit";text = "100";left = 1151;top = 265;right = 1191;bottom = 286;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 24
-    }; edit8 = {
-        cls = "edit";text = "100";left = 1151;top = 297;right = 1191;bottom = 318;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 26
-    }; editUrl = {
-        cls = "edit";text = "http://wvw.9377.com/game_login.php?gid=5179&sid=113";left = 10;top = 4;right = 401;bottom = 29;dl = 1;dt = 1;edge = 1;z = 1
-    }; editt = {
-        cls = "edit";text = "4500";left = 1159;top = 402;right = 1199;bottom = 423;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 29
-    }; editt2 = {
-        cls = "edit";text = "4500";left = 1160;top = 458;right = 1200;bottom = 479;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 37
-    }; editx = {
-        cls = "edit";text = "1696";left = 1079;top = 402;right = 1113;bottom = 423;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 27
-    }; editx2 = {
-        cls = "edit";text = "1696";left = 1080;top = 458;right = 1114;bottom = 479;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 35
-    }; edity = {
-        cls = "edit";text = "1233";left = 1120;top = 402;right = 1153;bottom = 423;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 28
-    }; edity2 = {
-        cls = "edit";text = "1233";left = 1121;top = 458;right = 1154;bottom = 479;align = "right";color = 32768;dr = 1;dt = 1;edge = 1;z = 36
-    }; groupbox = {
-        cls = "groupbox";text = "要修炼的技能";left = 1030;top = 45;right = 1211;bottom = 329;dr = 1;dt = 1;edge = 1;z = 10
-    }; plusCur = {
-        cls = "plus";left = 1040;top = 385;right = 1072;bottom = 417;background = "\res\1.gif";dr = 1;dt = 1;notify = 1;repeat = "center";z = 34
-    }; plusCur2 = {
-        cls = "plus";left = 1041;top = 441;right = 1073;bottom = 473;background = "\res\1.gif";dr = 1;dt = 1;notify = 1;repeat = "center";z = 41
-    }; static = {
-        cls = "static";text = "x坐标";left = 1084;top = 379;right = 1121;bottom = 398;dr = 1;dt = 1;notify = 1;transparent = 1;z = 30
-    }; static2 = {
-        cls = "static";text = "y坐标";left = 1119;top = 379;right = 1156;bottom = 398;dr = 1;dt = 1;notify = 1;transparent = 1;z = 31
-    }; static3 = {
-        cls = "static";text = "间隔毫秒";left = 1155;top = 379;right = 1216;bottom = 398;dr = 1;dt = 1;notify = 1;transparent = 1;z = 32
-    }; static4 = {
-        cls = "static";text = "x坐标";left = 1085;top = 435;right = 1122;bottom = 454;dr = 1;dt = 1;notify = 1;transparent = 1;z = 38
-    }; static5 = {
-        cls = "static";text = "y坐标";left = 1120;top = 435;right = 1157;bottom = 454;dr = 1;dt = 1;notify = 1;transparent = 1;z = 39
-    }; static6 = {
-        cls = "static";text = "间隔毫秒";left = 1156;top = 435;right = 1217;bottom = 454;dr = 1;dt = 1;notify = 1;transparent = 1;z = 40
-    }
+buttonBack={cls="button";text='\u2190';left=478;top=4;right=526;bottom=29;disabled=1;dl=1;dt=1;z=4};
+buttonForward={cls="button";text='\u2192';left=537;top=4;right=585;bottom=29;disabled=1;dl=1;dt=1;z=5};
+buttonGo={cls="button";text="go";left=411;top=4;right=466;bottom=29;dl=1;dt=1;z=2};
+buttonMouse={cls="button";text="模拟鼠标";left=1038;top=342;right=1115;bottom=367;dr=1;dt=1;z=7};
+buttonPractice={cls="button";text="技能修炼";left=1038;top=4;right=1115;bottom=29;dr=1;dt=1;z=3};
+buttonRefresh={cls="button";text="refresh";left=597;top=4;right=645;bottom=29;disabled=1;dl=1;dt=1;z=6};
+buttonStop={cls="button";text="停止修炼";left=1133;top=4;right=1210;bottom=29;disabled=1;dr=1;dt=1;z=9};
+buttonStopMouse={cls="button";text="停止模拟";left=1133;top=342;right=1210;bottom=367;disabled=1;dr=1;dt=1;z=33};
+checkbox1={cls="checkbox";text="1键 间隔毫秒";left=1045;top=72;right=1139;bottom=94;dr=1;dt=1;z=11};
+checkbox2={cls="checkbox";text="2键 间隔毫秒";left=1045;top=104;right=1139;bottom=126;dr=1;dt=1;z=12};
+checkbox3={cls="checkbox";text="3键 间隔毫秒";left=1045;top=137;right=1139;bottom=159;dr=1;dt=1;z=15};
+checkbox4={cls="checkbox";text="4键 间隔毫秒";left=1045;top=169;right=1139;bottom=191;dr=1;dt=1;z=17};
+checkbox5={cls="checkbox";text="5键 间隔毫秒";left=1045;top=202;right=1139;bottom=224;dr=1;dt=1;z=19};
+checkbox6={cls="checkbox";text="6键 间隔毫秒";left=1045;top=234;right=1139;bottom=256;dr=1;dt=1;z=21};
+checkbox7={cls="checkbox";text="7键 间隔毫秒";left=1045;top=267;right=1139;bottom=289;dr=1;dt=1;z=23};
+checkbox8={cls="checkbox";text="8键 间隔毫秒";left=1045;top=299;right=1139;bottom=321;dr=1;dt=1;z=25};
+customBackground={cls="custom";text="customBackground";left=10;top=31;right=1021;bottom=766;clipch=1;db=1;dl=1;dr=1;dt=1;edge=1;z=8};
+edit1={cls="edit";text="100";left=1151;top=69;right=1191;bottom=92;align="right";color=32768;dr=1;dt=1;edge=1;z=13};
+edit2={cls="edit";text="100";left=1151;top=102;right=1191;bottom=123;align="right";color=32768;dr=1;dt=1;edge=1;z=14};
+edit3={cls="edit";text="100";left=1151;top=135;right=1191;bottom=156;align="right";color=32768;dr=1;dt=1;edge=1;z=16};
+edit4={cls="edit";text="100";left=1151;top=167;right=1191;bottom=188;align="right";color=32768;dr=1;dt=1;edge=1;z=18};
+edit5={cls="edit";text="100";left=1151;top=200;right=1191;bottom=221;align="right";color=32768;dr=1;dt=1;edge=1;z=20};
+edit6={cls="edit";text="100";left=1151;top=232;right=1191;bottom=253;align="right";color=32768;dr=1;dt=1;edge=1;z=22};
+edit7={cls="edit";text="100";left=1151;top=265;right=1191;bottom=286;align="right";color=32768;dr=1;dt=1;edge=1;z=24};
+edit8={cls="edit";text="100";left=1151;top=297;right=1191;bottom=318;align="right";color=32768;dr=1;dt=1;edge=1;z=26};
+editUrl={cls="edit";text="http://wvw.9377.com/game_login.php?gid=5179&sid=113";left=10;top=4;right=401;bottom=29;dl=1;dt=1;edge=1;z=1};
+editt={cls="edit";text="4500";left=1159;top=402;right=1199;bottom=423;align="right";color=32768;dr=1;dt=1;edge=1;z=29};
+editt2={cls="edit";text="4500";left=1160;top=458;right=1200;bottom=479;align="right";color=32768;dr=1;dt=1;edge=1;z=37};
+editx={cls="edit";text="1696";left=1079;top=402;right=1113;bottom=423;align="right";color=32768;dr=1;dt=1;edge=1;z=27};
+editx2={cls="edit";text="1696";left=1080;top=458;right=1114;bottom=479;align="right";color=32768;dr=1;dt=1;edge=1;z=35};
+edity={cls="edit";text="1233";left=1120;top=402;right=1153;bottom=423;align="right";color=32768;dr=1;dt=1;edge=1;z=28};
+edity2={cls="edit";text="1233";left=1121;top=458;right=1154;bottom=479;align="right";color=32768;dr=1;dt=1;edge=1;z=36};
+groupbox={cls="groupbox";text="要修炼的技能";left=1030;top=45;right=1211;bottom=329;dr=1;dt=1;edge=1;z=10};
+plusCur={cls="plus";left=1040;top=385;right=1072;bottom=417;background="\res\1.gif";dr=1;dt=1;notify=1;repeat="center";z=34};
+plusCur2={cls="plus";left=1041;top=441;right=1073;bottom=473;background="\res\1.gif";dr=1;dt=1;notify=1;repeat="center";z=41};
+static={cls="static";text="x坐标";left=1084;top=379;right=1121;bottom=398;dr=1;dt=1;notify=1;transparent=1;z=30};
+static2={cls="static";text="y坐标";left=1119;top=379;right=1156;bottom=398;dr=1;dt=1;notify=1;transparent=1;z=31};
+static3={cls="static";text="间隔毫秒";left=1155;top=379;right=1216;bottom=398;dr=1;dt=1;notify=1;transparent=1;z=32};
+static4={cls="static";text="x坐标";left=1085;top=435;right=1122;bottom=454;dr=1;dt=1;notify=1;transparent=1;z=38};
+static5={cls="static";text="y坐标";left=1120;top=435;right=1157;bottom=454;dr=1;dt=1;notify=1;transparent=1;z=39};
+static6={cls="static";text="间隔毫秒";left=1156;top=435;right=1217;bottom=454;dr=1;dt=1;notify=1;transparent=1;z=40}
 )
 /*}}*/
 

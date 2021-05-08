@@ -1,0 +1,77 @@
+<!--
+ This ribbon document contains some example controls as an example of how
+ to construct your own ribbon toolbar.
+
+ Multiple ribbon files can be listed in the pyxll.cfg file and they will
+ be merged together automatically to form a single ribbon document when
+ the PyXLL add-in loads.
+
+ See the other example ribbon in 'custom_task_panes' for an example
+ of another ribbon file that gets merged with this one.
+ -->
+<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui"
+          loadImage="pyxll.load_image">  <!-- pyxll.load_image is a built-in image loader -->
+    <ribbon>
+        <tabs>
+            <tab id="pyxll" label="PyXLL Example Tab">
+                <group id="Tools" label="Tools">
+                    <button id="Reload"
+                            size="large"
+                            label="Reload PyXLL"
+                            onAction="pyxll.reload"
+                            image="icons/reload.png"/>   <!-- images can be absolute paths or relative to this document -->
+                    <button id="OpenLog"
+                            size="large"
+                            label="Open Log File"
+                            onAction="ribbon.open_logfile"
+                            image="icons/log.png"/>
+                    <button id="About"
+                            size="large"
+                            label="About PyXLL"
+                            onAction="pyxll.about"
+                            image="icons/about.png"/>
+                </group>
+                <group id="Controls" label="Control Examples">
+                    <checkBox id="CheckBox"
+                              label="CheckBox"
+                              getPressed="ribbon.checkbox_initial_state"
+                              onAction="ribbon.checkbox_on_action"/>
+                    <comboBox id="ComboBox1"
+                              label="ComboBox 1"
+                              onChange="ribbon.combo_box_on_change"
+                              getItemCount="ribbon.combo_box_item_count"
+                              getItemLabel="ribbon.combo_box_item"
+                              getText="ribbon.combo_box_initial_item"/>
+                    <comboBox id="ComboBox2"
+                              label="ComboBox 2"
+                              onChange="ribbon.combo_box_on_change"
+                              getItemCount="ribbon.combo_box_item_count"
+                              getItemLabel="ribbon.combo_box_item"
+                              getText="ribbon.combo_box_initial_item"/>
+                    <dropDown id="StaticDropdown" label="Static Dropdown">
+                        <item id="ddItem1" label="Item 1" imageMso="Info"/>
+                        <item id="ddItem2" label="Item 2" imageMso="HappyFace"/>
+                    </dropDown>
+                    <gallery id="Months" label="Months (English)"
+                        columns="3" rows="4" onAction="ribbon.month_selected">
+                        <item id="January" label="January"/>
+                        <item id="February" label="February"/>
+                        <item id="March" label="March"/>
+                        <item id="April" label="April"/>
+                        <item id="May" label="May"/>
+                        <item id="June" label="June"/>
+                        <item id="July" label="July"/>
+                        <item id="August" label="August"/>
+                        <item id="September" label="September"/>
+                        <item id="October" label="October"/>
+                        <item id="November" label="November"/>
+                        <item id="December" label="December"/>
+                        <button id="RegionalSettings" label="Regional Settings"
+                            imageMso="ShowTimeZones"
+                            onAction="ribbon.show_time_zones"/>
+                     </gallery>
+                </group>
+            </tab>
+        </tabs>
+    </ribbon>
+</customUI>
