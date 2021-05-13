@@ -1,0 +1,53 @@
+//调试模式
+if(_STUDIO_INVOKED)
+	import xJlib.console
+	xJlib.console.set(false)
+	print = xJlib.console.print
+	print(1)
+
+import win.ui;
+import  web.form.util
+/*DSG{{*/
+var winform = win.form(text="Web Form";right=759;bottom=469)
+winform.add(
+custom={cls="custom";text="自定义控件";left=6;top=19;right=760;bottom=469;db=1;dl=1;dr=1;dt=1;z=1}
+)
+/*}}*/
+
+//创建web窗体
+//web.form.util.emulation(10001);
+//开启框架跨域支持
+web.form.util.crossDomain();
+web.form.enableTab();
+
+var chorme = web.form(winform.custom);
+
+chorme.silent = true;
+chorme.showhelp = false;
+chorme.noScriptErr = true; //禁止脚本错误
+chorme.showMenu=function(x,y,id,ele){ return false; }
+
+chorme.NewWindow2 = function(ppDisp, Cancel) {
+    /*弹出新窗口以前触发 */
+    /*创建代理窗口捕获网址并在当前窗口打开*/
+    return owner.openproxy 
+}
+
+//打开网页时触发
+chorme.NavigateComplete2 = function(pDisp, url) {
+
+}
+chorme.FileDownload = function(activeDocument, cancel) {
+    if(!activeDocument) return true; /*阻止文件下载,可在translate,NavigateError等事件中获取下载地址*/
+}
+
+//打开目标网站
+chorme.go("http://9377.com/") 
+
+
+winform.show(); //显示窗体
+
+chorme.execWb(0x13/*_OLECMDID_ZOOM*/,0.60,1)
+
+//启动消息循环
+win.loopMessage();
