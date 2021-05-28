@@ -1,6 +1,5 @@
-//RUNAS//王者霸业webform//DM
+//RUNAS//王者霸业cef//DM
 
-//控件无法使用
 //调试模式
 _USE_DM = 1 //大漠或是winex开关
 
@@ -26,6 +25,8 @@ import win.ui;
 /*DSG{{*/
 var winform = win.form(text="王者霸业";right=1222;bottom=775)
 winform.add(
+btnSniff={cls="button";text="抓包";left=1045;top=716;right=1121;bottom=739;db=1;dr=1;z=57};
+btnStop={cls="button";text="停止";left=1134;top=716;right=1210;bottom=739;db=1;dr=1;z=58};
 buttonBack={cls="button";text='\u2190';left=478;top=4;right=526;bottom=29;disabled=1;dl=1;dt=1;z=4};
 buttonForward={cls="button";text='\u2192';left=537;top=4;right=585;bottom=29;disabled=1;dl=1;dt=1;z=5};
 buttonGo={cls="button";text="go";left=411;top=4;right=466;bottom=29;dl=1;dt=1;z=2};
@@ -50,7 +51,7 @@ ck5={cls="checkbox";text="5";left=1045;top=571;right=1078;bottom=592;dr=1;dt=1;z
 ck6={cls="checkbox";text="6";left=1045;top=602;right=1078;bottom=623;dr=1;dt=1;z=50};
 ck7={cls="checkbox";text="7";left=1045;top=632;right=1078;bottom=653;dr=1;dt=1;z=53};
 ck8={cls="checkbox";text="8";left=1045;top=663;right=1078;bottom=684;dr=1;dt=1;z=56};
-custBg={cls="custom";text="custBg";left=10;top=31;right=1021;bottom=766;clipch=1;db=1;dl=1;dr=1;dt=1;edge=1;z=8};
+custBg={cls="static";text="static";left=10;top=31;right=1021;bottom=766;clipch=1;db=1;dl=1;dr=1;dt=1;edge=1;z=8};
 edit1={cls="edit";text="100";left=1151;top=69;right=1191;bottom=92;align="right";color=32768;dr=1;dt=1;edge=1;z=13};
 edit2={cls="edit";text="100";left=1151;top=102;right=1191;bottom=123;align="right";color=32768;dr=1;dt=1;edge=1;z=14};
 edit3={cls="edit";text="100";left=1151;top=135;right=1191;bottom=156;align="right";color=32768;dr=1;dt=1;edge=1;z=16};
@@ -85,6 +86,21 @@ static4={cls="static";text="间隔";left=1170;top=424;right=1209;bottom=443;dr=1
 )
 /*}}*/
 
+/*
+//将选择状态及相关信息与配置文件绑定
+import config;
+winform.bindConfig(config.conf, {
+    edit = "text";
+    radiobutton = "checked";
+    checkbox = "checked";
+    combobox = "selIndex";
+});
+*/
+
+winform.onClose = function(hwnd,message,wParam,lParam){
+     config.conf.save()
+}
+
 for(i = 1; 8; 1) {
     winform["editxy" + i].wndproc = function(hwnd, message, wParam, lParam) {
         if(message = 0x203 /*_WM_LBUTTONDBLCLK*/ ) {
@@ -95,32 +111,104 @@ for(i = 1; 8; 1) {
     }
 }
 
+/*抓包{{*/
+import thread.event;
+var eventCtrl = thread.event("wsock.sniff.给我抓");
+winform.btnStop.oncommand = function(id,event){
+	winform.btnStop.disabled = true;
+	winform.btnStop.text = "正在停止..."
+	eventCtrl.set()
+}
+
+winform.btnSniff.oncommand = function(id,event){ 
+	winform.btnSniff.disabled = true;
+	winform.btnStop.disabled = false;
+	eventCtrl.reset();
+	
+	win.invoke(
+		function(){
+			import win;
+			import wsock.sniff;
+			import thread.event;
+			import xJlib.console
+    		xJlib.console.set(false)
+    		print = xJlib.console.print
+			
+			var eventCtrl = thread.event("wsock.sniff.给我抓");
+			print("正在抓取HTTP包,打开网页试试......") 
+			
+			for(sockdata in wsock.sniff() ){ 
+  				if ( sockdata.ok ){
+  					print(sockdata)
+  					
+  					if( sockdata.tcpheader ){ 
+						tinfo = wsock.decodeHttpPack( sockdata.tcpdata ) 
+				 		//print(tinfo)
+   					} 
+  				}
+  				if( eventCtrl.wait(1) ) break;
+			}
+			
+			print("title 抓包结束") 
+		} 
+	)
+	
+	winform.btnStop.text = "停止"
+	winform.btnStop.disabled = true;
+	winform.btnSniff.disabled = false;
+}
+/*}}*/
+
 /*创建浏览器{{*/
+import web.form.util;
+var chorme = web.form( winform.custBg );  
+chorme.noScriptErr = true;//禁止脚本错误
 
-import web.form.util
-//web.form.util.emulation(10001);
-web.form.util.crossDomain();//开启框架跨域支持
-web.form.enableTab();
+chorme.BeforeNavigate2=function( pDisp, url, Flags, TargetFrameName, PostData, Headers, Cancel ) { 
+	winform.spyElement = null;   
+	winform.spying = null;
+} 
 
-var chorme = web.form(winform.custBg);
-
-chorme.silent = true;
-chorme.showhelp = false;
-chorme.noScriptErr = true; //禁止脚本错误
-chorme.showMenu=function(x,y,id,ele){ return false; }
-
-chorme.NewWindow2 = function(ppDisp, Cancel) {
-    /*弹出新窗口以前触发 */
-    /*创建代理窗口捕获网址并在当前窗口打开*/
-    return owner.openproxy 
-}
-
+//开启框架跨域支持
+web.form.util.crossDomain(); 
 //打开网页时触发
-chorme.NavigateComplete2 = function(pDisp, url) {
+chorme.NavigateComplete2=function(pDisp, url) {
+	winform.editUrl.text = chorme.location; 
+}  
 
+chorme.NewWindow2=function( ppDisp, Cancel) {
+	/*弹出新窗口以前触发 */ 
+	return owner.openproxy /*创建代理窗口捕获网址并在当前窗口打开*/	
+} 
+chorme.CommandStateChange=function(cmd,enable) {
+	/*当命令的激活状态改变时触发。它表明何时激活或关闭Back和Forward菜单项或按钮 */ 
+	select(cmd) {
+	
+	 	case 0x2/*_CSC_NAVIGATEBACK*/ {
+	 		winform.btnback.disabled = !enable 
+	 		
+	 	}
+	 	case 0x1/*_CSC_NAVIGATEFORWARD*/ {
+	 		winform.btnforward.disabled = !enable 
+	 	}  
+	}
+} 
+
+winform.btnGo.oncommand = function(id,event){
+	chorme.go(winform.editUrl.text)  
 }
-chorme.FileDownload = function(activeDocument, cancel) {
-    if(!activeDocument) return true; /*阻止文件下载,可在translate,NavigateError等事件中获取下载地址*/
+winform.btnforward.oncommand = function(id,event){
+	chorme.goForward()
+}
+winform.btnback.oncommand = function(id,event){ 
+	chorme.goBack() 
+} 
+winform.buttonRefresh.oncommand = function(id, event) {
+    chorme.refresh()
+}
+//转到
+winform.buttonGo.oncommand = function(id, event) {
+    chorme.go(winform.editUrl.text)
 }
 
 chorme.go("http://9377.com/") 
@@ -137,34 +225,46 @@ thrdTable.flag_huishou = true
 
 /*线程内函数{{*/
 import thread.command;
+import winex.key
+import winex.mouse
 
 var listener = thread.command();
+
 listener.print = function(...) {
     print(...)
 }
+
 listener.bind = function(hwnd) {
     if(_USE_DM) {
-        ret = G_dm.绑定窗口(hwnd,"gdi", "windows3", "windows",
-        "dx.public.fake.window.min|dx.public.hack.speed|dx.public.focus.message",101)
-        G_dm.HackSpeed = 1.1
+        listener.dm("绑定窗口",hwnd,"gdi","windows3","windows",
+        "dx.public.fake.window.min|dx.public.hack.speed", 101)
+        listener.dm('HackSpeed', 1.0) //加速，1.0为原速
     }
     win.setFocus(hwnd)
 }
-listener.KeyPress = function(hwnd, keyvalve) {
+
+listener.key = function(hwnd, keyvalve) {
+    win.setFocus(hwnd)
+    
     if(_USE_DM) {
-        G_dm.KeyPress(tostring(48 + keyvalve))
+        print(48 + keyvalve)
+        listener.dm("KeyPress",48 + keyvalve)
     } else {
         winex.key.send(hwnd, tostring(keyvalve))
     }
 }
+
 listener.mouse = function(hwnd, x, y) {
+    win.setFocus(hwnd)
+    
     if(_USE_DM) {
-        G_dm.鼠标移动单击(x, y)
+        listener.dm("鼠标移动单击",x, y)
     } else {
         winex.mouse.click(hwnd, tonumber(x), tonumber(y))
     }
 
 }
+
 listener.dm = function(func, ...) {
     if(_USE_DM) {
         G_dm[func](...)
@@ -176,18 +276,10 @@ import winex;
 /*异步查找游戏窗口{{*/
 winform.setTimeout(
     function() {
-        winex.enum(
-            function(hwnd, depy) {
-                print(depth /*深度*/ , hwnd /*窗口*/ , winex.getText(hwnd) /*标题*/ )
-                _hwnd = hwnd //winex.attach(_hwnd)
-                thrdTable.hwnd = _hwnd
-            listener.bind(thrdTable.hwnd) 
-        },
-        winform.custBg.hwnd,
-        "Chrome_RenderWidgetHostHWND",
-        "Chrome Legacy Window", )
-    listener.dm('HackSpeed', 1.0) //加速，1.0为原速
-    }, 200 //延时
+        _hwnd = winex.findEx(winform.custBg.hwnd,,"Chrome_RenderWidgetHostHWND","Chrome Legacy Window")
+        thrdTable.hwnd = _hwnd
+        listener.bind(thrdTable.hwnd)
+    }, 3000 //延时
 )
 /*}}*/
 
@@ -232,17 +324,14 @@ tmid = winform.setInterval(
 winform.buttonPractice.oncommand = function(id, event) {
     thread.invoke(
         function(winform, thrdTable, listener) {
-            import winex.key
-            import win
             thrdTable.flag = true //设置按键模拟开始信号
-            win.setFocus(thrdTable.hwnd) //设置键盘输入焦点
             winform.buttonPractice.disabled = true
             winform.buttonStop.disabled = false
             do {
-                for(i = 1; 8; 1) {
-                    if(winform['checkbox' + i].checked) {
-                        listener.KeyPress(thrdTable.hwnd, 48 + i)
-                        sleep(tonumber(winform['edit' + i].text))
+                for(index = 1; 8; 1) {
+                    if(winform['checkbox' + index].checked) {
+                        listener.key(thrdTable.hwnd, index)
+                        sleep(tonumber(winform['edit' + index].text))
                     }
 
                 }
@@ -270,11 +359,11 @@ winform.buttonMouse.oncommand = function() {
             winform.buttonMouse.disabled = true
             winform.buttonStopMouse.disabled = false
             do {
-                for(i = 1; 8; 1) {
-                    if(winform['ck' + i].checked and winform["editxy" + i].text != "0,0") {
-                        TMP_poin = string.split(winform["editxy" + i].text, "<,>")
+                for(index = 1; 8; 1) {
+                    if(winform['ck' + index].checked and winform["editxy" + index].text != "0,0") {
+                        TMP_poin = string.split(winform["editxy" + index].text, "<,>")
                         listener.mouse(thrdTable.hwnd, TMP_poin[1], TMP_poin[2])
-                        sleep(tonumber(winform['editt' + i].text))
+                        sleep(tonumber(winform['editt' + index].text))
                     }
 
                 }
@@ -295,19 +384,12 @@ winform.buttonStopMouse.oncommand = function(id, event) {
 
 //给个异步延时将浏览器窗体充满容器
 winform.adjust=function(cx,cy,wParm){
-	//win.setPos(thrdTable.hwnd,0, 0, winform.custBg.width, winform.custBg.height)
+	chorme.setPos(0, 0, winform.custBg.width, winform.custBg.height)
 }
 
 winform.setTimeout(function() {
     winform.adjust()
 }, 250)
-
-//将选择状态及相关信息与配置文件绑定
-import config;
-winform.bindConfig(config.conf, {
-    edit = "text";
-    checkbox = "checked";
-});
 
 winform.onClose = function(hwnd, message, wParam, lParam) {
     if(thrdTable.flag) {
@@ -321,7 +403,7 @@ winform.onClose = function(hwnd, message, wParam, lParam) {
         }, 50)
     }
 }
+ 
+winform.show(3/*_SW_SHOWMAXIMIZED*/)
 
-winform.show(); //显示窗体
-//启动消息循环
-win.loopMessage();
+chorme.loopMessage()

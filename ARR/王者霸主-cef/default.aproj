@@ -9,12 +9,12 @@
 		<file name="dm.dll" path="res\dm.dll" comment="res\dm.dll"/>
 		<file name="ico.png" path="res\ico.png" comment="res\ico.png"/>
 		<file name="listview调试.aardio" path="res\listview调试.aardio" comment="res\listview调试.aardio"/>
-		<file name="main-dm_or_winex.aardio" path="res\main-dm_or_winex.aardio" comment="res\main-dm_or_winex.aardio"/>
+		<file name="cef_dm_or_winex.aardio" path="res\cef_dm_or_winex.aardio" comment="res\main-dm_or_winex.aardio"/>
 		<file name="main-listview-未完成.aardio" path="res\main-listview-未完成.aardio" comment="res\main-listview-未完成.aardio"/>
 		<file name="main-winex.aardio" path="res\main-winex.aardio" comment="res\main-winex.aardio"/>
 		<file name="main-单控件-dm.aardio" path="res\main-单控件-dm.aardio" comment="res\main-单控件-dm.aardio"/>
 		<file name="spy.cur" path="res\spy.cur" comment="res\spy.cur"/>
-		<file name="webform调试.aardio" path="res\webform调试.aardio" comment="res\webform调试.aardio"/>
+		<file name="webform_dm_or_winex.aardio.aardio" path="res\webform_dm_or_winex.aardio.aardio" comment="res\webform调试.aardio"/>
 		<file name="嵌入式IE.aardio" path="res\嵌入式IE.aardio" comment="res\嵌入式IE.aardio"/>
 		<file name="快速回收.bmp" path="res\快速回收.bmp" comment="res\快速回收.bmp"/>
 		<file name="快速回收.png" path="res\快速回收.png" comment="res\快速回收.png"/>
