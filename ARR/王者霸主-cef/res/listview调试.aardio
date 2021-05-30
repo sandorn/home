@@ -249,7 +249,7 @@ winform.buttonGuaji.oncommand = function() {
                 }
                 while (thrdTable.flag_guaji);*/
 
-                thrdTable.flag_guaji = true //设置鼠标模拟开始信号	
+                thrdTable.flag_guaji = true //设置鼠标模拟开始信号
             }, winform, thrdTable, listener
         )
     } else {

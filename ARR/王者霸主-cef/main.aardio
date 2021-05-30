@@ -86,6 +86,7 @@ static4={cls="static";text="间隔";left=1170;top=424;right=1209;bottom=443;dr=1
 )
 /*}}*/
 
+/*
 //将选择状态及相关信息与配置文件绑定
 import config;
 winform.bindConfig(config.conf, {
@@ -94,10 +95,65 @@ winform.bindConfig(config.conf, {
     checkbox = "checked";
     combobox = "selIndex";
 });
+*/
 
 winform.onClose = function(hwnd,message,wParam,lParam){
      config.conf.save()
 }
+
+/*线程内函数{{*/
+import thread.command;
+import winex.key
+import winex.mouse
+import xJlib.console
+
+var listener = thread.command();
+
+listener.print = function(...) {
+    print(...)
+}
+
+listener.log = function(...) {
+    xJlib.console.printtolog(...)
+}
+
+listener.bind = function(hwnd) {
+    if(_USE_DM) {
+        listener.dm("绑定窗口",hwnd,"gdi","windows3","windows",
+        "dx.public.fake.window.min|dx.public.hack.speed", 101)
+        listener.dm('HackSpeed', 1.0) //加速，1.0为原速
+    }
+    win.setFocus(hwnd)
+}
+
+listener.key = function(hwnd, keyvalve) {
+    win.setFocus(hwnd)
+    
+    if(_USE_DM) {
+        print(48 + keyvalve)
+        listener.dm("KeyPress",48 + keyvalve)
+    } else {
+        winex.key.send(hwnd, tostring(keyvalve))
+    }
+}
+
+listener.mouse = function(hwnd, x, y) {
+    win.setFocus(hwnd)
+    
+    if(_USE_DM) {
+        listener.dm("鼠标移动单击",x, y)
+    } else {
+        winex.mouse.click(hwnd, tonumber(x), tonumber(y))
+    }
+
+}
+
+listener.dm = function(func, ...) {
+    if(_USE_DM) {
+        G_dm[func](...)
+    }
+}
+/*}}*/
 
 for(i = 1; 8; 1) {
     winform["editxy" + i].wndproc = function(hwnd, message, wParam, lParam) {
@@ -124,13 +180,10 @@ winform.btnSniff.oncommand = function(id,event){
 	eventCtrl.reset();
 	
 	win.invoke(
-		function(){
-			import win;
+		function(listener){
 			import wsock.sniff;
 			import thread.event;
-			import xJlib.console
-    		xJlib.console.set(false)
-    		print = xJlib.console.print
+    		print = listener.log
 			
 			var eventCtrl = thread.event("wsock.sniff.给我抓");
 			print("正在抓取HTTP包,打开网页试试......") 
@@ -149,7 +202,7 @@ winform.btnSniff.oncommand = function(id,event){
 			
 			print("title 抓包结束") 
 		} 
-	)
+	,listener)
 	
 	winform.btnStop.text = "停止"
 	winform.btnStop.disabled = true;
@@ -212,55 +265,6 @@ var thrdTable = thread.table("共享参数表", true /*清空*/ )
 thrdTable.flag = true
 thrdTable.flag_mouse = true
 thrdTable.flag_huishou = true
-
-/*线程内函数{{*/
-import thread.command;
-import winex.key
-import winex.mouse
-
-var listener = thread.command();
-
-listener.print = function(...) {
-    print(...)
-}
-
-listener.bind = function(hwnd) {
-    if(_USE_DM) {
-        listener.dm("绑定窗口",hwnd,"gdi","windows3","windows",
-        "dx.public.fake.window.min|dx.public.hack.speed", 101)
-        listener.dm('HackSpeed', 1.0) //加速，1.0为原速
-    }
-    win.setFocus(hwnd)
-}
-
-listener.key = function(hwnd, keyvalve) {
-    win.setFocus(hwnd)
-    
-    if(_USE_DM) {
-        print(48 + keyvalve)
-        listener.dm("KeyPress",48 + keyvalve)
-    } else {
-        winex.key.send(hwnd, tostring(keyvalve))
-    }
-}
-
-listener.mouse = function(hwnd, x, y) {
-    win.setFocus(hwnd)
-    
-    if(_USE_DM) {
-        listener.dm("鼠标移动单击",x, y)
-    } else {
-        winex.mouse.click(hwnd, tonumber(x), tonumber(y))
-    }
-
-}
-
-listener.dm = function(func, ...) {
-    if(_USE_DM) {
-        G_dm[func](...)
-    }
-}
-/*}}*/
 
 import winex;
 /*异步查找游戏窗口{{*/

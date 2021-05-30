@@ -44,16 +44,16 @@ static3={cls="static";text="间隔毫秒";left=1155;top=379;right=1216;bottom=39
 )
 /*}}*/
 
-web.cef.init("//cookies//", true); //(cookies地址,是否启用自带flash插件) 
+web.cef.init("//cookies//", true); //(cookies地址,是否启用自带flash插件)
 chorme = web.cef.browser(winform.customBackground, "http://wvw.9377.com/game_login.php?gid=5179&sid=113") // winform.editUrl.text)
 
 /*浏览器状态{{*/
 chorme.onChangeURL = function(browserID, url) {
-    //当改变网址事件,url为unicode自行转换 
+    //当改变网址事件,url为unicode自行转换
     winform.editUrl.text = string.fromUnicode(url, , true)
 }
 
-//当改变网址事件,title为unicode自行转换 
+//当改变网址事件,title为unicode自行转换
 chorme.onChangeTitle = function(browserID, title) {
     winform.text = string.fromUnicode(title, , true)
 }
@@ -64,15 +64,15 @@ chorme.onChangeState = function(id, isLoading, canGoBack, canGoForward) {
     winform.buttonRefresh.disabled = isLoading;
 }
 
-//后退 
+//后退
 winform.buttonBack.oncommand = function(id, event) {
     chorme.goBack()
 }
-//前进 
+//前进
 winform.buttonForward.oncommand = function(id, event) {
     chorme.goForward()
 }
-//刷新 
+//刷新
 winform.buttonRefresh.oncommand = function(id, event) {
     chorme.refresh()
 }
@@ -82,13 +82,13 @@ winform.buttonGo.oncommand = function(id, event) {
     chorme.go(winform.editUrl.text)
 }
 
-//地址栏响应回车键 
+//地址栏响应回车键
 winform.editUrl.wndproc = function(hwnd, message, wParam, lParam) {
     if(message == 0x101 /*_WM_KEYUP*/ ) {
         if(wParam == 0xD /*_VK_RETURN*/ ) {
-            winform.buttonGo.oncommand() //go按钮 
+            winform.buttonGo.oncommand() //go按钮
         }
-    } //无返回值则继续调用默认回调函数 
+    } //无返回值则继续调用默认回调函数
 }
 /*}}*/
 
@@ -157,7 +157,7 @@ winform.setTimeout(function() {
             "Chrome_RenderWidgetHostHWND",
             "Chrome Legacy Window", )
         listener.dm('HackSpeed', 1.0) //加速，1.0为原速
-    }, 200 //延时 
+    }, 200 //延时
 )
 /*}}*/
 
@@ -257,14 +257,14 @@ winform.buttonStopMouse.oncommand = function(id, event) {
 }
 /*}}*/
 
-//异步延时执行的函数 
+//异步延时执行的函数
 winform.adjust = function(cx, cy, wParam) {
     chorme.setPos(0, 0, winform.customBackground.width, winform.customBackground.height)
 };
 
 winform.show()
 
-//给个异步延时将浏览器窗体充满容器 
+//给个异步延时将浏览器窗体充满容器
 winform.setTimeout(function() {
     winform.adjust()
 }, 50)
