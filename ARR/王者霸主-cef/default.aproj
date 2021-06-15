@@ -1,21 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<project ver="10" name="页游-cef3" libEmbed="true" icon="res\ico.png" ui="win" output="cef3.exe" CompanyName="单位名称" FileDescription="cef3" LegalCopyright="Copyright (C) 单位名称 2017" ProductName="cef3" InternalName="cef3" FileVersion="0.0.0.1" ProductVersion="0.0.0.1" publishDir="/Publish/" dstrip="false" local="false" ignored="false">
+<project ver="10" name="页游-cef3" libEmbed="true" icon="res\ico0.png" ui="win" output="cef3.exe" CompanyName="单位名称" FileDescription="cef3" LegalCopyright="Copyright (C) 单位名称 2017" ProductName="cef3" InternalName="cef3" FileVersion="0.0.0.1" ProductVersion="0.0.0.1" publishDir="/Publish/" dstrip="false" local="false" ignored="false">
 	<file name="main.aardio" path="main.aardio" comment="main.aardio"/>
 	<folder name="资源文件" path="res" embed="true" local="false" ignored="false">
 		<file name="1.gif" path="res\1.gif" comment="res\1.gif"/>
-		<file name="1.txt" path="res\1.txt" comment="res\1.txt"/>
 		<file name="2.gif" path="res\2.gif" comment="res\2.gif"/>
-		<file name="2.txt" path="res\2.txt" comment="res\2.txt"/>
+		<file name="cef_all.aardio" path="res\cef_all.aardio" comment="res\cef_all.aardio"/>
 		<file name="dm.dll" path="res\dm.dll" comment="res\dm.dll"/>
 		<file name="ico.png" path="res\ico.png" comment="res\ico.png"/>
-		<file name="listview调试.aardio" path="res\listview调试.aardio" comment="res\listview调试.aardio"/>
-		<file name="cef_dm_or_winex.aardio" path="res\cef_dm_or_winex.aardio" comment="res\main-dm_or_winex.aardio"/>
-		<file name="main-listview-未完成.aardio" path="res\main-listview-未完成.aardio" comment="res\main-listview-未完成.aardio"/>
-		<file name="main-winex.aardio" path="res\main-winex.aardio" comment="res\main-winex.aardio"/>
-		<file name="main-单控件-dm.aardio" path="res\main-单控件-dm.aardio" comment="res\main-单控件-dm.aardio"/>
+		<file name="ico0.png" path="res\ico0.png" comment="res\ico0.png"/>
 		<file name="spy.cur" path="res\spy.cur" comment="res\spy.cur"/>
-		<file name="webform_dm_or_winex.aardio.aardio" path="res\webform_dm_or_winex.aardio.aardio" comment="res\webform调试.aardio"/>
-		<file name="嵌入式IE.aardio" path="res\嵌入式IE.aardio" comment="res\嵌入式IE.aardio"/>
+		<file name="webform_all.aardio" path="res\webform_all.aardio" comment="res\webform_all.aardio"/>
 		<file name="快速回收.bmp" path="res\快速回收.bmp" comment="res\快速回收.bmp"/>
 		<file name="快速回收.png" path="res\快速回收.png" comment="res\快速回收.png"/>
 	</folder>

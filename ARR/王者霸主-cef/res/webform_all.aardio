@@ -1,4 +1,4 @@
-//RUNAS//王者霸业cef//DM
+//RUNAS//webformall_20210602
 
 //调试模式
 _USE_DM = true //大漠或是winex开关
@@ -88,16 +88,13 @@ static4={cls="static";text="间隔";left=1170;top=424;right=1209;bottom=443;dr=1
 /*
 //将选择状态及相关信息与配置文件绑定
 import config;
-winform.bindConfig(config.conf, 
-    {
-    	edit = "text";
-    	radiobutton = "checked";
-    	checkbox = "checked";
-    	combobox = "selIndex";
-	} 
-);
+winform.bindConfig(config.conf, {
+    edit = "text";
+    radiobutton = "checked";
+    checkbox = "checked";
+    combobox = "selIndex";
+});
 */
-
 
 winform.onClose = function(hwnd,message,wParam,lParam){
      config.conf.save()
