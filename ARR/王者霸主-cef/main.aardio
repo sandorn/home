@@ -115,7 +115,7 @@ for(i = 1; 8; 1) {
 }
 
 import xJlib.tray
-var mytray= xJlib.tray(winform , ,false )
+var mytray= xJlib.tray(winform ,  ,false ,false )
 
 
 /*线程内函数{{*/

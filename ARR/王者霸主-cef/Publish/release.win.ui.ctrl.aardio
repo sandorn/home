@@ -6,10 +6,10 @@ import win.ui.ctrl.custom;
 namespace win.ui.ctrl;  
 
 //发布时将从下面排除未使用的控件库
-import win.ui.ctrl.custom
 import win.ui.ctrl.plus
 import win.ui.ctrl.edit
 import win.ui.ctrl.static
+import win.ui.ctrl.custom
 
 namespace factory{
 

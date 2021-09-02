@@ -11,6 +11,10 @@ FilePath     : /xjLib/xt_DAO/dbconf.PY
 LastEditTime : 2020-08-24 13:56:46
 @Github       : https://github.com/sandorn/home
 #==============================================================
+
+Navicat
+sandorn@163.com
+Sand@2808
 '''
 
 db_conf = {
@@ -75,6 +79,8 @@ db_conf = {
         'charset': 'utf8mb4'
     }
 }
+
+# # 有优化空间
 
 db_conf['default'] = db_conf['dbtest']
 
