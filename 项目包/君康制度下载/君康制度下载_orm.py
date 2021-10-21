@@ -57,7 +57,7 @@ def get_download_url(connect, stop=None):
     # #登录，并保存cookies
     _ = Session.post('http://oa.jklife.com/seeyon/main.do?method=login', data={
         'login_username': 'liuxinjun',
-        'login_password': 'sand2808',
+        'login_password': 'sand@2808',
     })
 
     # #获取公文列表
