@@ -130,3 +130,76 @@ if __name__ == '__main__':
     from xt_Log import mylog
 
     main()
+'''
+我们的目标：把一首mp3保存到MySQL数据库中！
+　　由于MySQL默认当存入的数据太大时会抛异常，所以应在my.ini中添加如下配置！max_allowed_packet=10485760，这样，可以最大存入一个10M的数据（当然可以设置更大）
+
+　　MySQL使用如下四种类型来处理文本大数据：
+　　　　类型 　　　　　　　　　　长度
+　　　　tinytext 　　　　　　　　28--1B（256B）
+　　　　text 　　　　　　　　　　216-1B（64K）
+　　　　mediumtext 　　　　　 224-1B（16M）
+　　　　longtext 　　　　　　　 232-1B（4G）
+
+我们建立如下表：
+
+CREATE TABLE tab_bin(
+    id     INT     PRIMARY KEY AUTO_INCREMENT,
+    filename    VARCHAR(100),
+    data     MEDIUMBLOB
+);
+
+ 向数据库中插入文件核心代码：
+con = JdbcUtils.getConnection();
+String sql = "insert into tab_bin(filename,data) values(?, ?)";
+pstmt = con.prepareStatement(sql);
+pstmt.setString(1, "a.jpg");
+InputStream in = new FileInputStream("f:\\a.jpg");//得到一个输入流对象
+pstmt.setBinaryStream(2, in);//为第二个参数赋值为流对象
+pstmt.executeUpdate();
+
+ 从数据库中取出文件核心代码：
+con = JdbcUtils.getConnection();
+String sql = "select filename,data from tab_bin where id=?";
+pstmt = con.prepareStatement(sql);
+pstmt.setInt(1, 1);
+rs = pstmt.executeQuery();
+rs.next();
+String filename = rs.getString("filename");
+OutputStream out = new FileOutputStream("F:\\" + filename)//使用文件名来创建输出流对象;
+InputStream in = rs.getBinaryStream("data")//读取输入流对象;
+IOUtils.copy(in, out)//把in中的数据写入到out中;
+out.close();
+
+
+
+
+ 第二种方法：
+
+ 向数据库中插入文件核心代码：
+//存数据
+con = JdbcUtils.getConnection();
+String sql = "insert into tab_bin(filename,data) values(?, ?)";
+pstmt = con.prepareStatement(sql);
+pstmt.setString(1, "a.jpg");
+File file = new File("f:\\a.jpg");
+byte[] datas = IOUtils.getBytes(file);//获取文件中的数据
+Blob blob = new SerialBlob(datas);//创建Blob对象
+pstmt.setBlob(2, blob);//设置Blob类型的参数
+pstmt.executeUpdate();
+
+
+//取数据
+con = JdbcUtils.getConnection();
+String sql = "select filename,data from tab_bin where id=?";
+pstmt = con.prepareStatement(sql);
+pstmt.setInt(1, 1);
+rs = pstmt.executeQuery();
+rs.next();
+String filename = rs.getString("filename");
+File file = new File("F:\\" + filename) ;
+Blob blob = rs.getBlob("data");
+byte[] datas = blob.getBytes(0, (int)file.length());
+IOUtils.writeByteArrayToFile(file, datas);
+
+'''
