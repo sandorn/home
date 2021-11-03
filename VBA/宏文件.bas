@@ -111,3 +111,20 @@ Sub 删除所有空行(oWK)
     Application.ScreenUpdating = True '开启屏幕刷新
     MsgBox Counter & " 空行已删除"
 End Sub
+
+Function 创建并写入文件(path, filename, texts)
+    Set fso = CreateObject("Scripting.FileSystemObject") '创建文件需要使用Scripting.FileSystemObject对象
+    Set myTxt = fso.CreateTextFile(filename:=path & "\" & filename, OverWrite:=True) '使用CreateTextFile创建文件
+    myTxt.Write texts
+    myTxt.Close
+End Function
+
+Function 检查并创建文件夹(strFullPath)
+    Dim resFolder
+    resFolder = Dir(strFullPath, vbDirectory)   '判断路径是否存在
+    '如果不存在，就新建一个
+    If resFolder = "" Then
+        MkDir (strFullPath)
+    End If
+End Function
+
