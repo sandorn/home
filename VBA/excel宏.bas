@@ -1,3 +1,14 @@
+'/***
+ ' @Description  :
+ ' @Develop      : VSCode
+ ' @Author       : Even.Sand
+ ' @Contact      : sandorn@163.com
+ ' @Date         : 2021-10-15 09:35:32
+ ' @FilePath     : /VBA/宏文件.bas
+ ' @LastEditTime : 2021-11-03 20:40:50
+ ' @Github       : https://github.com/sandorn/home
+ '***/
+
 Sub main()
     Dim tim1 As Date: tim1 = Timer
     Application.ScreenUpdating = False '关闭屏幕刷新
@@ -127,4 +138,9 @@ Function 检查并创建文件夹(strFullPath)
         MkDir (strFullPath)
     End If
 End Function
+
+Sub Macro1()
+    检查并创建文件夹 "d:\1\"
+    创建并写入文件 "d:\1", "3.txt", Cells(4, 4).Value
+End Sub
 
