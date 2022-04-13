@@ -70,12 +70,15 @@ class dmobject():
             tab = sp2tab(ret, "([^\\|]+)")
             intx = int(tab[2])
             inty = int(tab[3])
+
             if (intx > 0 and inty > 0):
                 self.dm.鼠标移动单击(intx, inty, 中心点)
                 控制开关 = True
             else:
                 控制开关 = False
+
             delay(延迟)
+            return 控制开关
 
     # #-------------------------找字单击------------------------#
     def 找字单击(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=1000, 中心点=False):
@@ -229,6 +232,8 @@ class dmobject():
                 return 认字
                 break
             delay(延迟)
+
+        return 控制开关
 
 
 '''

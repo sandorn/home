@@ -1,15 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-31 12:12:40
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-06-05 12:01:02
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:55
+FilePath     : /线程协程/笔趣阁-自定义库CustomThread优化.py
+LastEditTime : 2022-04-13 11:18:12
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import os
@@ -29,6 +30,8 @@ def main(bookname, args):
 
 
 if __name__ == "__main__":
+    from xt_Log import log
+    mylog = log()
     bookname, urls = get_download_url('http://www.biqukan.com/2_2760/')
     # # 38_38836  #2_2714  2_2760
 

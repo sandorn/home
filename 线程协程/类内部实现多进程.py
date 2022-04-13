@@ -1,19 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-04-02 00:32:29
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-02 00:38:27
-python类内部实现多进程_Python_Damon_duanlei的博客-CSDN博客
-https://blog.csdn.net/Damon_duanlei/article/details/88676632?depth_1-utm_source=distribute.pc_relevant.none-task&utm_source=distribute.pc_relevant.none-task
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:55
+FilePath     : /线程协程/类内部实现多进程.py
+LastEditTime : 2022-04-13 10:53:41
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
-
 
 import multiprocessing
 import time
@@ -68,6 +66,7 @@ class MyProcess(Process):
 
     def run(self):
         for count in range(self.loop):
+            main1()
             time.sleep(1)
             print('Pid: ' + str(self.pid) + ' LoopCount: ' + str(count))
 

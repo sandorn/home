@@ -18,7 +18,7 @@ from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
 from xt_Time import fn_timer
 from xt_Ls_Bqg import get_download_url, arrangeContent
-from xt_Thread import P_Map, P_Sub
+from xt_Thread import P_Map  ##, P_Sub
 # T_Map, T_Sub, T_Pool, P_Map, P_Sub, P_Pool
 
 
@@ -70,7 +70,7 @@ def main(url):
 @fn_timer
 def mainbycall(url):
     bookname, urls = get_download_url(url)
-    resps = ahttpGetAll(urls, callback=callback)
+    ahttpGetAll(urls, callback=callback)
     texts.sort(key=lambda x: x[0])  # #排序
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + 'mainbycall.txt', texts, br='\n')

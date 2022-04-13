@@ -1,0 +1,63 @@
+/***
+ * @Description  :
+ * @Develop      : VSCode
+ * @Author       : Even.Sand
+ * @Contact      : sandorn@163.com
+ * @Date         : 2021-11-05 09:02:36
+ * @FilePath     : /ARR/扫雷.aardio
+ * @LastEditTime : 2021-11-05 09:19:54
+ * @Github       : https://github.com/sandorn/home
+ ***/
+
+import winex;
+import mouse;
+import process;
+
+//启动扫雷游戏
+import process.winmine;
+var prcs = process.winmine();
+
+//自进程内存读取结构体，写内存用 prcs.write 函数。
+var setting = prcs.readStruct(0x01005330,{
+    INT count; //雷点个数
+    INT width;//棋盘宽
+    INT height;//棋盘高
+})
+mode = false//选择方法1还是方法2
+if(mode){
+    //方法一：鼠标模式
+    hwnd = winex.waitVisible("扫雷");//获取窗口句柄
+    win.showForeground(hwnd);//激活窗口
+
+    sweep = function(x,y){
+        x,y = win.toScreen(hwnd,1+16*x,50+16*y); //转换为屏幕坐标
+        mouse.click(x,y,true); //在指定坐标模拟鼠标单击
+    }
+}
+else{
+    //方法二：远程Call( 直接调用 EXE 里的函数 )
+    var addrCall = 0x010037E1 //call地址
+    var addrCallPoint = 0x01005118 //call参数:addrCallPoint:x   addrCallPoint+4:y
+
+    //获取远程call
+    var act = prcs.remoteApi("void()", addrCall);
+
+    sweep = function(x,y){
+        prcs.writeNumber(addrCallPoint,x,"INT")  //写X坐标
+        prcs.writeNumber(addrCallPoint+4,y,"INT")  //写Y坐标
+        act(); //远程Call 点击函数
+        thread.delay(1)
+    }
+}
+
+var addrDatabase = 0x1005340 //棋盘基址
+for(y=1;setting.height){
+    for(x=1;setting.width){
+        //未点击时:无雷:0f;;;有雷,8f (有用),点击后:无雷:4x,x=周围雷的个数;;;有雷8x
+        n = prcs.readNumber(addrDatabase+x+32*y,"byte") //棋盘基址+x+y*32=棋盘点的值
+        if(n==0x0f) sweep(x,y);
+    }
+}
+
+//释放进程对象
+prcs.free();

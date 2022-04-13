@@ -35,11 +35,7 @@ def callback(future):
 def main_callback(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        _ = [
-            pool.submit(map_get_contents,
-                        (index, urls[index])).add_done_callback(callback)
-            for index in range(len(urls))
-        ]
+        _ = [pool.submit(map_get_contents, (index, urls[index])).add_done_callback(callback) for index in range(len(urls))]
 
     texts.sort(key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
@@ -50,10 +46,7 @@ def main_callback(max, bookname, urls):
 def main_completed(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = [
-            pool.submit(map_get_contents, (index, urls[index]))
-            for index in range(len(urls))
-        ]
+        future_tasks = [pool.submit(map_get_contents, (index, urls[index])) for index in range(len(urls))]
 
     texts = []
     for future in as_completed(future_tasks):  # 迭代生成器
@@ -65,19 +58,14 @@ def main_completed(max, bookname, urls):
 
     textssord = sorted(texts, key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
-    savefile(files + '＆' + bookname + 'main_as_completed.txt',
-             textssord,
-             br='\n')
+    savefile(files + '＆' + bookname + 'main_as_completed.txt', textssord, br='\n')
 
 
 @fn_timer
 def main_wait(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = [
-            pool.submit(map_get_contents, (index, urls[index]))
-            for index in range(len(urls))
-        ]
+        future_tasks = [pool.submit(map_get_contents, (index, urls[index])) for index in range(len(urls))]
 
     texts = []
 
@@ -116,10 +104,10 @@ def main_map(max, bookname, urls):
 if __name__ == '__main__':
     bookname, urls = get_download_url('https://www.biqukan.com/38_38836/')
 
-    # main_map(200, bookname, urls)
+    main_map(200, bookname, urls)
     main_wait(200, bookname, urls)
-    # main_completed(32, bookname, urls)
-    # main_callback(200, bookname, urls)
+    main_completed(32, bookname, urls)
+    main_callback(200, bookname, urls)
 
     # 38_38836     34.84 seconds
     '''

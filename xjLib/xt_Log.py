@@ -1,18 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-28 09:23:00
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-16 18:41:19
-# author:      he.zhiming
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
+FilePath     : /xjLib/xt_Log.py
+LastEditTime : 2022-04-13 10:36:06
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
-
 import logging
 import logging.config
 from datetime import datetime
