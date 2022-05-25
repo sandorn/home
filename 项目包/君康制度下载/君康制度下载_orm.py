@@ -13,13 +13,13 @@ LastEditTime : 2020-11-04 16:05:47
 #==============================================================
 
 大幅度修改：
-1.修改Session，保留cookies
-2.修改post数据，将每页默认20项改为9999，不用循环获取；
+1.修改Session,保留cookies
+2.修改post数据,将每页默认20项改为9999,不用循环获取；
 3.找到公文分类标识  "typeId": "1"
-4.get修改为允许跳转，直接获取网页信息
-5.使用mysql存储下载进度，利用set去重;又改为list判断
-6.xpath().get获取属性字符串，json.loads为包含字典的list
-7.pandas.read_sql参数为db.conn，而不是db
+4.get修改为允许跳转,直接获取网页信息
+5.使用mysql存储下载进度,利用set去重;又改为list判断
+6.xpath().get获取属性字符串,json.loads为包含字典的list
+7.pandas.read_sql参数为db.conn,而不是db
 8.完善sqlHelper.has_tables,判断数据库是否包含某个表
 9.数据库存储公告内容
 10.使用sqlalchemyorm方式
@@ -54,7 +54,7 @@ Session = SessionClient()
 
 
 def get_download_url(connect, stop=None):
-    # #登录，并保存cookies
+    # #登录,并保存cookies
     _ = Session.post('http://oa.jklife.com/seeyon/main.do?method=login', data={
         'login_username': 'liuxinjun',
         'login_password': 'sand@2808',
@@ -62,7 +62,7 @@ def get_download_url(connect, stop=None):
 
     # #获取公文列表
     getlistdata = {"managerMethod": "findBulDatas", "method": "ajaxAction", "managerName": "bulDataManager", "rnd": random_char(5), "arguments": json.dumps([{"pageSize": "9999", "pageNo": 1}])}
-    # #"typeId": 区分类别，1为公告
+    # #"typeId": 区分类别,1为公告
 
     _itlist = Session.post("http://oa.jklife.com/seeyon/ajax.do", data=getlistdata).json['list']
 
@@ -127,19 +127,17 @@ def main():
 
 
 if __name__ == '__main__':
-    from xt_Log import mylog
-
     main()
 '''
-我们的目标：把一首mp3保存到MySQL数据库中！
-　　由于MySQL默认当存入的数据太大时会抛异常，所以应在my.ini中添加如下配置！max_allowed_packet=10485760，这样，可以最大存入一个10M的数据（当然可以设置更大）
+我们的目标:把一首mp3保存到MySQL数据库中
+  由于MySQL默认当存入的数据太大时会抛异常,所以应在my.ini中添加如下配置！max_allowed_packet=10485760,这样,可以最大存入一个10M的数据（当然可以设置更大）
 
-　　MySQL使用如下四种类型来处理文本大数据：
-　　　　类型 　　　　　　　　　　长度
-　　　　tinytext 　　　　　　　　28--1B（256B）
-　　　　text 　　　　　　　　　　216-1B（64K）
-　　　　mediumtext 　　　　　 224-1B（16M）
-　　　　longtext 　　　　　　　 232-1B（4G）
+  MySQL使用如下四种类型来处理文本大数据：
+    类型           长度
+    tinytext         28--1B（256B）
+    text           216-1B（64K）
+    mediumtext       224-1B（16M）
+    longtext         232-1B（4G）
 
 我们建立如下表：
 

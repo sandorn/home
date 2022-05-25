@@ -59,7 +59,8 @@ edit5={cls="edit";text="100";left=1151;top=200;right=1191;bottom=221;align="righ
 edit6={cls="edit";text="100";left=1151;top=232;right=1191;bottom=253;align="right";color=32768;dr=1;dt=1;edge=1;z=21};
 edit7={cls="edit";text="100";left=1151;top=265;right=1191;bottom=286;align="right";color=32768;dr=1;dt=1;edge=1;z=23};
 edit8={cls="edit";text="100";left=1151;top=297;right=1191;bottom=318;align="right";color=32768;dr=1;dt=1;edge=1;z=25};
-editUrl={cls="edit";text="http://wvw.9377.com/game_login.php?gid=5179&sid=113";left=10;top=4;right=401;bottom=29;dl=1;dt=1;edge=1;z=1};
+editUrl={cls="edit";text="http://play-game.flash.cn/game/play/xylw?sid=26";left=10;top=4;right=401;bottom=29;dl=1;dt=1;edge=1;z=1};
+//editUrl={cls="edit";text="http://wvw.9377.com/game_login.php?gid=5179&sid=113";left=10;top=4;right=401;bottom=29;dl=1;dt=1;edge=1;z=1};
 editt1={cls="edit";text="4500";left=1170;top=448;right=1210;bottom=469;align="right";color=32768;dr=1;dt=1;edge=1;z=31};
 editt2={cls="edit";text="4500";left=1170;top=479;right=1210;bottom=500;align="right";color=32768;dr=1;dt=1;edge=1;z=36};
 editt3={cls="edit";text="4500";left=1170;top=509;right=1210;bottom=530;align="right";color=32768;dr=1;dt=1;edge=1;z=39};
@@ -97,7 +98,6 @@ winform.bindConfig(config.conf,
 	} 
 );
 */
-
 
 winform.onClose = function(hwnd,message,wParam,lParam){
      config.conf.save()

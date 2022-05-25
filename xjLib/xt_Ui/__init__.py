@@ -18,16 +18,9 @@ import random
 from functools import wraps
 
 import qdarkstyle
-from PyQt5.QtCore import (QEventLoop, QMetaObject, Qt, QThread, pyqtSignal,
-                          pyqtSlot)
+from PyQt5.QtCore import (QEventLoop, QMetaObject, Qt, QThread, pyqtSignal, pyqtSlot)
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (
-    QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget,
-    QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog,
-    QLabel, QLineEdit, QListView, QListWidget, QMainWindow, QMenu, QMessageBox,
-    QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget,
-    QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget,
-    QTreeWidgetItem, QVBoxLayout, QWidget, qApp)
+from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QMainWindow, QMenu, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget, qApp)
 from pysnooper import snoop
 
 from xt_File import qsstools
@@ -165,8 +158,7 @@ class xt_QTabWidget(QTabWidget):
         if _tabCount == 0:
             return
         _tabWidth = round(self.width() / _tabCount)
-        self.setStyleSheet(self.stylestring +
-                           "QTabBar::tab{width:%upx;}" % _tabWidth)
+        self.setStyleSheet(self.stylestring + "QTabBar::tab{width:%upx;}" % _tabWidth)
 
 
 class xt_QTableView(QTableView):
@@ -229,8 +221,7 @@ class xt_QTableView(QTableView):
 
     def 设置列宽适应内容(self, index=0):
         # #设置要根据内容使用宽度的列
-        self.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
     def 设置整行选中(self):
         self.setSelectionBehavior(QTableView.SelectRows)
@@ -261,8 +252,7 @@ class xt_QTableView(QTableView):
         self.setSortingEnabled(False)
 
         if isinstance(item, list):
-            self.model.appendRow(
-                [QStandardItem(str(_c_item)) for _c_item in item])
+            self.model.appendRow([QStandardItem(str(_c_item)) for _c_item in item])
 
             # $滚动到最下面
             self.scrollToBottom()
@@ -275,8 +265,7 @@ class xt_QTableView(QTableView):
         self.setUpdatesEnabled(False)  # 暂停界面刷新
         if isinstance(items, list) and isinstance(items[0], list):
             for item in items:
-                self.model.appendRow(
-                    [QStandardItem(str(_c_item)) for _c_item in item])
+                self.model.appendRow([QStandardItem(str(_c_item)) for _c_item in item])
 
         # $滚动到最下面
         self.scrollToBottom()
@@ -394,8 +383,7 @@ class xt_QTableWidget(QTableWidget):
 
     def 设置列宽适应内容(self, index=0):
         # #设置要根据内容使用宽度的列
-        self.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
     def 表格禁止编辑(self):
         self.setEditTriggers(QTableWidget.NoEditTriggers)
@@ -760,11 +748,7 @@ class xt_QTextBrowser(QTextBrowser):
         self.setOpenLinks(True)  # 打开文档内部链接 默认为True
         self.setOpenExternalLinks(True)
         # 打开外部链接 默认false 当openlinks设置false时 该选项无效
-        self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard
-                                     | Qt.LinksAccessibleByMouse
-                                     | Qt.TextBrowserInteraction
-                                     | Qt.TextSelectableByKeyboard
-                                     | Qt.TextSelectableByMouse)
+        self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard | Qt.LinksAccessibleByMouse | Qt.TextBrowserInteraction | Qt.TextSelectableByKeyboard | Qt.TextSelectableByMouse)
 
     def addtext(self, str):
         self.append(str)  # 添加数据
@@ -780,6 +764,7 @@ class xt_QTextEdit(QTextEdit):
 
     def textChanged_event(self):
         # print('textChanged', self.toPlainText())
+        # QTextEdit详细操作-凌的博客  http://www.jiuaitu.com/python/407.html
         pass
 
 
@@ -1093,15 +1078,7 @@ class xt_QMainWindow(QMainWindow):
         Qt.Qt.WindowStaysOnBottomHint#窗口始终处于底层位置
         Qt.Qt.Tool 有一个小小的关闭按钮
     '''
-    def __init__(self,
-                 title="MainWindow",
-                 status=True,
-                 menu=True,
-                 action=True,
-                 FramelessWindowHint=False,
-                 TranslucentBackground=False,
-                 *args,
-                 **kwargs):
+    def __init__(self, title="MainWindow", status=True, menu=True, action=True, FramelessWindowHint=False, TranslucentBackground=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # #窗体title,setupUI
         self.title = title
@@ -1135,8 +1112,7 @@ class xt_QMainWindow(QMainWindow):
         ......
         手工绑定:connect(lamda : self.func(args))；解除绑定:disconnect()
         '''
-        qss = '''* {font: 11pt 'Sarasa Term SC';outline: none;}''' + qdarkstyle.load_stylesheet_pyqt5(
-        )
+        qss = '''* {font: 11pt 'Sarasa Term SC';outline: none;}''' + qdarkstyle.load_stylesheet_pyqt5()
         self.setStyleSheet(qss)
         self.show()
 
@@ -1149,8 +1125,7 @@ class xt_QMainWindow(QMainWindow):
         # #居中设置  # setGeometry
         deskSize = QDesktopWidget().screenGeometry()  # 获取桌面窗体参数
         windowSize = self.geometry()  # 获取窗体本身参数
-        self.move((deskSize.width() - windowSize.width()) // 2,
-                  (deskSize.height() - windowSize.height()) // 2)
+        self.move((deskSize.width() - windowSize.width()) // 2, (deskSize.height() - windowSize.height()) // 2)
 
     # @重写事件，响应拖动
     def mousePressEvent(self, event):
@@ -1185,19 +1160,15 @@ class xt_QMainWindow(QMainWindow):
     def action_init(self):
         # #QAction
         # _path = os.path.dirname(__file__) + '/'
-        self.open_action = QAction(QIcon(self.basepath + '/ico/open.ico'),
-                                   '&Open', self)
-        self.save_action = QAction(QIcon(self.basepath + '/ico/save.ico'),
-                                   '&Save', self)
-        self.run_action = QAction(QIcon(self.basepath + '/ico/run.ico'),
-                                  '&Theme', self)
+        self.open_action = QAction(QIcon(self.basepath + '/ico/open.ico'), '&Open', self)
+        self.save_action = QAction(QIcon(self.basepath + '/ico/save.ico'), '&Save', self)
+        self.run_action = QAction(QIcon(self.basepath + '/ico/run.ico'), '&Theme', self)
         self.open_action.setObjectName("openObject")
         self.save_action.setObjectName("saveObject")
         self.run_action.setObjectName("runObject")
         # !必须,关键，用于自动绑定信号和函数  on_ObjectName_triggered
         # !配套：QMetaObject.connectSlotsByName(self)
-        self.close_action = QAction(QIcon(self.basepath + '/ico/close.ico'),
-                                    '&Quit', self)
+        self.close_action = QAction(QIcon(self.basepath + '/ico/close.ico'), '&Quit', self)
         self.open_action.setShortcut('Ctrl+O')
         self.save_action.setShortcut('Ctrl+S')
         self.run_action.setShortcut('Ctrl+T')
@@ -1257,7 +1228,6 @@ class xt_QMainWindow(QMainWindow):
             self.basepath + '/white.qss',
         ]
         file_name = random.choice(qss_list)
-        self.setWindowTitle(self.title + '--' +
-                            file_name.split('/')[-1].split('.')[0])
+        self.setWindowTitle(self.title + '--' + file_name.split('/')[-1].split('.')[0])
         qsstools.set(file_name, self)
         pass

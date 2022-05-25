@@ -1,23 +1,11 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
-# ==============================================================
-# Descripttion : None
-# Develop      : VSCode
-# Author       : Even.Sand
-# Contact      : sandorn@163.com
-# Date         : 2020-05-12 11:31:03
-#LastEditTime : 2020-07-23 10:34:22
-# Github       : https://github.com/sandorn/home
-# License      : (C)Copyright 2009-2020, NewSea
-# ==============================================================
-'''
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMetaObject, QThread, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMessageBox, QVBoxLayout, qApp
 
-from xt_Ls_Bqg import get_contents, get_title_url
+from xt_Ls_Bqg import get_title_url, get_contents_ahttp  # # get_contents
 from xt_Alispeech.xt_Pygame import ReqSynthesizer_QThread_read
 from xt_String import string_split_limited_list
 from xt_Ui import EventLoop, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser, xt_QCheckBox
@@ -183,7 +171,7 @@ class Ui_MainWindow(xt_QMainWindow):
     # 从网页提取数据
     @EventLoop
     def getcontent(self, url):
-        index, title, content = get_contents(1, target=url)
+        index, title, content = get_contents_ahttp(1, target=url)
         return "《" + self.bookname + '->' + title + "》\n\n" + content
 
     # 将文件显示在Table中（列表显示）
@@ -204,6 +192,7 @@ class Ui_MainWindow(xt_QMainWindow):
     @EventLoop
     def tableClick_event(self, item):
         self.QTextEdit.clear()
+        self.QTextEdit.setFontPointSize(18)
         QModelIndex = self.tableWidget.model.index(item.row(), 2)
         # _text = self.getcontent(QModelIndex.data())
         nowthread = QThread()
@@ -211,6 +200,7 @@ class Ui_MainWindow(xt_QMainWindow):
         _text = nowthread.run(QModelIndex.data())
 
         # self.QTextEdit.setHtml(_text)
+        # _text = '<font size="5">' + _text.replace("\n", "<br>") + '</font>'
         self.QTextEdit.setText(_text)
 
     # 列表单击方法，用来打开选中的项
@@ -218,12 +208,15 @@ class Ui_MainWindow(xt_QMainWindow):
     def currentRowChanged_event(self, row):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
+        self.QTextEdit.setFontPointSize(18)
         # _text = self.getcontent(self.list[row][1])
         nowthread = QThread()
         nowthread.run = self.getcontent
         _text = nowthread.run(self.list[row][1])
         # _text = ''.join(_text.split('\n')[0:1])
-        _text = '<font size="4">' + _text.replace("\n", "<br>") + '</font>'
+        # _text = '<font size="5">' + _text.replace("\n", "<br>") + '</font>'
+        # self.QTextEdit.fontPointSize()  # 获取字号
+        # self.QTextEdit.setFontPointSize(18)  # 设置字号
         self.QTextEdit.setText(_text)
 
 
@@ -232,5 +225,5 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     ui = Ui_MainWindow()
-    ui.QTextEdit.setText('根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组，由公司总经理毕永辉任整治小组组长，成员包括公司副总经理刘新军、行政人事部总经理朱立志。')
+    ui.QTextEdit.setText('根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组。')
     sys.exit(app.exec_())  # 程序关闭时退出进程

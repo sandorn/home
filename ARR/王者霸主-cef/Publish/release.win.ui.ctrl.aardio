@@ -10,6 +10,7 @@ import win.ui.ctrl.plus
 import win.ui.ctrl.edit
 import win.ui.ctrl.static
 import win.ui.ctrl.custom
+import win.ui.ctrl.bk
 
 namespace factory{
 
@@ -33,7 +34,7 @@ namespace factory{
 		if( tParam.transparent ) tParam.exstyle |= 0x20/*_WS_EX_TRANSPARENT*/; 
 
 		if(!tParam.cls) return;
-		tParam.friendClassName  = tParam.cls;//记录原始类名 
+		tParam.$friendClassName  = tParam.cls;//记录原始类名 
 					
 		var cls = ..win.ui.ctrl[tParam.cls];
 		if(!cls) cls = ..table.getByNamespace(tParam.cls,..win.ui.ctrl); 
@@ -51,8 +52,7 @@ namespace factory{
 		elseif( ..string.endWith(tParam.cls,".aardio",true) ){
 			var parent = tParam.parent;
 			tParam.parent = null;
-			tParam.friendClassName="custom"; 
-			
+			 
 			var frmCreate;
 			var frm =  ..win.loadForm(tParam.cls,function(tParam2){
 			tParam2.parent = parent ;
@@ -71,6 +71,7 @@ namespace factory{
 			}
 			tParam.cls="custom";
 			tParam2.tParam=tParam;
+			
 			frmCreate =  ..win.form(tParam2);
 			return frmCreate;	
 		},parent);
@@ -89,8 +90,12 @@ namespace factory{
 		obj.tParam = null;
 		
 		obj[["className"]] = tParam.cls;
-		obj[["cls"]] = tParam.friendClassName
-		tParam.cls = tParam.friendClassName //恢复友好类名
+		
+		if(tParam.$friendClassName){
+			obj[["cls"]] = tParam.$friendClassName;
+			tParam.cls = tParam.$friendClassName;	
+			tParam.$friendClassName = null;		
+		}
 		
 		//记录控件窗口原始大小(以计算自动调整的比例)
 		obj._defRect = ::RECT( tParam.left,tParam.top,tParam.right,tParam.bottom);
@@ -130,6 +135,10 @@ namespace factory{
 
 ::Comctl32 := ..raw.loadDll("Comctl32.dll");
 ::Comctl32.InitCommonControlsEx({INT size = 8;INT ic = 0x897F;})
+
+/**intellisense(::)
+::Comctl32 = 在标准库 win.ui.ctrl 加载的系统DLL组件 comctl32.dll,\n导入 win.ui,win.ui.ctrl 可自动在所有窗口控件创建以前加载,\n!dllmodule.
+end intellisense**/
 
 /**intellisense()
 _NM_FIRST=@0x0/*_NM_FIRST*/

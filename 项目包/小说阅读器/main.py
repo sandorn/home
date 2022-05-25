@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-07 12:43:12
-#LastEditTime : 2020-05-21 22:58:02
-#Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
-#==============================================================
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:56
+FilePath     : /项目包/小说阅读器/main.py
+LastEditTime : 2022-04-13 16:33:59
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import sys
@@ -19,7 +19,7 @@ from read_ui import Ui_MainWindow
 from PyQt5 import QtWidgets
 
 app = QtWidgets.QApplication(sys.argv)
-ui = Ui_MainWindow()
+ui = Ui_MainWindow()  ##ooo
 sys.exit(app.exec_())  # 程序关闭时退出进程
 '''
 ————————————————
