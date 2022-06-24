@@ -28,7 +28,7 @@ from ali_speech._create_token import AccessToken
 from xt_Time import get_10_timestamp
 from xt_Class import readonly, dict_mothed_Mixin
 from typing import Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass  #, field
 from xt_Singleon import Singleton_Mixin
 
 
