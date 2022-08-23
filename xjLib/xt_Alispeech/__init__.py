@@ -21,9 +21,9 @@ from aliyunsdkcore.request import CommonRequest  # 阿里云官方核心代码�
 
 from ali_speech import NlsClient
 from ali_speech.callbacks import (SpeechSynthesizerCallback, SpeechTranscriberCallback)
-from .conf import Constant  # 常量参数
-from .conf import SpeechArgs  # 默认参数
-from .conf import SynResult, TransResult
+from xt_Alispeech.conf import Constant  # 常量参数
+from xt_Alispeech.conf import SpeechArgs  # 默认参数
+from xt_Alispeech.conf import SynResult, TransResult
 from xt_Requests import SessionClient
 from xt_String import md5, string_split_limited_list
 
@@ -366,6 +366,9 @@ def APITransUrl(urlLink, enable_words=False, auto_split=False):
 
 
 '''
+    RESTful API
+    https://help.aliyun.com/document_detail/130555.html
+
     阿里云语音合成对接接口 - 简书
     https://www.jianshu.com/p/3a462046b574
 

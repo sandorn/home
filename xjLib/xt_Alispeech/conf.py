@@ -97,12 +97,16 @@ class TransResult:
 
 
 if __name__ == "__main__":
-    print(Constant(), 22222, id(Constant()))
+    print(Constant(), 1111, id(Constant()))
+    print('-------------------------------------------------------------------------')
+    b = Constant()
+    print(b.appKey)
+    print('-------------------------------------------------------------------------')
     print(SpeechArgs())
     print(SynResult())
     print(TransResult())
     print(22222, id(Constant()), Constant().__dict__)
     a = Constant()
-    print(22222, id(a))
+    print(3333, id(a))
     print(SynResult().__dict__)
     print(TransResult().__dict__)
