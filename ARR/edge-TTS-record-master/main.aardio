@@ -1,0 +1,55 @@
+// 使用Edge浏览器
+import chrome.edge; 
+var theApp = chrome.edge.app();
+
+// 调用C#程序集 
+import dotNet; 
+var appDomain = dotNet.clr().createAppDomain();
+
+// 加载程序集（内嵌/bin/RecordAudio.dll并内存加载）
+var RecordAudioLibrary = appDomain.loadFile($"/bin/RecordAudio.dll");
+var Record = RecordAudioLibrary.new("RecordAudio.Record");
+
+import fsys.ini;
+var ini = fsys.ini("/edge-tts-record-config.ini");
+// 打开文件夹对话框
+import fsys.dlg.dir;
+theApp.external = {
+    startRecord = function(fileDir,maxTime){ 
+    	//console.log("startRecord");
+    	Record.startRecord(fileDir,maxTime);
+    }
+    stopRecord = function(v){ 
+    	//console.log("stopRecord");
+    	Record.stopRecord();
+    }
+    getFileDir = function(v){ 
+        
+    	if(v=="./"){
+    	    var dir = ini.read("save","path");
+        	if(!dir){
+        		dir = io._exedir;
+        	}
+    		return dir; 
+    	}
+    	var dir = fsys.dlg.dir();
+    	
+    	ini.write("save","path",dir);
+    	return dir;
+    }
+}
+
+//正式的启动chrome进程
+theApp.start("\res\index.html")
+
+import web.rest.jsonLiteClient;
+var http = web.rest.jsonLiteClient() 
+
+var data = http.api("").get()
+if(data.version!="0.1"){
+	import win.clip;
+	import win;
+	win.msgbox("发现版本更新 V"+data.version+"，更新链接已复制到剪切板。")
+	win.clip.write(data.url)
+}
+win.loopMessage();
