@@ -1,14 +1,3 @@
-'/***
- ' @Description  :
- ' @Develop      : VSCode
- ' @Author       : Even.Sand
- ' @Contact      : sandorn@163.com
- ' @Date         : 2021-10-15 09:35:32
- ' @FilePath     : /VBA/宏文件.bas
- ' @LastEditTime : 2021-11-03 20:40:50
- ' @Github       : https://github.com/sandorn/home
- '***/
-
 Sub main()
     Dim tim1 As Date: tim1 = Timer
     Application.ScreenUpdating = False '关闭屏幕刷新
