@@ -13,11 +13,11 @@
 import threading
 import time
 from queue import Queue
-
 from bs4 import BeautifulSoup
+from xt_Requests import get_parse
+from xt_File import savefile
+from xt_Time import get_time
 
-from xjLib.mystr import get_stime, savefile
-from xjLib.req import parse_get
 
 lock = threading.RLock()
 urls = Queue()  # 存放章节链接
@@ -29,7 +29,7 @@ semaphore = threading.BoundedSemaphore(SemaphoreNum)  # 设置同时执行的线
 
 
 def get_download_url(target):
-    response = parse_get(target)
+    response = get_parse(target)
     _response = BeautifulSoup(response.content, 'lxml')
     [s.extract() for s in _response(["script", "style"])]
     _bookname = _response.find('h2').get_text()
@@ -57,7 +57,7 @@ def get_contents(index):
     with semaphore:
         target = urls.get()
         _texts = ''
-        _response = parse_get(target)
+        _response = get_parse(target)
         html_str = _response.content.decode('gbk', 'ignore')
         html_str = html_str.split('<body')[-1]
         html_str = '<body' + html_str

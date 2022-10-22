@@ -1,21 +1,24 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-23 22:50:08
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-04-28 19:22:05
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:55
+FilePath     : /线程协程/2k小说-ahttp异步.py
+LastEditTime : 2022-10-22 16:01:48
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import os
 import time
-from xjLib.ahttp import ahttpGet, ahttpGetAll
-from xjLib.mystr import Ex_Re_Sub, get_stime, savefile, Ex_Replace
+from xt_Ahttp import ahttpGet, ahttpGetAll
+from xt_String import Ex_Re_Sub, Ex_Re_Repl
+from xt_Time import get_time
+from xt_File import savefile
 
 
 def get_download_url(target):
@@ -23,8 +26,7 @@ def get_download_url(target):
     response = ahttpGet(target).html
 
     _bookname = response.xpath('//h1/text()')[0]
-    全部章节节点 = response.xpath(
-        '//html/body/dl/dt[2]/following-sibling::dd/a/@href')
+    全部章节节点 = response.xpath('//html/body/dl/dt[2]/following-sibling::dd/a/@href')
 
     for item in 全部章节节点:
         _ZJHERF = target + item
@@ -46,7 +48,7 @@ def callback(resp):
     _showtext = "".join(response.xpath('//*[@class="Text"]/text()'))
 
     name = Ex_Re_Sub(_name, {' ': ' ', '\xa0': ' '})
-    text = Ex_Replace(
+    text = Ex_Re_Repl(
         _showtext.strip("\n\r　  \xa0"),
         {
             '    ': '\n',
@@ -60,7 +62,7 @@ def callback(resp):
 
 
 def main(url):
-    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_stime()), flush=True)
+    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_time()), flush=True)
     bookname, urls = get_download_url(url)
 
     print('AHTTP,开始下载：《' + bookname + '》', flush=True)
@@ -72,8 +74,7 @@ def main(url):
     aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
     files = os.path.split(__file__)[-1].split(".")[0]
     savefile(files + '＆' + bookname + '.txt', aftertexts, br='\n')
-    print('{} 结束，\t用时:{} 秒。'.format(get_stime(), round(time.time() - _stime,
-                                                       2)))
+    print('{} 结束，\t用时:{} 秒。'.format(get_time(), round(time.time() - _stime, 2)))
 
 
 if __name__ == '__main__':

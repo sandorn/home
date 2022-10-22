@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Descripttion : None
+Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-12-08 11:35:18
 FilePath     : /xjLib/xt_Thread/futures.py
-LastEditTime : 2021-03-15 17:13:09
+LastEditTime : 2022-10-22 11:07:45
 Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
 '''
 
 from concurrent.futures import ThreadPoolExecutor  # 线程池模块
@@ -22,6 +22,7 @@ from concurrent.futures import as_completed
 # #使用类工厂，动态生成基于线程或进程的类
 
 import multiprocessing
+
 Cpucount = multiprocessing.cpu_count()
 
 

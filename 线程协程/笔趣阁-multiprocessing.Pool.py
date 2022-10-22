@@ -1,23 +1,25 @@
-# ！/usr/bin/env python
-# -*- coding:utf -8-*-
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Descripttion: 使用multiprocessing.pool多进程
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-#LastEditors  : Please set LastEditors
-@Date: 2019-05-08 18:31:14
-#LastEditTime : 2020-04-29 18:08:58
-努努书坊 - 小说在线阅读   https://www.kanunu8.com/
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:55
+FilePath     : /线程协程/笔趣阁-multiprocessing.Pool.py
+LastEditTime : 2022-10-22 16:07:43
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 from multiprocessing import Pool
 import os
 
-from xjLib.ahttp import ahttpGet
-from xjLib.mystr import Ex_Re_Sub, Ex_Replace, fn_timer, savefile
+from xt_Ahttp import ahttpGet
+from xt_String import Ex_Re_Sub, Ex_Re_Repl
+from xt_File import savefile
+from xt_Time import fn_timer
 
 
 def get_download_url(target):
@@ -26,11 +28,10 @@ def get_download_url(target):
     resp = ahttpGet(target)
     response = resp.html
     _bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
-    全部章节节点 = response.xpath(
-        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
+    全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
     for item in 全部章节节点:
-        _ZJHERF = 'https://www.biqukan.com' + item
+        _ZJHERF = 'https://www.biqukan8.cc' + item
         urls.append(_ZJHERF)
     return _bookname, urls
 
@@ -42,7 +43,7 @@ def get_contents(args):
     _name = "".join(response.xpath('//h1/text()'))
     _showtext = "".join(response.xpath('//*[@id="content"]/text()'))
     name = Ex_Re_Sub(_name, {' ': ' ', '\xa0': ' '})
-    text = Ex_Replace(
+    text = Ex_Re_Repl(
         _showtext.strip("\n\r　  \xa0"),
         {
             '　　': '\n',
@@ -77,12 +78,9 @@ def main_Pool(target):
     texts = []
     bookname, urls = get_download_url(target)
 
-    print('multiprocessing.pool，开始下载：《' + bookname + '》', flush=True)
+    print('multiprocessing.pool,开始下载:《' + bookname + '》', flush=True)
     mypool = Pool(32)  # !进程数,不能超过61
-    mypool.map_async(
-        func=get_contents,
-        iterable=[(i, urls[i]) for i in range(len(urls))],
-        callback=lambda res: texts.append(res))
+    mypool.map_async(func=get_contents, iterable=[(i, urls[i]) for i in range(len(urls))], callback=lambda res: texts.append(res))
     # mypool.apply_async(func=get_contents,callback=_callba)
     mypool.close()  # 关闭进程池,不再接受请求
     mypool.join()  # 等待进程池中的事件执行完毕，回收进程池
@@ -93,7 +91,7 @@ def main_Pool(target):
 
 
 if __name__ == '__main__':
-    main_Pool('https://www.biqukan.com/38_38836/')
+    main_Pool('https://www.biqukan8.cc/38_38836/')
     # main_Pool('https://www.biqukan.com/2_2714/')
     # 38_38836     34.84 seconds
     # 2_2714      215.40 seconds
