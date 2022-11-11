@@ -15,7 +15,6 @@
 import pandas
 from xt_DAO.xt_mysql import engine
 
-engine
 with engine('Jkdoc', 'pymysql') as myDb:
     a = myDb.has_tables('jkdoc')
     print(11111, a)
@@ -27,6 +26,8 @@ with engine('Jkdoc', 'pymysql') as myDb:
     print(type(dic[0]))
     for i in dic[0]:
         print(33333, i, type(dic[0][i]))  # .decode('utf-8'))
+
+
 '''
         # 查询语句，选出 users 表中的所有数据
         sql = "select * from users;"
