@@ -15,8 +15,8 @@ LastEditTime : 2020-11-27 18:34:42
 
 import ctypes
 import inspect
-from threading import Lock, Thread, enumerate, main_thread, Event
-from time import sleep, time
+from threading import Thread, enumerate, Event
+from time import time
 from queue import Empty, Queue
 from xt_Class import item_get_Mixin
 from xt_Singleon import singleton_wrap_return_class, Singleton_Mixin
@@ -42,7 +42,7 @@ def stop_thread(thread):
 
 
 class CustomThread(Thread, item_get_Mixin):
-    """多线程，继承自threading.Thread"""
+    """多线程,继承自threading.Thread"""
 
     all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表

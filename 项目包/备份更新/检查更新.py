@@ -1,15 +1,16 @@
 ﻿# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-03 23:26:06
-@LastEditors: Even.Sand
-@LastEditTime: 2020-02-29 17:15:27
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:56
+FilePath     : /项目包/备份更新/检查更新.py
+LastEditTime : 2022-11-12 13:31:04
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 # 检索需要升级的库，逐个升级
@@ -17,16 +18,12 @@ import subprocess
 
 
 def PIP更新1():
-    print("PIP更新1：")
+    print("PIP-outdated更新：")
     # pip显示需要更新的python列表
     com_list_o = 'pip3 list --outdated'
 
     # 执行命令并返回结果
-    p = subprocess.Popen(
-        com_list_o,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT)
+    p = subprocess.Popen(com_list_o, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # 取命令返回结果，结果是一个二进制字符串，包含了我们上面执行pip list -o后展现的所有内容
     out = p.communicate()[0]
 
@@ -44,8 +41,7 @@ def PIP更新1():
     n = 1
     for nu in need_update:
         com_update = 'pip3 install --upgrade {py}'.format(py=nu)
-        print("正在更新第{}/{}个库[{}]，\n执行：{}，请等待...".format(
-            n, s, nu, com_update))
+        print("正在更新第{}/{}个库[{}]，\n执行：{}，请等待...".format(n, s, nu, com_update))
         subprocess.call(com_update)
         n += 1
         print("----------{com} 执行结束-----------\n".format(com=com_update))
@@ -54,13 +50,9 @@ def PIP更新1():
 
 
 def PIP更新2():
-    print("PIP更新2：")
-    subprocess.call(
-        'pip3 install pip3-review', shell=True, stdout=subprocess.PIPE)
-    subprocess.call(
-        'pip-review --local --interactive --auto',
-        shell=True,
-        stdout=subprocess.PIPE)
+    print("PIP-review更新：")
+    subprocess.call('pip3 install pip3-review', shell=True, stdout=subprocess.PIPE)
+    subprocess.call('pip-review --local --interactive --auto', shell=True, stdout=subprocess.PIPE)
     print('结束')
 
 
@@ -75,7 +67,7 @@ def CONDA更新():
 if __name__ == '__main__':
     expression = True
     while expression:
-        NO = input('''PIP更新1(1)\nPIP更新2(2)\nCONDA更新(3)\n不更新退出(0)\n输入选项:''')
+        NO = input('''PIP - outdated更新(1)\nPIP - review更新(2)\nCONDA更新(3)\n不更新退出(0)\n输入选项:''')
         if NO == '1':
             PIP更新1()
         elif NO == '2':

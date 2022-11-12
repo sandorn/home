@@ -146,6 +146,7 @@ def make_future(func):
 
 if __name__ == '__main__':
     a = AioCrawl()
+    b = AioCrawl()
 
     for _ in range(2):
         a.add_fetch_tasks(['https://www.baidu.com' for _ in range(2)])  # 模拟动态添加任务
@@ -155,8 +156,8 @@ if __name__ == '__main__':
         print(i)
 
     for _ in range(2):
-        a.add_fetch_tasks(['https://httpbin.org/get' for _ in range(2)])  # 模拟动态添加任务
+        b.add_fetch_tasks(['https://httpbin.org/get' for _ in range(2)])  # 模拟动态添加任务
 
-    t1 = a.wait_completed()
+    t1 = b.wait_completed()
     for i in t1:
         print(i)

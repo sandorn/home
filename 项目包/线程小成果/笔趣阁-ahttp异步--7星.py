@@ -1,65 +1,48 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-03 23:35:58
-LastEditors  : Please set LastEditors
-LastEditTime : 2021-03-19 11:14:31
-变更requests为ahttp
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
+FilePath     : /项目包/线程小成果/笔趣阁-ahttp异步--7星.py
+LastEditTime : 2022-11-12 16:34:53
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
+
 import os
 
 from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
 from xt_Time import fn_timer
-from xt_Ls_Bqg import get_download_url, arrangeContent
+from xt_String import Str_Replace
+from xt_Ls_Bqg import get_download_url, clean_Content, 结果处理
 from xt_Thread import P_Map  ##, P_Sub
 # T_Map, T_Sub, T_Pool, P_Map, P_Sub, P_Pool
-
-
-def 结果处理(resps):
-    _texts = []
-
-    for resp in resps:
-        if resp is None:
-            continue
-        index = resp.index
-        response = resp.element
-
-        _title = "".join(response.xpath('//h1/text()'))
-        title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
-        _showtext = response.xpath('//*[@id="content"]/text()')
-        content = arrangeContent(_showtext)
-        _texts.append([index, title, content])
-
-    return _texts
-
 
 texts = []
 
 
-def callback(resp):
+def callback_func(resp):
     if resp is None:
         return
 
     index = resp.index
     response = resp.element
 
-    _title = "".join(response.xpath('//h1/text()'))
-    title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
+    _name = "".join(response.xpath('//h1/text()'))
+    name = Str_Replace(_name, [(' ', ' '), ('\xa0', ' ')])
     _showtext = response.xpath('//*[@id="content"]/text()')
-    content = arrangeContent(_showtext)
-    texts.append([index, title, content])
+    content = clean_Content(_showtext)
+    texts.append([index, name, content])
 
 
 @fn_timer
 def main(url):
-    bookname, urls = get_download_url(url)
+    bookname, urls, _ = get_download_url(url)
     resps = ahttpGetAll(urls)
     text_list = 结果处理(resps)
     text_list.sort(key=lambda x: x[0])  # #排序
@@ -69,8 +52,8 @@ def main(url):
 
 @fn_timer
 def mainbycall(url):
-    bookname, urls = get_download_url(url)
-    ahttpGetAll(urls, callback=callback)
+    bookname, urls, _ = get_download_url(url)
+    ahttpGetAll(urls, callback=callback_func)
     texts.sort(key=lambda x: x[0])  # #排序
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + 'mainbycall.txt', texts, br='\n')
@@ -90,8 +73,8 @@ def multpoolback(urls):
 
 
 if __name__ == '__main__':
-    url = 'https://www.biqukan.com/38_38836/'
-    # main(url)
+    url = 'https://www.biqukan8.cc/38_38163/'
+    main(url)
     # mainbycall(url)
 
     urls = [

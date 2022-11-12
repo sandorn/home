@@ -128,4 +128,4 @@ class thread_wrap_class:
         return res
 
 
-print = thread_safe()(print)
+thread_print = thread_safe()(print)

@@ -87,7 +87,7 @@ class AsyncTask:
 
 
 async def Async_run(self):
-    # #单个任务，从AsyncTask.run调用
+    # #单个任务,从  AsyncTask.run  调用
     @TRETRY
     async def _fetch_run():
         async with TCPConnector(ssl=False, limit=self.pool) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as session, session.request(self.method, self.url, *self.args, raise_for_status=True, **self.kwargs) as self.response:

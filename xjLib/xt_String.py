@@ -20,12 +20,7 @@ import re
 from functools import reduce
 
 
-def md5(data):
-    my_md5 = hashlib.md5(data.encode("utf-8", 'ignore'))
-    return my_md5.hexdigest()
-
-
-def Exmd5(data):
+def Ex_md5(data):
     """将string转化为MD5"""
     my_md5 = hashlib.md5()  # 获取一个MD5的加密算法对象
     my_md5.update(data.encode("utf-8", 'ignore'))  # 得到MD5消息摘要
@@ -33,7 +28,7 @@ def Exmd5(data):
     return my_md5_Digest
 
 
-def sha1(data):
+def Ex_sha1(data):
     my_sha = hashlib.sha1()
     my_sha.update(data.encode("utf-8", 'ignore'))
     my_sha_Digest = my_sha.hexdigest()
@@ -92,87 +87,67 @@ def align(str1, distance=66, alignment='left'):
     return str1
 
 
-def Ex_Re_Repl(string, trims=None):
+def Str_Replace(replacement, trims):
     """
-    格式化html string, 去掉多余的字符，类，script等。
-    # !正则替换，自写正则表达式
-    string:欲处理的字符串
+    # @字符替换，不支持正则
+    replacement:欲处理的字符串
     trims:list内包含tuple或list
-    trims[0]:查找字符串
-    trims[1]:替换字符串
-    """
-    # 第一种方法
-    if trims is None:
-        trims = [(r'\n', ''), (r'\t', ''), (r'\r', ''), (r'  ', ''), (r'\u2018', "'"), (r'\u2019', "'"), (r'\ufeff', ''), (r'\u2022', ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'), (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''), (r"</?a.*?>", '')]
-
-    def run(str_tmp, replacement):
-        return re.sub(replacement[0], replacement[1], str_tmp)
-
-    return reduce(run, trims, string)
-    # 第二种写法，用lamda # string为初始值，最后传入，在lambda中最先接收
-    # return reduce(lambda str_tmp, replacement: re.sub(replacement[0], replacement[1], str_tmp), trims, string)
-    '''
-        re.sub(`pattern`, `repl`, `string`, `count=0`, `flags=0`)
-        `pattern`, `repl`, `string` 为必选参数
-        `count`, `flags` 为可选参数
-        `pattern`正则表达式
-        `repl`被替换的内容，可以是字符串，也可以是函数
-        `string`正则表达式匹配的内容
-        `count`由于正则表达式匹配的结果是多个，使用count来限定替换的个数从左向右，默认值是0，替换所有的匹配到的结果
-        `flags`是匹配模式，`re.I`忽略大小写，`re.L`表示特殊字符集\w,\W,\b,\B,\s,\S，`re.M`表示多行模式，`re.S` ‘.’包括换行符在内的任意字符，`re.U`表示特殊字符集\w,\W,\b,\B,\d,\D,\s,\D
-    '''
-
-
-def Ex_Str_Replace(oldstr, trims):
-    """
-    # @字符替换，不支持正则表达式
-    oldstr:欲处理的字符串
-    trims:list内包含tuple或list
-    trims[0]:查找字符串
-    trims[1]:替换字符串
+    trims[0]:查找,trims[1]:替换
     """
     # 第一种方法
     # for item in trims:
-    #     oldstr = oldstr.replace(item[0], item[1])
-    # return oldstr
+    #     replacement = replacement.replace(item[0], item[1])
+    # return replacement
 
-    # 第二种方法  # oldstr 为初始值，最后传入，在lambda中最先接收
-    return reduce(lambda strtmp, item: strtmp.replace(item[0], item[1]), trims, oldstr)
+    # 第二种方法  # replacement 为初始值，最后传入，在lambda中最先接收
+    return reduce(lambda strtmp, item: strtmp.replace(item[0], item[1]), trims, replacement)
 
 
-def Ex_Re_Clean(oldtext, par_list):
+def Str_Clean(replacement, trims):
     """
-    # !正则清除，自写正则表达式
-    par_list:tuple或list
-    用法 newtext=Ex_Re_Clean(oldtext,['aaa','bbb'])
-    用法 newtext=Ex_Re_Clean(oldtext,('aaa','bbb'))
+    # @字符清除，不支持正则
+    replacement:欲处理的字符串
+    trims:list内包含tuple或list
     """
-    pattern = re.compile('|'.join(par_list))
-    return pattern.sub('', oldtext)
+    # 第一种方法
+    # for item in trims:
+    #     replacement = replacement.replace(item, '')
+    # return replacement
+
+    # 第二种方法  # replacement 为初始值，最后传入，在lambda中最先接收
+    return reduce(lambda strtmp, item: strtmp.replace(item, ''), trims, replacement)
 
 
-def Ex_Re_Replace(string, trims_dict):
+def Re_Sub(replacement, trims=None):
     """
-    # !正则替换，自写正则表达式
+    # @re.sub正则替换，自写表达式
+    replacement:欲处理的字符串
+    trims:list内包含tuple或list
+    trims[0]:查找字符串,trims[1]:替换字符串
+    """
+    # 第一种方法
+    if trims is None:
+        # #格式化html string, 去掉多余的字符，类，script等。
+        trims = [(r'\n', ''), (r'\t', ''), (r'\r', ''), (r'  ', ''), (r'\u2018', "'"), (r'\u2019', "'"), (r'\ufeff', ''), (r'\u2022', ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'), (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''), (r"</?a.*?>", '')]
+
+    def run(trims, replacement):
+        return re.sub(replacement[0], replacement[1], trims)
+
+    return reduce(run, trims, replacement)
+
+    # 第二种写法，用lamda # replacement为初始值，最后传入，在lambda中最先接收
+    # return reduce(lambda str_tmp, replacement: re.sub(replacement[0], replacement[1], str_tmp), trims, replacement)
+
+
+def Re_Compile(replacement, trims_dict):
+    """
+    # ! re.compile正则替换，自写表达式，字典key受限，暂留
+    replacement:欲处理的字符串
     trims_dict:dict
-    用法 newtext=Ex_Re_Replace(oldtext,{'a':aaa','b':bbb'})
+    用法=Re_Compile(replacement,{'A':'aaa','B':'bbb'})
     """
     pattern = re.compile('|'.join(trims_dict.keys()))
-    return pattern.sub(lambda m: trims_dict[m.group(0)], string)
-
-
-def Ex_Re_Sub(string, trims_dict):
-    """
-    # @正则替换，不支持正则表达式
-    trims_dict:dict
-    用法 newtext=Ex_Re_Sub(string,{'a':aaa','b':bbb'})
-    """
-    pattern = re.compile('|'.join(map(re.escape, trims_dict.keys())))
-
-    def one_xlat(match):
-        return trims_dict[match.group(0)]
-
-    return pattern.sub(one_xlat, string)
+    return pattern.sub(lambda m: trims_dict[m.group(0)], replacement)
 
 
 def string_split_limited_list(string, maxlen=300):
@@ -251,3 +226,10 @@ def class_add_dict(in_obj):
     '''把对象转换成字典'''
     in_obj.__dict__ = {key: getattr(in_obj, key) for key in dir(in_obj) if not key.startswith('__') and not callable(getattr(in_obj, key))}
     return in_obj.__dict__
+
+
+'''
+lists = ['神奇', '建投', '证券', '有限公司', '今天', '投资', '了', '一', '款',"神迹",'游戏']
+replace_dict = {'神奇':"奇幻","神迹":"奇迹"}
+new_lists =[replace_dict[i] if i in replace_dict else i for i in lists]
+'''

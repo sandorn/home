@@ -25,7 +25,7 @@ from xt_Ls_Bqg import get_download_url, map_get_contents
 texts = []
 
 
-def callback(future):
+def callback_func(future):
     # 回调方式获取线程结果
     index, name, text = future.result()  # 回调函数取得返回值
     texts.append([index, name, text])
@@ -35,7 +35,7 @@ def callback(future):
 def main_callback(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        _ = [pool.submit(map_get_contents, (index, urls[index])).add_done_callback(callback) for index in range(len(urls))]
+        _ = [pool.submit(map_get_contents, (index, urls[index])).add_done_callback(callback_func) for index in range(len(urls))]
 
     texts.sort(key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
@@ -102,7 +102,7 @@ def main_map(max, bookname, urls):
 
 
 if __name__ == '__main__':
-    bookname, urls = get_download_url('https://www.biqukan.com/38_38836/')
+    bookname, urls, _ = get_download_url('https://www.biqukan8.cc/38_38163/')
 
     main_map(200, bookname, urls)
     main_wait(200, bookname, urls)
