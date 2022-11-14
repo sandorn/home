@@ -14,12 +14,13 @@ LastEditTime : 2020-11-04 13:33:59
 # ==============================================================
 '''
 
-from sqlalchemy import (TIMESTAMP, Column, DateTime, Enum, Integer, Numeric, String, create_engine, text)
-from sqlalchemy.dialects.mysql import INTEGER
+from sqlalchemy import (  # (TIMESTAMP, Column, DateTime, Enum, Integer, Numeric, String,)
+    create_engine, text)
+# from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.ext.declarative import DeclarativeMeta  # 类;declarative_base类工厂
-from sqlalchemy.orm import scoped_session, sessionmaker, validates
-
+from sqlalchemy.orm import scoped_session, sessionmaker  # , validates
 from xt_Class import typed_property
+
 from .dbconf import make_connect_string
 from .xt_chemyMeta import Orm_Meta
 

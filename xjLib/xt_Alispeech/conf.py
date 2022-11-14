@@ -12,24 +12,28 @@
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
-用户登录名称 sandorn_ram@1915355838841755.onaliyun.com
-登录密码 rH17b#9{$gDqRiJXB3flDaWqbMPAEz{n
+用户登录名称:sandorn_ram@1915355838841755.onaliyun.com
+登录密码:rH17b#9{$gDqRiJXB3flDaWqbMPAEz{n
+appKey = 'Ofm34215thIUdSIX'
+
 user1 = {
     'AccessKey_ID': 'LTAI4G5TRjsGy8BNKPtctjXQ',
     'AccessKey_Secret': 'hS8Kl0b9orxNUW7IOeBIFUfzgcVn00'
 }
+
 user2 = {
     'AccessKey_ID': 'LTAI4GAdnViJdPBCpaTuaUXM',
     'AccessKey_Secret': 'NJP6DZR0pWtK3Ze3cpi9XqhLeEzNdg'
 }
 '''
 
-from ali_speech._create_token import AccessToken
-from xt_Time import get_10_timestamp
-from xt_Class import readonly, dict_mothed_Mixin
+from dataclasses import dataclass
 from typing import Any
-from dataclasses import dataclass  #, field
+
+from ali_speech._create_token import AccessToken
+from xt_Class import dict_mothed_Mixin, readonly
 from xt_Singleon import Singleton_Mixin
+from xt_Time import get_10_timestamp
 
 
 class Constant(Singleton_Mixin):
@@ -45,6 +49,7 @@ class Constant(Singleton_Mixin):
     expire_time = property(lambda cls: cls.__expire_time)
 
     # token = property(lambda cls: cls.__token)
+
     def __init__(self):
         self.__renew_token__()
 
@@ -62,8 +67,8 @@ class Constant(Singleton_Mixin):
         return self.__expire_time
 
 
-# (init=False) 不做初始化，避免生成.__dict__
 @dataclass
+# (init=False) 不做初始化，避免生成.__dict__
 class SpeechArgs(dict_mothed_Mixin):
     '''默认参数'''
     appkey = readonly('_appkey')

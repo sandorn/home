@@ -3,19 +3,20 @@
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMetaObject, QThread, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMessageBox, QVBoxLayout, qApp
-
-from xt_Ls_Bqg import get_title_url, get_contents_ahttp  # # get_contents
+from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QMessageBox, QVBoxLayout, qApp)
 from xt_Alispeech.xt_Pygame import ReqSynthesizer_QThread_read
+from xt_Ls_Bqg import ahttp_get_contents, get_download_url
 from xt_String import string_split_limited_list
-from xt_Ui import EventLoop, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser, xt_QCheckBox
+from xt_Ui import (EventLoop, xt_QCheckBox, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser)
 
 
 class Ui_MainWindow(xt_QMainWindow):
+
     def __init__(self):
         super().__init__('小说阅读器')
-        self.baseurl = 'https://www.biqukan.com'
-        self.list = []  # 章节列表
+        self.baseurl = 'https://www.biqukan8.cc/'
+        self.urls = []  # 章节链接列表
+        self.titles = []  # 章节名称列表
 
         self.setupUi()
         self.retranslateUi()
@@ -23,7 +24,7 @@ class Ui_MainWindow(xt_QMainWindow):
     def setupUi(self):
         self.centralwidget = QtWidgets.QWidget()
         self.label = xt_QLabel("小说书号：")
-        self.lineEdit = xt_QLineEdit('0_790')
+        self.lineEdit = xt_QLineEdit('38_38163')
         self.book_number = self.lineEdit.text()
         self.lineEdit.textChanged.connect(self.setnum)
         self.lineEdit.setObjectName('lineEditobj')
@@ -31,7 +32,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.pushButton.setObjectName('ok_button')
 
         self.tabWidget = xt_QTabWidget(["列表显示", "图表显示"])
-        self.tableWidget = xt_QTableView(['书号', '章节', '链接'])
+        self.tableWidget = xt_QTableView(['章节', '链接'])
         self.tabWidget.lay[0].addWidget(self.tableWidget)
         self.listWidget = xt_QListWidget()
         self.tabWidget.lay[1].addWidget(self.listWidget)
@@ -158,11 +159,11 @@ class Ui_MainWindow(xt_QMainWindow):
 
     @EventLoop
     def getlist(self, url):
-        self.bookname, self.list = get_title_url(url)
+        self.bookname, self.urls, self.titles = get_download_url(url)
         self.setWindowTitle(self.title + '--' + self.bookname)
         return
         # # 下载文件
-        for title, articleUrl in enumerate(self.list):
+        for title, articleUrl in zip(self.titles, self.urls):
             article_content = self.getcontent(articleUrl)
             fileName = self.bookname + '/' + title + '.txt'  # 设置保存路径
             with open(fileName, "w") as newFile:  # 打开或者创建文件
@@ -171,39 +172,38 @@ class Ui_MainWindow(xt_QMainWindow):
     # 从网页提取数据
     @EventLoop
     def getcontent(self, url):
-        index, title, content = get_contents_ahttp(1, target=url)
+        index, title, content = ahttp_get_contents((1, url))
         return "《" + self.bookname + '->' + title + "》\n\n" + content
 
     # 将文件显示在Table中（列表显示）
     @EventLoop
     def bindTable(self):
-        res = [[self.book_number, self.list[index][0], self.list[index][1]] for index in range(len(self.list))]
+        res = [[self.titles[index], self.urls[index]] for index in range(len(self.titles))]
         self.tableWidget.appendItems(res)
         self.tableWidget.scrollToTop()
 
     # 将文件显示在List列表中（图表显示）
     @EventLoop
     def bindList(self):
-        self.listWidget.addItems([self.list[index][0] for index in range(len(self.list))])
+        self.listWidget.addItems([self.titles[index] for index in range(len(self.titles))])
         # self.listWidget.scrollToBottom()
         self.listWidget.scrollToTop()
 
-    # 表格单击方法，用来打开选中的项
+    # Table单击方法，用来打开选中的项
     @EventLoop
     def tableClick_event(self, item):
         self.QTextEdit.clear()
         self.QTextEdit.setFontPointSize(18)
-        QModelIndex = self.tableWidget.model.index(item.row(), 2)
+        QModelIndex = self.tableWidget.model.index(item.row(), 1)
         # _text = self.getcontent(QModelIndex.data())
         nowthread = QThread()
         nowthread.run = self.getcontent
         _text = nowthread.run(QModelIndex.data())
-
         # self.QTextEdit.setHtml(_text)
         # _text = '<font size="5">' + _text.replace("\n", "<br>") + '</font>'
         self.QTextEdit.setText(_text)
 
-    # 列表单击方法，用来打开选中的项
+    # List列表单击方法，用来打开选中的项
     @EventLoop
     def currentRowChanged_event(self, row):
         self.listWidgetCurrentRow = row
@@ -212,7 +212,7 @@ class Ui_MainWindow(xt_QMainWindow):
         # _text = self.getcontent(self.list[row][1])
         nowthread = QThread()
         nowthread.run = self.getcontent
-        _text = nowthread.run(self.list[row][1])
+        _text = nowthread.run(self.urls[row])
         # _text = ''.join(_text.split('\n')[0:1])
         # _text = '<font size="5">' + _text.replace("\n", "<br>") + '</font>'
         # self.QTextEdit.fontPointSize()  # 获取字号

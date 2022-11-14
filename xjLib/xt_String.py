@@ -194,7 +194,7 @@ def dict2qss(dict_tmp):
     # # 排序  print key, dict[key] for key in sorted(dict.keys())
     isinstance(dict_tmp, dict)
     temp = json.dumps(dict_tmp)
-    qss = Ex_Re_Sub(temp, {',': ';', '"': '', ': {': '{'})
+    qss = Str_Replace(temp, [(',', ';'), ('"', ''), (': {', '{')])
     return qss.strip('{}')
 
 

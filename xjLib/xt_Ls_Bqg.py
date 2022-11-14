@@ -93,11 +93,11 @@ def get_download_url(target):
     response = res.element
 
     bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
-    全部章节链接 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
-    全部章节标题 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()')
+    temp_urls = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
+    titles = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()')
     baseurl = '/'.join(target.split('/')[0:-2])
-    urls = [baseurl + item for item in 全部章节链接]  ## 章节链接
-    return bookname, urls, 全部章节标题
+    urls = [baseurl + item for item in temp_urls]  ## 章节链接
+    return bookname, urls, titles
 
 
 def get_contents(args, func=get):
@@ -132,6 +132,6 @@ if __name__ == "__main__":
     _title = "".join(response.xpath('//h1/text()'))
     title = Str_Replace(_title, [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
     _showtext = response.xpath('//*[@id="content"]/text()')
-    print(title, '*' * 88)
+    print(title, '\n', '*' * 88)
 
-    print(clean_Content(_showtext), '*' * 88)
+    print(clean_Content(_showtext), '\n', '*' * 88)

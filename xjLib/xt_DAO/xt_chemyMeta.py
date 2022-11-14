@@ -12,13 +12,14 @@ LastEditTime : 2021-03-25 10:03:29
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
-from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
+from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 # DeclarativeMeta  类;declarative_base类工厂
-from xt_Class import item_Mixin, typed_property
+from xt_Class import item_Mixin  # , typed_property
 from .dbconf import make_connect_string
 
 
 class Orm_Meta:
+
     def init_db(self):
         raise NotImplemented
 
@@ -58,6 +59,7 @@ class Orm_Meta:
 
 class Model_Method_Mixin(item_Mixin):
     '''解决下标取值赋值、打印显示、生成字段列表'''
+
     @classmethod
     def columns(cls):
         '''获取字段名列表'''
@@ -188,7 +190,7 @@ def creat_sqlalchemy_db_class(tablename, filename=None, key='default'):
 
 if __name__ == "__main__":
     # creat_sqlalchemy_db_class('uuu', 'd:/1.py', 'TXbook')
-    from xt_DAO.xt_sqlalchemy import get_engine, SqlConnection
+    from xt_DAO.xt_sqlalchemy import SqlConnection, get_engine
     engine, session = get_engine('TXbx')
     t = getModel('users2', engine)  # , 'users99')
     print(t)

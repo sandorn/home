@@ -12,9 +12,10 @@
 @LastEditTime: 2020-02-19 01:43:14
 '''
 
-from scrapy.exporters import BaseItemExporter
 import xlwt
 from scrapy.exporters import JsonLinesItemExporter  # 默认显示的中文是阅读性较差的Unicode字符
+from scrapy.exporters import BaseItemExporter
+
 BOT_NAME = 'BQG'
 
 SPIDER_MODULES = ['BQG.spiders']
@@ -35,15 +36,17 @@ LOG_LEVEL = 'ERROR'
 
 
 class CustomJsonLinesItemExporter(JsonLinesItemExporter):
+
     def __init__(self, file, **kwargs):
         super(CustomJsonLinesItemExporter, self).__init__(file, encoding='utf-8', ensure_ascii=False, **kwargs)
+
     # 启用新定义的Exporter类\
     FEED_EXPORTERS = {
-        'json': 'stockstar.settings.CustomJsonLinesItemExporter',
+        'json': 'stockstar.settings.CustomJsonExporter',
     }
 
 
-class ExcelItemExporter(BaseItemExporter):
+class ExcelExporter(BaseItemExporter):
     """
     导出为Excel，在执行命令中指定输出格式为excel
     e.g. scrapy crawl -t excel -o books.xls
@@ -81,10 +84,9 @@ class ExcelItemExporter(BaseItemExporter):
         for column, v in enumerate(self.fields_to_export):
             self.wsheet.write(self.row, column, v)
         self.row += 1
+
     # 启用新定义的Exporter类\
-    FEED_EXPORTERS = {
-        'excel': 'stockstar.settings.ExcelItemExporter',
-    }
+    FEED_EXPORTERS = {'excel': 'example.excel_exporter.ExcelExporter'}
 
 
 ROBOTSTXT_OBEY = False
@@ -112,12 +114,9 @@ USER_AGENTS = [
     "Opera/9.80 (Macintosh; Intel Mac OS X 10.6.8; U; fr) Presto/2.9.168 Version/11.52",
 ]
 
-PROXIES = [
-    {'ip_port': '111.11.228.75:80', 'user_pass': ''}
-]
+PROXIES = [{'ip_port': '111.11.228.75:80', 'user_pass': ''}]
 DEFAULT_REQUEST_HEADERS = {
-    'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     # 指定客户端浏览器可以支持的web服务器返回内容压缩编码类型
     'Accept-Encoding': 'gzip, deflate, br',
@@ -130,19 +129,20 @@ DEFAULT_REQUEST_HEADERS = {
     # 显示此HTTP连接的Keep-Alive时间    'Keep-Alive': '300',
     # 请求的web服务器域名地址    'Host': 'www.baidu.com',
 }
-
-
 '''
-ITEM_PIPELINES = {
-    'BQG.pipelines.PipelineCheck': 100,
-    # 'BQG.pipelines.PipelineToSql': 200,
-    # 'BQG.pipelines.PipelineToSqlTwisted': 200,
-    # 'BQG.pipelines.PipelineToJson': 300,
-    # 'BQG.pipelines.PipelineToJsonExp': 300,
-    # 'BQG.pipelines.PipelineToTxt': 300,
-    'BQG.pipelines.PipelineToCsv': 300,
-    'BQG.pipelines.Pipeline2Csv': 300,
-}
+
+# 需要实例化ItemLoader， 注意第一个参数必须是实例化的对象...
+atricleItemLoader = ItemLoader(item = articleDetailItem(), response=response)
+# 调用xpath选择器，提取title信息
+atricleItemLoader.add_xpath('title', '//div[@class="entry-header"]/h1/text()')
+# 调用css选择器，提取praise_nums信息
+atricleItemLoader.add_css('praise_nums', '.vote-post-up h10::text')
+# 直接给字段赋值，尤其需要注意，不管赋值的数据是什么，都会自动转换成list类型
+atricleItemLoader.add_value('url', response.url)
+
+# 将提取好的数据load出来
+articleInfo = atricleItemLoader.load_item()
+# 三种方式填充的数据，均为List类型
 
 #可在spider中扩展设置
 custom_settings = {
@@ -155,17 +155,7 @@ custom_settings = {
         'LOG_FILE':'./././Log/dcdapp_log.log'
     }
 '''
-'''
-FEED_EXPORTERS_BASE = {
-    'json': 'scrapy.exporters.JsonItemExporter',
-    'jsonlines': 'scrapy.exporters.JsonLinesItemExporter',
-    'jl': 'scrapy.exporters.JsonLinesItemExporter',
-    'csv': 'scrapy.exporters.CsvItemExporter',
-    'xml': 'scrapy.exporters.XmlItemExporter',
-    'marshal': 'scrapy.exporters.MarshalItemExporter',
-    'pickle': 'scrapy.exporters.PickleItemExporter',
-}
-'''
+
 # Scrapy settings for BQG project
 #
 # For simplicity, this file contains only settings considered important or
@@ -189,9 +179,12 @@ FEED_EXPORTERS_BASE = {
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 0.25
 #DOWNLOAD_DELAY = 3
+
 # The download delay setting will honor only one of:
-#CONCURRENT_REQUESTS_PER_DOMAIN = 16
-#CONCURRENT_REQUESTS_PER_IP = 16
+# 决定最大值
+# 下面两个二选一，一个是针对域名设置并发，一个是针对IP设置并发
+# CONCURRENT_REQUESTS_PER_IP = 10
+# CONCURRENT_REQUESTS_PER_DOMAIN = 10
 
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = False

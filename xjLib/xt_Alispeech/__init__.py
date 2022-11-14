@@ -12,20 +12,20 @@
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
+
 import json
 import time
 
+from ali_speech import NlsClient
+from ali_speech.callbacks import (SpeechSynthesizerCallback, SpeechTranscriberCallback)
 from aliyunsdkcore.acs_exception.exceptions import (ClientException, ServerException)
 from aliyunsdkcore.client import AcsClient  # 阿里云核心代码库
 from aliyunsdkcore.request import CommonRequest  # 阿里云官方核心代码库
-
-from ali_speech import NlsClient
-from ali_speech.callbacks import (SpeechSynthesizerCallback, SpeechTranscriberCallback)
 from xt_Alispeech.conf import Constant  # 常量参数
 from xt_Alispeech.conf import SpeechArgs  # 默认参数
 from xt_Alispeech.conf import SynResult, TransResult
 from xt_Requests import SessionClient
-from xt_String import md5, string_split_limited_list
+from xt_String import Ex_md5, string_split_limited_list
 
 
 def ReqLongSynthesizer(longtext, savefile=True, method='post', callback=None):
@@ -46,12 +46,14 @@ def ReqSynthesizer(text, format='wav', savefile=True, method='post', callback=No
     args_dict['text'] = text  # 添加
 
     session = SessionClient()
-    result.response = session[method](url, params=args_dict, json=args_dict, headers={'Content-Type': 'application/json'}).raw
+    res = session[method](url, params=args_dict, json=args_dict, headers={'Content-Type': 'application/json'})
+    print(2222222222222222222, res)
+    # result.response = session[method](url, params=args_dict, json=args_dict, headers={'Content-Type': 'application/json'}).raw
 
     if 'audio/mpeg' == result.response.headers['Content-Type']:
 
         if savefile:
-            result.filename = f'''{md5(text)}_{ args_dict['voice'] }_{args_dict['sample_rate']//1000}K.{args_dict['format']}'''
+            result.filename = f'''{Ex_md5(text)}_{ args_dict['voice'] }_{args_dict['sample_rate']//1000}K.{args_dict['format']}'''
             with open(result.filename, mode='wb') as f:
                 f.write(result.response.content)
             print(result.filename, 'Request succeed!')
@@ -63,6 +65,7 @@ def ReqSynthesizer(text, format='wav', savefile=True, method='post', callback=No
 
 
 class synthesizeClass:
+
     def __init__(self, text=None, savefile=True, callback=None, method='post'):
         self.session = SessionClient()
         self.method = method
@@ -88,7 +91,7 @@ class synthesizeClass:
         if 'audio/mpeg' == self.result.response.headers['Content-Type']:
 
             if self.savefile:
-                self.result.filename = f'''{md5(self.args_dict['text'] )}_{self.args_dict['voice'] }_{self.args_dict['sample_rate'] //1000}K.{self.args_dict['format']}'''
+                self.result.filename = f'''{Ex_md5(self.args_dict['text'] )}_{self.args_dict['voice'] }_{self.args_dict['sample_rate'] //1000}K.{self.args_dict['format']}'''
                 with open(self.result.filename, mode='wb') as f:
                     f.write(self.result.response.content)
                 print(self.result.filename, 'Request succeed!')
@@ -131,7 +134,7 @@ def Synthesizerprocess(text, callback=Synthesizer_MyCallback):
     args_dict = SpeechArgs().get_dict()
     args_dict['format'] = format  # #更新
     args_dict['text'] = text  # 添加
-    audioFile = md5(text)
+    audioFile = Ex_md5(text)
     filename = f'''{audioFile}_{args_dict['voice']}_{args_dict['sample_rate']//1000}K.{args_dict['format']}'''
     callbackfunc = callback(filename)
     synthesizer = client.create_synthesizer(callbackfunc)
@@ -163,6 +166,7 @@ class TranscriberCallback(SpeechTranscriberCallback):
     构造函数的参数没有要求，可根据需要设置添加
     示例中的name参数可作为待识别的音频文件名，用于在多线程中进行区分
     """
+
     def __init__(self, name='default'):
         self._name = name
         self.result = TransResult()
@@ -365,6 +369,8 @@ def APITransUrl(urlLink, enable_words=False, auto_split=False):
     return result
 
 
+if __name__ == "__main__":
+    print(Constant(), 1111, id(Constant()))
 '''
     RESTful API
     https://help.aliyun.com/document_detail/130555.html

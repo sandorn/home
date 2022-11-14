@@ -6,15 +6,22 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:56
-FilePath     : /项目包/BQG.Scrapy初级版本/BQG/spiders/xiashu.py
-LastEditTime : 2022-11-14 13:21:19
+Date         : 2022-11-14 21:48:46
+FilePath     : /项目包/BQG.spider/BQG/spiders/xiashu.py
+LastEditTime : 2022-11-14 21:49:12
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
+import os
+import sys
+
+# '***获取上级目录***'
+_p = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+sys.path.append(_p)
+
 import scrapy
-from BQG.items import BqgItem
+from items import BqgItem
 from xt_Ls_Bqg import clean_Content
 from xt_String import Str_Replace
 
@@ -28,13 +35,14 @@ class XiashuSpider(scrapy.Spider):
     custom_settings = {
         # 设置管道下载
         'ITEM_PIPELINES': {
-            'BQG.pipelines.PipelineCheck': 10,
+            # 'BQG.pipelines.PipelineCheck': 10,
             # 'BQG.pipelines.PipelineToTxt': 100,
-            'BQG.pipelines.PipelineToSql': 150,
+            # 'BQG.pipelines.PipelineToSql': 150,
             # 'BQG.pipelines.PipelineToJson': 200,
             # 'BQG.pipelines.PipelineToJsonExp': 250,
             # 'BQG.pipelines.PipelineToCsv': 300,
             # 'BQG.pipelines.Pipeline2Csv': 400
+            'BQG.pipelines.PipelineMysql2Txt': 50,
         },
     }
 
@@ -71,3 +79,12 @@ class XiashuSpider(scrapy.Spider):
 
     def parse_detail(self, response):
         pass
+
+
+if __name__ == '__main__':
+    from xt_ScrapyRun import ScrapyRun
+
+    # 获取当前脚本路径
+    filepath = os.path.abspath(__file__)
+    dirpath = os.path.dirname(os.path.dirname(filepath))
+    ScrapyRun(dirpath, 'xiashu')

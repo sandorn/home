@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:49
 FilePath     : /项目包/线程小成果/笔趣阁-ahttp异步--7星.py
-LastEditTime : 2022-11-12 16:34:53
+LastEditTime : 2022-11-13 17:55:28
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -75,6 +75,8 @@ def multpoolback(urls):
 if __name__ == '__main__':
     url = 'https://www.biqukan8.cc/38_38163/'
     main(url)
+    # url = 'https://www.biqukan8.cc/45092_45092329/'
+    # main(url)
     # mainbycall(url)
 
     urls = [

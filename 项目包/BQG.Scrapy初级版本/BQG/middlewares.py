@@ -5,13 +5,10 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import random
+
 from scrapy import signals
 
-
-
-import random
-import base64
-from settings import PROXIES
 
 class RandomUserAgent(object):
     """Randomly rotate user agents based on a list of predefined ones"""

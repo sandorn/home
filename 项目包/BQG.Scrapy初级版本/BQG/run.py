@@ -12,9 +12,10 @@
 #LastEditTime : 2020-06-04 11:25:37
 '''
 
-from scrapy.cmdline import execute
-import sys
 import os
+import sys
+
+from scrapy.cmdline import execute
 
 # 获取当前脚本路径
 dirpath = os.path.dirname(os.path.abspath(__file__))
