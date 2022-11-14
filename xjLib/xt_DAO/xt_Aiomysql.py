@@ -22,6 +22,7 @@ from copy import deepcopy
 
 
 class Pmysql:
+
     def __init__(self):
         self.coon = None
         self.pool = None

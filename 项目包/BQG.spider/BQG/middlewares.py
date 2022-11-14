@@ -5,27 +5,23 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-from fake_useragent import UserAgent
+from xt_Head import get_user_agent
 from scrapy import signals
 
 
-class RandomUserAgentMiddleware(object):
-    '''使用fake-usergent库，随机更换User-Agent'''
+class RandomUserAgentMiddlware(object):
+    '''随机更换User-Agent'''
+
     def __init__(self, crawler):
-        super(RandomUserAgentMiddleware, self).__init__()
-        self.ua = UserAgent()
-        self.ua_type = crawler.settings.get('RANDOM_UA_TYPE', 'random')
+        super(RandomUserAgentMiddlware, self).__init__()
+        self.ua = get_user_agent()
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(crawler)
 
     def process_request(self, request, spider):
-        def get_ua():
-            return getattr(self.ua, self.ua_type)
-
-        request.headers.setdefault('User-Agent', get_ua())
-        # request.headers.setdefault('User-Agent', self.ua.random)
+        request.headers.setdefault('User-Agent', get_user_agent())
 
 
 class BqgSpiderMiddleware(object):

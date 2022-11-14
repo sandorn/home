@@ -13,16 +13,16 @@
 #==============================================================
 '''
 
-import os
-
-from xt_File import savefile
-from xt_Time import fn_timer
-from xt_Ls_Bqg import get_download_url, arrangeContent
-from xt_Asyncio import AioCrawl, make_future
-from xt_Ahttp import ahttpGetAll, get, Async_run, multi_req
-from xt_Response import ReqResult
-import threading
 import asyncio
+import os
+import threading
+
+from xt_Ahttp import Async_run, ahttpGetAll, get, multi_req
+from xt_Asyncio import AioCrawl, make_future
+from xt_File import savefile
+from xt_Ls_Bqg import clean_Content, get_download_url
+from xt_Response import ReqResult
+from xt_Time import fn_timer
 
 
 def handle_result(resps):
@@ -37,7 +37,7 @@ def handle_result(resps):
         _title = "".join(element.xpath('//h1/text()'))
         title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
         _showtext = element.xpath('//*[@id="content"]/text()')
-        content = arrangeContent(_showtext)
+        content = clean_Content(_showtext)
         texts.append([index, title, content])
     return texts
 
@@ -64,7 +64,7 @@ def handle_resp(resp):
     _title = "".join(element.xpath('//h1/text()'))
     title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     _showtext = element.xpath('//*[@id="content"]/text()')
-    content = arrangeContent(_showtext)
+    content = clean_Content(_showtext)
     return [index, title, content]
 
 
@@ -109,7 +109,7 @@ def aimq(bookname, urls):
 
 if __name__ == "__main__":
 
-    bookname, urls = get_download_url('http://www.biqukan.com/38_38836/')
+    bookname, urls, _ = get_download_url('https://www.biqukan8.cc/38_38163/')
 
     # aio(bookname, urls)
     # ait(bookname, urls)

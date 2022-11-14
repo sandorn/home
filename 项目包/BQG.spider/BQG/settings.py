@@ -91,48 +91,25 @@ class ExcelExporter(BaseItemExporter):
 
 ROBOTSTXT_OBEY = False
 DOWNLOAD_DELAY = 0.1
-# 爬虫线程数量
-CONCURRENT_REQUESTS = 32
+# 并发线程数量
+CONCURRENT_REQUESTS = 100
+# 超时时间为10s
+DOWNLOAD_TIMEOUT = 10
 # 禁用cookies
 COOKIES_ENABLED = False
-USER_AGENTS = [
-    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)",
-    "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; Acoo Browser; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; .NET CLR 3.0.04506)",
-    "Mozilla/4.0 (compatible; MSIE 7.0; AOL 9.5; AOLBuild 4337.35; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)",
-    "Mozilla/5.0 (Windows; U; MSIE 9.0; Windows NT 9.0; en-US)",
-    "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Win64; x64; Trident/5.0; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET CLR 2.0.50727; Media Center PC 6.0)",
-    "Mozilla/5.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET CLR 1.0.3705; .NET CLR 1.1.4322)",
-    "Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 5.2; .NET CLR 1.1.4322; .NET CLR 2.0.50727; InfoPath.2; .NET CLR 3.0.04506.30)",
-    "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN) AppleWebKit/523.15 (KHTML, like Gecko, Safari/419.3) Arora/0.3 (Change: 287 c9dfb30)",
-    "Mozilla/5.0 (X11; U; Linux; en-US) AppleWebKit/527+ (KHTML, like Gecko, Safari/419.3) Arora/0.6",
-    "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.2pre) Gecko/20070215 K-Ninja/2.1.1",
-    "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9) Gecko/20080705 Firefox/3.0 Kapiko/3.0",
-    "Mozilla/5.0 (X11; Linux i686; U;) Gecko/20070322 Kazehakase/0.4.5",
-    "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko Fedora/1.9.0.8-1.fc10 Kazehakase/0.5.6",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.56 Safari/535.11",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.20 (KHTML, like Gecko) Chrome/19.0.1036.7 Safari/535.20",
-    "Opera/9.80 (Macintosh; Intel Mac OS X 10.6.8; U; fr) Presto/2.9.168 Version/11.52",
-]
 
-PROXIES = [{'ip_port': '111.11.228.75:80', 'user_pass': ''}]
-DEFAULT_REQUEST_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-    # 指定客户端浏览器可以支持的web服务器返回内容压缩编码类型
-    'Accept-Encoding': 'gzip, deflate, br',
-    # 指定HTTP客户端浏览器用来展示返回信息所优先选择的语言。
-    'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
-    # 浏览器可以接受的字符编码集
-    'Accept-Charset': 'gb2312,utf-8;q=0.7,*;q=0.7',
-    # 表示是否需要持久连接  'keep-alive','close'
-    'Connection': 'close',
-    # 显示此HTTP连接的Keep-Alive时间    'Keep-Alive': '300',
-    # 请求的web服务器域名地址    'Host': 'www.baidu.com',
+DOWNLOADER_MIDDLEWARES = {
+    'BQG.middlewares.RandomUserAgentMiddlware': 543,
+    #将middlewares中定义RandomUserAgentMiddlware添加到这里;
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    #需要将scrapy默认的置为None不调用
 }
+
+##########################################################
 '''
+# PROXIES = [{'ip_port': '111.11.228.75:80', 'user_pass': ''}]
 
-
-#可在spider中扩展设置
+# 可在spider中扩展设置
 custom_settings = {
         # 设置管道下载
         'ITEM_PIPELINES': {

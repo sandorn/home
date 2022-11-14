@@ -50,12 +50,13 @@ class Spider(scrapy.Spider):
     name = 'spilerByset'  # 设置name
 
     # allowed_domains = ['biqukan8.cc']  # 设定域名
+
     custom_settings = {
-        # 设置管道下载
-        # !此爬虫主要使用Sqlalchemy模式
-        # !通过数据库中记录判断是否重复录入
+        # !此爬虫使用数据库模式,通过数据库判断是否重复录入
         'ITEM_PIPELINES': {
-            'BQG.pipelines.PipelineToSqlalchemy': 10,
+            'BQG.pipelines.PipelineToSqlalchemy': 20,
+            # 'BQG.pipelines.PipelineToSqlTwisted': 30,
+            # 'BQG.pipelines.PipelineToSql': 40,
         },
     }
 
@@ -104,7 +105,7 @@ class Spider(scrapy.Spider):
                 request = scrapy.Request(_ZJHERF, meta={'index': index}, callback=self.parse_content)
                 yield request
             else:
-                print('--《' + align(_BOOKNAME, 20, 'center') + '》\t' + align(_ZJNAME, 40) + '\t|记录重复入库！')
+                print('spilerByset--《' + align(_BOOKNAME, 16, 'center') + '》\t' + align(_ZJNAME, 30) + '\t | 记录重复，剔除！！')
                 pass
 
     def parse_content(self, response):
@@ -117,7 +118,6 @@ class Spider(scrapy.Spider):
         item['ZJTEXT'] = '\n'.join([st.strip("\r\n　  ") for st in _ZJTEXT])
         item['ZJTEXT'] = Str_Replace(clean_Content(item['ZJTEXT']), [('%', '%%'), ("'", "\\\'"), ('"', '\\\"')])
         item['ZJHERF'] = response.url
-
         yield item
 
 
