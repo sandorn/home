@@ -62,17 +62,13 @@ class Singleton_Base:
 def singleton_wrap_return_class(_cls):
     '''单例类装饰器，多次init，返回类，类属性及方法通用
     # 可通过self._intialed判断，设定初始化次数'''
+
     class class_wrapper(_cls):
 
         _instance = None
         _lock = Lock()
 
         def __new__(cls, *args, **kwargs):
-            '''
-            description:
-            param {*}
-            return {*}
-            '''
             if cls._instance is None:
                 with cls._lock:
                     if cls._instance is None:
@@ -137,6 +133,7 @@ class Singleton_Meta(type):
 if __name__ == "__main__":
 
     class sss:
+
         def __init__(self, string, age=12):
             self.name = string
             self.age = age
@@ -152,6 +149,6 @@ if __name__ == "__main__":
     print(11111, sample.__mro__)
     print(22222, sample.__base__)
     print(33333, sample.__bases__)
-    sample.__bases__ += (Singleton_Model, )
+    sample.__bases__ += (Singleton_Base, )
     print(44444, sample.__bases__)
     print(55555, sample.__mro__)
