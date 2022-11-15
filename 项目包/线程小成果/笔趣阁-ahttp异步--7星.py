@@ -8,93 +8,64 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:49
 FilePath     : /项目包/线程小成果/笔趣阁-ahttp异步--7星.py
-LastEditTime : 2022-11-13 17:55:28
+LastEditTime : 2022-11-15 22:27:10
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
 import os
 
-from xt_Ahttp import ahttpGetAll
+from xt_Ahttp import Async_run, ahttpGetAll, get
+from xt_Asyncio import AioCrawl
 from xt_File import savefile
+from xt_Ls_Bqg import get_biqugse_download_url, 结果处理
+from xt_Thread import P_Map, T_Map
 from xt_Time import fn_timer
-from xt_String import Str_Replace
-from xt_Ls_Bqg import get_download_url, clean_Content, 结果处理
-from xt_Thread import P_Map  ##, P_Sub
-# T_Map, T_Sub, T_Pool, P_Map, P_Sub, P_Pool
-
-texts = []
-
-
-def callback_func(resp):
-    if resp is None:
-        return
-
-    index = resp.index
-    response = resp.element
-
-    _name = "".join(response.xpath('//h1/text()'))
-    name = Str_Replace(_name, [(' ', ' '), ('\xa0', ' ')])
-    _showtext = response.xpath('//*[@id="content"]/text()')
-    content = clean_Content(_showtext)
-    texts.append([index, name, content])
 
 
 @fn_timer
-def main(url):
-    bookname, urls, _ = get_download_url(url)
+def ahttp_All(url):
+    bookname, urls, _ = get_biqugse_download_url(url)
     resps = ahttpGetAll(urls)
     text_list = 结果处理(resps)
     text_list.sort(key=lambda x: x[0])  # #排序
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'main.txt', text_list, br='\n')
+    savefile(files + '＆' + bookname + 'ahttp_All.txt', text_list, br='\n')
 
 
 @fn_timer
-def mainbycall(url):
-    bookname, urls, _ = get_download_url(url)
-    ahttpGetAll(urls, callback=callback_func)
-    texts.sort(key=lambda x: x[0])  # #排序
+def Aio_run_Task(url):
+    bookname, urls, _ = get_biqugse_download_url(url)
+    asynctasks = []
+    for index, url in enumerate(urls, 1):
+        task = get(url)
+        task.index = index
+        asynctasks.append(task)
+    tasks = [Async_run(task) for task in asynctasks]
+
+    myaio = AioCrawl()
+    myaio.add_tasks(tasks)
+    resps = myaio.getAllResult()  # #callback=handle_resp处理以后的结果
+    texts = 结果处理(resps)
+    texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'mainbycall.txt', texts, br='\n')
+    savefile(files + '＆' + bookname + 'Aio_run_Task.txt', texts, br='\n')
 
 
-@fn_timer
-def multpool(urls):
-    mypool = P_Map(main, urls)
-    mypool.wait_completed()
-
-
-@fn_timer
-def multpoolback(urls):
-    # !可能结果串进程
-    mypool = P_Map(mainbycall, urls, MaxSem=7)
+def multpool(urls, pool_func=P_Map):
+    mypool = pool_func(ahttp_All, urls)
+    mypool = pool_func(Aio_run_Task, urls)
     mypool.wait_completed()
 
 
 if __name__ == '__main__':
-    url = 'https://www.biqukan8.cc/38_38163/'
-    main(url)
-    # url = 'https://www.biqukan8.cc/45092_45092329/'
-    # main(url)
-    # mainbycall(url)
+    url = 'http://www.biqugse.com/96703/'
+    ahttp_All(url)
+    Aio_run_Task(url)
 
     urls = [
-        'https://www.biqukan.com/38_38836/',
-        'https://www.biqukan.com/2_2760/',
-        'https://www.biqukan.com/2_2714/',
-        'https://www.biqukan.com/73_73450/',
-        'https://www.biqukan.com/76_76015/',
-        'https://www.biqukan.com/75_75766/',
-        'https://www.biqukan.com/46_46394/',
-        'https://www.biqukan.com/61_61396/',
+        'http://www.biqugse.com/96703/',
+        'http://www.biqugse.com/96717/',
+        'http://www.biqugse.com/2367/',
     ]
-    # multpool(urls)
-    # multpoolback(urls)
-
-    # main                      mainbycall
-    # '38_38836'    #@  2.97秒           4秒
-    # '2_2760'      #@  4.23秒           8秒
-    # "2_2714"      #@  19秒         25秒
-    # multpool(urls)  #@  41.33秒
-    # multpoolback(urls)  #@  35秒
+    # multpool(urls)  # T_Map

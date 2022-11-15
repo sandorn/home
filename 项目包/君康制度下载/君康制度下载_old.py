@@ -61,7 +61,7 @@ def login():
         'authorization': None,
         'login.timezone': 'GMT+8:00',
         'login_username': 'liuxinjun',
-        'login_password': 'sand2808',
+        'login_password': 'sand@2808',
         'login_validatePwdStrength': 2,
         'random': None,
         'fontSize': 12,

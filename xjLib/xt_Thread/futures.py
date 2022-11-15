@@ -13,26 +13,26 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
-from concurrent.futures import ThreadPoolExecutor  # 线程池模块
-from concurrent.futures import ProcessPoolExecutor  # 进程池模块
+import multiprocessing
+
+Cpucount = multiprocessing.cpu_count()
+from concurrent.futures import ProcessPoolExecutor  # @进程池模块,可添加
+from concurrent.futures import ThreadPoolExecutor  # @线程池模块,不可添加
 from concurrent.futures import as_completed
 
 # #futuresMap, futuresSub, futuresPool
 # #T_Map, T_Sub, T_Pool,P_Map,P_Sub,P_Pool
 # #使用类工厂，动态生成基于线程或进程的类
 
-import multiprocessing
-
-Cpucount = multiprocessing.cpu_count()
-
 
 def futuresMap(_cls):
+
     class class_wrapper(_cls):
+
         def __init__(self, func, args_iter, MaxSem=66):
             if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = Cpucount
             super().__init__(max_workers=MaxSem)
             self.future_generator = self.map(func, args_iter)
-            # print(9999999999, type(self.future_generator), self.future_generator)
 
         def wait_completed(self):
             '''等待线程池结束，返回全部结果，有序'''
@@ -50,7 +50,9 @@ def futuresMap(_cls):
 
 
 def futuresSub(_cls):
+
     class class_wrapper(_cls):
+
         def __init__(self, func, args_iter, callback=None, MaxSem=66):
             if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = Cpucount
             super().__init__(max_workers=MaxSem)
@@ -92,7 +94,9 @@ def futuresSub(_cls):
 
 
 def futuresPool(_cls):
+
     class class_wrapper(_cls):
+
         def __init__(self, MaxSem=66):
             if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = Cpucount
             super().__init__(max_workers=MaxSem)

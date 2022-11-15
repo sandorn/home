@@ -14,14 +14,12 @@
 import asyncio
 from functools import partial
 
-from aiohttp import TCPConnector, ClientSession, ClientTimeout
-
+from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_Head import MYHEAD
-from xt_Response import ReqResult
 from xt_Requests import TRETRY
+from xt_Response import ReqResult
 
 TIMEOUT = 20  # (30, 9, 9, 9)
-RETRY_TIME = 6  # 最大重试次数
 
 __all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
@@ -38,6 +36,7 @@ post = partial(create_session, "post")
 
 
 class SessionMeta:
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -49,6 +48,7 @@ class SessionMeta:
 
 
 class AsyncTask:
+
     def __init__(self, *args, **kwargs):
         self.id = id(self)
         self.index = id(self)
@@ -133,6 +133,7 @@ async def multi_req(tasks, pool, result_list):
 
 
 async def Async_Fetch(task, result_list, session):
+
     @TRETRY
     async def _fetch_run():
         async with session.request(task.method, task.url, *task.args, cookies=task.cookies, raise_for_status=True, **task.kwargs) as task.response:

@@ -44,6 +44,7 @@ def clean_Content(in_str):
         ';[笔趣看  ]',
         '[笔趣看 ]',
         '<br />',
+        '\t',
     ]
     sub_list = [
         (r'\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)', ''),
@@ -91,10 +92,28 @@ def get_download_url(target):
     res = get(target)
     assert isinstance(res, ReqResult)
     response = res.element
-
     bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
     temp_urls = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
     titles = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()')
+    baseurl = '/'.join(target.split('/')[0:-2])
+    urls = [baseurl + item for item in temp_urls]  ## 章节链接
+    return bookname, urls, titles
+    ## https://chuangshi.qq.com/bk/ds/43345375.html
+    ## /html/body/div[3]/div[3]/div[1]/div[1]/a/b  #书名
+    ## body > div.wrap > div.mainbox > div.main1 > div.title > a > b
+    ## /html/body/div[3]/div[3]/div[1]/div[4]/ul/li[2]/a/@href  #目录
+    ## //ul[@class="block_ul"/li/a/@href  # 章节
+    ## /html/body/div[3]/div[4]/div/div[1]/ul/li[2]/a/b/text() #章节标题
+    ## /html/body/div[1]/div[4]/div[2]/div/div[2]/div/div/div[@class="bookreadercontent"] #正文内容
+
+
+def get_biqugse_download_url(target):
+    res = get(target)
+    assert isinstance(res, ReqResult)
+    response = res.element
+    bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
+    temp_urls = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href')
+    titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()')
     baseurl = '/'.join(target.split('/')[0:-2])
     urls = [baseurl + item for item in temp_urls]  ## 章节链接
     return bookname, urls, titles

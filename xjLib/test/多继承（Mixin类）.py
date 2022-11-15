@@ -1,20 +1,21 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-07-10 12:20:30
-#FilePath     : /xjLib/test/多继承（Mixin类）.py
-#LastEditTime : 2020-07-10 12:21:02
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
+FilePath     : /xjLib/test/多继承（Mixin类）.py
+LastEditTime : 2022-11-15 10:35:54
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 
 class Document:  # 第三方库，不允许修改
+
     def __init__(self, content):
         print('Dcoument __init__')
         self.content = content
@@ -29,8 +30,9 @@ class Pdf(Document):
 
 
 class PrintableMixin:
+
     def print(self):
-        print(self.content, 'Mixin')
+        print(self.content, 'PrintableMixin')
 
 
 class PrintableWord(PrintableMixin, Word):
@@ -42,10 +44,11 @@ print(PrintableWord.mro())
 # [<class '__main__.PrintableWord'>, <class '__main__.PrintableMixin'>, <class '__main__.Word'>, <class '__main__.Document'>, <class 'object'>]
 
 pw = PrintableWord('test string')
-pw.print()  # test string Mixin
+pw.print()  # test string PrintableMixin
 
 
 class SuperPrintableMixin(PrintableMixin):
+
     def print(self):
         print('-' * 20)  # 打印增强
         super().print()

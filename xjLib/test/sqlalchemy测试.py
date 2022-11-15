@@ -14,9 +14,9 @@ LastEditTime : 2020-11-05 14:22:56
 '''
 
 from sqlalchemy import Table
-
 from xt_DAO.xt_chemyMeta import (Base_Model, inherit_table_cls, parent_model_Mixin)
-from xt_DAO.xt_sqlalchemy import (INTEGER, TIMESTAMP, Column, DateTime, Enum, Integer, Numeric, SqlConnection, String, text, validates)
+from xt_DAO.xt_sqlalchemy import (INTEGER, Column, DateTime, Enum, SqlConnection, String, text, validates)
+# TIMESTAMP,Integer, Numeric
 
 
 class Users(Base_Model):
