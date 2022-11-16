@@ -1,22 +1,21 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-14 09:01:46
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-16 17:41:43
-腾讯对象存储，可以储存文件
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
+FilePath     : /xjLib/xt_TxCos.py
+LastEditTime : 2022-11-16 20:28:26
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 from qcloud_cos import CosConfig
 from qcloud_cos import CosS3Client
 import time
-import sys
 
 
 class txConfig:
@@ -27,6 +26,7 @@ class txConfig:
 
 
 class txCos:
+
     def __init__(self):
         self.Bucket = 'snad-1253302746'
         self.client = CosS3Client(CosConfig(

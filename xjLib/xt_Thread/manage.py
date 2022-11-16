@@ -14,9 +14,8 @@
 '''
 
 from threading import Thread, Event
-from queue import Queue, Empty
+from queue import Queue  #, Empty
 import traceback
-import sys
 from time import sleep
 
 
@@ -27,6 +26,7 @@ def _handle_thread_exception(request, exc_info):
 
 class task_object:
     '''任务处理的对象类'''
+
     def __init__(self, func, args=None, kwds=None, callback=None, exc_callback=_handle_thread_exception):
         self.requestID = id(self)
         self.exception = False
@@ -44,6 +44,7 @@ class WorkManager(object):
     '''自编线程池，可以再次添加任务;\n
     获取阶段结果：getAllResult();\n
     关闭线程获取最终结果：wait_completed()'''
+
     def __init__(self, items=None, MaxSem=66, callback=None, exc_callback=_handle_thread_exception, **kwds):
         self.work_queue = Queue()  # 任务队列
         self.result_queue = Queue()  # 结果队列
@@ -114,6 +115,7 @@ class WorkManager(object):
 
 
 class Work(Thread):
+
     def __init__(self, work_queue, result_queue, **kwds):
         super().__init__(**kwds)
         self.daemon = True
@@ -148,6 +150,7 @@ class Work(Thread):
 class thread_pool:
     '''仿写vthread,
     # thread_pool(200)'''
+
     def __init__(self, pool_num=10):
         self._pool_queue = Queue()  # #任务存储,组内queue
         self.main_monitor()  # # 开启监视器线程
@@ -156,6 +159,7 @@ class thread_pool:
         self._result_list = []  # #任务结果存储
 
     def __call__(self, func):
+
         @wraps(func)
         def _run_threads(*args, **kw):
             self._pool_queue.put((func, args, kw))
@@ -172,6 +176,7 @@ class thread_pool:
         self._pool_max_num = num
 
     def _run(self, num):
+
         def _pools_pull():
             while True:
                 args_list = self._pool_queue.get()
@@ -192,6 +197,7 @@ class thread_pool:
             Thread(target=_pools_pull).start()
 
     def main_monitor(self):
+
         def _func():
             while True:
 

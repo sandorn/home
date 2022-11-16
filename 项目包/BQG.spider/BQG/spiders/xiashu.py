@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-14 21:48:46
 FilePath     : /项目包/BQG.spider/BQG/spiders/xiashu.py
-LastEditTime : 2022-11-14 21:49:12
+LastEditTime : 2022-11-16 12:50:36
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -43,21 +43,23 @@ class XiashuSpider(scrapy.Spider):
             # 'BQG.pipelines.PipelineToJson': 200,
             # 'BQG.pipelines.PipelineToJsonExp': 250,
             # 'BQG.pipelines.PipelineToCsv': 300,
-            # 'BQG.pipelines.Pipeline2Csv': 400
-            'BQG.pipelines.PipelineMysql2Txt': 500,
+            'BQG.pipelines.Pipeline2Csv': 400
+            # 'BQG.pipelines.PipelineMysql2Txt': 500,
         },
     }
 
     start_urls = [
-        'https://www.biqukan8.cc/38_38163/',
-        'https://www.biqukan8.cc/0_790/',
+        'http://www.biqugse.com/96703/',
+        'http://www.biqugse.com/96717/',
+        'http://www.biqugse.com/2367/',
     ]
 
     # 编写爬取方法
     def parse(self, response):
         _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
-        全部章节链接 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
-        #全部章节名称 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
+        全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
+        # titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
+
         baseurl = '/'.join(response.url.split('/')[0:-2])
         urls = [baseurl + item for item in 全部章节链接]  ## 章节链接
 
@@ -85,5 +87,5 @@ if __name__ == '__main__':
 
     # 获取当前脚本路径
     filepath = os.path.abspath(__file__)
-    dirpath = os.path.dirname(os.path.dirname(filepath))
+    dirpath = os.path.dirname(filepath)
     ScrapyRun(dirpath, 'xiashu')

@@ -15,9 +15,11 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 '''
+import asyncio
 import codecs
 import csv
 import json
+import os
 from copy import deepcopy
 
 import MySQLdb
@@ -27,15 +29,36 @@ from scrapy.exceptions import DropItem
 from scrapy.exporters import JsonItemExporter
 from twisted.enterprise import adbapi
 from xt_DAO.dbconf import db_conf
+from xt_DAO.xt_Aiomysql import execute_aiomysql
 from xt_DAO.xt_mysql import engine as mysql
-from xt_String import align
+
+
+class PipelineToAiomysql(object):
+
+    def __init__(self):
+        self.sql_list = []
+
+    def process_item(self, item, spider):
+        self.sql_list.append(self.Create_Sql(item))
+        return item
+
+    def Create_Sql(self, item):
+        # 根据item构建sql语句
+        insert_sql = """
+        Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
+        """ % (item['BOOKNAME'], item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT'], item['ZJHERF'])
+        return insert_sql
+
+    def close_spider(self, spider):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(execute_aiomysql('TXbook', self.sql_list))
+        loop.close()
 
 
 class PipelineToSqlTwisted(object):
     # https://blog.51cto.com/u_15127513/4786890
     def __init__(self, dbpool):
         self.dbpool = dbpool
-        self.db = set()
 
     def open_spider(self, spider):
         pass
@@ -51,7 +74,6 @@ class PipelineToSqlTwisted(object):
     def process_item(self, item, spider):
         # 使用twisted将mysql插入变成异步执行
         query = self.dbpool.runInteraction(self.do_insert, item)
-        print(f"PipelineToSqlTwisted --《  {align(item['BOOKNAME'], 16, 'center')}  》\t INDEX:{item['INDEX']} \t {align(item['ZJNAME'], 30)} \t|记录入库")
         query.addErrback(self.handle_error, item, spider)  # 处理异常
         return item
 
@@ -60,7 +82,7 @@ class PipelineToSqlTwisted(object):
         print(f'PipelineToSqlTwisted 异步insert异常 | {failure} | item:{item}')
 
     def do_insert(self, cursor, item):
-        # 根据不同的item 构建不同的sql语句并插入到mysql中
+        # 根据item构建sql语句并执行
         insert_sql = """
         Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
         """ % (item['BOOKNAME'], item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT'], item['ZJHERF'])
@@ -87,7 +109,6 @@ class PipelineToSqlalchemy(object):
             'ZJHERF': _ZJHERF,
         }
         self.connect.insert(_sql_dict, _BOOKNAME)
-        print(f"PipelineToSqlalchemy --《  {align(item['BOOKNAME'], 16, 'center')}  》\t INDEX:{item['INDEX']} \t {align(item['ZJNAME'], 30)} \t|记录入库")
         return item
 
     def close_spider(self, spider):
@@ -106,7 +127,6 @@ class PipelineMysql2Txt(object):
             self.file_set.add(bookname)
             self.file[bookname] = open(bookname + '.txt', 'w', encoding='utf-8')
             self.file[bookname].write(f"-----------------------{bookname}-----------------------\n")
-        print(f"PipelineMysql2Txt --《  {align(item['BOOKNAME'], 16, 'center')}  》\t INDEX:{item['INDEX']} \t {align(item['ZJNAME'], 30)} \t|记录入库")
         return item
 
     def close_spider(self, spider):
@@ -157,7 +177,6 @@ class PipelineToTxt:
         bookname = item['BOOKNAME']
         self.file[bookname] = open(bookname + '.txt', 'w', encoding='utf-8')
         self.file[bookname].write(f"-----------------------{bookname}-----------------------\n")
-        print(f"PipelineToTxt --《  {align(item['BOOKNAME'], 16, 'center')}  》\t INDEX:{item['INDEX']} \t {align(item['ZJNAME'], 30)} \t|记录入库")
         self.content_list.append(item)
         return item
 
@@ -185,21 +204,31 @@ class PipelineToSql(object):
             Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
             self.connect.worKon(Csql)
             self.db.add(_BOOKNAME)
-        _BOOKNAME = item['BOOKNAME']
+
         _INDEX = item['INDEX']
         _ZJNAME = item['ZJNAME']
         _ZJTEXT = item['ZJTEXT']
         _ZJHERF = item['ZJHERF']
 
-        _sql_dict = {
-            'BOOKNAME': _BOOKNAME,
-            'INDEX': _INDEX,
-            'ZJNAME': _ZJNAME,
-            'ZJTEXT': _ZJTEXT,
-            'ZJHERF': _ZJHERF,
-        }
-        self.connect.insert(_sql_dict, _BOOKNAME)
-        print(f"PipelineToSql --《  {align(item['BOOKNAME'], 16, 'center')}  》\t INDEX:{item['INDEX']} \t {align(item['ZJNAME'], 30)} \t|记录入库")
+        # 避免重复插入章节
+        isnullSql = """
+        SELECT 1  FROM %s WHERE ZJNAME='%s' LIMIT 1
+        """ % (_BOOKNAME, _ZJNAME)
+        ret = self.connect.query(isnullSql)
+        if ret:
+            print('书籍:' + _BOOKNAME + '|章节:' + _ZJNAME + '|已存在，更新数据')
+            _sql = """
+            UPDATE %s SET ZJTEXT = '%s' WHERE ZJNAME='%s'
+            """ % (_BOOKNAME, _ZJTEXT, _ZJNAME)
+            self.connect.update(_sql)
+            self.connect.commit()
+        else:
+            _sql = """
+            Insert into %s (`BOOKNAME`,`INDEX`,`ZJNAME`,`ZJTEXT`,`ZJHERF`) values ('%s',%d ,'%s','%s','%s')
+            """ % (_BOOKNAME, _BOOKNAME, _INDEX, _ZJNAME, _ZJTEXT, _ZJHERF)
+            self.connect.insert(_sql)
+            self.connect.commit()
+
         return item
 
     def close_spider(self, spider):
@@ -216,8 +245,6 @@ class PipelineToJson:
         # 存储数据，将 Item 实例作为 json 数据写入到文件中
         line = json.dumps(dict(item), ensure_ascii=False) + '\n'
         self.file.write(line)
-        self.connect.insert(_sql_dict, _BOOKNAME)
-        print(f"PipelineToJson --《  {align(item['BOOKNAME'], 16, 'center')}  》\t INDEX:{item['INDEX']} \t {align(item['ZJNAME'], 30)} \t|记录入库")
         return item
 
     def close_spider(self, spider):
@@ -239,7 +266,6 @@ class PipelineToJsonExp:
     # 将 Item 实例导出到 json 文件
     def process_item(self, item, spider):
         self.exporter.export_item(item)
-        print(f"PipelineToJsonExp --《  {align(item['BOOKNAME'], 16, 'center')}  》\t INDEX:{item['INDEX']} \t {align(item['ZJNAME'], 30)} \t|记录入库")
         return item
 
     def close_spider(self, spider):
@@ -257,7 +283,6 @@ class PipelineToCsv:
         # 存储数据，将 Item 实例作为 json 数据写入到文件中
         res = json.dumps(dict(item), ensure_ascii=False)
         self.file.write(res + '\n')
-        print(f"PipelineToCsv --《  {align(item['BOOKNAME'], 16, 'center')}  》\t INDEX:{item['INDEX']} \t {align(item['ZJNAME'], 30)} \t|记录入库")
         return item
 
     def close_spider(self, spider):
@@ -274,7 +299,6 @@ class Pipeline2Csv:
         self.file = open(item['BOOKNAME'] + '_2.csv', 'a', newline='')
         self.writer = csv.writer(self.file, dialect="excel")  # csv写法
         self.writer.writerow([item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT']])
-        print(f"Pipeline2Csv --《  {align(item['BOOKNAME'], 16, 'center')}  》\t INDEX:{item['INDEX']} \t {align(item['ZJNAME'], 30)} \t|记录入库")
         return item
 
     def close_spider(self, spider):
@@ -282,8 +306,7 @@ class Pipeline2Csv:
 
 
 if __name__ == '__main__':
-    import os
-
+    # from xt_Log import mylog
     from xt_ScrapyRun import ScrapyRun
 
     # 获取当前脚本路径

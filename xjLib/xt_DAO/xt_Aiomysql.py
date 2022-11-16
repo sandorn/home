@@ -19,9 +19,10 @@ import aiomysql
 import asyncio
 from xt_DAO.dbconf import db_conf
 from copy import deepcopy
+from xt_Class import item_Mixin
 
 
-class Pmysql:
+class xt_aiomysql(item_Mixin):
 
     def __init__(self):
         self.coon = None
@@ -45,45 +46,107 @@ class Pmysql:
         cur = await conn.cursor()
         return conn, cur
 
-    async def query(self, query, param=None):
+    async def query(self, sql, args=None):
+        """
+        :param   sql: sql语句
+        :param args: 参数
+        :return:
+        """
         conn, cur = await self.getCurosr()
         try:
-            await cur.execute(query, param)
+            await cur.execute(sql, args)
             return await cur.fetchall()
         except Exception:
             print(traceback.format_exc())
         finally:
+            await conn.commit()
             if cur: await cur.close()
             # 释放掉conn,将连接放回到连接池中
             await self.pool.release(conn)
 
+    async def execute(self, sql, args=None):
+        """
+        :param   sql: sql语句
+        :param args: 参数
+        :return:
+        """
+        conn, cur = await self.getCurosr()
+        try:
+            await cur.execute(sql, args)
+            affetced = cur.rowcount
+        except Exception:
+            print(traceback.format_exc())
+        finally:
+            await conn.commit()
+            if cur: await cur.close()
+            # 释放掉conn,将连接放回到连接池中
+            await self.pool.release(conn)
+            return affetced
 
-async def AiomysqlCls(key='default'):
-    mysqlobj = Pmysql()
-    await mysqlobj.initpool(key)
-    return mysqlobj
+    async def executemany(self, sql, data):
+        """
+        增删改 操作
+        :param  sql: sql语句框架
+        :param data: sql语句内容
+        :return:
+        """
+        conn, cur = await self.getCurosr()
+        try:
+            await cur.executemany(sql, data)
+            affetced = cur.rowcount
+        except Exception:
+            print(traceback.format_exc())
+        finally:
+            await conn.commit()
+            if cur: await cur.close()
+            # 释放掉conn,将连接放回到连接池中
+            await self.pool.release(conn)
+            return affetced
+
+
+async def Create_xt_aiomysql(db_name='default'):
+    Aiomysql_obj = xt_aiomysql()
+    await Aiomysql_obj.initpool(db_name)
+    return Aiomysql_obj
+
+
+async def query_aiomysql(db_name, sql_list):
+    Aiomysql_obj = await Create_xt_aiomysql(db_name)
+    results = await asyncio.gather(*[Aiomysql_obj.query(sql) for sql in sql_list])
+    return results
+
+
+async def execute_aiomysql(db_name, sql_list):
+    Aiomysql_obj = await Create_xt_aiomysql(db_name)
+    results = await asyncio.gather(*[Aiomysql_obj.execute(sql) for sql in sql_list])
+    return results
+
+
+async def executemany_aiomysql(db_name, sql_mode, data):
+    Aiomysql_obj = await Create_xt_aiomysql(db_name)
+    results = await asyncio.gather(Aiomysql_obj.executemany(sql_mode, data))
+    return results
 
 
 if __name__ == '__main__':
 
-    async def test(mysqlobj, sql):
-        r = await mysqlobj.query(*sql)
-        return r
-
-    async def querysum(dbo, sql1, attr):
-        mysqlobj = await AiomysqlCls(dbo)
-        result = await asyncio.gather(test(mysqlobj, sql1), test(mysqlobj, attr))
-        for i in result:
-            print(i)
-
-    dbo = 'TXbx'
-    sql1 = ("select * from users2", )
-    attr = "select * from users2 where id = (%s)", (1, )
+    query_list = [
+        "select * from users2",
+        "select * from users2 where id = 1",
+    ]
+    execute_sql = "update users2 set username='刘新军' where ID = 2",
+    executemany_sql = "update users2 set username=%s where ID = %s"
+    executemany_data = [('刘澈', 1), ('刘新军', 2)]
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(querysum(dbo, sql1, attr))
+    # loop.run_until_complete(execute_aiomysql('TXbx', execute_sql))
+    executemany_res = loop.run_until_complete(executemany_aiomysql('TXbx', executemany_sql, executemany_data))
+    print(executemany_res)
+    query_res = loop.run_until_complete(query_aiomysql('TXbx', query_list))
+    print(query_res)
 '''
 python并发编程之asyncio协程(三) - 天宇之游 - 博客园
 https://www.cnblogs.com/cwp-bg/p/9590700.html
+https://cloud.tencent.com/developer/article/1625730?from=15425
 
 asyncio.get_event_loop():创建一个事件循环，所有的异步函数都需要在事件循环中运行；
 asyncio.ensure_future()：创建一个任务

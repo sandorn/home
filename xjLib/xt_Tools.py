@@ -31,6 +31,7 @@ class ExceptContext(object):
         with ExceptContext(Exception, errback=lambda name, *args:print(name)):
             raise Exception("test. ..")
     """
+
     def __init__(self, exception=Exception, func_name=None, errback=lambda func_name, *args: traceback.print_exception(*args) is None, finalback=lambda got_err: got_err):
         """
         :param exception: 指定要监控的异常
@@ -58,11 +59,14 @@ class ExceptContext(object):
 
 def timeout(timeout_time, default):
     """超时器，装饰函数并指定其超时时间"""
+
     class DecoratorTimeout(Exception):
         pass
 
     def timeout_function(func):
+
         def function(*args):
+
             def timeout_handler(signum, frame):
                 raise DecoratorTimeout()
 
@@ -87,14 +91,16 @@ def call_later(callback, call_args=tuple(), immediately=True, interval=1):
     应用场景：
     被装饰的方法需要大量调用，随后需要调用保存方法，但是因为被装饰的方法访问量很高，而保存方法开销很大
     所以设计在装饰方法持续调用一定间隔后，再调用保存方法。规定间隔内，无论调用多少次被装饰方法，保存方法只会
-    调用一次，除非immediately=True
+    调用一次，除非  immediately=True
     :param callback: 随后需要调用的方法名
     :param call_args: 随后需要调用的方法所需要的参数
     :param immediately: 是否立即调用
     :param interval: 调用间隔
     :return:
     """
+
     def decorate(func):
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             self = args[0]
@@ -169,6 +175,7 @@ func_code_name_list = [
 
 def catch_wraps(func, bool=False):
     '''捕捉异常的装饰器'''
+
     def wrapper(*args, **keyargs):
         try:
             return func(*args, **keyargs)
@@ -206,7 +213,9 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: (int, float) = 0.2, s
         :param default: 默认值/默认值生成函数
         :return: 被装饰函数的执行结果。
     """
+
     def decorator(func):
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             attempts = 0
@@ -249,6 +258,7 @@ def gethelp(obj):
 if __name__ == '__main__':
 
     def trys():
+
         @catch_wraps
         def simple():
             return 5 / 0

@@ -17,7 +17,6 @@
 import os
 import sys
 
-# '***获取上级目录***'
 _p = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(_p)
 
@@ -52,17 +51,26 @@ class Spider(scrapy.Spider):
     # allowed_domains = ['biqukan8.cc']  # 设定域名
 
     custom_settings = {
-        # !此爬虫使用数据库模式,通过数据库判断是否重复录入
+        #@ 使用数据库模式,通过数据库判断是否重复录入
         'ITEM_PIPELINES': {
-            'BQG.pipelines.PipelineToSqlalchemy': 20,
+            'BQG.pipelines.PipelineToAiomysql': 20,
+            # 'BQG.pipelines.PipelineToSqlalchemy': 20,
             # 'BQG.pipelines.PipelineToSqlTwisted': 30,
             # 'BQG.pipelines.PipelineToSql': 40,
+            # 'BQG.pipelines.PipelineCheck': 50,
+            # 'BQG.pipelines.PipelineToTxt': 100,
+            # 'BQG.pipelines.PipelineToJson': 200,
+            # 'BQG.pipelines.PipelineToJsonExp': 250,
+            # 'BQG.pipelines.PipelineToCsv': 300,
+            # 'BQG.pipelines.Pipeline2Csv': 400
+            # 'BQG.pipelines.PipelineMysql2Txt': 500,
         },
     }
 
     start_urls = [
-        'https://www.biqukan8.cc/38_38163/',
-        'https://www.biqukan8.cc/0_790/',
+        # 'http://www.biqugse.com/96703/',
+        # 'http://www.biqugse.com/96717/',
+        'http://www.biqugse.com/2367/',
     ]
 
     bookdb = set()
@@ -79,38 +87,34 @@ class Spider(scrapy.Spider):
         _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
         self.bookdb.add(Ex_md5(_BOOKNAME))  # k相当于字典名称
         DBtable = make_model(_BOOKNAME)
-
         sqlhelper = SqlConnection(DBtable, 'TXbook')
 
         if _BOOKNAME not in self.zjurls:
-            # #构建set字典，用于去重
+            # 构建set字典，用于去重
             self.zjurls[_BOOKNAME] = set()
             res = sqlhelper.select(Columns=['ZJHERF'])
             pandasData = [r[0] for r in res]
-            # #set字典填充数据
+            # set字典填充数据
             for _ZJHERF in pandasData:
                 self.zjurls[_BOOKNAME].add(Ex_md5(_ZJHERF))
-
-        全部章节链接 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
-        titles = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
+        全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
+        # titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
         baseurl = '/'.join(response.url.split('/')[0:-2])
         urls = [baseurl + item for item in 全部章节链接]  ## 章节链接
 
         for index in range(len(urls)):
-            _ZJHERF = urls[index]
-            _ZJNAME = titles[index]
-            if Ex_md5(_ZJHERF) not in self.zjurls[_BOOKNAME]:
-                self.zjurls[_BOOKNAME].add(Ex_md5(_ZJHERF))
+            if Ex_md5(urls[index]) not in self.zjurls[_BOOKNAME]:
+                self.zjurls[_BOOKNAME].add(Ex_md5(urls[index]))
                 # @meta={}传递参数,给callback
-                request = scrapy.Request(_ZJHERF, meta={'index': index}, callback=self.parse_content)
+                request = scrapy.Request(urls[index], meta={'index': index}, callback=self.parse_content)
                 yield request
             else:
-                print('spilerByset--《' + align(_BOOKNAME, 16, 'center') + '》\t' + align(_ZJNAME, 30) + '\t | 记录重复，剔除！！')
+                print('spilerByset--《' + align(_BOOKNAME, 16, 'center') + '》\t' + align(index, 30) + '\t | 记录重复，剔除！！')
                 pass
 
     def parse_content(self, response):
         item = BqgItem()
-        item['BOOKNAME'] = response.xpath('//div[@class="p"]/a[2]/text()').extract_first()
+        item['BOOKNAME'] = response.xpath('//div[@class="con_top"]/a[2]/text()').extract_first()
         item['INDEX'] = response.meta['index']  # @接收meta={}传递的参数
         item['ZJNAME'] = response.xpath('//h1/text()').extract_first()
         item['ZJNAME'] = Str_Replace(item['ZJNAME'].strip('\r\n'), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
@@ -122,11 +126,12 @@ class Spider(scrapy.Spider):
 
 
 if __name__ == '__main__':
+    # from xt_Log import mylog
     from xt_ScrapyRun import ScrapyRun
 
     # 获取当前脚本路径
     filepath = os.path.abspath(__file__)
-    dirpath = os.path.dirname(os.path.dirname(filepath))
+    dirpath = os.path.dirname(filepath)
     ScrapyRun(dirpath, 'spilerByset')
 
 ###############################################################################

@@ -15,7 +15,7 @@ LastEditTime : 2021-04-14 19:36:16
 
 from xt_Ahttp import ahttpGet
 from xt_Requests import get
-from xt_String import Str_Replace, Str_Clean, Re_Sub
+from xt_String import Str_Replace, Str_Clean, Re_Sub, upprintable_chars
 from xt_Response import ReqResult
 
 
@@ -46,13 +46,23 @@ def clean_Content(in_str):
         '<br />',
         '\t',
     ]
+    clean_list += upprintable_chars
     sub_list = [
         (r'\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)', ''),
     ]
     repl_list = [
-        (u'\u3000', ' '),
+        (u'\u3000', '  '),
         (u'\xa0', ' '),
+        (u'\u0009', ' '),
+        (u'\u000B', ' '),
+        (u'\u000C', ' '),
+        (u'\u0020', ' '),
         (u'\u00a0', ' '),
+        (u'\uFFFF', ' '),
+        (u'\u000A', '\n'),
+        (u'\u000D', '\n'),
+        (u'\u2028', '\n'),
+        (u'\u2029', '\n'),
         ('\r', '\n'),
         ('    ', '\n    '),
         ('\r\n', '\n'),

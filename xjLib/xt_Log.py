@@ -29,7 +29,8 @@ _levelToName = {
 }
 
 
-class log(object):
+class xt_log(object):
+
     def __init__(self, level=logging.DEBUG, logger=__name__):
         self.level = level
         self.filename = datetime.today().strftime('%Y%m%d') + '-' + _levelToName.get(level) + '.log'
@@ -100,4 +101,4 @@ class log(object):
         [commad(item) for item in list(args)]
 
 
-mylog = log()
+mylog = xt_log()
