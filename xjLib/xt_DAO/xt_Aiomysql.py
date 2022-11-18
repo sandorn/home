@@ -36,7 +36,12 @@ class xt_aiomysql(item_Mixin):
                 conf = deepcopy(db_conf[key])
             if 'type' in conf: conf.pop('type')
 
-            self.pool = await aiomysql.create_pool(minsize=5, maxsize=10, autocommit=False, **conf)
+            self.pool = await aiomysql.create_pool(
+                minsize=5,  # 连接池最小值
+                maxsize=10,  # 连接池最大值
+                autocommit=False,  # 自动提交模式
+                **conf,
+            )
             return self.pool
         except Exception:
             print('connect error:', Exception)

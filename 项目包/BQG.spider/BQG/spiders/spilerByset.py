@@ -25,14 +25,15 @@ from items import BqgItem
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from xt_DAO.xt_chemyMeta import Base_Model
-from xt_DAO.xt_sqlalchemy import SqlConnection
+from xt_DAO.xt_mysql import engine as mysql
 from xt_Ls_Bqg import clean_Content
-from xt_String import Ex_md5, Str_Replace, align
+from xt_String import Str_Replace, align
 
 
 def make_model(_BOOKNAME):
     # # 类工厂函数
     class table_model(Base_Model):
+        # Base_Model 继承自from xt_DAO.xt_chemyMeta.Model_Method_Mixin
         __tablename__ = _BOOKNAME
 
         ID = Column(INTEGER(10), primary_key=True)
@@ -48,68 +49,56 @@ def make_model(_BOOKNAME):
 class Spider(scrapy.Spider):
     name = 'spilerByset'  # 设置name
 
-    # allowed_domains = ['biqukan8.cc']  # 设定域名
-
     custom_settings = {
-        #@ 使用数据库模式,通过数据库判断是否重复录入
+        #$ 使用数据库,判断重复入库
         'ITEM_PIPELINES': {
-            'BQG.pipelines.PipelineToAiomysql': 20,
-            # 'BQG.pipelines.PipelineToSqlalchemy': 20,
+            # 'BQG.pipelines.PipelineToAiomysql': 20,
+            'BQG.pipelines.PipelineToSqlalchemy': 20,
             # 'BQG.pipelines.PipelineToSqlTwisted': 30,
-            # 'BQG.pipelines.PipelineToSql': 40,
-            # 'BQG.pipelines.PipelineCheck': 50,
-            # 'BQG.pipelines.PipelineToTxt': 100,
-            # 'BQG.pipelines.PipelineToJson': 200,
-            # 'BQG.pipelines.PipelineToJsonExp': 250,
-            # 'BQG.pipelines.PipelineToCsv': 300,
-            # 'BQG.pipelines.Pipeline2Csv': 400
-            # 'BQG.pipelines.PipelineMysql2Txt': 500,
+            # 'BQG.pipelines.PipelineToMysql': 40,
         },
     }
 
     start_urls = [
-        # 'http://www.biqugse.com/96703/',
-        # 'http://www.biqugse.com/96717/',
-        'http://www.biqugse.com/2367/',
+        'http://www.biqugse.com/96703/',
+        'http://www.biqugse.com/96717/',
+        # 'http://www.biqugse.com/2367/',
     ]
-
-    bookdb = set()
-    zjurls = {}
 
     # 编写爬取方法
     def start_requests(self):
         # 循环生成需要爬取的地址
+        self.connect = mysql('TXbook')
+        self.db = set()
         for url in self.start_urls:
             yield scrapy.Request(url=url, callback=self.parse)  # dont_filter=True 表示不过滤
 
     def parse(self, response):
         # #获取书籍名称
         _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
-        self.bookdb.add(Ex_md5(_BOOKNAME))  # k相当于字典名称
-        DBtable = make_model(_BOOKNAME)
-        sqlhelper = SqlConnection(DBtable, 'TXbook')
+        if _BOOKNAME not in self.db:
+            # 避免重复创建数据库
+            Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
+            self.connect.execute(Csql)
+            self.db.add(_BOOKNAME)
 
-        if _BOOKNAME not in self.zjurls:
-            # 构建set字典，用于去重
-            self.zjurls[_BOOKNAME] = set()
-            res = sqlhelper.select(Columns=['ZJHERF'])
-            pandasData = [r[0] for r in res]
-            # set字典填充数据
-            for _ZJHERF in pandasData:
-                self.zjurls[_BOOKNAME].add(Ex_md5(_ZJHERF))
+        _result = self.connect.get_all_from_db(_BOOKNAME)
+        ZJHERF_list = [res[5] for res in _result]
+
         全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
         # titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
         baseurl = '/'.join(response.url.split('/')[0:-2])
         urls = [baseurl + item for item in 全部章节链接]  ## 章节链接
 
         for index in range(len(urls)):
-            if Ex_md5(urls[index]) not in self.zjurls[_BOOKNAME]:
-                self.zjurls[_BOOKNAME].add(Ex_md5(urls[index]))
+            if urls[index] not in ZJHERF_list:
                 # @meta={}传递参数,给callback
                 request = scrapy.Request(urls[index], meta={'index': index}, callback=self.parse_content)
                 yield request
             else:
-                print('spilerByset--《' + align(_BOOKNAME, 16, 'center') + '》\t' + align(index, 30) + '\t | 记录重复，剔除！！')
+                # request = scrapy.Request(urls[index], meta={'index': index}, callback=self.parse_content)
+                # yield request
+                print(f'spilerByset-->《{align( _BOOKNAME, 16)}》\t{align(index, 6)}\t | 记录重复，剔除！！')
                 pass
 
     def parse_content(self, response):
@@ -126,7 +115,6 @@ class Spider(scrapy.Spider):
 
 
 if __name__ == '__main__':
-    # from xt_Log import mylog
     from xt_ScrapyRun import ScrapyRun
 
     # 获取当前脚本路径

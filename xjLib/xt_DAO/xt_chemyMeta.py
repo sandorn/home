@@ -14,7 +14,7 @@ LastEditTime : 2021-03-25 10:03:29
 '''
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 # DeclarativeMeta  类;declarative_base类工厂
-from xt_Class import item_Mixin  # , typed_property
+from xt_Class import item_Mixin
 from xt_DAO.dbconf import make_connect_string
 
 
@@ -66,11 +66,9 @@ class Model_Method_Mixin(item_Mixin):
         cls._c = [col.name for col in cls.__table__.c]
         return cls._c
 
-    # #获取字段名列表
     @classmethod
     def _fields(cls):
-        '''获取字段名列表，
-        # 弃用'''
+        '''获取字段名列表， # 弃用'''
         listtmp = [attr for attr in dir(cls) if not callable(getattr(cls, attr)) and not attr.startswith("__") and attr not in ['_sa_class_manager', '_decl_class_registry', '_sa_instance_state', 'metadata']]
         return listtmp
 
@@ -93,7 +91,7 @@ class Model_Method_Mixin(item_Mixin):
     __str__ = __repr__
 
 
-Base_Model = declarative_base(cls=Model_Method_Mixin)  # #生成SQLORM基类,已混入继承了方法
+Base_Model = declarative_base(cls=Model_Method_Mixin)  # #生成SQLORM基类,混入继承Model_Method_Mixin
 '''metadata = Base.metadata'''
 '''定义table  引用方式: from xt_DAO.xt_chemyMeta import Base_Model'''
 
@@ -106,7 +104,17 @@ class parent_model_Mixin:
 def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict={}):
     """从指定table_model_cls类继承，重新定义表名；
     target_table_name：目标表名，用于数据库和返回的类名；
-    table_model_cls：包含字段信息的表model类，必须有__abstract__ = True，或混入继承inherit_model_Mixin
+    table_model_cls：包含字段信息的表model类，必须有__abstract__ = True，或混入继承
+    table_model_cls 例子：
+    class table_model(Base_Model):
+        __tablename__ = _BOOKNAME
+
+        ID = Column(INTEGER(10), primary_key=True)
+        BOOKNAME = Column(VARCHAR(255), nullable=False)
+        INDEX = Column(INTEGER(10), nullable=False)
+        ZJNAME = Column(VARCHAR(255), nullable=False)
+        ZJTEXT = Column(TEXT, nullable=False)
+        ZJHERF = Column(VARCHAR(255), nullable=False)
     """
     if not isinstance(table_model_cls, DeclarativeMeta):
         raise Exception('table_model_cls must be a DeclarativeMeta class')
@@ -157,7 +165,7 @@ def getModel(source_table_name, engine, target_table_name=None):
     根据engine连接数据库，读取表source_table_name，返回model类
     source_table_name:读取表名
     target_table_name:另存为表名，如为None则返回source_table_name
-    engine:create_engine对象，指定要操作的数据库连接
+    engine:create_engine 对象，指定要操作的数据库连接
     """
     Base_Model.metadata.reflect(engine)
     source_table: sqlalchemy.sql.schema.Table = Base_Model.metadata.tables[source_table_name]
@@ -174,7 +182,7 @@ def getModel(source_table_name, engine, target_table_name=None):
     return type(return_name, (Base_Model, ), target_kws)
 
 
-def creat_sqlalchemy_db_class(tablename, filename=None, key='default'):
+def Data_Model_2_py(tablename, filename=None, key='default'):
     '''
     根据已有数据库生成模型
     sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf
@@ -189,7 +197,7 @@ def creat_sqlalchemy_db_class(tablename, filename=None, key='default'):
 
 
 if __name__ == "__main__":
-    # creat_sqlalchemy_db_class('uuu', 'd:/1.py', 'TXbook')
+    # Data_Model_2_py('uuu', 'd:/1.py', 'TXbook')
     from xt_DAO.xt_sqlalchemy import SqlConnection, get_engine
     engine, session = get_engine('TXbx')
     t = getModel('users2', engine)  # , 'users99')

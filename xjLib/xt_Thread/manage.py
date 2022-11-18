@@ -13,10 +13,11 @@
 #==============================================================
 '''
 
-from threading import Thread, Event
+from threading import Thread, Event, main_thread
 from queue import Queue  #, Empty
 import traceback
 from time import sleep
+from functools import wraps
 
 
 def _handle_thread_exception(request, exc_info):
@@ -100,7 +101,7 @@ class WorkManager(object):
         result_list = []
         while not self.result_queue.empty():
             res = self.result_queue.get_nowait()
-            # !get(False) 任务异步出队 get_nowait()
+            # !  get(False) 任务异步出队 get_nowait()
             result_list.append(res)
         return result_list
 

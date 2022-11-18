@@ -19,18 +19,36 @@ import asyncio
 import codecs
 import csv
 import json
-import os
 from copy import deepcopy
 
 import MySQLdb
 import numpy
 import pandas
-from scrapy.exceptions import DropItem
 from scrapy.exporters import JsonItemExporter
+from sqlalchemy import Column
+from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from twisted.enterprise import adbapi
 from xt_DAO.dbconf import db_conf
 from xt_DAO.xt_Aiomysql import execute_aiomysql
+from xt_DAO.xt_chemyMeta import Base_Model
 from xt_DAO.xt_mysql import engine as mysql
+from xt_DAO.xt_sqlalchemy import SqlConnection
+
+
+def make_model(_BOOKNAME):
+    # # 类工厂函数
+    class table_model(Base_Model):
+        # Base_Model 继承自from xt_DAO.xt_chemyMeta.Model_Method_Mixin
+        __tablename__ = _BOOKNAME
+
+        ID = Column(INTEGER(10), primary_key=True)
+        BOOKNAME = Column(VARCHAR(255), nullable=False)
+        INDEX = Column(INTEGER(10), nullable=False)
+        ZJNAME = Column(VARCHAR(255), nullable=False)
+        ZJTEXT = Column(TEXT, nullable=False)
+        ZJHERF = Column(VARCHAR(255), nullable=False)
+
+    return table_model
 
 
 class PipelineToAiomysql(object):
@@ -55,14 +73,36 @@ class PipelineToAiomysql(object):
         loop.close()
 
 
+class PipelineToSqlalchemy(object):
+
+    def __init__(self):
+        self.sqlhelper = ''
+        self.DBtable = ''
+        self.db = set()
+
+    def process_item(self, item, spider):
+        _BOOKNAME = item['BOOKNAME']
+        if _BOOKNAME not in self.db:
+            # @连接数据库，无表则创建
+            self.DBtable = make_model(_BOOKNAME)
+            self.sqlhelper = SqlConnection(self.DBtable, 'TXbook')
+            self.db.add(_BOOKNAME)
+
+        ZJHERF_list = self.sqlhelper.pd_get_list(_BOOKNAME, 'ZJHERF') or []
+
+        if item['ZJHERF'] in ZJHERF_list:
+            self.sqlhelper.update({'ZJHERF': item['ZJHERF']}, dict(item))
+        else:
+            self.sqlhelper.insert(dict(item))
+        return item
+
+    def close_spider(self, spider):
+        del self.sqlhelper
+        del self.db
+
+
 class PipelineToSqlTwisted(object):
     # https://blog.51cto.com/u_15127513/4786890
-    def __init__(self, dbpool):
-        self.dbpool = dbpool
-
-    def open_spider(self, spider):
-        pass
-
     @classmethod
     def from_settings(cls, settings):
         # #用于获取settings配置文件中的信息
@@ -70,6 +110,9 @@ class PipelineToSqlTwisted(object):
         if 'type' in config: config.pop('type')
         dbpool = adbapi.ConnectionPool("MySQLdb", **config)
         return cls(dbpool)
+
+    def __init__(self, dbpool):
+        self.dbpool = dbpool
 
     def process_item(self, item, spider):
         # 使用twisted将mysql插入变成异步执行
@@ -89,30 +132,31 @@ class PipelineToSqlTwisted(object):
         cursor.execute(insert_sql)
 
 
-class PipelineToSqlalchemy(object):
+class PipelineToMysql(object):
 
     def __init__(self):
-        self.connect = mysql('TXbook')
+        self.connect = mysql('TXbook', 'MySQLdb')
+        self.db = set()
 
     def process_item(self, item, spider):
         _BOOKNAME = item['BOOKNAME']
-        _INDEX = item['INDEX']
-        _ZJNAME = item['ZJNAME']
-        _ZJTEXT = item['ZJTEXT']
-        _ZJHERF = item['ZJHERF']
+        if _BOOKNAME not in self.db:
+            # 避免重复创建数据库
+            Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
+            self.connect.execute(Csql)
+            self.db.add(_BOOKNAME)
 
-        _sql_dict = {
-            'BOOKNAME': _BOOKNAME,
-            'INDEX': _INDEX,
-            'ZJNAME': _ZJNAME,
-            'ZJTEXT': _ZJTEXT,
-            'ZJHERF': _ZJHERF,
-        }
-        self.connect.insert(_sql_dict, _BOOKNAME)
+        _result = self.connect.get_all_from_db(_BOOKNAME)
+        ZJHERF_list = [res[5] for res in _result]
+        if item['ZJHERF'] in ZJHERF_list:
+            self.connect.update(dict(item), {'ZJHERF': item['ZJHERF']}, _BOOKNAME)
+        else:
+            self.connect.insert(dict(item), _BOOKNAME)
         return item
 
     def close_spider(self, spider):
         del self.connect
+        del self.db
 
 
 class PipelineMysql2Txt(object):
@@ -150,23 +194,6 @@ class PipelineMysql2Txt(object):
         self.connect.close()
 
 
-class PipelineCheck(object):
-
-    def __init__(self):
-        self.names_seen = set()
-
-    def process_item(self, item, spider):
-        if item['ZJNAME'] in self.names_seen:
-            print(f"PipelineCheck--《{item['BOOKNAME']}》--\t {item['ZJNAME']} \t | 记录重复，剔除！！")
-            raise DropItem("PipelineCheck Duplicate item found: %s" % item)
-        else:
-            self.names_seen.add(item['ZJNAME'])
-            return item
-
-    def close_spider(self, spider):
-        del self.names_seen
-
-
 class PipelineToTxt:
 
     def __init__(self):
@@ -189,50 +216,6 @@ class PipelineToTxt:
 
         for key in self.file.keys():
             self.file[key].close()
-
-
-class PipelineToSql(object):
-
-    def __init__(self):
-        self.connect = mysql('TXbook')
-        self.db = set()
-
-    def process_item(self, item, spider):
-        _BOOKNAME = item['BOOKNAME']
-        if _BOOKNAME not in self.db:
-            # 避免重复创建数据库
-            Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
-            self.connect.worKon(Csql)
-            self.db.add(_BOOKNAME)
-
-        _INDEX = item['INDEX']
-        _ZJNAME = item['ZJNAME']
-        _ZJTEXT = item['ZJTEXT']
-        _ZJHERF = item['ZJHERF']
-
-        # 避免重复插入章节
-        isnullSql = """
-        SELECT 1  FROM %s WHERE ZJNAME='%s' LIMIT 1
-        """ % (_BOOKNAME, _ZJNAME)
-        ret = self.connect.query(isnullSql)
-        if ret:
-            print('书籍:' + _BOOKNAME + '|章节:' + _ZJNAME + '|已存在，更新数据')
-            _sql = """
-            UPDATE %s SET ZJTEXT = '%s' WHERE ZJNAME='%s'
-            """ % (_BOOKNAME, _ZJTEXT, _ZJNAME)
-            self.connect.update(_sql)
-            self.connect.commit()
-        else:
-            _sql = """
-            Insert into %s (`BOOKNAME`,`INDEX`,`ZJNAME`,`ZJTEXT`,`ZJHERF`) values ('%s',%d ,'%s','%s','%s')
-            """ % (_BOOKNAME, _BOOKNAME, _INDEX, _ZJNAME, _ZJTEXT, _ZJHERF)
-            self.connect.insert(_sql)
-            self.connect.commit()
-
-        return item
-
-    def close_spider(self, spider):
-        del self.connect
 
 
 class PipelineToJson:
@@ -303,13 +286,3 @@ class Pipeline2Csv:
 
     def close_spider(self, spider):
         self.file.close()
-
-
-if __name__ == '__main__':
-    # from xt_Log import mylog
-    from xt_ScrapyRun import ScrapyRun
-
-    # 获取当前脚本路径
-    filepath = os.path.abspath(__file__)
-    dirpath = os.path.dirname(filepath)
-    ScrapyRun(dirpath, 'spilerByset')

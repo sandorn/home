@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (QApplication, QFileDialog, QTableWidgetItem, qApp)
 from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
 
-from xt_Requests import parse_get
+from xt_Requests import get_parse
 from baidu_key_UI import Ui_MainWindow
 from urllib.parse import unquote
 
@@ -45,8 +45,7 @@ class MyWindow(Ui_MainWindow):
         pass
 
     def update(self, item):
-        QApplication.processEvents(
-            QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
+        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
         QApplication.setOverrideCursor(Qt.WaitCursor)  # 显示等待中的鼠标样式
 
         RowCont = self.resultTable.rowCount()
@@ -70,17 +69,13 @@ class MyWindow(Ui_MainWindow):
         filename, _ = QFileDialog.getOpenFileName(self, 'Open file')
 
         if filename:
-            [
-                self.keysTable.removeRow(0)
-                for _ in range(self.keysTable.rowCount())
-            ]
+            [self.keysTable.removeRow(0) for _ in range(self.keysTable.rowCount())]
             self.status_bar.showMessage('导入关键字......')
             self._name = filename.split('.')[0:-1][0]  # 文件名，含完整路径，去掉后缀
 
             with open(filename) as myFile:
                 # @名称排序且去重去空
-                self.keys = sorted(
-                    set([row.strip() for row in myFile if row.strip()]))
+                self.keys = sorted(set([row.strip() for row in myFile if row.strip()]))
 
             # 写入QTableWidget
             for item in self.keys:
@@ -104,20 +99,17 @@ class MyWindow(Ui_MainWindow):
         self.resultTable.clearContents()
         self.resultTable.setRowCount(0)
         QApplication.setOverrideCursor(Qt.WaitCursor)
-        QApplication.processEvents(
-            QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
+        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
         # 构建urls
         pages = self.lineEdit.value()
 
-        self.urls = [
-            f"https://www.baidu.com/s?wd={key}&pn={page * 10}"
-            for key in self.keys for page in range(pages)
-        ]
+        self.urls = [f"https://www.baidu.com/s?wd={key}&pn={page * 10}" for key in self.keys for page in range(pages)]
 
         self.status_bar.showMessage('抓取百度检索信息......')
 
         self.texts = []  # #清空结果库
-        resp_list = ahttpGetAll(self.urls, pool=200)
+        resp_list = ahttpGetAll(self.urls)
+        print(len(resp_list), resp_list[1])
         self.getdatas(resp_list)
         self.texts.sort(key=lambda x: x[0])  # #排序
 
@@ -138,9 +130,7 @@ class MyWindow(Ui_MainWindow):
         self.label.setText("进度：{}/{}".format(self.step, _max))
         for response in resp_list:
             url = str(response.url)
-            key = unquote(
-                url.split("?")[1].split("&")[0].split('=')[1]).replace(
-                    '+', ' ')
+            key = unquote(url.split("?")[1].split("&")[0].split('=')[1]).replace('+', ' ')
             pages = url.split("?")[1].split("&")[1].split('=')[1]
 
             搜索结果 = response.element.xpath("//h3/a")
@@ -149,16 +139,12 @@ class MyWindow(Ui_MainWindow):
                 href = each.xpath("@href")[0]
                 title = each.xpath("string(.)").strip()
                 # # 剔除百度自营内容
-                if '百度' in title or not href.startswith(
-                        'http') or href.startswith(
-                            "http://www.baidu.com/baidu.php?"):
+                if '百度' in title or not href.startswith('http') or href.startswith("http://www.baidu.com/baidu.php?"):
                     continue
 
                 # #获取真实网址
-                real_url = parse_get(
-                    href, allow_redirects=False).headers['Location']  # 网页原始地址
-                if real_url.startswith(
-                        'http') and '.baidu.com' not in real_url:
+                real_url = get_parse(href, allow_redirects=False).headers['Location']  # 网页原始地址
+                if real_url.startswith('http') and '.baidu.com' not in real_url:
                     _item = [key, pages, index, title, real_url]
                     self._signal.emit(_item)  # 传递更新结果数据表信号
                     self.texts.append(_item)

@@ -104,7 +104,19 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     #需要将scrapy默认的置为None不调用
 }
-
+ITEM_PIPELINES: {
+    'BQG.pipelines.PipelineToAiomysql': 20,
+    'BQG.pipelines.PipelineToSqlalchemy': 20,
+    'BQG.pipelines.PipelineToMysql': 20,
+    'BQG.pipelines.PipelineToSqlTwisted': 30,
+    'BQG.pipelines.PipelineToSql': 40,
+    'BQG.pipelines.PipelineToTxt': 100,
+    'BQG.pipelines.PipelineToJson': 200,
+    'BQG.pipelines.PipelineToJsonExp': 250,
+    'BQG.pipelines.PipelineToCsv': 300,
+    'BQG.pipelines.Pipeline2Csv': 400,
+    'BQG.pipelines.PipelineMysql2Txt': 500,
+}
 ##########################################################
 '''
 # PROXIES = [{'ip_port': '111.11.228.75:80', 'user_pass': ''}]
@@ -121,16 +133,6 @@ custom_settings = {
     }
 
 # 或者
-ITEM_PIPELINES = {
-    'BQG.pipelines.PipelineCheck': 100,
-    # 'BQG.pipelines.PipelineToSql': 200,
-    # 'BQG.pipelines.PipelineToSqlTwisted': 200,
-    # 'BQG.pipelines.PipelineToJson': 300,
-    # 'BQG.pipelines.PipelineToJsonExp': 300,
-    # 'BQG.pipelines.PipelineToTxt': 300,
-    'BQG.pipelines.PipelineToCsv': 300,
-    'BQG.pipelines.Pipeline2Csv': 300,
-}
 
 # 设置默认导出组件
 FEED_EXPORTERS_BASE = {

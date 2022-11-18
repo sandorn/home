@@ -73,9 +73,8 @@ def chain_all(iterobj):
 
 def align(str1, distance=66, alignment='left'):
     # #居中打印为string类方法
-    if alignment == 'center':
-        return str1.center(distance, ' ')
-
+    if alignment == 'center': return str1.center(distance, ' ')
+    if not isinstance(str1, str): str1 = str(str1)
     # #print打印对齐
     length = len(str1.encode('gbk', 'ignore'))
     slen = distance - length if distance > length else 0
@@ -150,7 +149,7 @@ def Re_Compile(replacement, trims_dict):
     return pattern.sub(lambda m: trims_dict[m.group(0)], replacement)
 
 
-def string_split_limited_list(string, maxlen=300):
+def str_split_limited_list(string, maxlen=300):
     # #仅按照长度分割
     # #newText = [string[i:i+maxlen] for i in range(0, len(string), maxlen)]
     newText = []
@@ -192,9 +191,9 @@ def string_split_limited_list(string, maxlen=300):
 def dict2qss(dict_tmp):
     '''字典形式的QSS转字符串'''
     # # 排序  print key, dict[key] for key in sorted(dict.keys())
-    isinstance(dict_tmp, dict)
-    temp = json.dumps(dict_tmp)
-    qss = Str_Replace(temp, [(',', ';'), ('"', ''), (': {', '{')])
+    if isinstance(dict_tmp, dict):
+        temp = json.dumps(dict_tmp)
+        qss = Str_Replace(temp, [(',', ';'), ('"', ''), (': {', '{')])
     return qss.strip('{}')
 
 

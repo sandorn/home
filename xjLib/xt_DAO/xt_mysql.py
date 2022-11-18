@@ -14,10 +14,9 @@
 '''
 
 import MySQLdb
-import pandas
 import pymysql
 from copy import deepcopy
-from .dbconf import db_conf
+from xt_DAO.dbconf import db_conf
 
 
 class engine(object):
@@ -25,14 +24,12 @@ class engine(object):
     mysql数据库对象，参数：db_name , odbc
     可选驱动：[mysql.connector 出错禁用]、[pymysql]、[MySQLdb]
     """
-    def __init__(self, key='default', odbc='MySQLdb'):
+
+    def __init__(self, key='default', odbc='pymysql'):
         self.db_name = key
         self.odbc = odbc
-        if key not in db_conf:
-            raise ('错误提示：检查数据库配置：' + self.db_name)
-        else:
-            self.conf = deepcopy(db_conf[self.db_name])
-
+        if key not in db_conf: raise ('错误提示：检查数据库配置：' + self.db_name)
+        self.conf = deepcopy(db_conf[self.db_name])
         if 'type' in self.conf: self.conf.pop('type')
 
         try:
@@ -45,7 +42,7 @@ class engine(object):
             # self.conn.autocommit(True)  # #自动提交
         except Exception as error:
             print(f'{self.odbc} connect<{self.db_name}> error:{repr(error)}')
-            return None  # raise  # exit(1)
+            return None
         else:
             self.cur = self.conn.cursor()
             print(f'{self.odbc}  connect<{self.db_name}> Ok!')
@@ -62,35 +59,34 @@ class engine(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         """with自动调用,不必调用del"""
         print(f"{ self.odbc}\t{self.db_name}\tIn __exit__()")
-        if exc_tb is not None:
-            print(f'exc_type:{exc_type}, exc_val:{exc_val}, exc_tb:{exc_tb}')
+        if exc_tb is not None: print(f'exc_type:{exc_type}, exc_val:{exc_val}, exc_tb:{exc_tb}')
 
     def __del__(self):
         print(f"{ self.odbc}\t{self.db_name}\tIn __del__()")
         '''hasattr(self, 'conn')'''
-        if self.odbc != 'connector':
-            self.cur.close()
+        if self.odbc != 'connector': self.cur.close()
         self.conn.close()
 
     def __str__(self):
         """返回一个对象的描述信息"""
-        return f'mysql数据库对象，<odbc：[{self.odbc}],db_name:[{self.db_name}] >\n可选驱动：[[pymysql | MySQLdb]；默认[MySQLdb]。'
+        return f'''
+        mysql数据库对象，<odbc：[{self.odbc}],db_name:[{self.db_name}] >,
+        可选驱动：[[pymysql | MySQLdb]；默认[MySQLdb]。
+        '''
 
     def has_tables(self, table_name):
         """判断数据库是否包含某个表,包含返回True"""
         self.cur.execute("show tables")
         tablerows = self.cur.fetchall()
-        if len(tablerows) == 0:
-            return False
+        if len(tablerows) == 0: return False
         for rows in tablerows:
-            if rows[0] == table_name:
-                return True
+            if rows[0] == table_name: return True
         return False
 
     def close(self):
         pass
 
-    def worKon(self, sql, args=None):
+    def execute(self, sql, args=None):
         args = args or []
         try:
             self.cur.execute(sql, args)
@@ -98,12 +94,11 @@ class engine(object):
             return True
         except Exception as error:
             self.conn.rollback()
-            print(f'\033[{error}]\033', f'sql:{sql}', sep='')
+            print(f'self.odbc error |  [{error}] \n sql:{sql}', sep='')
             return False
 
     def insertMany(self, datas, tb_name, keys=None):
-        if not isinstance(datas, (list, tuple)):
-            raise "must send list|tuple object for me"
+        if not isinstance(datas, (list, tuple)): raise "must send list|tuple object for me"
 
         if keys is None: keys = [k for k in datas[0].keys()]
         cols = ", ".join("`{}`".format(k) for k in keys)
@@ -117,21 +112,21 @@ class engine(object):
             return True
         except Exception as error:
             self.conn.rollback()
-            print(f'\033[{error}]\033', f'sql:{res_sql}', sep='')
+            print(f'self.odbc error | [{error}] \n sql:{res_sql}', sep='')
             return False
 
     def insert(self, data, tb_name):
+        if not isinstance(data, dict): raise "must send dict object for me"
         cols = ", ".join("`{}`".format(k) for k in data.keys())
         val_cols = ", ".join("'{}'".format(v) for v in data.values())
         res_sql = f"insert into `{tb_name}`({cols}) values({val_cols})"
-        self.worKon(res_sql.replace('%', '%%'))
+        self.execute(res_sql.replace('%', '%%'))
 
-    def update(self, dt_update, dt_condition, tb_name):
-        # dt_update,更新的数据
-        # dt_condition，匹配的数据
-        # tb_name,表名
-        sql = 'UPDATE %s SET ' % tb_name + ','.join(['%s=%r' % (k, dt_update[k]) for k in dt_update]) + ' WHERE ' + ' AND '.join(['%s=%r' % (k, dt_condition[k]) for k in dt_condition]) + ';'
-        self.worKon(sql)
+    def update(self, new_data, condition, tb_name):
+        #@ sql语句表名、字段名均需用``表示
+        if not isinstance(new_data, dict): raise "must send dict object for me"
+        sql = "UPDATE `%s` SET " % tb_name + ",".join(["`%s`='%s'" % (k, new_data[k]) for k in new_data]) + " WHERE " + " AND ".join(["`%s`='%s'" % (k, condition[k]) for k in condition])
+        self.execute(sql.replace('%', '%%'))
 
     def ver(self):
         sql = "SELECT VERSION()"
@@ -139,27 +134,24 @@ class engine(object):
         self.cur.execute(sql)
         #  使用 fetchone() 方法获取一条数据库。
         _版本号 = self.cur.fetchone()
-        if _版本号:
-            return _版本号[0]
-        else:
-            return False
+        return _版本号[0] or False
 
-    def get_all_from_db(self, form_name, args=[]):
-        sql = f" select * from {form_name}"
+    def query(self, sql, args=None):
         try:
             self.cur.execute(sql, args)
             data = self.cur.fetchall()
+            return data
         except Exception as e:
             print(e)
-        return data
 
-    def get_pd_table(self, sql):
-        sql = "select * from " + sql
-        pdtable = pandas.read_sql(sql, self.conn)  # !第二个参数为数据库连接
-        if len(pdtable):
-            return pdtable
-        else:
-            return False
+    def get_all_from_db(self, table_name, args=None):
+        sql = f" select * from {table_name}"
+        try:
+            self.cur.execute(sql, args)
+            data = self.cur.fetchall()
+            return data
+        except Exception as e:
+            print(e)
 
     def get_dict(self, sql):
         # 重新定义游标格式
@@ -171,7 +163,4 @@ class engine(object):
 
         self.cursorDict.execute(sql)
         dic = self.cursorDict.fetchall()
-        if dic:
-            return dic
-        else:
-            return False
+        return dic or False

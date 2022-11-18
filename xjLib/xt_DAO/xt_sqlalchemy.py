@@ -14,15 +14,13 @@ LastEditTime : 2020-11-04 13:33:59
 # ==============================================================
 '''
 
-from sqlalchemy import (  # (TIMESTAMP, Column, DateTime, Enum, Integer, Numeric, String,)
-    create_engine, text)
-# from sqlalchemy.dialects.mysql import INTEGER
+import pandas
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import DeclarativeMeta  # 类;declarative_base类工厂
-from sqlalchemy.orm import scoped_session, sessionmaker  # , validates
+from sqlalchemy.orm import scoped_session, sessionmaker
 from xt_Class import typed_property
-
-from .dbconf import make_connect_string
-from .xt_chemyMeta import Orm_Meta
+from xt_DAO.dbconf import make_connect_string
+from xt_DAO.xt_chemyMeta import Orm_Meta
 
 
 def get_engine(key='default', dbmodel=None):
@@ -32,10 +30,11 @@ def get_engine(key='default', dbmodel=None):
         pool_size=5,  # 连接池大小
         pool_timeout=30,  # 池中没有线程最多等待的时间，否则报错
         pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-        echo=False  # echo参数为True时，会显示每条执行的SQL语句
+        echo=False,  # echo参数为True时，会显示每条执行的SQL语句
+        # poolclass=NullPool, # 禁用池
     )
     session = sessionmaker(bind=engine)  # #单线程
-    # #实现user.query.xxxx  # FROM tablename
+    # @实现user.query.xxxx  # FROM tablename
     if dbmodel is not None: dbmodel.query = session.query_property()
     return engine, session
 
@@ -55,10 +54,16 @@ class SqlConnection(Orm_Meta):
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间，否则报错
             pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-            echo=False  # echo参数为True时，会显示每条执行的SQL语句
+            echo=False,  # echo参数为True时，会显示每条执行的SQL语句
+            # poolclass=NullPool, # 禁用池
         )
+        self.conn = self.engine.connect()
         self.session = scoped_session(sessionmaker(bind=self.engine))
         self.dbmodel.metadata.create_all(self.engine)
+
+        # @实现user.query.xxxx  # FROM tablename
+        # @self.dbmodel.query_property = self.session.query_property()
+        # @self.dbmodel.query = self.session.query()
 
     def drop_db(self):
         """删除init传入的self.dbmodel"""
@@ -97,8 +102,8 @@ class SqlConnection(Orm_Meta):
 
     def update(self, conditions=None, value_dict=None):
         '''
-        conditions：字典。类似self.params
-        value_dict:字典：{'ip':192.168.0.1}
+        conditions：条件字典；where
+        value_dict:更新数据字典：{'字段':字段值}
         '''
         if conditions and value_dict:
             conditon_list = []
@@ -150,10 +155,8 @@ class SqlConnection(Orm_Meta):
             for condition in conditions:
                 query = query.filter(condition)
 
-        if count:
-            return query.limit(count).all()
-        else:
-            return query.all()
+        if count: return query.limit(count).all()
+        else: return query.all()
 
     def from_statement(self, sql, conditions=None):
         '''使用完全基于字符串的语句'''
@@ -168,17 +171,35 @@ class SqlConnection(Orm_Meta):
 
         return result
 
-    def filter_by(self, kwargs, count=None):
+    def filter_by(self, filter_kwargs, count=None):
         '''
         filter_by用于简单查询，不支持比较运算符,不需要额外指定类名。
         filter_by的参数直接支持组合查询。
         仅支持[等于]、[and]，无需明示，在参数中以字典形式传入
         '''
-        query = self.session.query(self.dbmodel).filter_by(**kwargs)
+        query = self.session.query(self.dbmodel).filter_by(**filter_kwargs)
         if count:
             return query.limit(count).all()
         else:
             return query.all()
 
-    def close(self):
-        pass
+    def get_dict(self, result=None):
+        if result is None:
+            query = self.session.query(self.dbmodel)
+            result = query.limit(None).all()
+        data_dict = [dict(zip(res.keys, res)) for res in result]
+        # #data_dict = [dict(zip(res['key'],res['value'])) for res in result]
+        if len(data_dict): return data_dict
+        else: return False
+
+    def pd_get_dict(self, table_name):
+        result = pandas.read_sql_table(table_name, con=self.conn)
+        data_dict = result.to_dict(orient="records")
+        if len(data_dict): return data_dict
+        else: return False
+
+    def pd_get_list(self, table_name, Columns):
+        result = pandas.read_sql_table(table_name, con=self.conn)
+        pd_list = result[Columns].drop_duplicates().values.tolist()
+        if len(pd_list): return pd_list
+        else: return False

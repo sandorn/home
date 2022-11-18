@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-14 21:48:46
 FilePath     : /项目包/BQG.spider/BQG/spiders/xiashu.py
-LastEditTime : 2022-11-16 12:50:36
+LastEditTime : 2022-11-17 17:14:01
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -30,28 +30,22 @@ class XiashuSpider(scrapy.Spider):
 
     name = 'xiashu'  # 设置name
 
-    # allowed_domains = ['biqukan8.cc']  # 设定域名
-
     custom_settings = {
         # 设置管道下载
         'ITEM_PIPELINES': {
-            # 'BQG.pipelines.PipelineToSqlalchemy': 20,
-            # 'BQG.pipelines.PipelineToSqlTwisted': 30,
-            # 'BQG.pipelines.PipelineToSql': 40,
-            # 'BQG.pipelines.PipelineCheck': 50,
             # 'BQG.pipelines.PipelineToTxt': 100,
             # 'BQG.pipelines.PipelineToJson': 200,
             # 'BQG.pipelines.PipelineToJsonExp': 250,
             # 'BQG.pipelines.PipelineToCsv': 300,
-            'BQG.pipelines.Pipeline2Csv': 400
+            # 'BQG.pipelines.Pipeline2Csv': 400
             # 'BQG.pipelines.PipelineMysql2Txt': 500,
         },
     }
 
     start_urls = [
         'http://www.biqugse.com/96703/',
-        'http://www.biqugse.com/96717/',
-        'http://www.biqugse.com/2367/',
+        # 'http://www.biqugse.com/96717/',
+        # 'http://www.biqugse.com/2367/',
     ]
 
     # 编写爬取方法
