@@ -32,7 +32,7 @@ from xt_DAO.dbconf import db_conf
 from xt_DAO.xt_Aiomysql import execute_aiomysql
 from xt_DAO.xt_chemyMeta import Base_Model
 from xt_DAO.xt_mysql import engine as mysql
-from xt_DAO.xt_sqlalchemy import SqlConnection
+from xt_DAO.xt_sqlalchemy import Sqlconnion
 
 
 def make_model(_BOOKNAME):
@@ -76,7 +76,7 @@ class PipelineToAiomysql(object):
 class PipelineToSqlalchemy(object):
 
     def __init__(self):
-        self.sqlhelper = ''
+        self.sqlconn = ''
         self.DBtable = ''
         self.db = set()
 
@@ -85,19 +85,19 @@ class PipelineToSqlalchemy(object):
         if _BOOKNAME not in self.db:
             # @连接数据库，无表则创建
             self.DBtable = make_model(_BOOKNAME)
-            self.sqlhelper = SqlConnection(self.DBtable, 'TXbook')
+            self.sqlconn = Sqlconnion(self.DBtable, 'TXbook')
             self.db.add(_BOOKNAME)
 
-        ZJHERF_list = self.sqlhelper.pd_get_list(_BOOKNAME, 'ZJHERF') or []
+        ZJHERF_list = self.sqlconn.pd_get_list(_BOOKNAME, 'ZJHERF') or []
 
         if item['ZJHERF'] in ZJHERF_list:
-            self.sqlhelper.update({'ZJHERF': item['ZJHERF']}, dict(item))
+            self.sqlconn.update({'ZJHERF': item['ZJHERF']}, dict(item))
         else:
-            self.sqlhelper.insert(dict(item))
+            self.sqlconn.insert(dict(item))
         return item
 
     def close_spider(self, spider):
-        del self.sqlhelper
+        del self.sqlconn
         del self.db
 
 
@@ -108,7 +108,7 @@ class PipelineToSqlTwisted(object):
         # #用于获取settings配置文件中的信息
         config = deepcopy(db_conf['TXbook'])
         if 'type' in config: config.pop('type')
-        dbpool = adbapi.ConnectionPool("MySQLdb", **config)
+        dbpool = adbapi.connionPool("MySQLdb", **config)
         return cls(dbpool)
 
     def __init__(self, dbpool):
@@ -135,7 +135,7 @@ class PipelineToSqlTwisted(object):
 class PipelineToMysql(object):
 
     def __init__(self):
-        self.connect = mysql('TXbook', 'MySQLdb')
+        self.conn = mysql('TXbook', 'MySQLdb')
         self.db = set()
 
     def process_item(self, item, spider):
@@ -143,55 +143,20 @@ class PipelineToMysql(object):
         if _BOOKNAME not in self.db:
             # 避免重复创建数据库
             Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
-            self.connect.execute(Csql)
+            self.conn.execute(Csql)
             self.db.add(_BOOKNAME)
 
-        _result = self.connect.get_all_from_db(_BOOKNAME)
+        _result = self.conn.get_all_from_db(_BOOKNAME)
         ZJHERF_list = [res[5] for res in _result]
         if item['ZJHERF'] in ZJHERF_list:
-            self.connect.update(dict(item), {'ZJHERF': item['ZJHERF']}, _BOOKNAME)
+            self.conn.update(dict(item), {'ZJHERF': item['ZJHERF']}, _BOOKNAME)
         else:
-            self.connect.insert(dict(item), _BOOKNAME)
+            self.conn.insert(dict(item), _BOOKNAME)
         return item
 
     def close_spider(self, spider):
-        del self.connect
+        del self.conn
         del self.db
-
-
-class PipelineMysql2Txt(object):
-
-    def __init__(self):
-        self.file_set = set()
-        self.file = {}
-
-    def process_item(self, item, spider):
-        bookname = item['BOOKNAME']
-        if bookname not in self.file_set:
-            self.file_set.add(bookname)
-            self.file[bookname] = open(bookname + '.txt', 'w', encoding='utf-8')
-            self.file[bookname].write(f"-----------------------{bookname}-----------------------\n")
-        return item
-
-    def close_spider(self, spider):
-        config = deepcopy(db_conf['TXbook'])
-        if 'type' in config: config.pop('type')
-
-        self.connect = MySQLdb.connect(**config)
-
-        for bookname in self.file_set:
-            # 从MySQL里提数据
-            sql_str = "SELECT * FROM %s;" % bookname
-            pDataFrame = pandas.read_sql(sql_str, self.connect)  # 读MySQL数据到DataFrame
-            content_list = numpy.array(pDataFrame).tolist()  # 将DataFrame转换为list
-            content_list.sort(key=lambda x: x[2])  # @'INDEX'  将list排序
-
-            for item in content_list:
-                self.file[item[1]].write(f"----------{item[1]}----------{item[2]}----------{item[3]}----------\n{item[4]}\n")
-
-            print(f'PipelineMysql2Txt--《{bookname}》文本TEXT文件存储完毕！！')
-            self.file[bookname].close()
-        self.connect.close()
 
 
 class PipelineToTxt:

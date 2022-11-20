@@ -1,15 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2020-02-12 15:44:47
-@LastEditors: Even.Sand
-@LastEditTime: 2020-02-26 17:14:45
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:56
+FilePath     : /项目包/BQG.spider/BQG/items.py
+LastEditTime : 2022-11-19 00:48:52
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 # Define here the models for your scraped items
@@ -17,14 +18,14 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
 
-import scrapy
+from scrapy import Item,Field
 #from scrapy.loader.processors import MapCompose, TakeFirst
 
 
-class BqgItem(scrapy.Item):
-    BOOKNAME = scrapy.Field()  # output_processor=TakeFirst())
-    INDEX = scrapy.Field()
-    ZJNAME = scrapy.Field()  # output_processor=TakeFirst())
-    ZJTEXT = scrapy.Field()
-    ZJHERF = scrapy.Field()
+class BqgItem(Item):
+    BOOKNAME = Field()  # output_processor=TakeFirst())
+    INDEX = Field()
+    ZJNAME = Field()  # output_processor=TakeFirst())
+    ZJTEXT = Field()
+    ZJHERF = Field()
     pass

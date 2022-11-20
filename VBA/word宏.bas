@@ -8,7 +8,6 @@
  ' @LastEditTime : 2021-11-03 17:35:45
  ' @Github       : https://github.com/sandorn/home
  '***/
-
 Sub 代码简写()
     '功能：全文查找文字A，全部替换为文字B
     '标准：
@@ -367,8 +366,8 @@ Sub 转换为自动编号()
                 oRang.Style = ActiveDocument.Styles("条目自动") '样式名称
             End If
             Index = "": Subject = "": m = 0: n = 0: Set oRang = Nothing
-        End If
-    Next
+        End If '判断非表格内
+    Next '按段落循环
     Application.ScreenUpdating = True
 End Sub
 Sub 自动设置公文格式()
@@ -407,8 +406,9 @@ Sub 自动设置公文格式()
                 End If
                 Index = "": Subject = "": m = 0: n = 0: Set oRang = Nothing
             Next i
-        End If
-    Next
+        End If  '表格判断
+    Next '按段落循环
+
     Call 替换字符串("条　", "条 ")
     MoveToDocStart '光标移动到文档最前端
     Selection.Style = myStyle

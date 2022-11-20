@@ -52,8 +52,8 @@ class Spider(scrapy.Spider):
     custom_settings = {
         #$ 使用数据库,判断重复入库
         'ITEM_PIPELINES': {
-            # 'BQG.pipelines.PipelineToAiomysql': 20,
-            'BQG.pipelines.PipelineToSqlalchemy': 20,
+            'BQG.pipelines.PipelineToAiomysql': 20,
+            # 'BQG.pipelines.PipelineToSqlalchemy': 20,
             # 'BQG.pipelines.PipelineToSqlTwisted': 30,
             # 'BQG.pipelines.PipelineToMysql': 40,
         },
@@ -61,7 +61,7 @@ class Spider(scrapy.Spider):
 
     start_urls = [
         'http://www.biqugse.com/96703/',
-        'http://www.biqugse.com/96717/',
+        # 'http://www.biqugse.com/96717/',
         # 'http://www.biqugse.com/2367/',
     ]
 

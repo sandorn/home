@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-14 21:48:46
 FilePath     : /项目包/BQG.spider/BQG/spiders/xiashu.py
-LastEditTime : 2022-11-17 17:14:01
+LastEditTime : 2022-11-19 13:59:08
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -33,12 +33,11 @@ class XiashuSpider(scrapy.Spider):
     custom_settings = {
         # 设置管道下载
         'ITEM_PIPELINES': {
+            # 'BQG.pipelines.Pipeline2Csv': 40
             # 'BQG.pipelines.PipelineToTxt': 100,
             # 'BQG.pipelines.PipelineToJson': 200,
             # 'BQG.pipelines.PipelineToJsonExp': 250,
             # 'BQG.pipelines.PipelineToCsv': 300,
-            # 'BQG.pipelines.Pipeline2Csv': 400
-            # 'BQG.pipelines.PipelineMysql2Txt': 500,
         },
     }
 
@@ -50,7 +49,7 @@ class XiashuSpider(scrapy.Spider):
 
     # 编写爬取方法
     def parse(self, response):
-        _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
+        _bookname = response.xpath('//meta[@property="og:title"]//@content').extract_first()
         全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
         # titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
 
@@ -59,12 +58,12 @@ class XiashuSpider(scrapy.Spider):
 
         for index in range(len(urls)):
             # @meta={}传递参数,给callback
-            yield scrapy.Request(url=urls[index], meta={'BOOKNAME': _BOOKNAME, 'index': index}, callback=self.parse_content, dont_filter=True)
+            yield scrapy.Request(url=urls[index], meta={'BOOKNAME': _bookname, 'INDEX': index}, callback=self.parse_content, dont_filter=True)
 
     def parse_content(self, response):
         item = BqgItem()
         item['BOOKNAME'] = response.meta['BOOKNAME']  # @接收meta={}传递的参数
-        item['INDEX'] = response.meta['index']  # @接收meta={}传递的参数
+        item['INDEX'] = response.meta['INDEX']  # @接收meta={}传递的参数
         item['ZJNAME'] = response.xpath('//h1/text()').extract_first()
         item['ZJNAME'] = Str_Replace(item['ZJNAME'].strip('\r\n'), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
         item['ZJTEXT'] = response.xpath('//*[@id="content"]/text()').extract()
