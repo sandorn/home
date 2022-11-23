@@ -46,9 +46,7 @@ def ReqSynthesizer(text, format='wav', savefile=True, method='post', callback=No
     args_dict['text'] = text  # 添加
 
     session = SessionClient()
-    res = session[method](url, params=args_dict, json=args_dict, headers={'Content-Type': 'application/json'})
-    print(2222222222222222222, res)
-    # result.response = session[method](url, params=args_dict, json=args_dict, headers={'Content-Type': 'application/json'}).raw
+    result.response = session[method](url, params=args_dict, json=args_dict, headers={'Content-Type': 'application/json'}).raw
 
     if 'audio/mpeg' == result.response.headers['Content-Type']:
 

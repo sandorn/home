@@ -34,11 +34,8 @@ def pygame_play(data, format='wav'):
 
     if format == 'wav':
         pym.Sound(data).play()
-        # pygame.mixer.Sound(data).play()
     else:
         pym.load(BytesIO(data)).play(1, 0.07)
-        # pygame.mixer.music.load(BytesIO(data))
-        # pygame.mixer.music.play(1, 0.07)
     while pym.get_busy():
         # 正在播放，等待
         QThread.msleep(500)
@@ -50,6 +47,7 @@ def pygame_play(data, format='wav'):
 
 def create_read_thread(obj):
     '''type完全动态构建类'''
+
     def __init__fn(self, textlist=None, format='wav'):
         obj.__init__(self)
         self.__dict__['_qobj'] = (obj == QThread)
@@ -69,6 +67,7 @@ def create_read_thread(obj):
         self.start()
 
     def main_monitor(self):
+
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
@@ -152,6 +151,7 @@ class _read_class_meta:
         self.start()
 
     def main_monitor(self):
+
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
@@ -209,13 +209,3 @@ def get_read_class(obj: object) -> object:
 
 
 ReqSynthesizer_Thread_read = get_read_class(Thread)
-
-# ReqSynthesizer_QThread_read = get_read_class(QThread)
-# class ReqSynthesizer_Thread_read(_read_class_meta, Thread):
-#     pass
-
-
-class ReqSynthesizer_QThread_read(_read_class_meta, QThread):
-    pass
-
-

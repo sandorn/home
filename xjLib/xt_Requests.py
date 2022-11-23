@@ -119,11 +119,11 @@ class SessionClient:
     __slots__ = ('sn', 'headers', 'cookies', 'response', 'url', 'method', 'args', 'kwargs', 'callback')
 
     def __init__(self):
-        self.sn = requests.session()
+        self.sson = requests.session()
 
     @TRETRY
     def _request(self):
-        self.response = self.sn.request(self.method, self.url, *self.args, **self.kwargs)
+        self.response = self.sson.request(self.method, self.url, *self.args, **self.kwargs)
         self.response.raise_for_status()
         return self.response
 
@@ -167,11 +167,11 @@ class SessionClient:
             return self.__create_params
 
     def update_cookies(self, cookie_dict):
-        self.sn.cookies.update(cookie_dict)
+        self.sson.cookies.update(cookie_dict)
         self.cookies.update(cookie_dict)
 
     def update_headers(self, header_dict):
-        self.sn.headers.update(header_dict)
+        self.sson.headers.update(header_dict)
         self.headers.update(header_dict)
 
 

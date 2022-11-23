@@ -15,18 +15,24 @@
 用户登录名称:sandorn_ram@1915355838841755.onaliyun.com
 登录密码:rH17b#9{$gDqRiJXB3flDaWqbMPAEz{n
 appKey = 'Ofm34215thIUdSIX'
-
 user1 = {
-    'AccessKey_ID': 'LTAI4G5TRjsGy8BNKPtctjXQ',
-    'AccessKey_Secret': 'hS8Kl0b9orxNUW7IOeBIFUfzgcVn00'
+    'AccessKey ID': 'LTAI4G5TRjsGy8BNKPtctjXQ',
+    'AccessKey Secret': 'hS8Kl0b9orxNUW7IOeBIFUfzgcVn00'
 }
 
 user2 = {
-    'AccessKey_ID': 'LTAI4GAdnViJdPBCpaTuaUXM',
-    'AccessKey_Secret': 'NJP6DZR0pWtK3Ze3cpi9XqhLeEzNdg'
+    'AccessKey ID': 'LTAI4GAdnViJdPBCpaTuaUXM',
+    'AccessKey Secret': 'NJP6DZR0pWtK3Ze3cpi9XqhLeEzNdg'
 }
-'''
 
+AccessKey ID    :LTAI5t92znncDVGDGCsTeSpf
+AccessKey Secret:Z7bnZH79k3mBaE9r3ZD38LZ23GsOyw
+AccessKey ID    :LTAI5tFErB9gfTrSxwVq6qmt
+AccessKey Secret:OFyVfhmJomNMw5cr1pkwmGIwPt4ceL
+
+'''
+# Constant  # 常量参数
+# SpeechArgs  # 默认参数
 from dataclasses import dataclass
 from typing import Any
 
