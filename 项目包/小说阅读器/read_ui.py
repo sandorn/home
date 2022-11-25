@@ -3,11 +3,22 @@
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMetaObject, QThread, pyqtSlot
-from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QMessageBox, QVBoxLayout, qApp)
+from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMessageBox, QVBoxLayout, qApp
 from xt_Alispeech.xt_Pygame import ReqSynthesizer_QThread_read
 from xt_Ls_Bqg import ahttp_get_contents, get_download_url
-from xt_String import string_split_limited_list
-from xt_Ui import (EventLoop, xt_QCheckBox, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser)
+from xt_String import str_split_limited_list
+from xt_Ui import (
+    EventLoop,
+    xt_QCheckBox,
+    xt_QLabel,
+    xt_QLineEdit,
+    xt_QListWidget,
+    xt_QMainWindow,
+    xt_QPushButton,
+    xt_QTableView,
+    xt_QTabWidget,
+    xt_QTextBrowser,
+)
 
 
 class Ui_MainWindow(xt_QMainWindow):
@@ -144,7 +155,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.pushButton_read.setText('&STOP')
         qApp.processEvents()
         # 处理字符串
-        newText = string_split_limited_list(self.QTextEdit.toPlainText())
+        newText = str_split_limited_list(self.QTextEdit.toPlainText())
         self.runthread = ReqSynthesizer_QThread_read(newText, format='mp3')
         # #绑定RReqSynthesizer_QThread_read中定义的finished信号
         self.runthread._signal.connect(self.playdone)

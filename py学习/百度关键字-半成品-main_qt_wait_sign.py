@@ -14,8 +14,9 @@
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor  # 线程池模块
-from concurrent.futures import wait, ALL_COMPLETED
+from concurrent.futures import ALL_COMPLETED, wait
 from threading import RLock
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -96,7 +97,6 @@ class MyWindow(QMainWindow, Ui_MainWindow):
         self.resultTable.setRowCount(0)
         QApplication.setOverrideCursor(Qt.WaitCursor)
         QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
-
         '''构建urls'''
         pages = self.lineEdit.value()
         self.urls = [(key, page, "https://www.baidu.com/s?wd={}&pn={}".format(key, page * 10)) for key in self.keys for page in range(pages)]

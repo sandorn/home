@@ -41,6 +41,7 @@ dm_path = "D:\\CODE\\xjLib\\.res\\dm.dll"
 
 class dmobject():
     '''以管理员身份运行vscode'''
+
     def __init__(self):
         # 调用大漠插件
         try:

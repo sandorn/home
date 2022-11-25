@@ -209,3 +209,4 @@ def get_read_class(obj: object) -> object:
 
 
 ReqSynthesizer_Thread_read = get_read_class(Thread)
+ReqSynthesizer_QThread_read = get_read_class(QThread)

@@ -15,15 +15,17 @@ LastEditTime : 2020-11-27 18:34:42
 
 import ctypes
 import inspect
-from threading import Thread, enumerate, Event
-from time import time
 from queue import Empty, Queue
+from threading import Event, Thread, enumerate
+from time import time
+
 from xt_Class import item_get_Mixin
-from xt_Singleon import singleton_wrap_return_class, Singleton_Mixin
+from xt_Singleon import Singleton_Mixin, singleton_wrap_return_class
 
 
 def stop_thread(thread):
     '''外部停止线程'''
+
     def _async_raise(tid, exctype):
         """raises the exception, performs cleanup if needed"""
         tid = ctypes.c_long(tid)

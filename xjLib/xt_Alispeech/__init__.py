@@ -17,21 +17,21 @@ import json
 import time
 
 from ali_speech import NlsClient
-from ali_speech.callbacks import (SpeechSynthesizerCallback, SpeechTranscriberCallback)
-from aliyunsdkcore.acs_exception.exceptions import (ClientException, ServerException)
+from ali_speech.callbacks import SpeechSynthesizerCallback, SpeechTranscriberCallback
+from aliyunsdkcore.acs_exception.exceptions import ClientException, ServerException
 from aliyunsdkcore.client import AcsClient  # 阿里云核心代码库
 from aliyunsdkcore.request import CommonRequest  # 阿里云官方核心代码库
 from xt_Alispeech.conf import Constant  # 常量参数
 from xt_Alispeech.conf import SpeechArgs  # 默认参数
 from xt_Alispeech.conf import SynResult, TransResult
 from xt_Requests import SessionClient
-from xt_String import Ex_md5, string_split_limited_list
+from xt_String import Ex_md5, str_split_limited_list
 
 
 def ReqLongSynthesizer(longtext, savefile=True, method='post', callback=None):
     '''长文本语音合成目前没有免费试用版'''
     res_list = []
-    long_text_list = string_split_limited_list(longtext)
+    long_text_list = str_split_limited_list(longtext)
     for text in long_text_list:
         res = ReqSynthesizer(text, savefile=savefile, method=method, callback=callback)
         res_list.append(res)
@@ -370,73 +370,121 @@ def APITransUrl(urlLink, enable_words=False, auto_split=False):
 if __name__ == "__main__":
     print(Constant(), 1111, id(Constant()))
 '''
-    RESTful API
-    https://help.aliyun.com/document_detail/130555.html
+RESTful API
+https://help.aliyun.com/document_detail/130555.html
 
-    阿里云语音合成对接接口 - 简书
-    https://www.jianshu.com/p/3a462046b574
+阿里云语音合成对接接口 - 简书
+https://www.jianshu.com/p/3a462046b574
 
-    RAM访问控制
-    https://ram.console.aliyun.com/users/sandorn_ram
+RAM访问控制
+https://ram.console.aliyun.com/users/sandorn_ram
 
-    由SSML控制合成效果_由SSML控制合成效果_长文本语音合成_智能语音交互-阿里云
-    https://help.aliyun.com/knowledge_detail/146123.html?spm=a2c4g.11186631.2.5.4f6b485aLTLTLv
+由SSML控制合成效果_由SSML控制合成效果_长文本语音合成_智能语音交互-阿里云
+https://help.aliyun.com/knowledge_detail/146123.html?spm=a2c4g.11186631.2.5.4f6b485aLTLTLv
 
-    RESTful API_RESTful API_长文本语音合成_智能语音交互-阿里云
-    https://help.aliyun.com/knowledge_detail/130555.html?spm=a2c4g.11186631.2.4.4f6b485aLTLTLv
+RESTful API_RESTful API_长文本语音合成_智能语音交互-阿里云
+https://help.aliyun.com/knowledge_detail/130555.html?spm=a2c4g.11186631.2.4.4f6b485aLTLTLv
 
-    由SSML控制合成效果_语音合成_智能语音交互-阿里云
-    https://help.aliyun.com/document_detail/101645.html?spm=a2c4g.11174283.3.9.29807275qNaSDa
+由SSML控制合成效果_语音合成_智能语音交互-阿里云
+https://help.aliyun.com/document_detail/101645.html?spm=a2c4g.11174283.3.9.29807275qNaSDa
 
-    声音说明：
-    字级别音素边界接口：语音实时合成服务在输出音频的同时，可输出每个字在音频中的时间位置，即时间戳。该时间信息可用于驱动虚拟人口型、做视频配音字幕等。
-    注意：只有支持字级别音素边界接口的发音人才有此功能。
-    名称	voice参数值	类型	适用场景	支持语言	支持采样率(Hz)	支持字级别音素边界接口	备注
-    小云	Xiaoyun	标准女声	通用场景	支持中文及中英文混合场景	8K/16K	否
-    小刚	Xiaogang	标准男声	通用场景	支持中文及中英文混合场景	8K/16K	否
-    若兮	Ruoxi	温柔女声	通用场景	支持中文及中英文混合场景	8K/16K/24K	否
-    思琪	Siqi	温柔女声	通用场景	支持中文及中英文混合场景	8K/16K/24K	是
-    思佳	Sijia	标准女声	通用场景	支持中文及中英文混合场景	8K/16K/24K	否
-    思诚	Sicheng	标准男声	通用场景	支持中文及中英文混合场景	8K/16K/24K	是
-    艾琪	Aiqi	温柔女声	通用场景	支持中文及中英文混合场景	8K/16K	是
-    艾佳	Aijia	标准女声	通用场景	支持中文及中英文混合场景	8K/16K	是
-    艾诚	Aicheng	标准男声	通用场景	支持中文及中英文混合场景	8K/16K	是
-    艾达	Aida	标准男声	通用场景	支持中文及中英文混合场景	8K/16K	是
-    宁儿	Ninger	标准女声	通用场景	仅支持纯中文场景	8K/16K/24K	否
-    瑞琳	Ruilin	标准女声	通用场景	仅支持纯中文场景	8K/16K/24K	否
-    思悦	Siyue	温柔女声	客服场景	支持中文及中英文混合场景	8K/16K/24K	否
-    艾雅	Aiya	严厉女声	客服场景	支持中文及中英文混合场景	8K/16K	是
-    艾夏	Aixia	亲和女声	客服场景	支持中文及中英文混合场景	8K/16K	是
-    艾美	Aimei	甜美女声	客服场景	支持中文及中英文混合场景	8K/16K	是
-    艾雨	Aiyu	自然女声	客服场景	支持中文及中英文混合场景	8K/16K	是
-    艾悦	Aiyue	温柔女声	客服场景	支持中文及中英文混合场景	8K/16K	是
-    艾婧	Aijing	严厉女声	客服场景	支持中文及中英文混合场景	8K/16K	是
-    小美	Xiaomei	甜美女声	客服场景	支持中文及中英文混合场景	8K/16K/24K	否
-    艾娜	Aina	浙普女声	客服场景	仅支持纯中文场景	8K/16K	是
-    伊娜	Yina	浙普女声	客服场景	仅支持纯中文场景	8K/16K/24K	否
-    思婧	Sijing	严厉女声	客服场景	仅支持纯中文场景	8K/16K/24K	是
-    思彤	Sitong	儿童音	童声场景	仅支持纯中文场景	8K/16K/24K	否
-    小北	Xiaobei	萝莉女声	童声场景	仅支持纯中文场景	8K/16K/24K	是
-    艾彤	Aitong	儿童音	童声场景	仅支持纯中文场景	8K/16K	是
-    艾薇	Aiwei	萝莉女声	童声场景	仅支持纯中文场景	8K/16K	是
-    艾宝	Aibao	萝莉女声	童声场景	仅支持纯中文场景	8K/16K	是
-    Harry	Harry	英音男声	英文场景	仅支持英文场景	8K/16K	否
-    Abby	Abby	美音女声	英文场景	仅支持英文场景	8K/16K	否
-    Andy	Andy	美音男声	英文场景	仅支持英文场景	8K/16K	否
-    Eric	Eric	英音男声	英文场景	仅支持英文场景	8K/16K	否
-    Emily	Emily	英音女声	英文场景	仅支持英文场景	8K/16K	否
-    Luna	Luna	英音女声	英文场景	仅支持英文场景	8K/16K	否
-    Luca	Luca	英音男声	英文场景	仅支持英文场景	8K/16K	否
-    Wendy	Wendy	英音女声	英文场景	仅支持英文场景	8K/16K/24K	否
-    William	William	英音男声	英文场景	仅支持英文场景	8K/16K/24K	否
-    Olivia	Olivia	英音女声	英文场景	仅支持英文场景	8K/16K/24K	否
-    姗姗	Shanshan	粤语女声	方言场景	支持标准粤文（简体）及粤英文混合场景	8K/16K/24K	否
-    小玥	Xiaoyue	四川话女声	方言场景	支持中文及中英文混合场景	8K/16K	否	公测版
-    Lydia	Lydia	英中双语女声	英文场景	仅支持英文场景	8K/16K	否	公测版
-    艾硕	Aishuo	自然男声	客服场景	仅支持英文场景	8K/16K	是	公测版
-    青青	Qingqing	台湾话女声	方言场景	仅支持纯中文场景	8K/16K	否	公测版
-    翠姐	Cuijie	东北话女声	方言场景	仅支持纯中文场景	8K/16K	否	公测版
-    小泽	Xiaoze	湖南重口音男声	方言场景	仅支持纯中文场景	8K/16K	是	公测版
+字级别音素边界接口：语音合成服务在输出音频的同时，可输出每个汉字/英文单词在音频中的时间位置，即时间戳。该时间信息可用于驱动虚拟人口型、做视频配音字幕等。详情请参见语音合成时间戳功能介绍。
+文学场景相关发音人信息，请参见接口说明。
+如需使用Android或iOS SDK，请参见移动端接口说明。
+
+名称	voice参数值	类型	适用场景	支持语言	支持采样率（Hz）	支持时间戳（字级别音素边界）接口	支持儿化音	声音品质
+知米_多情感	zhimi_emo	多种情感女声	通用场景	中文及中英文混合场景	8K/16K	是	否	标准版
+知燕_多情感	zhiyan_emo	多种情感女声	通用场景	中文及中英文混合场景	8K/16K	是	否	标准版
+知贝_多情感	zhibei_emo	多种情感童声	通用场景	中文及中英文混合场景	8K/16K	是	否	标准版
+知甜_多情感	zhitian_emo	多种情感女声	通用场景	中文及中英文混合场景	8K/16K	是	否	标准版
+小云	xiaoyun	标准女声	通用场景	中文及中英文混合场景	8K/16K	否	否	lite版
+小刚	xiaogang	标准男声	通用场景	中文及中英文混合场景	8K/16K	否	否	lite版
+若兮	ruoxi	温柔女声	通用场景	中文及中英文混合场景	8K/16K/24K	否	否	标准版
+思琪	siqi	温柔女声	通用场景	中文及中英文混合场景	8K/16K/24K	是	否	标准版
+思佳	sijia	标准女声	通用场景	中文及中英文混合场景	8K/16K/24K	否	否	标准版
+思诚	sicheng	标准男声	通用场景	中文及中英文混合场景	8K/16K/24K	是	否	标准版
+艾琪	aiqi	温柔女声	通用场景	中文及中英文混合场景	8K/16K	是	否	标准版
+艾佳	aijia	标准女声	通用场景	中文及中英文混合场景	8K/16K	是	否	标准版
+艾诚	aicheng	标准男声	通用场景	中文及中英文混合场景	8K/16K	是	否	标准版
+艾达	aida	标准男声	通用场景	中文及中英文混合场景	8K/16K	是	否	标准版
+宁儿	ninger	标准女声	通用场景	纯中文场景	8K/16K/24K	否	否	标准版
+瑞琳	ruilin	标准女声	通用场景	纯中文场景	8K/16K/24K	否	否	标准版
+思悦	siyue	温柔女声	客服场景	中文及中英文混合场景	8K/16K/24K	否	否	标准版
+艾雅	aiya	严厉女声	客服场景	中文及中英文混合场景	8K/16K	是	否	标准版
+艾夏	aixia	亲和女声	客服场景	中文及中英文混合场景	8K/16K	是	否	标准版
+艾美	aimei	甜美女声	客服场景	中文及中英文混合场景	8K/16K	是	否	标准版
+艾雨	aiyu	自然女声	客服场景	中文及中英文混合场景	8K/16K	是	否	标准版
+艾悦	aiyue	温柔女声	客服场景	中文及中英文混合场景	8K/16K	是	否	标准版
+艾婧	aijing	严厉女声	客服场景	中文及中英文混合场景	8K/16K	是	否	标准版
+小美	xiaomei	甜美女声	客服场景	中文及中英文混合场景	8K/16K/24K	否	否	标准版
+艾娜	aina	浙普女声	客服场景	纯中文场景	8K/16K	是	否	标准版
+伊娜	yina	浙普女声	客服场景	纯中文场景	8K/16K/24K	否	否	标准版
+思婧	sijing	严厉女声	客服场景	纯中文场景	8K/16K/24K	是	否	标准版
+思彤	sitong	儿童音	童声场景	纯中文场景	8K/16K/24K	否	否	标准版
+小北	xiaobei	萝莉女声	童声场景	纯中文场景	8K/16K/24K	是	否	标准版
+艾彤	aitong	儿童音	童声场景	纯中文场景	8K/16K	是	否	标准版
+艾薇	aiwei	萝莉女声	童声场景	纯中文场景	8K/16K	是	否	标准版
+艾宝	aibao	萝莉女声	童声场景	纯中文场景	8K/16K	是	否	标准版
+Harry	harry	英音男声	英文场景	英文场景	8K/16K	否	否	标准版
+Abby	abby	美音女声	英文场景	英文场景	8K/16K	是	否	标准版
+Andy	andy	美音男声	英文场景	英文场景	8K/16K	否	否	标准版
+Eric	eric	英音男声	英文场景	英文场景	8K/16K	否	否	标准版
+Emily	emily	英音女声	英文场景	英文场景	8K/16K	否	否	标准版
+Luna	luna	英音女声	英文场景	英文场景	8K/16K	是	否	标准版
+Luca	luca	英音男声	英文场景	英文场景	8K/16K	否	否	标准版
+Wendy	wendy	英音女声	英文场景	英文场景	8K/16K/24K	否	否	标准版
+William	william	英音男声	英文场景	英文场景	8K/16K/24K	否	否	标准版
+Olivia	olivia	英音女声	英文场景	英文场景	8K/16K/24K	否	否	标准版
+姗姗	shanshan	粤语女声	方言场景	标准粤文（简体）及粤英文混合场景	8K/16K/24K	否	否	标准版
+小玥	chuangirl	四川话女声	方言场景	中文及中英文混合场景	8K/16K	否	否	标准版
+Lydia	lydia	英中双语女声	英文场景	英文及英中文混合场景	8K/16K	是	否	标准版
+艾硕	aishuo	自然男声	客服场景	中文及中英文混合场景	8K/16K	是	否	标准版
+青青	qingqing	中国台湾话女声	方言场景	中文场景	8K/16K	否	否	标准版
+翠姐	cuijie	东北话女声	方言场景	中文场景	8K/16K	否	是	标准版
+小泽	xiaoze	湖南重口音男声	方言场景	中文场景	8K/16K	否	否	标准版
+智香	tomoka	日语女声	多语种场景	日文场景	8K/16K	是	否	标准版
+智也	tomoya	日语男声	多语种场景	日文场景	8K/16K	是	否	标准版
+Annie	annie	美语女声	英文场景	英文场景	8K/16K	是	否	标准版
+佳佳	jiajia	粤语女声	方言场景	标准粤文（简体）及粤英文混合场景	8K/16K	是	否	标准版
+Indah	indah	印尼语女声	多语种场景	纯印尼语场景	8K/16K	否	否	标准版
+桃子	taozi	粤语女声	方言场景	支持标准粤文（简体）及粤英文混合场景	8K/16K	是	否	标准版
+柜姐	guijie	亲切女声	通用场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+Stella	stella	知性女声	通用场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+Stanley	stanley	沉稳男声	通用场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+Kenny	kenny	沉稳男声	通用场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+Rosa	rosa	自然女声	通用场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+Farah	farah	马来语女声	多语种场景	仅支持纯马来语场景	8K/16K	否	否	标准版
+马树	mashu	儿童剧男声	通用场景	支持中文及中英文混合场景	8K/16K	是	否	标准版
+小仙	xiaoxian	亲切女声	直播场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+悦儿	yuer	儿童剧女声	通用场景	仅支持纯中文场景	8K/16K	是	否	标准版
+猫小美	maoxiaomei	活力女声	直播场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+知飞	zhifei	激昂解说	超高清场景	支持中文及中英文混合场景	8K/16K	是	否	精品版
+知伦	zhilun	悬疑解说	超高清场景	支持中文及中英文混合场景	8K/16K	是	否	精品版
+艾飞	aifei	激昂解说	直播场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+亚群	yaqun	卖场广播	直播场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+巧薇	qiaowei	卖场广播	直播场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+大虎	dahu	东北话男声	方言场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+ava	ava	美语女声	英文场景	仅支持纯英文场景	8K/16K	是	否	标准版
+艾伦	ailun	悬疑解说	直播场景	支持中文及中英文混合场景	8K/16K	是	是	标准版
+杰力豆	jielidou	治愈童声	童声场景	仅支持纯中文场景	8K/16K	是	是	标准版
+老铁	laotie	东北老铁	直播场景	仅支持纯中文场景	8K/16K	是	是	标准版
+老妹	laomei	吆喝女声	直播场景	仅支持纯中文场景	8K/16K	是	是	标准版
+艾侃	aikan	天津话男声	方言场景	仅支持纯中文场景	8K/16K	是	是	标准版
+Tala	tala	菲律宾语女声	多语种场景	仅支持菲律宾语场景	8K/16K	否	否	标准版
+Tien	tien	越南语女声	多语种场景	仅支持越南语场景	8K/16K	否	否	标准版
+Becca	becca	美语客服女声	美式英语	支持纯英语场景	8K/16K	否	否	标准版
+Kyong	Kyong	韩语女声	韩语场景	韩语	8K/16K	否	否	标准版
+masha	masha	俄语女声	俄语场景	俄语	8K/16K	否	否	标准版
+
+
+多情感声音支持说明
+只有多情感发音人模型才可以支持多情感选择。多情感声音支持的情感如下表所示，每个音色支持的情感分类不完全相同，主要包括以下几种：neutral（中性）、happy（开心）、angry（生气）、sad（悲伤）、fear（害怕）、hate（憎恨）、surprise（惊讶）、arousal（激动）等。
+音色名	voice参数值	情感分类（emotion category）
+知米_多情感	zhimi_emo	angry, fear, happy, hate, neutral, sad, surprise
+知燕_多情感	zhiyan_emo	neutral，happy，angry，sad，fear，hate，surprise，arousal
+知贝_多情感	zhibei_emo	neutral，happy，angry，sad，fear，hate，surprise
+知甜_多情感	zhitian_emo	neutral，happy，angry，sad，fear，hate，surprise
+
     各参数含义如下：
 
     参数	类型	是否必需	说明

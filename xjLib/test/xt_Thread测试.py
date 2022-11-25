@@ -15,10 +15,30 @@ LastEditTime : 2021-01-04 18:13:32
 
 import os
 
-from xt_Thread import CustomThread, CustomThread_Queue, WorkManager, SingletonThread, SigThread, SigThreadQ, T_Map, T_Sub, T_Pool, P_Map, P_Sub, P_Pool
 from xt_File import savefile
+from xt_Ls_Bqg import (
+    ahttp_get_contents,
+    get_contents,
+    get_download_url,
+    map_get_contents,
+    map_get_contents_ahttp,
+)
+from xt_Thread import (
+    CustomThread,
+    CustomThread_Queue,
+    P_Map,
+    P_Pool,
+    P_Sub,
+    SigThread,
+    SigThreadQ,
+    SingletonThread,
+    T_Map,
+    T_Pool,
+    T_Sub,
+    WorkManager,
+)
 from xt_Time import fn_timer
-from xt_Ls_Bqg import get_download_url, get_contents, map_get_contents, map_get_contents_ahttp, get_contents_ahttp, arrangeContent
+
 # from xt_Thread import thread_wrap_class
 
 
@@ -34,8 +54,8 @@ def st(bookname, urls):
 
 @fn_timer
 def sq(bookname, urls):
-    thr = [SigThreadQ([get_contents, index + 1, url]) for index, url in enumerate(urls)]
-    # print(id(thr[0]), id(thr[1]), id(thr[2]))
+    _ = [SigThreadQ([get_contents, (index + 1, url)]) for index, url in enumerate(urls)]
+    # print(id(thr[0]), id(thr[1]), id(thr[2]))get_contents_ahttp
     texts = SigThreadQ.wait_completed()  # #getAllResult()
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
@@ -113,6 +133,7 @@ def pm(bookname, urls):
 
 @fn_timer
 def ts(bookname, urls):
+
     def _c_func(task):
         print(1111, task.result())
 
@@ -129,7 +150,7 @@ def ts(bookname, urls):
 
 @fn_timer
 def ps(bookname, urls):
-    mypool = P_Sub(get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
+    mypool = P_Sub(ahttp_get_contents, [[index + 1, url] for index, url in enumerate(urls)])
     texts = mypool.wait_completed()
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
@@ -160,7 +181,7 @@ def pp(bookname, urls):
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + 'TPool-m.txt', texts, br='\n')
 
-    mypool.add_sub(get_contents_ahttp, [[index + 1, url] for index, url in enumerate(urls)])
+    mypool.add_sub(ahttp_get_contents, [[index + 1, url] for index, url in enumerate(urls)])
     texts = mypool.wait_sub()
     files = os.path.basename(__file__).split(".")[0]
     savefile(files + '＆' + bookname + 'TPool-s.txt', texts, br='\n')
@@ -168,11 +189,11 @@ def pp(bookname, urls):
 
 if __name__ == "__main__":
 
-    bookname, urls = get_download_url('http://www.biqukan.com/2_2760/')
+    bookname, urls, _ = get_download_url('http://www.biqukan.com/2_2760/')
     # #38_38836  #2_2714  #2_2760  #76_76519
 
     # st(bookname, urls)
-    # sq(bookname, urls)
+    sq(bookname, urls)
     # stm(bookname, urls)
     # ct(bookname, urls)
     # cq(bookname, urls)

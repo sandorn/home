@@ -15,12 +15,13 @@ requests 简化调用
 '''
 
 from functools import partial
+
 import requests
 from tenacity import retry as Tretry
 from tenacity import stop_after_attempt, wait_random
-from xt_Tools import try_except_wraps
 from xt_Head import MYHEAD
 from xt_Response import ReqResult
+from xt_Tools import try_except_wraps
 
 TIMEOUT = 20  # (30, 9, 9)
 RETRY_TIME = 6  # 最大重试次数
@@ -116,7 +117,7 @@ post = partial(_request_tretry, "post")
 
 class SessionClient:
     '''封装session，保存cookies，利用TRETRY三方库实现重试'''
-    __slots__ = ('sn', 'headers', 'cookies', 'response', 'url', 'method', 'args', 'kwargs', 'callback')
+    __slots__ = ('sson', 'headers', 'cookies', 'response', 'url', 'method', 'args', 'kwargs', 'callback')
 
     def __init__(self):
         self.sson = requests.session()

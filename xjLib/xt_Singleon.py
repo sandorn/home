@@ -13,8 +13,8 @@ LastEditTime : 2020-12-08 12:30:49
 #==============================================================
 '''
 
-from threading import Lock
 from functools import wraps
+from threading import Lock
 
 
 class Singleton_Mixin:
@@ -72,7 +72,7 @@ def singleton_wrap_return_class(_cls):
             if cls._instance is None:
                 with cls._lock:
                     if cls._instance is None:
-                        cls._instance = super().__new__(cls)  # ! *args, **kwargs出错
+                        cls._instance = super().__new__(cls)
                         cls._instance._intialed = False
             return cls._instance
 

@@ -12,9 +12,26 @@
 # Github       : https://github.com/sandorn/home
 # ==============================================================
 '''
-from xt_Alispeech import synthesizeClass, ReqLongSynthesizer, APITransUrl, PostTransFile, TranscriberProcess, ReqSynthesizer
-from xt_String import string_split_limited_list
-from xt_Alispeech.xt_Pygame import pygame_play, ReqSynthesizer_Thread_read, Synt_Thread_read
+
+from nls.token import getToken
+
+info = getToken("LTAI4G5TRjsGy8BNKPtctjXQ", "hS8Kl0b9orxNUW7IOeBIFUfzgcVn00")
+print(info)
+"""
+from xt_Alispeech import (
+    APITransUrl,
+    PostTransFile,
+    ReqLongSynthesizer,
+    ReqSynthesizer,
+    TranscriberProcess,
+    synthesizeClass,
+)
+from xt_Alispeech.xt_Pygame import (
+    ReqSynthesizer_Thread_read,
+    Synt_Thread_read,
+    pygame_play,
+)
+from xt_String import str_split_limited_list
 
 longtext = '''
         根据保险专业中介机构公司治理专项视频会议要求，我司按照会议安排，对公司相关业务及经营独立性展开全面自查自纠，现将有关工作情况汇报如下：
@@ -120,7 +137,7 @@ def 合成语音2():
 
 def 合成长语音():
     # #长文字合成语音
-    long_text_list = string_split_limited_list(longtext)
+    long_text_list = str_split_limited_list(longtext)
     # Synt_Thread_read(long_text_list)
     ReqLongSynthesizer(longtext, callback=pygame_play)
 
@@ -145,9 +162,10 @@ def 使用SSML别():
     ReqSynthesizer_Thread_read(ssml_text_list)
 
 
-# 合成语音()
+合成语音()
 # 合成语音2()
 # 合成长语音()
 # 网络音频识别()
 # 本地音频识别()
-使用SSML别()
+# 使用SSML别()
+ """
