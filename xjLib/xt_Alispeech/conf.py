@@ -109,12 +109,11 @@ def handle_ex_nsx_result(res):
     res_list = []
     for key, values in res.items():
         _dict = eval(values)
+
         dictMerged[key] = dict(_dict['header'], **_dict['payload'])
         res_list.append((key, dictMerged[key]['result']))
-
     # print(dictMerged)
     # print(res_list)
-
     return res_list, dictMerged
 
 
