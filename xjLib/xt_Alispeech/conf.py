@@ -21,9 +21,8 @@ appKey = 'Ofm34215thIUdSIX'
 from dataclasses import dataclass
 from typing import Any
 
-from ali_speech._create_token import AccessToken
 from nls.token import getToken
-from xt_Class import dict_mothed_Mixin, readonly
+from xt_Class import dict_mothed_Mixin
 from xt_Singleon import Singleton_Mixin
 from xt_Time import get_10_timestamp
 
@@ -70,7 +69,7 @@ class SpeechArgs(dict_mothed_Mixin):
     '''TTS参数'''
 
     long_tts: bool = False
-    aformat: str = 'wav'
+    aformat: str = 'mp3'
     sample_rate: int = 16000
     voice: str = 'Aida'  # aida   # ailun  # kenny
     volume: int = 50
@@ -82,6 +81,7 @@ class SpeechArgs(dict_mothed_Mixin):
     start_timeout: int = 10
     completed_timeout: int = 60
     ex: dict = None
+    savefile: bool = True
     # {'enable_subtitle': True}
 
 

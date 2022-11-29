@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-24 20:43:33
 FilePath     : /xjLib/xt_Alispeech/on_state.py
-LastEditTime : 2022-11-24 20:43:35
+LastEditTime : 2022-11-28 23:47:54
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -58,17 +58,19 @@ class on_state_primitive:
     def _on_error(self, message, *args):
         print("_on_error args=>{}".format(args))
 
-    def _on_close(self, *args):
-        print("_on_close: args=>{}".format(args))
-
     def _on_result_changed(self, message, *args):
         print("_on_chg:{}".format(message))
-
-    def _on_completed(self, message, *args):
-        print("_on_completed:args=>{} message=>{}".format(args, message))
 
     def _on_metainfo(self, message, *args):
         print("_on_metainfo message=>{}".format(message))
 
     def _on_data(self, data, *args):
         print("_on_data data=>{}".format(data))
+
+    def _on_completed(self, message, *args):
+        '''早于_on_close'''
+        print("_on_completed:args=>{} message=>{}".format(args, message))
+
+    def _on_close(self, *args):
+        '''最后执行'''
+        print("_on_close: args=>{}".format(args))
