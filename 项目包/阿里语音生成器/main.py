@@ -147,7 +147,6 @@ class Ui_MainWindow(xt_QMainWindow):
 
     @EventLoop
     def TTS_run(self, *args, **kwargs):
-        print(11111111111111, self.text)
         NSS_TTS(self.text, self.args_dict)
 
     def textChanged_event(self):
