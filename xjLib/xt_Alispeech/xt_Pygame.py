@@ -55,7 +55,7 @@ def create_read_thread(obj):
         self.__dict__['textlist'] = textlist or []
         self.__dict__['datas_list'] = []
         self.__dict__['_running'] = True
-        pygame.mixer.init(frequency=8000)  # !不能使用16000和默认
+        pygame.mixer.init(frequency=8000)  # @不可默认
         self.__dict__['aformat'] = 'wav'
         self.__dict__['pym'] = pygame.mixer
 
@@ -69,8 +69,7 @@ def create_read_thread(obj):
                 text = self.textlist.pop(0)
                 task = self._target(text, {'aformat': self.aformat, 'savefile': False})
                 self.datas_list.append(task[1])
-                if not self._running:
-                    break
+                if not self._running: break
 
             print('pygame_play MainMonitor stoping!!!!')
 
@@ -95,16 +94,15 @@ def create_read_thread(obj):
                 if not self._MainMonitor.is_alive():
                     # #合成语音线程结束，朗读完毕，且无未加载数据
                     if len(self.textlist) == 0 and len(self.datas_list) == 0:
-                        self.stop()
                         print('all recod play finished!!!!')
                         if self._qobj: self._signal.emit()
-
-        # 停止标记
-        self.pym.stop()
-        print('self.py_mixer.stoping!!!!')
+                        self.stop()
 
     def stop(self):
+        QThread.msleep(500)
         self._running = False
+        self.pym.stop()
+        print('self.py_mixer.stoping!!!!')
 
     _name = 'QThread' if obj is QThread else 'Thread'
     return type(f'Synt_Read_{_name}', (obj, ), {
@@ -133,7 +131,7 @@ class _read_class_meta:
         self.textlist = textlist or []
         self.datas_list = []
         self._running = True
-        pygame.mixer.init(frequency=8000)  # @不可使用默认
+        pygame.mixer.init(frequency=8000)  # @不可默认
         self.aformat = 'wav'
         self.pym = pygame.mixer
         self.main_monitor()  # 启动语音生成
@@ -146,8 +144,7 @@ class _read_class_meta:
                 text = self.textlist.pop(0)
                 task = self._target(text, {'aformat': self.aformat, 'savefile': False})
                 self.datas_list.append(task[1])
-                if not self._running:
-                    break
+                if not self._running: break
 
             print('pygame_play MainMonitor stoping!!!!')
 
@@ -173,16 +170,15 @@ class _read_class_meta:
                 if not self._MainMonitor.is_alive():
                     # #合成语音线程结束，朗读完毕，且无未加载数据
                     if len(self.textlist) == 0 and len(self.datas_list) == 0:
-                        self.stop()
                         print('all recod play finished!!!!')
                         if self._qobj: self._signal.emit()
-
-        # 停止标记
-        self.pym.stop()
-        print('self.py_mixer.stoping!!!!')
+                        self.stop()
 
     def stop(self):
+        QThread.msleep(500)
         self._running = False
+        self.pym.stop()
+        print('self.py_mixer.stoping!!!!')
 
 
 def get_read_class(obj: object) -> object:
@@ -196,7 +192,7 @@ RSynt_Read_Thread = get_read_class(Thread)
 RSynt_Read_QThread = get_read_class(QThread)
 
 if __name__ == '__main__':
-    Synt_Read_Thread([
-        '2022世界杯小组赛C组第二轮，阿根廷2-0力克墨西哥，重新掌握出线主动权。第64分钟，梅西世界波破门，打入个人世界杯第8个进球，进球数追平马拉多纳。',
+    RSynt_Read_Thread([
+        '2022世界杯小组赛C组第二轮，阿根廷2:0力克墨西哥，重新掌握出线主动权。第64分钟，梅西世界波破门，打入个人世界杯第8个进球，进球数追平马拉多纳。',
         '第87分钟，恩索·费尔南德斯锁定胜局！目前，波兰积4分，阿根廷和沙特同积3分，阿根廷以净胜球优势排名第二，墨西哥积1分。',
     ])

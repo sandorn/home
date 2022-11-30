@@ -18,16 +18,47 @@ import random
 from functools import wraps
 
 import qdarkstyle
-from PyQt5.QtCore import (QEventLoop, QMetaObject, Qt, QThread, pyqtSignal, pyqtSlot)
+from PyQt5.QtCore import QEventLoop, QMetaObject, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QMainWindow, QMenu, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget, qApp)
-from pysnooper import snoop
-
+from PyQt5.QtWidgets import (
+    QAction,
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDesktopWidget,
+    QDoubleSpinBox,
+    QFileDialog,
+    QHBoxLayout,
+    QHeaderView,
+    QInputDialog,
+    QLabel,
+    QLineEdit,
+    QListView,
+    QListWidget,
+    QMainWindow,
+    QMenu,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QSpinBox,
+    QStatusBar,
+    QTableView,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QTextBrowser,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QWidget,
+    qApp,
+)
 from xt_File import qsstools
 
 
 def EventLoop(function):
     '''定义一个装饰器,确定鼠标显示和控制权'''
+
     @wraps(function)
     def warp(*args, **kwargs):
         # @忽略用户的输入（鼠标和键盘事件）,显示等待中的鼠标样式
@@ -53,6 +84,7 @@ class xt_QStatusBar(QStatusBar):
     addPermanentWidget()	在状态栏中永久添加小控件对象
     removeWidget()	从状态栏中移除指定的小控件
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QStatusBar_{id(self)}")
@@ -109,6 +141,7 @@ class xt_QTabWidget(QTabWidget):
     3.void currentChanged(int). //当改变第参数个选项卡的时候，发出信号.
     4.void tabBarDoubleClicked(int). //当双击第参数个选项卡的时候，发出信号
     '''
+
     def __init__(self, textlist, *args, **kwargs):
         # #textlist tabname list 或者 页签数量
         super().__init__(*args, **kwargs)
@@ -178,6 +211,7 @@ class xt_QTableView(QTableView):
     void	clicked ( const QModelIndex & index )
     void	pressed ( const QModelIndex & index )
     '''
+
     def __init__(self, ColumnsName=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTableView_{id(self)}")
@@ -335,6 +369,7 @@ class xt_QTableWidget(QTableWidget):
     Qt.AlignBaseline	与基线对齐
     如果要设置水平和垂直方向对齐方式，比如在表格空间内上下，左右居中对齐，那么只要使用Qt,AlignHCenter和Qt,AlignVCenter即可
     '''
+
     def __init__(self, ColumnsName, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTableWidget_{id(self)}")
@@ -564,6 +599,7 @@ class xt_QListWidget(QListWidget):
     itemSelectionChanged（）
     当列表部件中进行了选择操作后触发，无论选中项是否改变。
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QListWidget_{id(self)}")
@@ -640,6 +676,7 @@ class xt_QTreeWidget(QTreeWidget):
     事件
     clicked,doubleClicked,itemDoubleClicked
     '''
+
     def __init__(self, ColumnsName, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTreeWidget_{id(self)}")
@@ -708,6 +745,7 @@ class xt_QTreeWidget(QTreeWidget):
 
 
 class xt_QLabel(QLabel):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QLabel_{id(self)}")
@@ -736,6 +774,7 @@ class xt_QTextBrowser(QTextBrowser):
         fp = url.toString()
         os.startfile(fp)
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTextBrowser_{id(self)}")
@@ -757,6 +796,7 @@ class xt_QTextBrowser(QTextBrowser):
 
 
 class xt_QTextEdit(QTextEdit):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTextEdit_{id(self)}")
@@ -769,6 +809,7 @@ class xt_QTextEdit(QTextEdit):
 
 
 class xt_QLineEdit(QLineEdit):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QLineEdit_{id(self)}")
@@ -791,6 +832,7 @@ class xt_QPushButton(QPushButton):
     按钮字符开头用 & + 字母 ,设置快捷键：alt+字母
     事件信号： clicked、pressed、released
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QPushButton_{id(self)}")
@@ -818,6 +860,7 @@ class xt_QCheckBox(QCheckBox):
 
     stateChanged 状态改变事件
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QCheckBox_{id(self)}")
@@ -848,6 +891,7 @@ class xt_QComboBox(QComboBox):
     currentIndexChanged	当下拉选项的索引发生改变时发射该信号
     highlighted	当选中一个已经选中的下拉选项时，发射该信号
     '''
+
     def __init__(self, itemlist=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QComboBox_{id(self)}")
@@ -889,6 +933,7 @@ class xt_QSpinBox(QSpinBox):
     信号	含义
     当值发生改变时，会发射两个valueChanged()信号，其中一个提供int类型，另一个则是QString类型，该QString提供了prefix()和suffix()。当前值可以用value()来读取，setValue()来设置。
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         #QSpinBox旨在处理整数和离散值（例如：月份名称）
@@ -922,6 +967,7 @@ class xt_QDoubleSpinBox(QDoubleSpinBox):
     信号	含义
     当值发生改变时，会发射两个valueChanged()信号，其中一个提供int类型，另一个则是QString类型，该QString提供了prefix()和suffix()。当前值可以用value()来读取，setValue()来设置。
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QDoubleSpinBox _{id(self)}")
@@ -976,6 +1022,7 @@ class xt_QInputDialog(QInputDialog):
     QLineEdit.PasswordEchoOnEdit	3	在编辑的时候显示字符，负责显示密码类型。
 
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QInputDialog_{id(self)}")
@@ -997,6 +1044,7 @@ class xt_QMessageBOx(QMessageBox):
     QMessage.Retry	重试
     QMessage.Ignore	忽略
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QMessageBOx_{id(self)}")
@@ -1020,6 +1068,7 @@ class xt_QFileDialog(QFileDialog):
     getOpenFileName()方法的各参数释义如下：(父组件，标题，对话框打开时默认显示的目录，扩展名过滤器)。
     当扩展名过滤器需要显示多种文件类型时，各类型之间需要用两个分号隔开。
     '''
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QFileDialog_{id(self)}")
@@ -1041,6 +1090,7 @@ class xt_menu:
     title()	返回QMenu小控件的标题
     单击任何QAction按钮时，QMenu对象都会发射triggered信号
     '''
+
     def __init___(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName('xt_QPushButton')
@@ -1078,23 +1128,41 @@ class xt_QMainWindow(QMainWindow):
         Qt.Qt.WindowStaysOnBottomHint#窗口始终处于底层位置
         Qt.Qt.Tool 有一个小小的关闭按钮
     '''
-    def __init__(self, title="MainWindow", status=True, menu=True, action=True, FramelessWindowHint=False, TranslucentBackground=False, *args, **kwargs):
+
+    def __init__(
+        self,
+        title="MainWindow",
+        action=True,
+        tool=True,
+        menu=False,
+        status=False,
+        TBackground=False,
+        FWindowHint=False,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         # #窗体title,setupUI
         self.title = title
         self.setWindowTitle(title)
+
         self.setupUI()
+        self.center()
 
         if status:
             self.status_progress_init()
         if action:
             self.action_init()
         if menu:
-            self.menu_tool_init()
-        if TranslucentBackground:
+            self.menu_init()
+        if tool:
+            self.tool_init()
+        if TBackground:
             self.setAttribute(Qt.WA_TranslucentBackground)  # 设置窗口背景透明
+            self.setWindowOpacity(0.9)  # 设置窗口透明度
+            self.setAutoFillBackground(False)
 
-        if FramelessWindowHint:
+        if FWindowHint:
             self.setWindowFlags(Qt.FramelessWindowHint)  # 隐藏边框
         else:
             '''恢复event'''
@@ -1102,8 +1170,7 @@ class xt_QMainWindow(QMainWindow):
             self.mouseMoveEvent = super().mouseMoveEvent
             self.mouseReleaseEvent = super().mouseReleaseEvent
 
-        # @用于自动绑定信号和函数
-        QMetaObject.connectSlotsByName(self)
+        QMetaObject.connectSlotsByName(self)  # @用于自动绑定信号和函数
         '''
         继承仍需声明，可能与控件生成顺序有关
         事件action:on_objectName_triggered
@@ -1120,12 +1187,16 @@ class xt_QMainWindow(QMainWindow):
         # #窗体icon,size...
         self.basepath = os.path.dirname(__file__)
         self.setWindowIcon(QIcon(self.basepath + '/ico/ico.ico'))
-        self.setMinimumSize(1024, 768)
-        self.setWindowOpacity(0.9)  # 设置窗口透明度
-        # #居中设置  # setGeometry
-        deskSize = QDesktopWidget().screenGeometry()  # 获取桌面窗体参数
-        windowSize = self.geometry()  # 获取窗体本身参数
-        self.move((deskSize.width() - windowSize.width()) // 2, (deskSize.height() - windowSize.height()) // 2)
+        # self.setMinimumSize(1024, 768)
+        # @将窗口大小调整为可用屏幕空间的70%
+        self.resize(QDesktopWidget().availableGeometry(self).size() * 0.65)
+        # self.setGeometry(300, 300, 1024, 768)
+
+    # 窗口居中
+    def center(self):
+        screen = QDesktopWidget().screenGeometry()  # 获取桌面尺寸
+        size = self.geometry()  # 获取窗体尺寸
+        self.move((screen.width() - size.width()) / 2, (screen.height() - size.height()) / 2)
 
     # @重写事件，响应拖动
     def mousePressEvent(self, event):
@@ -1143,6 +1214,10 @@ class xt_QMainWindow(QMainWindow):
     def mouseReleaseEvent(self, QMouseEvent):
         self.m_drag = False
         self.setCursor(QCursor(Qt.ArrowCursor))
+
+    # def paintEvent(self, event):
+    #     '''窗口大小变化后再次居中'''
+    #     self.center()
 
     def status_progress_init(self):
         # #状态栏、进度条
@@ -1177,17 +1252,20 @@ class xt_QMainWindow(QMainWindow):
         self.close_action.setStatusTip('Close the window')
         self.close_action.triggered.connect(qApp.quit)
 
-    def menu_tool_init(self):
+    def menu_init(self):
         # #菜单栏
         menubar = self.menuBar()
         menubar.setNativeMenuBar(False)  # 全平台一致的效果
-        self.file_menu = menubar.addMenu('menu')
+        self.file_menu = menubar.addMenu('file')
         self.file_menu.addAction(self.open_action)
         self.file_menu.addAction(self.save_action)
         self.file_menu.addAction(self.run_action)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.close_action)
+        # self.file_menu.setVisible(False)
         # self.file_menu.addAction('&Exit')
+
+    def tool_init(self):
         # #工具栏
         self.file_toolbar = self.addToolBar('ToolBar')
         self.file_toolbar.setToolButtonStyle(3)  # @同时显示文字和图标
@@ -1201,6 +1279,7 @@ class xt_QMainWindow(QMainWindow):
         self.file_toolbar.addAction(self.close_action)
         # self.file_toolbar.addAction('&Exit')
         self.file_toolbar.addSeparator()  # 分隔线
+        self.file_toolbar.setMovable(False)
         '''
         工具栏中的按钮事件：actionTriggered
         '''

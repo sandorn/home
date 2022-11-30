@@ -2,8 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QMetaObject, QThread, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMessageBox, QVBoxLayout, qApp
+from PyQt5.QtCore import QMetaObject, Qt, QThread, pyqtSlot
+from PyQt5.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QMessageBox,
+    QSplitter,
+    QVBoxLayout,
+    qApp,
+)
 from xt_Alispeech.xt_Pygame import RSynt_Read_QThread
 from xt_Ls_Bqg import ahttp_get_contents, get_download_url
 from xt_String import str_split_limited_list
@@ -28,6 +35,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.baseurl = 'https://www.biqukan8.cc/'
         self.urls = []  # 章节链接列表
         self.titles = []  # 章节名称列表
+        self.setWindowOpacity(0.9)  # 设置窗口透明度
 
         self.setupUi()
         self.retranslateUi()
@@ -58,37 +66,32 @@ class Ui_MainWindow(xt_QMainWindow):
         self.pushButton_4 = xt_QPushButton("下一章")
         self.pushButton_4.clicked.connect(self.nextpage)
         self.checkbox = xt_QCheckBox('自动翻页')
+        self.splitter = QSplitter(self)
 
     def setnum(self):
         self.book_number = self.lineEdit.text()
 
     def retranslateUi(self):
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(self.label)
-        hlayout.addWidget(self.lineEdit)
-        hlayout.addWidget(self.pushButton)
-        hlayout1 = QHBoxLayout()
-        hlayout1.addWidget(self.tabWidget)
-        vlayout1 = QVBoxLayout()
-        vlayout1.addLayout(hlayout)
-        vlayout1.addLayout(hlayout1)
-        hlayout2 = QHBoxLayout()
-        hlayout2.addWidget(self.checkbox)
-        hlayout2.addWidget(self.pushButton_read)
-        hlayout2.addWidget(self.pushButton_3)
-        hlayout2.addWidget(self.pushButton_4)
+        ht_1 = QHBoxLayout()
+        ht_1.addWidget(self.label)
+        ht_1.addWidget(self.lineEdit)
+        ht_1.addWidget(self.pushButton)
+        ht_1.addStretch()
+        ht_1.addWidget(self.checkbox)
+        ht_1.addWidget(self.pushButton_read)
+        ht_1.addWidget(self.pushButton_3)
+        ht_1.addWidget(self.pushButton_4)
 
-        vlayout2 = QVBoxLayout()
-        vlayout2.addWidget(self.QTextEdit)
-        vlayout2.addLayout(hlayout2)
+        self.splitter.addWidget(self.tabWidget)
+        self.splitter.setStretchFactor(0, 2)  # 设定比例
+        self.splitter.addWidget(self.QTextEdit)
+        self.splitter.setStretchFactor(1, 5)  # 设定比例
+        self.splitter.setOrientation(Qt.Horizontal)  # Qt.Vertical 垂直   Qt.Horizontal 水平
 
-        hlayout3 = QHBoxLayout()
-        hlayout3.addLayout(vlayout1)
-        hlayout3.addLayout(vlayout2)
-
-        vlayout3 = QVBoxLayout()
-        vlayout3.addLayout(hlayout3)
-        self.centralwidget.setLayout(vlayout3)
+        vt_0 = QVBoxLayout()
+        vt_0.addLayout(ht_1)
+        vt_0.addWidget(self.splitter)
+        self.centralwidget.setLayout(vt_0)
         self.setCentralWidget(self.centralwidget)
         QMetaObject.connectSlotsByName(self)  # @  关键，用于自动绑定信号和函数
         self.tabWidget.currentChanged.connect(self.currentChanged_event)
@@ -145,20 +148,19 @@ class Ui_MainWindow(xt_QMainWindow):
         (self.read_read if self.pushButton_read.text() == '&Read' else self.read_stop)()
         # (func1 if y == 1 else func2)(arg1, arg2)
         # 如果y等于1,那么调用func1(arg1,arg2)否则调用func2(arg1,arg2)
-
+    @EventLoop
     def read_stop(self):
         self.pushButton_read.setText('&Read')
         self.runthread.stop()
-        qApp.processEvents()
+        # qApp.processEvents()
 
+    @EventLoop
     def read_read(self):
         self.pushButton_read.setText('&STOP')
-        qApp.processEvents()
-        # 处理字符串
-        newText = str_split_limited_list(self.QTextEdit.toPlainText())
+        # qApp.processEvents()
+        newText = str_split_limited_list(self.QTextEdit.toPlainText())  # 处理字符串
         self.runthread = RSynt_Read_QThread(newText)
-        # #绑定RSynt_Read_QThread中定义的finished信号
-        self.runthread._signal.connect(self.playdone)
+        self.runthread._signal.connect(self.playdone)  # #绑定RSynt_Read_QThread中定义的信号
 
     def playdone(self):
         self.read_stop()
@@ -173,12 +175,6 @@ class Ui_MainWindow(xt_QMainWindow):
         self.bookname, self.urls, self.titles = get_download_url(url)
         self.setWindowTitle(self.title + '--' + self.bookname)
         return
-        # # 下载文件
-        for title, articleUrl in zip(self.titles, self.urls):
-            article_content = self.getcontent(articleUrl)
-            fileName = self.bookname + '/' + title + '.txt'  # 设置保存路径
-            with open(fileName, "w") as newFile:  # 打开或者创建文件
-                newFile.write(article_content)  # 向文件中写入内容
 
     # 从网页提取数据
     @EventLoop
@@ -219,7 +215,7 @@ class Ui_MainWindow(xt_QMainWindow):
     def currentRowChanged_event(self, row):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
-        self.QTextEdit.setFontPointSize(18)
+        self.QTextEdit.setFontPointSize(16)  # 设置字号
         # _text = self.getcontent(self.list[row][1])
         nowthread = QThread()
         nowthread.run = self.getcontent
@@ -227,7 +223,6 @@ class Ui_MainWindow(xt_QMainWindow):
         # _text = ''.join(_text.split('\n')[0:1])
         # _text = '<font size="5">' + _text.replace("\n", "<br>") + '</font>'
         # self.QTextEdit.fontPointSize()  # 获取字号
-        # self.QTextEdit.setFontPointSize(18)  # 设置字号
         self.QTextEdit.setText(_text)
 
 

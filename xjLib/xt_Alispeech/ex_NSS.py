@@ -67,7 +67,6 @@ class NSS(on_state_cls):
     def _on_completed(self, message, *args):
         with open(self.__file_name, "rb+") as f:
             self.__data = f.read()
-
         self.result_dict[self.__id] = self.__data
         return self.__data
 
@@ -110,10 +109,10 @@ class NSS(on_state_cls):
         print("{}: NSS done with result:{}".format(self.__id, res))
 
 
-def NSS_TTS(_in_text: list, update_args_dict: dict = {}):
+def NSS_TTS(_in_text: list, update_args: dict = {}):
 
     args_dict = SpeechArgs().get_dict()
-    args_dict.update(update_args_dict)
+    args_dict.update(update_args)
 
     if type(_in_text) in [tuple, list]:
         for index, text in enumerate(_in_text):

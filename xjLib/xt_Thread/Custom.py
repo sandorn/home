@@ -46,8 +46,8 @@ def stop_thread(thread):
 class CustomThread(Thread, item_get_Mixin):
     """多线程,继承自threading.Thread"""
 
-    all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
-    result_list = []  # 结果列表
+    all_Thread = []  # 类属性或类变量,实例公用
+    result_list = []  # 类属性或类变量,实例公用
     finished = Event()
 
     def __init__(self, func, *args, **kwargs):

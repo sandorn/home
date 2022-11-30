@@ -66,11 +66,33 @@ class NST(on_state_cls):
     def __thread_run(self):
         print("thread:{} start..".format(self.__id))
 
-        nstr = nls.NlsSpeechTranscriber(token=_ACCESS_TOKEN, appkey=_ACCESS_APPKEY, on_sentence_begin=self._on_sentence_begin, on_sentence_end=self._on_sentence_end, on_start=self._on_start, on_result_changed=self._on_result_changed, on_completed=self._on_completed, on_error=self._on_error, on_close=self._on_close, callback_args=[self.__id])
+        nstr = nls.NlsSpeechTranscriber(
+            token=_ACCESS_TOKEN,
+            appkey=_ACCESS_APPKEY,
+            on_sentence_begin=self._on_sentence_begin,
+            on_sentence_end=self._on_sentence_end,
+            on_start=self._on_start,
+            on_result_changed=self._on_result_changed,
+            on_completed=self._on_completed,
+            on_error=self._on_error,
+            on_close=self._on_close,
+            callback_args=[self.__id],
+        )
 
         print("{}: session start".format(self.__id))
 
-        res = nstr.start(aformat="pcm", enable_intermediate_result=True, enable_punctuation_prediction=True, enable_inverse_text_normalization=True, sample_rate=16000, ch=1, timeout=10, ping_interval=8, ping_timeout=None, ex=None)
+        res = nstr.start(
+            aformat="pcm",
+            enable_intermediate_result=True,
+            enable_punctuation_prediction=True,
+            enable_inverse_text_normalization=True,
+            sample_rate=16000,
+            ch=1,
+            timeout=10,
+            ping_interval=8,
+            ping_timeout=None,
+            ex=None,
+        )
 
         self.__slices = zip(*(iter(self.__data), ) * 640)
         for i in self.__slices:
