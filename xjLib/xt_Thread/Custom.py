@@ -20,7 +20,7 @@ from threading import Event, Thread, enumerate
 from time import time
 
 from xt_Class import item_get_Mixin
-from xt_Singleon import Singleton_Mixin, singleton_wrap_return_class
+from xt_Thread.Singleon import Singleton_Mixin, singleton_wrap_return_class
 
 
 def stop_thread(thread):
@@ -243,16 +243,17 @@ def make_singleton_thread_class(name):
     return _cls
 
 
-def make_queue_singleton_thread_class():
+def make_queue_singleton_thread_class(name):
     # #使用类装饰器 from xt_Singleon import singleton_wrap_return_class，转换为单例类
     _cls = singleton_wrap_return_class(CustomThread_Queue)
+    _cls.__name__ = name  # @单例线程运行结束判断依据
     _cls.result_list = []  # @单独配置结果字典
     return _cls
 
 
 SigThread = make_singleton_thread_class('SigThread')
 
-SigThreadQ = make_queue_singleton_thread_class()
+SigThreadQ = make_queue_singleton_thread_class('SigThreadQ')
 
 
 class CustomThread_Singleton(CustomThread, Singleton_Mixin):

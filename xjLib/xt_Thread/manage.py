@@ -13,11 +13,11 @@
 #==============================================================
 '''
 
-from threading import Thread, Event, main_thread
-from queue import Queue  #, Empty
 import traceback
-from time import sleep
 from functools import wraps
+from queue import Queue  # , Empty
+from threading import Event, Thread, main_thread
+from time import sleep
 
 
 def _handle_thread_exception(request, exc_info):
@@ -38,7 +38,7 @@ class task_object:
         self.kwds = kwds or {}
 
     def __str__(self):
-        return f"<work_task_object id={self.requestID} target={self.func}  \args={ self.args} kwargs={self.kwds} exception={self.exception}>"
+        return f"<work_task_object id={self.requestID} target={self.func}  args={ self.args} kwargs={self.kwds} exception={self.exception}>"
 
 
 class WorkManager(object):
@@ -60,7 +60,7 @@ class WorkManager(object):
     def add_work_queue(self, args_list):
         # #初始化工作队列,添加工作入队
         for args in args_list:
-            assert isinstance(args, (list, tuple))
+            assert isinstance(args, list)
             func = args.pop(0)
             task = task_object(func, args, callback=self.callback, exc_callback=self.exc_callback)
             self.work_queue.put(task)
@@ -82,12 +82,12 @@ class WorkManager(object):
         """关闭要求数量的工作线程"""
         _stop_list = []
         for _ in range(min(num_workers, len(self.all_Thread))):
-            thread = self.all_Thread.pop()
-            thread.stop_work()
-            _stop_list.append(thread)
+            _thread = self.all_Thread.pop()
+            _thread.stop_work()
+            _stop_list.append(_thread)
 
-        for worker in _stop_list:
-            thread.join()
+        for _thread in _stop_list:
+            _thread.join()
 
     def break_manager(self):
         """直接关闭全部工作线程"""

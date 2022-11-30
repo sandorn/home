@@ -22,6 +22,7 @@ def thread_safe(lock=None):
     lock = lock or Lock()
 
     def decorate(func):
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             '''函数的线程安全化'''
@@ -35,6 +36,7 @@ def thread_safe(lock=None):
 
 class MyThread(Thread):
     '''供线程装饰器调用'''
+
     def __init__(self, func, name, *args, **kwargs):
         super().__init__(target=func, args=args, kwargs=kwargs, name=name)
 
@@ -64,6 +66,7 @@ def thread_wrap(func=None):
 
     # 需要再次嵌套一层装饰器，才可以供下面运行时使用
     def wrapper(fun):
+
         def inner(*args, **kwargs):
             daemon = kwargs.pop('daemon', False)
 
