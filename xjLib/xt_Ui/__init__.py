@@ -35,12 +35,14 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QListView,
     QListWidget,
+    QListWidgetItem,
     QMainWindow,
     QMenu,
     QMessageBox,
     QProgressBar,
     QPushButton,
     QSpinBox,
+    QSplitter,
     QStatusBar,
     QTableView,
     QTableWidget,
@@ -215,7 +217,7 @@ class xt_QTableView(QTableView):
     def __init__(self, ColumnsName=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTableView_{id(self)}")
-        self.model = QStandardItemModel(0, len(ColumnsName))
+        self.model = QStandardItemModel(0, len(ColumnsName))  # type: ignore
         self.ColumnsName = ColumnsName
         self.setColumnsName(ColumnsName)
         self.setModel(self.model)
@@ -292,7 +294,7 @@ class xt_QTableView(QTableView):
             self.scrollToBottom()
 
         # #恢复排序设置
-        self.setSort(self.des_sort)
+        self.setSort(self.des_sort)  # type: ignore
 
     @EventLoop
     def appendItems(self, items=[]):
@@ -640,7 +642,9 @@ class xt_QListWidget(QListWidget):
         count = self.count()
         # 遍历listwidget中的内容
         for index in range(count):
-            widgetres.append(self.item(index).text())
+            _item = self.item(index)
+            assert isinstance(_item, QListWidgetItem)
+            widgetres.append(_item.text())
 
         return widgetres
 
@@ -728,7 +732,7 @@ class xt_QTreeWidget(QTreeWidget):
             child = QTreeWidgetItem(parent)
 
         for index in self.columns.keys():
-            _text = name_list[index] if index < len(name_list) else None
+            _text = name_list[index] if index < len(name_list) else ''
             child.setText(index, _text)
 
     def clicked_event(self, qmodelindex):
@@ -1074,33 +1078,179 @@ class xt_QFileDialog(QFileDialog):
         self.setObjectName(f"xt_QFileDialog_{id(self)}")
 
 
-class xt_menu:
-    '''
-    方法	描述
-    menuBar()	返回主窗口的QMenuBar对象
-    addMenu()	在菜单栏中添加一个新的QMenu对象
-    addAction()	向QMenu小控件中添加一个操作按钮，其中包含文本或图标
-    setEnabled()	将操作按钮设置为启用/禁用
-    addSeperator()	在菜单中添加一条分割线
-    clear()	删除菜单栏的内容
-    setShortcut()	将快捷键关联到操作按钮
-    setText()	设置菜单项的文本
-    setTitle()	设置QMenu小控件的标题
-    text()	返回与QACtion对象关联的文本
-    title()	返回QMenu小控件的标题
-    单击任何QAction按钮时，QMenu对象都会发射triggered信号
-    '''
-
-    def __init___(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setObjectName('xt_QPushButton')
-        statusbarAct = QAction('View statusbar', self, checkable=True)
-        statusbarAct.setStatusTip('View statusbar')
-        statusbarAct.setChecked(True)  # True为默认选中状态
-        statusbarAct.triggered.connect(self.toggleMenu)
-
-
 class xt_QMainWindow(QMainWindow):
+
+    def __init__(self, title="MainWindow", action=True, tool=False, menu=False, status=False, TBackground=False, FWindowHint=False, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # #窗体title,setupUI
+        self.title = title
+        self.setWindowTitle(title)
+
+        self.setupUI()
+        self.center()
+
+        if action:
+            self.action_init()
+        if tool:
+            self.tool_init()
+        if menu:
+            self.menu_init()
+        if status:
+            self.status_progress_init()
+        if TBackground:
+            self.setAttribute(Qt.WA_TranslucentBackground)  # 设置窗口背景透明
+            self.setWindowOpacity(0.9)  # 设置窗口透明度
+            self.setAutoFillBackground(False)
+
+        if FWindowHint:
+            self.setWindowFlags(Qt.FramelessWindowHint)  # 隐藏边框
+        else:
+            '''恢复event'''
+            self.mousePressEvent = super().mousePressEvent  # type: ignore
+            self.mouseMoveEvent = super().mouseMoveEvent  # type: ignore
+            self.mouseReleaseEvent = super().mouseReleaseEvent  # type: ignore
+
+        QMetaObject.connectSlotsByName(self)  # @用于自动绑定信号和函数
+        '''
+        继承仍需声明，可能与控件生成顺序有关
+        事件action:on_objectName_triggered
+        按钮button:on_objectName_clicked
+        必须使用@PyQt5.QtCore.pyqtSlot()修饰要调用的函数
+        ......
+        手工绑定:connect(lamda : self.func(args))；解除绑定:disconnect()
+        '''
+        qss = '''* {font: 11pt 'Sarasa Term SC';outline: none;}''' + qdarkstyle.load_stylesheet_pyqt5()
+        self.setStyleSheet(qss)
+        self.show()
+
+    def setupUI(self):
+        # #窗体icon,size...
+        self.basepath = os.path.dirname(__file__)
+        self.setWindowIcon(QIcon(self.basepath + '/ico/ico.ico'))
+        # @将窗口大小调整为可用屏幕空间的百分比
+        self.resize(QDesktopWidget().availableGeometry(self).size() * 0.618)
+        # self.setGeometry(300, 300, 1024, 768)
+        # def paintEvent(self, event): # #窗口居中
+        #     '''窗口大小变化后再次居中'''
+        #     self.center()
+
+    def center(self):
+        screen = QDesktopWidget().screenGeometry()  # 获取桌面尺寸
+        size = self.geometry()  # 获取窗体尺寸
+        x = int((screen.width() - size.width()) / 2)
+        y = int((screen.height() - size.height()) / 2)
+        self.move(x, y)
+
+    def mousePressEvent(self, event):  # @重写事件，响应拖动
+        if event.button() == Qt.LeftButton:
+            self.m_drag = True
+            self.m_DragPosition = event.globalPos() - self.pos()
+            event.accept()
+            self.setCursor(QCursor(Qt.OpenHandCursor))
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.m_drag:
+            self.move(QMouseEvent.globalPos() - self.m_DragPosition)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.m_drag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
+
+    def action_init(self):  # #QAction
+        # _path = os.path.dirname(__file__) + '/'
+        self.open_action = QAction(QIcon(self.basepath + '/ico/open.ico'), '&Open', self)
+        self.save_action = QAction(QIcon(self.basepath + '/ico/save.ico'), '&Save', self)
+        self.run_action = QAction(QIcon(self.basepath + '/ico/run.ico'), '&Theme', self)
+        self.open_action.setObjectName("openObject")
+        self.save_action.setObjectName("saveObject")
+        self.run_action.setObjectName("runObject")
+        # !必须,关键，用于自动绑定信号和函数  on_ObjectName_triggered
+        # !配套：QMetaObject.connectSlotsByName(self)
+        self.close_action = QAction(QIcon(self.basepath + '/ico/close.ico'), '&Quit', self)
+        self.open_action.setShortcut('Ctrl+O')
+        self.save_action.setShortcut('Ctrl+S')
+        self.run_action.setShortcut('Ctrl+T')
+        self.close_action.setShortcut('Ctrl+Q')
+        # self.close_action.setToolTip('Close the window')
+        # self.close_action.setStatusTip('Close the window')
+        self.close_action.triggered.connect(qApp.quit)
+
+    def tool_init(self):  # #工具栏
+        self.file_toolbar = self.addToolBar('ToolBar')
+        self.file_toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.file_toolbar.setFixedHeight(64)
+        self.file_toolbar.addAction(self.open_action)
+        self.file_toolbar.addSeparator()  # 分隔线
+        self.file_toolbar.addAction(self.save_action)
+        self.file_toolbar.addSeparator()  # 分隔线
+        self.file_toolbar.addAction(self.run_action)
+        self.file_toolbar.addSeparator()  # 分隔线
+        self.file_toolbar.addAction(self.close_action)
+        # self.file_toolbar.addAction('&Exit')
+        self.file_toolbar.addSeparator()  # 分隔线
+        self.file_toolbar.setMovable(False)
+        '''
+        工具栏中的按钮事件：actionTriggered
+        '''
+
+    def menu_init(self):  # #菜单栏
+        menubar = self.menuBar()
+        menubar.setNativeMenuBar(False)  # 全平台一致的效果
+        self.file_menu = menubar.addMenu('file')
+        self.file_menu.addAction(self.open_action)
+        self.file_menu.addAction(self.save_action)
+        self.file_menu.addAction(self.run_action)
+        self.file_menu.addSeparator()
+        self.file_menu.addAction(self.close_action)
+
+    def status_progress_init(self):  # #状态栏、进度条
+        self.status1 = xt_QStatusBar()
+        self.status2 = xt_QLabel()
+        self.status3 = xt_QLabel()
+        # self.setStatusBar(self.statusBar)
+        self.pbar = xt_QProgressBar()
+        splitter1 = QSplitter(Qt.Horizontal)
+        splitter1.addWidget(self.status2)
+        splitter1.addWidget(self.status3)
+
+        _statusBar = self.statusBar()
+        _statusBar.setSizeGripEnabled(False)
+        _statusBar.addWidget(self.status1, stretch=1)
+        _statusBar.addWidget(splitter1, stretch=1)
+        # _statusBar.addWidget(self.status2, stretch=1)
+        # _statusBar.addWidget(self.status3, stretch=1)
+        _statusBar.addWidget(self.pbar, stretch=1)
+        # _statusBar.addPermanentWidget(self.pbar, stretch=100)
+        self.status1.showMessage('Ready to compose')
+
+    @pyqtSlot()
+    def on_openObject_triggered(self):
+        # #根据名称绑定的函数
+        pass
+
+    @pyqtSlot()
+    def on_saveObject_triggered(self):
+        # #根据名称绑定的函数
+        pass
+
+    @pyqtSlot()
+    def on_runObject_triggered(self):
+        # #根据名称绑定的函数
+        qss_list = [
+            self.basepath + '/blue.qss',
+            self.basepath + '/css.qss',
+            self.basepath + '/dark_orange.qss',
+            self.basepath + '/dark.qss',
+            self.basepath + '/grey.qss',
+            self.basepath + '/qdark.qss',
+            self.basepath + '/white.qss',
+        ]
+        file_name = random.choice(qss_list)
+        self.setWindowTitle(self.title + '--' + file_name.split('/')[-1].split('.')[0])
+        qsstools.set(file_name, self)
+        pass
+
     '''
         #@setWindowFlags(Qt.WindowFlags|Qt.WindowFlags)
         PYQT基本窗口类型有如下类型：
@@ -1128,185 +1278,3 @@ class xt_QMainWindow(QMainWindow):
         Qt.Qt.WindowStaysOnBottomHint#窗口始终处于底层位置
         Qt.Qt.Tool 有一个小小的关闭按钮
     '''
-
-    def __init__(
-        self,
-        title="MainWindow",
-        action=True,
-        tool=True,
-        menu=False,
-        status=False,
-        TBackground=False,
-        FWindowHint=False,
-        *args,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-        # #窗体title,setupUI
-        self.title = title
-        self.setWindowTitle(title)
-
-        self.setupUI()
-        self.center()
-
-        if status:
-            self.status_progress_init()
-        if action:
-            self.action_init()
-        if menu:
-            self.menu_init()
-        if tool:
-            self.tool_init()
-        if TBackground:
-            self.setAttribute(Qt.WA_TranslucentBackground)  # 设置窗口背景透明
-            self.setWindowOpacity(0.9)  # 设置窗口透明度
-            self.setAutoFillBackground(False)
-
-        if FWindowHint:
-            self.setWindowFlags(Qt.FramelessWindowHint)  # 隐藏边框
-        else:
-            '''恢复event'''
-            self.mousePressEvent = super().mousePressEvent
-            self.mouseMoveEvent = super().mouseMoveEvent
-            self.mouseReleaseEvent = super().mouseReleaseEvent
-
-        QMetaObject.connectSlotsByName(self)  # @用于自动绑定信号和函数
-        '''
-        继承仍需声明，可能与控件生成顺序有关
-        事件action:on_objectName_triggered
-        按钮button:on_objectName_clicked
-        必须使用@PyQt5.QtCore.pyqtSlot()修饰要调用的函数
-        ......
-        手工绑定:connect(lamda : self.func(args))；解除绑定:disconnect()
-        '''
-        qss = '''* {font: 11pt 'Sarasa Term SC';outline: none;}''' + qdarkstyle.load_stylesheet_pyqt5()
-        self.setStyleSheet(qss)
-        self.show()
-
-    def setupUI(self):
-        # #窗体icon,size...
-        self.basepath = os.path.dirname(__file__)
-        self.setWindowIcon(QIcon(self.basepath + '/ico/ico.ico'))
-        # self.setMinimumSize(1024, 768)
-        # @将窗口大小调整为可用屏幕空间的70%
-        self.resize(QDesktopWidget().availableGeometry(self).size() * 0.65)
-        # self.setGeometry(300, 300, 1024, 768)
-
-    # 窗口居中
-    def center(self):
-        screen = QDesktopWidget().screenGeometry()  # 获取桌面尺寸
-        size = self.geometry()  # 获取窗体尺寸
-        self.move((screen.width() - size.width()) / 2, (screen.height() - size.height()) / 2)
-
-    # @重写事件，响应拖动
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.m_drag = True
-            self.m_DragPosition = event.globalPos() - self.pos()
-            event.accept()
-            self.setCursor(QCursor(Qt.OpenHandCursor))
-
-    def mouseMoveEvent(self, QMouseEvent):
-        if Qt.LeftButton and self.m_drag:
-            self.move(QMouseEvent.globalPos() - self.m_DragPosition)
-            QMouseEvent.accept()
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        self.m_drag = False
-        self.setCursor(QCursor(Qt.ArrowCursor))
-
-    # def paintEvent(self, event):
-    #     '''窗口大小变化后再次居中'''
-    #     self.center()
-
-    def status_progress_init(self):
-        # #状态栏、进度条
-        self.status = xt_QStatusBar()
-        # self.setStatusBar(self.statusBar)
-        self.pbar = xt_QProgressBar()
-
-        _statusBar = self.statusBar()
-        _statusBar.setSizeGripEnabled(False)
-        _statusBar.addWidget(self.status, stretch=1)
-        _statusBar.addWidget(self.pbar, stretch=1)
-        # _statusBar.addPermanentWidget(self.pbar, stretch=100)
-        self.status.showMessage('Ready to compose')
-
-    def action_init(self):
-        # #QAction
-        # _path = os.path.dirname(__file__) + '/'
-        self.open_action = QAction(QIcon(self.basepath + '/ico/open.ico'), '&Open', self)
-        self.save_action = QAction(QIcon(self.basepath + '/ico/save.ico'), '&Save', self)
-        self.run_action = QAction(QIcon(self.basepath + '/ico/run.ico'), '&Theme', self)
-        self.open_action.setObjectName("openObject")
-        self.save_action.setObjectName("saveObject")
-        self.run_action.setObjectName("runObject")
-        # !必须,关键，用于自动绑定信号和函数  on_ObjectName_triggered
-        # !配套：QMetaObject.connectSlotsByName(self)
-        self.close_action = QAction(QIcon(self.basepath + '/ico/close.ico'), '&Quit', self)
-        self.open_action.setShortcut('Ctrl+O')
-        self.save_action.setShortcut('Ctrl+S')
-        self.run_action.setShortcut('Ctrl+T')
-        self.close_action.setShortcut('Ctrl+Q')
-        self.close_action.setToolTip('Close the window')
-        self.close_action.setStatusTip('Close the window')
-        self.close_action.triggered.connect(qApp.quit)
-
-    def menu_init(self):
-        # #菜单栏
-        menubar = self.menuBar()
-        menubar.setNativeMenuBar(False)  # 全平台一致的效果
-        self.file_menu = menubar.addMenu('file')
-        self.file_menu.addAction(self.open_action)
-        self.file_menu.addAction(self.save_action)
-        self.file_menu.addAction(self.run_action)
-        self.file_menu.addSeparator()
-        self.file_menu.addAction(self.close_action)
-        # self.file_menu.setVisible(False)
-        # self.file_menu.addAction('&Exit')
-
-    def tool_init(self):
-        # #工具栏
-        self.file_toolbar = self.addToolBar('ToolBar')
-        self.file_toolbar.setToolButtonStyle(3)  # @同时显示文字和图标
-        self.file_toolbar.setFixedHeight(64)
-        self.file_toolbar.addAction(self.open_action)
-        self.file_toolbar.addSeparator()  # 分隔线
-        self.file_toolbar.addAction(self.save_action)
-        self.file_toolbar.addSeparator()  # 分隔线
-        self.file_toolbar.addAction(self.run_action)
-        self.file_toolbar.addSeparator()  # 分隔线
-        self.file_toolbar.addAction(self.close_action)
-        # self.file_toolbar.addAction('&Exit')
-        self.file_toolbar.addSeparator()  # 分隔线
-        self.file_toolbar.setMovable(False)
-        '''
-        工具栏中的按钮事件：actionTriggered
-        '''
-
-    @pyqtSlot()
-    def on_openObject_triggered(self):
-        # #根据名称绑定的函数
-        pass
-
-    @pyqtSlot()
-    def on_saveObject_triggered(self):
-        # #根据名称绑定的函数
-        pass
-
-    @pyqtSlot()
-    def on_runObject_triggered(self):
-        # #根据名称绑定的函数
-        qss_list = [
-            self.basepath + '/blue.qss',
-            self.basepath + '/css.qss',
-            # self.basepath +'/dark_orange.qss',
-            self.basepath + '/dark.qss',
-            self.basepath + '/grey.qss',
-            self.basepath + '/qdark.qss',
-            self.basepath + '/white.qss',
-        ]
-        file_name = random.choice(qss_list)
-        self.setWindowTitle(self.title + '--' + file_name.split('/')[-1].split('.')[0])
-        qsstools.set(file_name, self)
-        pass

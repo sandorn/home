@@ -21,7 +21,7 @@ from xt_Alispeech.on_state import on_state_cls
 
 _ACCESS_APPKEY = Constant().appKey
 _ACCESS_TOKEN = Constant().token
-sem = Semaphore(2)  # 限制线程并发数
+Sem = Semaphore(2)  # 限制线程并发数
 
 
 class NST(on_state_cls):
@@ -58,7 +58,7 @@ class NST(on_state_cls):
             res, cls.result_dict = cls.result_dict, {}
             return res
         except Exception:
-            return None
+            return {}
 
     def _on_sentence_end(self, message, *args):
         '''相当于：_on_completed'''
@@ -66,9 +66,9 @@ class NST(on_state_cls):
         return message
 
     def __thread_run(self):
-        with sem:
+        with Sem:
             print("thread:{} start..".format(self.__id))
-            nstr = NlsSpeechTranscriber(
+            _NST_ = NlsSpeechTranscriber(
                 token=_ACCESS_TOKEN,
                 appkey=_ACCESS_APPKEY,
                 on_sentence_begin=self._on_sentence_begin,
@@ -83,7 +83,7 @@ class NST(on_state_cls):
 
             print("{}: session start".format(self.__id))
 
-            res = nstr.start(
+            _NST_.start(
                 aformat="pcm",
                 enable_intermediate_result=True,
                 enable_punctuation_prediction=True,
@@ -98,13 +98,11 @@ class NST(on_state_cls):
 
             self.__slices = zip(*(iter(self.__data), ) * 640)
             for i in self.__slices:
-                nstr.send_audio(bytes(i))
+                _NST_.send_audio(bytes(i))
                 time.sleep(0.01)
 
-            # &nstr.ctrl(ex={"test": "nweargs"})
-
-            res = nstr.stop()
-            print("{}: NST stopped:{}".format(self.__id, res))
+            _NST_.stop()
+            print('{}: NST stopped.'.format(self.__id))
 
 
 if __name__ == '__main__':

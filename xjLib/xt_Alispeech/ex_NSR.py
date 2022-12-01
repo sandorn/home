@@ -22,7 +22,7 @@ from xt_Alispeech.on_state import on_state_cls
 
 _ACCESS_APPKEY = Constant().appKey
 _ACCESS_TOKEN = Constant().token
-sem = Semaphore(2)  # 限制线程并发数
+Sem = Semaphore(2)  # 限制线程并发数
 
 
 class NSR(on_state_cls):
@@ -59,17 +59,17 @@ class NSR(on_state_cls):
             res, cls.result_dict = cls.result_dict, {}
             return res
         except Exception:
-            return None
+            return {}
 
     def _on_completed(self, message, *args):
         self.result_dict[self.__id] = message
         return message
 
     def __thread_run(self):
-        with sem:
+        with Sem:
             print('thread:{} start..'.format(self.__id))
 
-            nsrr = NlsSpeechRecognizer(
+            _NSR_ = NlsSpeechRecognizer(
                 token=_ACCESS_TOKEN,
                 appkey=_ACCESS_APPKEY,
                 on_start=self._on_start,
@@ -82,7 +82,7 @@ class NSR(on_state_cls):
 
             print('{}: session start'.format(self.__id))
 
-            res = nsrr.start(
+            _NSR_.start(
                 aformat="pcm",
                 enable_intermediate_result=True,
                 enable_punctuation_prediction=True,
@@ -97,11 +97,11 @@ class NSR(on_state_cls):
 
             self.__slices = zip(*(iter(self.__data), ) * 640)
             for i in self.__slices:
-                nsrr.send_audio(bytes(i))
+                _NSR_.send_audio(bytes(i))
                 time.sleep(0.01)
 
-            res = nsrr.stop()
-            print('{}: NSR stopped:{}'.format(self.__id, res))
+            _NSR_.stop()
+            print('{}: NSR stopped.'.format(self.__id))
 
 
 if __name__ == '__main__':

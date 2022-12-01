@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-24 20:43:33
 FilePath     : /xjLib/xt_Alispeech/on_state.py
-LastEditTime : 2022-11-30 20:56:02
+LastEditTime : 2022-12-01 18:52:51
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -17,31 +17,31 @@ Github       : https://github.com/sandorn/home
 class on_state_cls:
 
     def _on_sentence_begin(self, message, *args):
-        pass
+        ...
 
     def _on_sentence_end(self, message, *args):
-        pass
+        ...
 
     def _on_start(self, message, *args):
-        pass
+        ...
 
     def _on_error(self, message, *args):
-        pass
+        ...
 
     def _on_close(self, *args):
-        pass
+        ...
 
     def _on_result_changed(self, message, *args):
-        pass
+        ...
 
     def _on_completed(self, message, *args):
-        pass
+        ...
 
     def _on_metainfo(self, message, *args):
-        pass
+        ...
 
     def _on_data(self, data, *args):
-        pass
+        ...
 
 
 class on_state_primitive:

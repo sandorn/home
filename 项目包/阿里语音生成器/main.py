@@ -8,15 +8,13 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-29 23:53:26
 FilePath     : /项目包/阿里语音生成器/main.py
-LastEditTime : 2022-12-01 00:42:58
+LastEditTime : 2022-12-01 20:51:22
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QSplitter
 from xt_Alispeech.conf import VIOCE
-
-# from pysnooper import snoop
 from xt_Alispeech.ex_NSS import NSS_TTS
 from xt_String import str_split_limited_list
 from xt_Ui import EventLoop, xt_QLineEdit, xt_QMainWindow, xt_QTableView, xt_QTextEdit
@@ -25,7 +23,7 @@ from xt_Ui import EventLoop, xt_QLineEdit, xt_QMainWindow, xt_QTableView, xt_QTe
 class Ui_MainWindow(xt_QMainWindow):
 
     def __init__(self):
-        super().__init__('阿里语音合成器')
+        super().__init__('阿里语音合成器', status=True, tool=True)
         self.args_dict = {}  # 存参数
         self.setWindowOpacity(0.9)  # 设置窗口透明度
         self.setupUi()
@@ -64,13 +62,13 @@ class Ui_MainWindow(xt_QMainWindow):
     @pyqtSlot()
     @EventLoop
     def on_openObject_triggered(self, *args, **kwargs):
-        self.args_dict.update({'savefile': False})
-        res_list = NSS_TTS(self.text, self.args_dict)
-        res_list.sort(key=lambda x: x[0])
-        f = open('D:/test.mp3', "wb")
-        for item in res_list:
-            f.write(item[1])
-        f.close()
+        # self.args_dict.update({'savefile': False})
+        reslist, filelist = NSS_TTS(self.text, self.args_dict)
+        filelist.sort(key=lambda x: x[0])
+
+        # reslist.sort(key=lambda x: x[0])
+        # with open('test.mp3', "wb") as f:
+        #     [f.write(row[1]) for row in reslist]
 
     def textChanged_event(self):
         self.text = str_split_limited_list(self.QTextEdit.toPlainText())
@@ -81,5 +79,5 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     ui = Ui_MainWindow()
-    ui.QTextEdit.setText('根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组')
-    sys.exit(app.exec_())  # 程序关闭时退出进程
+    ui.QTextEdit.setText('')
+    sys.exit(app.exec())

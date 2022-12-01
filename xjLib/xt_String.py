@@ -149,16 +149,22 @@ def Re_Compile(replacement, trims_dict):
     return pattern.sub(lambda m: trims_dict[m.group(0)], replacement)
 
 
-def str_split_limited_list(string, maxlen=300):
-    # #仅按照长度分割
-    # #newText = [string[i:i+maxlen] for i in range(0, len(string), maxlen)]
+def str_split_limited_list(intext, mix=100, max=280):
+    if len(intext) < mix:
+        out_text = (intext, )
+    else:
+        out_text = re.findall(r'[\s\S]{' + str(mix) + ',' + str(max) + '}。', intext)
+    return out_text
+
+
+def str_split_limited_list_0(string, maxlen=300):
+    # @出现超出长度的字符串
+    # newText = [string[i:i+maxlen] for i in range(0, len(string), maxlen)]
     newText = []
     _temp = ''
 
     _temp_list = string.strip().split('\n')
     line_Text = [item.strip() for item in _temp_list]
-    line_Text[0] = line_Text[0] + '。'  # 章节标题加间隔
-
     for index, text in enumerate(line_Text):
         if len(text) > maxlen:
             if _temp != '':
