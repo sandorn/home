@@ -18,7 +18,7 @@ import random
 from functools import wraps
 
 import qdarkstyle
-from PyQt5.QtCore import QEventLoop, QMetaObject, Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QEventLoop, QMetaObject, QSize, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (
     QAction,
@@ -546,6 +546,9 @@ class xt_QTableWidget(QTableWidget):
     def empty(self):
         [self.removeRow(0) for _ in range(self.rowCount())]
 
+    def clean(self):
+        super().clean()
+
     def itemClicked_event(self, item):
         # print('QTableWidget_itemClicked_event', item, item.text(), item.row())
         # self.currentIndex().row()
@@ -631,8 +634,11 @@ class xt_QListWidget(QListWidget):
     def processtrigger(self, QAction):
         print("QListWidget_contextMenu_triggered", QAction, QAction.text())
 
+    def clean(self):
+        self.clear()
+
+    @EventLoop
     def empty(self):
-        # self.clear()
         [self.takeItem(0) for _ in range(self.count())]
 
     @EventLoop
@@ -1159,50 +1165,50 @@ class xt_QMainWindow(QMainWindow):
 
     def action_init(self):  # #QAction
         # _path = os.path.dirname(__file__) + '/'
-        self.open_action = QAction(QIcon(self.basepath + '/ico/open.ico'), '&Open', self)
-        self.save_action = QAction(QIcon(self.basepath + '/ico/save.ico'), '&Save', self)
-        self.run_action = QAction(QIcon(self.basepath + '/ico/run.ico'), '&Theme', self)
-        self.open_action.setObjectName("openObject")
-        self.save_action.setObjectName("saveObject")
-        self.run_action.setObjectName("runObject")
+        self.Run_action = QAction(QIcon(self.basepath + '/ico/Execute.png'), '&Execute', self)
+        self.Do_action = QAction(QIcon(self.basepath + '/ico/Performing.png'), '&Performing', self)
+        self.Theme_action = QAction(QIcon(self.basepath + '/ico/color.ico'), '&Theme', self)
+        self.Run_action.setObjectName("Run")
+        self.Do_action.setObjectName("Do")
+        self.Theme_action.setObjectName("Theme")
         # !必须,关键，用于自动绑定信号和函数  on_ObjectName_triggered
         # !配套：QMetaObject.connectSlotsByName(self)
-        self.close_action = QAction(QIcon(self.basepath + '/ico/close.ico'), '&Quit', self)
-        self.open_action.setShortcut('Ctrl+O')
-        self.save_action.setShortcut('Ctrl+S')
-        self.run_action.setShortcut('Ctrl+T')
-        self.close_action.setShortcut('Ctrl+Q')
-        # self.close_action.setToolTip('Close the window')
-        # self.close_action.setStatusTip('Close the window')
-        self.close_action.triggered.connect(qApp.quit)
+        self.Close_action = QAction(QIcon(self.basepath + '/ico/close.ico'), '&Quit', self)
+        self.Run_action.setShortcut('Ctrl+E')
+        self.Do_action.setShortcut('Ctrl+P')
+        self.Theme_action.setShortcut('Ctrl+T')
+        self.Close_action.setShortcut('Ctrl+Q')
+        # self.Close_action.setToolTip('Close the window')
+        # self.Close_action.setStatusTip('Close the window')
+        self.Close_action.triggered.connect(qApp.quit)
 
     def tool_init(self):  # #工具栏
-        self.file_toolbar = self.addToolBar('ToolBar')
-        self.file_toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.file_toolbar.setFixedHeight(64)
-        self.file_toolbar.addAction(self.open_action)
+        self.file_toolbar = self.addToolBar('')
+        self.file_toolbar.setToolButtonStyle(3)  # type: ignore
+        # self.file_toolbar.setFixedHeight(120)
+        self.file_toolbar.addAction(self.Run_action)
         self.file_toolbar.addSeparator()  # 分隔线
-        self.file_toolbar.addAction(self.save_action)
+        self.file_toolbar.addAction(self.Do_action)
         self.file_toolbar.addSeparator()  # 分隔线
-        self.file_toolbar.addAction(self.run_action)
+        self.file_toolbar.addAction(self.Theme_action)
         self.file_toolbar.addSeparator()  # 分隔线
-        self.file_toolbar.addAction(self.close_action)
-        # self.file_toolbar.addAction('&Exit')
+        self.file_toolbar.addAction(self.Close_action)
         self.file_toolbar.addSeparator()  # 分隔线
         self.file_toolbar.setMovable(False)
-        '''
-        工具栏中的按钮事件：actionTriggered
-        '''
+        self.file_toolbar.setFloatable(False)
+        self.file_toolbar.setIconSize(QSize(36, 36))
+        self.file_toolbar.setStyleSheet("QToolBar{spacing:16px;}")
+        self.file_toolbar.setContextMenuPolicy(Qt.CustomContextMenu)  # ActionsContextMenu #CustomContextMenu
 
     def menu_init(self):  # #菜单栏
         menubar = self.menuBar()
         menubar.setNativeMenuBar(False)  # 全平台一致的效果
-        self.file_menu = menubar.addMenu('file')
-        self.file_menu.addAction(self.open_action)
-        self.file_menu.addAction(self.save_action)
-        self.file_menu.addAction(self.run_action)
+        self.file_menu = menubar.addMenu('菜单')
+        self.file_menu.addAction(self.Run_action)
+        self.file_menu.addAction(self.Do_action)
+        self.file_menu.addAction(self.Theme_action)
         self.file_menu.addSeparator()
-        self.file_menu.addAction(self.close_action)
+        self.file_menu.addAction(self.Close_action)
 
     def status_progress_init(self):  # #状态栏、进度条
         self.status1 = xt_QStatusBar()
@@ -1210,32 +1216,25 @@ class xt_QMainWindow(QMainWindow):
         self.status3 = xt_QLabel()
         # self.setStatusBar(self.statusBar)
         self.pbar = xt_QProgressBar()
-        splitter1 = QSplitter(Qt.Horizontal)
-        splitter1.addWidget(self.status2)
-        splitter1.addWidget(self.status3)
-
         _statusBar = self.statusBar()
         _statusBar.setSizeGripEnabled(False)
         _statusBar.addWidget(self.status1, stretch=1)
-        _statusBar.addWidget(splitter1, stretch=1)
-        # _statusBar.addWidget(self.status2, stretch=1)
-        # _statusBar.addWidget(self.status3, stretch=1)
+        _statusBar.addWidget(self.status2, stretch=1)
+        _statusBar.addWidget(self.status3, stretch=1)
         _statusBar.addWidget(self.pbar, stretch=1)
         # _statusBar.addPermanentWidget(self.pbar, stretch=100)
         self.status1.showMessage('Ready to compose')
 
     @pyqtSlot()
-    def on_openObject_triggered(self):
-        # #根据名称绑定的函数
-        pass
+    def on_Run_triggered(self):
+        ...
 
     @pyqtSlot()
-    def on_saveObject_triggered(self):
-        # #根据名称绑定的函数
-        pass
+    def on_Do_triggered(self):
+        ...
 
     @pyqtSlot()
-    def on_runObject_triggered(self):
+    def on_Theme_triggered(self):
         # #根据名称绑定的函数
         qss_list = [
             self.basepath + '/blue.qss',

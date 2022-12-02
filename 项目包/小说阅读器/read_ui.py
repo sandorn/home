@@ -3,14 +3,7 @@
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMetaObject, Qt, QThread, pyqtSlot
-from PyQt5.QtWidgets import (
-    QApplication,
-    QHBoxLayout,
-    QMessageBox,
-    QSplitter,
-    QVBoxLayout,
-    qApp,
-)
+from PyQt5.QtWidgets import QHBoxLayout, QMessageBox, QSplitter, QVBoxLayout
 from xt_Alispeech.xt_Pygame import RSynt_Read_QThread
 from xt_Ls_Bqg import ahttp_get_contents, get_download_url
 from xt_String import str_split_limited_list
@@ -31,24 +24,23 @@ from xt_Ui import (
 class Ui_MainWindow(xt_QMainWindow):
 
     def __init__(self):
-        super().__init__('小说阅读器')
+        super().__init__('小说阅读器', status=True, tool=True)
         self.baseurl = 'https://www.biqukan8.cc/'
         self.urls = []  # 章节链接列表
         self.titles = []  # 章节名称列表
         self.setWindowOpacity(0.9)  # 设置窗口透明度
-
         self.setupUi()
         self.retranslateUi()
 
     def setupUi(self):
         self.centralwidget = QtWidgets.QWidget()
         self.label = xt_QLabel("小说书号：")
-        self.lineEdit = xt_QLineEdit('38_38163')
+        self.lineEdit = xt_QLineEdit('38_38165')
         self.book_number = self.lineEdit.text()
         self.lineEdit.textChanged.connect(self.setnum)
         self.lineEdit.setObjectName('lineEditobj')
         self.pushButton = xt_QPushButton("&OK 确定")
-        self.pushButton.setObjectName('ok_button')
+        self.pushButton.setObjectName('OK')
 
         self.tabWidget = xt_QTabWidget(["列表显示", "图表显示"])
         self.tableWidget = xt_QTableView(['章节', '链接'])
@@ -68,19 +60,29 @@ class Ui_MainWindow(xt_QMainWindow):
         self.checkbox = xt_QCheckBox('自动翻页')
         self.splitter = QSplitter(self)
 
+    @pyqtSlot()
+    @EventLoop
+    def on_Run_triggered(self, *args, **kwargs):
+        ...
+
+    @pyqtSlot()
+    def on_Do_triggered(self):
+        ...
+
     def setnum(self):
         self.book_number = self.lineEdit.text()
 
     def retranslateUi(self):
         ht_1 = QHBoxLayout()
-        ht_1.addWidget(self.label)
-        ht_1.addWidget(self.lineEdit)
+        ht_1.addWidget(self.label, stretch=0)
+        ht_1.addWidget(self.lineEdit, stretch=2)
         ht_1.addWidget(self.pushButton)
-        ht_1.addStretch()
-        ht_1.addWidget(self.checkbox)
-        ht_1.addWidget(self.pushButton_read)
-        ht_1.addWidget(self.pushButton_3)
-        ht_1.addWidget(self.pushButton_4)
+        ht_1.addSpacing(10)
+        ht_1.addStretch(2)
+        ht_1.addWidget(self.checkbox, stretch=1)
+        ht_1.addWidget(self.pushButton_read, stretch=1)
+        ht_1.addWidget(self.pushButton_3, stretch=1)
+        ht_1.addWidget(self.pushButton_4, stretch=1)
 
         self.splitter.addWidget(self.tabWidget)
         self.splitter.setStretchFactor(0, 2)  # 设定比例
@@ -109,26 +111,23 @@ class Ui_MainWindow(xt_QMainWindow):
         pass
 
     def previous(self):
-        if self.listWidgetCurrentRow == 0:
-            return
+        if self.listWidgetCurrentRow == 0: return
         if self.listWidgetCurrentRow > 0:
             self.listWidget.setCurrentRow(self.listWidgetCurrentRow - 1)
 
     def nextpage(self):
-        if self.listWidgetCurrentRow + 1 == self.listWidget.count():
-            return
+        if self.listWidgetCurrentRow + 1 == self.listWidget.count(): return
         if self.listWidgetCurrentRow + 1 < self.listWidget.count():
             self.listWidget.setCurrentRow(self.listWidgetCurrentRow + 1)
 
-    # 抓取所有数据
     @pyqtSlot()
-    def on_ok_button_clicked(self):
+    @EventLoop
+    def on_OK_clicked(self):
         self.QTextEdit.clear()
         self.tableWidget.clean()
-        self.listWidget.empty()  # clear()
+        self.listWidget.clean()
 
         try:
-            # # 设置书本初始地址,执行主方法
             self.getlist(self.baseurl + '/' + self.book_number + '/')
         except Exception as err:
             QMessageBox.warning(None, "警告", f"没有数据，请检查：{err}", QMessageBox.Ok)
@@ -138,26 +137,21 @@ class Ui_MainWindow(xt_QMainWindow):
 
             self.listWidget.currentRowChanged.connect(self.currentRowChanged_event)
             self.tableWidget.clicked.connect(self.tableClick_event)  # @绑定表格单击方法
-
-        # @交还控制权,恢复鼠标样式
-        qApp.processEvents()
-        QApplication.restoreOverrideCursor()
         return
 
     def read_Button_event(self):
         (self.read_read if self.pushButton_read.text() == '&Read' else self.read_stop)()
         # (func1 if y == 1 else func2)(arg1, arg2)
         # 如果y等于1,那么调用func1(arg1,arg2)否则调用func2(arg1,arg2)
+
     @EventLoop
     def read_stop(self):
         self.pushButton_read.setText('&Read')
         self.runthread.stop()
-        # qApp.processEvents()
 
     @EventLoop
     def read_read(self):
         self.pushButton_read.setText('&STOP')
-        # qApp.processEvents()
         newText = str_split_limited_list(self.QTextEdit.toPlainText())  # 处理字符串
         self.runthread = RSynt_Read_QThread(newText)
         self.runthread._signal.connect(self.playdone)  # #绑定RSynt_Read_QThread中定义的信号
@@ -176,7 +170,6 @@ class Ui_MainWindow(xt_QMainWindow):
         self.setWindowTitle(self.title + '--' + self.bookname)
         return
 
-    # 从网页提取数据
     @EventLoop
     def getcontent(self, url):
         index, title, content = ahttp_get_contents((1, url))
@@ -193,21 +186,18 @@ class Ui_MainWindow(xt_QMainWindow):
     @EventLoop
     def bindList(self):
         self.listWidget.addItems([self.titles[index] for index in range(len(self.titles))])
-        # self.listWidget.scrollToBottom()
-        self.listWidget.scrollToTop()
+        self.listWidget.scrollToTop()  # scrollToBottom()
 
     # Table单击方法，用来打开选中的项
     @EventLoop
     def tableClick_event(self, item):
         self.QTextEdit.clear()
-        self.QTextEdit.setFontPointSize(18)
         QModelIndex = self.tableWidget.model.index(item.row(), 1)
-        # _text = self.getcontent(QModelIndex.data())
         nowthread = QThread()
         nowthread.run = self.getcontent
         _text = nowthread.run(QModelIndex.data())
-        # self.QTextEdit.setHtml(_text)
-        # _text = '<font size="5">' + _text.replace("\n", "<br>") + '</font>'
+
+        self.QTextEdit.setFontPointSize(18)
         self.QTextEdit.setText(_text)
 
     # List列表单击方法，用来打开选中的项
@@ -215,14 +205,11 @@ class Ui_MainWindow(xt_QMainWindow):
     def currentRowChanged_event(self, row):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
-        self.QTextEdit.setFontPointSize(16)  # 设置字号
-        # _text = self.getcontent(self.list[row][1])
         nowthread = QThread()
         nowthread.run = self.getcontent
         _text = nowthread.run(self.urls[row])
-        # _text = ''.join(_text.split('\n')[0:1])
-        # _text = '<font size="5">' + _text.replace("\n", "<br>") + '</font>'
-        # self.QTextEdit.fontPointSize()  # 获取字号
+
+        self.QTextEdit.setFontPointSize(16)  # 设置字号
         self.QTextEdit.setText(_text)
 
 
@@ -231,5 +218,4 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     ui = Ui_MainWindow()
-    ui.QTextEdit.setText('根据北京银保监局近期工作部署要求，盛唐融信迅速响应，立即成立专项整治小组。')
-    sys.exit(app.exec_())  # 程序关闭时退出进程
+    sys.exit(app.exec())

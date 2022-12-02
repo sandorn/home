@@ -8,14 +8,14 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-29 23:53:26
 FilePath     : /项目包/阿里语音生成器/main.py
-LastEditTime : 2022-12-01 20:51:22
+LastEditTime : 2022-12-02 00:55:33
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QSplitter
 from xt_Alispeech.conf import VIOCE
-from xt_Alispeech.ex_NSS import NSS_TTS
+from xt_Alispeech.ex_NSS import TODO_TTS
 from xt_String import str_split_limited_list
 from xt_Ui import EventLoop, xt_QLineEdit, xt_QMainWindow, xt_QTableView, xt_QTextEdit
 
@@ -57,18 +57,13 @@ class Ui_MainWindow(xt_QMainWindow):
     def tableClick_event(self, item):
         QModelIndex = self.tableWidget.model.index(item.row(), 1)
         _text = QModelIndex.data()
-        self.args_dict.update({'vioce': _text})
+        self.args_dict.update({'voice': _text})
 
     @pyqtSlot()
     @EventLoop
-    def on_openObject_triggered(self, *args, **kwargs):
-        # self.args_dict.update({'savefile': False})
-        reslist, filelist = NSS_TTS(self.text, self.args_dict)
-        filelist.sort(key=lambda x: x[0])
-
-        # reslist.sort(key=lambda x: x[0])
-        # with open('test.mp3', "wb") as f:
-        #     [f.write(row[1]) for row in reslist]
+    def on_Run_triggered(self, *args, **kwargs):
+        self.args_dict.update({'savefile': False})
+        _ = TODO_TTS(self.text, renovate_args=self.args_dict, merge=True)
 
     def textChanged_event(self):
         self.text = str_split_limited_list(self.QTextEdit.toPlainText())
@@ -79,5 +74,4 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     ui = Ui_MainWindow()
-    ui.QTextEdit.setText('')
     sys.exit(app.exec())

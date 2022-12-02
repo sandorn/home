@@ -151,7 +151,7 @@ def Re_Compile(replacement, trims_dict):
 
 def str_split_limited_list(intext, mix=100, max=280):
     if len(intext) < mix:
-        out_text = (intext, )
+        out_text = [intext]
     else:
         out_text = re.findall(r'[\s\S]{' + str(mix) + ',' + str(max) + '}。', intext)
     return out_text

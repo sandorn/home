@@ -13,9 +13,11 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 import os
+import time
 from threading import Semaphore, Thread
 
 import nls
+from pydub import AudioSegment
 from xt_Alispeech.conf import Constant, SpeechArgs
 from xt_Alispeech.on_state import on_state_cls
 from xt_String import str_split_limited_list
@@ -32,13 +34,14 @@ class NSS(on_state_cls):
     result_list = []  # 类属性或类变量,实例公用
     file_list = []  # 类属性或类变量,实例公用
 
-    def __init__(self, text, tid=None, args_dict={}):
+    def __init__(self, text, tid=None, args={}):
         self.__th = Thread(target=self.__thread_run)
         self.__id = tid or id(self.__th)
-        self.args_dict = args_dict
+        self.args = args
         self.__text = text
-        self.__file_name = f"{self.__id}_{get_10_timestamp()}_{self.args_dict['voice']}_tts.{ self.args_dict['aformat']}"
-        self.file_list.append(self.__file_name)
+        __fname = f"{self.__id}_{get_10_timestamp()}_{self.args['voice']}_tts.{ self.args['aformat']}"
+        self.__file_name = os.path.dirname(os.path.abspath(__file__)) + '\\' + __fname
+        self.file_list.append([self.__id, self.__file_name])
         self.start()
 
     def start(self):
@@ -65,20 +68,22 @@ class NSS(on_state_cls):
     def _on_data(self, data, *args):
         try:
             self.__f.write(data)
+            time.sleep(0.01)
         except Exception as e:
             print("write data failed:", e)
 
     def _on_completed(self, message, *args):
         with open(self.__file_name, "rb+") as f:
             __data = f.read()
+        time.sleep(0.01)
         self.result_list.append([self.__id, __data])
         return __data
 
     def _on_close(self, *args):
         self.__f.close()
-        if not self.args_dict['savefile']:
+        if not self.args['savefile']:
             os.remove(self.__file_name)
-            print("{}: Del File : {}..".format(self.__id, self.__file_name))
+            print("{} Del File :{}..".format(self.__id, self.__file_name))
 
     def __thread_run(self):
         with Sem:
@@ -87,7 +92,7 @@ class NSS(on_state_cls):
             _NSS_ = nls.NlsSpeechSynthesizer(
                 token=_ACCESS_TOKEN,
                 appkey=_ACCESS_APPKEY,
-                long_tts=self.args_dict.get('long_tts', False),
+                long_tts=self.args.get('long_tts', False),
                 on_metainfo=self._on_metainfo,
                 on_data=self._on_data,
                 on_completed=self._on_completed,
@@ -100,34 +105,58 @@ class NSS(on_state_cls):
 
             _NSS_.start(
                 text=self.__text,
-                voice=self.args_dict.get('voice', 'Aida'),
-                aformat=self.args_dict.get('aformat', 'mp3'),
-                sample_rate=self.args_dict.get('sample_rate', 16000),
-                volume=self.args_dict.get('volume', 50),
-                speech_rate=self.args_dict.get('speech_rate', 0),
-                pitch_rate=self.args_dict.get('pitch_rate', 0),
-                wait_complete=self.args_dict.get('wait_complete', True),
-                start_timeout=self.args_dict.get('start_timeout', 10),
-                completed_timeout=self.args_dict.get('completed_timeout', 60),
-                ex=self.args_dict.get('ex', {}),
+                voice=self.args.get('voice', 'Aida'),
+                aformat=self.args.get('aformat', 'mp3'),
+                sample_rate=self.args.get('sample_rate', 16000),
+                volume=self.args.get('volume', 50),
+                speech_rate=self.args.get('speech_rate', 0),
+                pitch_rate=self.args.get('pitch_rate', 0),
+                wait_complete=self.args.get('wait_complete', True),
+                start_timeout=self.args.get('start_timeout', 10),
+                completed_timeout=self.args.get('completed_timeout', 60),
+                ex=self.args.get('ex', {}),
                 # {'enable_subtitle': True},  #输出每个字在音频中的时间位置
             )
+
+            time.sleep(0.01)
             print('{}: NSS stopped.'.format(self.__id))
 
 
-def NSS_TTS(_in_text, update_args: dict = {}):
+def TODO_TTS(_in_text, renovate_args: dict = {}, merge=False):
+    # $处理参数
+    args = SpeechArgs().get_dict()
+    args.update(renovate_args)
 
-    args_dict = SpeechArgs().get_dict()
-    args_dict.update(update_args)
+    if merge is True: args.update({'savefile': True})  # #合并文件必须先保存
 
     if isinstance(_in_text, str): _in_text = str_split_limited_list(_in_text)
     assert isinstance(_in_text, list)
 
-    [NSS(text, tid=index + 1, args_dict=args_dict) for index, text in enumerate(_in_text)]
+    # $运行主程序
+    [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
     reslist, filelist = NSS.wait_completed()
-
     assert isinstance(reslist, list) and isinstance(filelist, list)
-    return (reslist, filelist)
+    # $处理结果
+    if not merge:  # #不合并则传回结果
+        return (reslist, filelist)
+    else:  # #合并
+        filelist.sort(key=lambda x: x[0])
+        # $合并音频文件
+        if args['aformat'] == 'mp3':
+            sound_list = [[item[0], AudioSegment.from_mp3(item[1]), os.remove(item[1])] for item in filelist]
+        else:
+            sound_list = [[item[0], AudioSegment.from_wav(item[1]), os.remove(item[1])] for item in filelist]
+
+        sound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件
+        for item in sound_list:
+            sound += item[1]  # 把声音文件相加
+
+        # $保存音频文件
+        __fname = f"{get_10_timestamp()}_{args['voice']}_tts.{args['aformat']}"
+        __file_name = os.path.dirname(os.path.abspath(__file__)) + '\\' + __fname
+        sound.export(__file_name, format=args['aformat'])  # 保存文件
+
+        return __file_name
 
 
 if __name__ == '__main__':
@@ -152,33 +181,7 @@ if __name__ == '__main__':
 7.核对再保类应收应付
 对于再保业务形成的应收应付款项，对已出账单部分，应与账单金额充分核对，保证余额与账单金额一致；对未出账单部分，应以产品精算部与再保公司达成一致的预估方法入账。
 8.梳理或有事项
-公司法务部应梳理公司存在的未决诉讼，并在12月28日前提交财务管理部（若期后诉讼情况发生变动的，应及时更新）。符合负债确认条件的，应按照会计准则要求确认对应负债。                        '''
+公司法务部应梳理公司存在的未决诉讼，并在12月28日前提交财务管理部（若期后诉讼情况发生变动的，应及时更新）。符合负债确认条件的，应按照会计准则要求确认对应负债。'''
 
-    reslist, filelist = NSS_TTS(_text, {'savefile': False})
-    reslist.sort(key=lambda x: x[0])
-    with open('test.mp3', "wb") as f:
-        [f.write(row[1]) for row in reslist]
-    ...
-
-# import os
-# import soundfile as sf
-# import numpy as np
-
-# #定义转换采样率的函数，接收3个变量：原音频路径、重新采样后的音频存储路径、目标采样率
-# def wav_concatenate(path_1, path_2, new_dir_path):
-#     wavfile_1 = path_1.split('/')[-1]       #提取音频1的文件名，如“1.wav"
-#     wavfile_2 = path_2.split('/')[-1]       #提取音频2的文件名，如“2.wav"
-#     new_file_name = wavfile_1.split('.')[0] + '_' + wavfile_2.split('.')[0] + '.wav'      #此行代码用于对拼接后的文件进行重命名，此处是将需要拼接的两个文件名用'_'连接起来
-
-#     signal_1, sr1 = sf.read(path_1)      #调用soundfile载入音频
-#     signal_2, sr2 = sf.read(path_2)      #调用soundfile载入音频
-
-#     if sr1 == sr2:      #判断待拼接的两则音频采样率是否一致，若一致则拼接
-#         new_signal = np.concatenate((signal_1, signal_2), axis=0)
-#         new_path = os.path.join(new_dir_path, new_file_name)
-#         print(new_path)
-
-#         sf.write(new_path, new_signal, sr1)
-
-#     else:
-#         print("所需拼接的音频采样率不一致，需检查一下哈~")
+    out_file = TODO_TTS(_text, merge=True)
+    print(out_file)

@@ -112,7 +112,7 @@ def handle_ex_nsx_result(res):
 
         dictMerged[key] = dict(_dict['header'], **_dict['payload'])
         res_list.append((key, dictMerged[key]['result']))
-    return res_list, dictMerged
+    return (res_list, dictMerged)
 
 
 VIOCE = [

@@ -18,7 +18,7 @@ from threading import Thread
 
 import pygame
 from PyQt5.QtCore import QThread, pyqtSignal
-from xt_Alispeech.ex_NSS import NSS_TTS
+from xt_Alispeech.ex_NSS import TODO_TTS
 
 
 def pygame_play(data, format='wav'):
@@ -27,15 +27,12 @@ def pygame_play(data, format='wav'):
     pym = ''
     if format == 'wav':
         pym = pygame.mixer
-    else:
-        pym = pygame.mixer.music
-
-    print('py_mixer new loading......')
-
-    if format == 'wav':
         pym.Sound(data).play()
     else:
+        pym = pygame.mixer.music
         pym.load(BytesIO(data)).play(1, 0.07)
+    print('py_mixer new loading......')
+
     while pym.get_busy():
         # 正在播放，等待
         QThread.msleep(500)
@@ -45,13 +42,13 @@ def pygame_play(data, format='wav'):
     print('py_mixer.stoping!!!!!!')
 
 
-def create_read_thread(obj):
+def create_read_thread(meta):
     '''type完全动态构建类'''
 
     def __init__fn(self, textlist=None):
-        obj.__init__(self)
-        self.__dict__['_qobj'] = (obj == QThread)
-        self.__dict__['_target'] = NSS_TTS
+        meta.__init__(self)
+        self.__dict__['_qobj'] = (meta == QThread)
+        self.__dict__['_target'] = TODO_TTS
         self.__dict__['textlist'] = textlist or []
         self.__dict__['datas_list'] = []
         self.__dict__['_running'] = True
@@ -67,10 +64,12 @@ def create_read_thread(obj):
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
-                task = self._target(text, {'aformat': self.aformat, 'savefile': False})
-                self.datas_list.append(task[1])
+                datalist, _ = self._target(text, {'aformat': self.aformat, 'savefile': False})
+                datalist.sort(key=lambda x: x[0])
+                [self.datas_list.append(item[1]) for item in datalist]
                 if not self._running: break
 
+                QThread.msleep(100)
             print('pygame_play MainMonitor stoping!!!!')
 
         self._MainMonitor = Thread(target=_func, daemon=True, name="MainMonitor")
@@ -88,6 +87,7 @@ def create_read_thread(obj):
                     # 朗读完毕，有未加载数据
                     _data = self.datas_list.pop(0)
                     pygame.mixer.Sound(_data).play()
+                    QThread.msleep(500)
                     print('self.py_mixer new loading......')
                     continue
 
@@ -99,13 +99,13 @@ def create_read_thread(obj):
                         self.stop()
 
     def stop(self):
-        QThread.msleep(500)
         self._running = False
         self.pym.stop()
+        QThread.msleep(100)
         print('self.py_mixer.stoping!!!!')
 
-    _name = 'QThread' if obj is QThread else 'Thread'
-    return type(f'Synt_Read_{_name}', (obj, ), {
+    _name = 'QThread' if meta is QThread else 'Thread'
+    return type(f'Synt_Read_{_name}', (meta, ), {
         '_signal': pyqtSignal(),
         '__init__': __init__fn,
         'main_monitor': main_monitor,
@@ -127,7 +127,7 @@ class _read_class_meta:
     def __init__(self, textlist=None):
         super().__init__()
         self._qobj = isinstance(self, QThread)
-        self._target = NSS_TTS
+        self._target = TODO_TTS
         self.textlist = textlist or []
         self.datas_list = []
         self._running = True
@@ -142,10 +142,12 @@ class _read_class_meta:
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
-                task = self._target(text, {'aformat': self.aformat, 'savefile': False})
-                self.datas_list.append(task[1])
+                datalist, _ = self._target(text, {'aformat': self.aformat, 'savefile': False})
+                datalist.sort(key=lambda x: x[0])
+                [self.datas_list.append(item[1]) for item in datalist]
                 if not self._running: break
 
+                QThread.msleep(100)
             print('pygame_play MainMonitor stoping!!!!')
 
         # #daemon=True,跟随主线程关闭 ,不能用双QThread嵌套
@@ -164,6 +166,7 @@ class _read_class_meta:
                     # 朗读完毕，有未加载数据
                     _data = self.datas_list.pop(0)
                     pygame.mixer.Sound(_data).play()
+                    QThread.msleep(500)
                     print('self.py_mixer new loading......')
                     continue
 
@@ -175,16 +178,16 @@ class _read_class_meta:
                         self.stop()
 
     def stop(self):
-        QThread.msleep(500)
         self._running = False
         self.pym.stop()
+        QThread.msleep(100)
         print('self.py_mixer.stoping!!!!')
 
 
-def get_read_class(obj: object) -> object:
+def get_read_class(meta):
     '''type 动态混入继承，实质是调整 bases'''
-    _name = 'QThread' if obj is QThread else 'Thread'
-    ocl = type(f'RSynt_Read_{_name}', (_read_class_meta, obj), {})
+    _name = 'QThread' if meta is QThread else 'Thread'
+    ocl = type(f'RSynt_Read_{_name}', (_read_class_meta, meta), {})
     return ocl
 
 

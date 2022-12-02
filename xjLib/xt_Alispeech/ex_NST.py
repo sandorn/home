@@ -56,7 +56,7 @@ class NST(on_state_cls):
         try:
             cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
             res, cls.result_dict = cls.result_dict, {}
-            return res
+            return handle_ex_nsx_result(res)
         except Exception:
             return {}
 
@@ -118,8 +118,7 @@ if __name__ == '__main__':
 
     for index, file in enumerate(_in_file_list):
         tack = NST(file, index + 1)
-    res = NST.wait_completed()
+    res_list, dictMerged = NST.wait_completed()
 
-    res_list, dictMerged = handle_ex_nsx_result(res)
     print(dictMerged)
     print(res_list)
