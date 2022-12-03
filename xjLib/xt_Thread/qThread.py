@@ -8,7 +8,7 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:49
 FilePath     : /xjLib/xt_Thread/qThread.py
-LastEditTime : 2022-12-03 10:21:05
+LastEditTime : 2022-12-03 11:12:08
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''

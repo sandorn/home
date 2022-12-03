@@ -15,7 +15,7 @@
 
 import traceback
 from functools import wraps
-from queue import Queue  # , Empty
+from queue import Queue
 from threading import Event, Thread, main_thread
 from time import sleep
 
