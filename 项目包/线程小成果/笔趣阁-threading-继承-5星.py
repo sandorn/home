@@ -8,16 +8,16 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:55
 FilePath     : /项目包/线程小成果/笔趣阁-threading-继承-5星.py
-LastEditTime : 2022-11-12 15:29:44
+LastEditTime : 2022-12-03 12:07:42
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
 import os
+
 from xt_File import savefile
-from xt_Requests import get_parse
+from xt_Ls_Bqg import get_contents, get_download_url
 from xt_Thread.Custom import CustomThread
-from xt_Ls_Bqg import get_download_url, get_contents
 from xt_Time import fn_timer
 
 

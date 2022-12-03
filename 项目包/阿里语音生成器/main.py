@@ -8,14 +8,14 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-29 23:53:26
 FilePath     : /项目包/阿里语音生成器/main.py
-LastEditTime : 2022-12-02 23:58:16
+LastEditTime : 2022-12-03 14:19:05
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
 from threading import Thread
 
-from PyQt5.QtCore import Qt, QThread, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QSplitter
 from xt_Alispeech.conf import VIOCE
 from xt_Alispeech.ex_NSS import TODO_TTS
@@ -66,7 +66,6 @@ class Ui_MainWindow(xt_QMainWindow):
     def on_Run_triggered(self, *args, **kwargs):
         self.args_dict.update({'savefile': False})
         # TODO_TTS(self.text, renovate_args=self.args_dict, merge=True)
-
         # nowthread = QThread()
         # nowthread.run = TODO_TTS  # type: ignore
         # nowthread.run(self.text, self.args_dict, True)
