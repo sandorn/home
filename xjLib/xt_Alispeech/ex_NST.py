@@ -66,8 +66,11 @@ class NST(on_state_cls):
         return message
 
     def __thread_run(self):
+
         with Sem:
+
             print("thread:{} start..".format(self.__id))
+
             _NST_ = NlsSpeechTranscriber(
                 token=_ACCESS_TOKEN,
                 appkey=_ACCESS_APPKEY,

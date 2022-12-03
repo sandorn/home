@@ -59,7 +59,6 @@ class Constant(Singleton_Mixin):
         now = get_10_timestamp()
         # #token生命周期缩短10分钟
         if (self.__expire_time - 60 * 10) <= now:
-            print(self.__expire_time)
             self.__token, self.__expire_time = getToken(self.__accessKeyId, self.__accessKeySecret)
         return self.__expire_time
 
@@ -71,7 +70,7 @@ class SpeechArgs(dict_mothed_Mixin):
     long_tts: bool = False
     aformat: str = 'mp3'
     sample_rate: int = 16000
-    voice: str = 'Aida'  # aida   # ailun  # kenny
+    voice: str = 'Aida'  # aida   # ailun  # kenny  # aijing # aixia
     volume: int = 50
     speech_rate: int = 0
     pitch_rate: int = 0

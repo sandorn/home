@@ -1,5 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
+'''
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:56
+FilePath     : /项目包/小说阅读器/read_ui.py
+LastEditTime : 2022-12-02 23:58:01
+Github       : https://github.com/sandorn/home
+==============================================================
+'''
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMetaObject, Qt, QThread, pyqtSlot
@@ -22,6 +34,11 @@ from xt_Ui import (
 
 
 class Ui_MainWindow(xt_QMainWindow):
+    '''
+    description:
+    param {*} self
+    return {*}
+    '''
 
     def __init__(self):
         super().__init__('小说阅读器', status=True, tool=True)
@@ -194,7 +211,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.QTextEdit.clear()
         QModelIndex = self.tableWidget.model.index(item.row(), 1)
         nowthread = QThread()
-        nowthread.run = self.getcontent
+        nowthread.run = self.getcontent  # type: ignore
         _text = nowthread.run(QModelIndex.data())
 
         self.QTextEdit.setFontPointSize(18)
@@ -206,7 +223,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
         nowthread = QThread()
-        nowthread.run = self.getcontent
+        nowthread.run = self.getcontent  # type: ignore
         _text = nowthread.run(self.urls[row])
 
         self.QTextEdit.setFontPointSize(16)  # 设置字号

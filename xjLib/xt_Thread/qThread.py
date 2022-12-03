@@ -1,19 +1,20 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-28 21:06:12
-#LastEditTime : 2020-07-16 15:42:43
-#Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
-#==============================================================
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
+FilePath     : /xjLib/xt_Thread/qThread.py
+LastEditTime : 2022-12-03 10:21:05
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 from threading import Lock
+
 from PyQt5.QtCore import QThread
 from xt_Class import repr_Mixin
 
@@ -61,8 +62,9 @@ if __name__ == "__main__":
     def f(*args):
         print(*args)
 
-    from PyQt5 import QtWidgets
     import sys
+
+    from PyQt5 import QtWidgets
     app = QtWidgets.QApplication(sys.argv)
 
     a = CustomQThread(f, 4)
@@ -72,5 +74,5 @@ if __name__ == "__main__":
 
     nowthread = QThread()
     nowthread.run = f
-    nowthread.run(1, 2, 3)
+    nowthread.run(7, 8, 9)
     sys.exit(app.exec_())

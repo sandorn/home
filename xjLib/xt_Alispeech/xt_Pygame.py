@@ -30,7 +30,7 @@ def pygame_play(data, format='wav'):
         pym.Sound(data).play()
     else:
         pym = pygame.mixer.music
-        pym.load(BytesIO(data)).play(1, 0.07)
+        pym.load(BytesIO(data)).play(1, 0.07)  # type: ignore
     print('py_mixer new loading......')
 
     while pym.get_busy():
@@ -135,7 +135,7 @@ class _read_class_meta:
         self.aformat = 'wav'
         self.pym = pygame.mixer
         self.main_monitor()  # 启动语音生成
-        self.start()
+        self.start()  # type: ignore
 
     def main_monitor(self):
 
@@ -143,7 +143,7 @@ class _read_class_meta:
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
                 datalist, _ = self._target(text, {'aformat': self.aformat, 'savefile': False})
-                datalist.sort(key=lambda x: x[0])
+                datalist.sort(key=lambda x: x[0])  # type: ignore
                 [self.datas_list.append(item[1]) for item in datalist]
                 if not self._running: break
 
@@ -174,7 +174,7 @@ class _read_class_meta:
                     # #合成语音线程结束，朗读完毕，且无未加载数据
                     if len(self.textlist) == 0 and len(self.datas_list) == 0:
                         print('all recod play finished!!!!')
-                        if self._qobj: self._signal.emit()
+                        if self._qobj: self._signal.emit()  # type: ignore
                         self.stop()
 
     def stop(self):

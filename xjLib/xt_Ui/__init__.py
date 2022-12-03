@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-12 17:13:40
-#LastEditTime : 2020-06-18 17:02:06
-#Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
-#==============================================================
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:53
+FilePath     : /xjLib/xt_Ui/__init__.py
+LastEditTime : 2022-12-02 23:57:50
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import os
@@ -20,40 +20,8 @@ from functools import wraps
 import qdarkstyle
 from PyQt5.QtCore import QEventLoop, QMetaObject, QSize, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (
-    QAction,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDesktopWidget,
-    QDoubleSpinBox,
-    QFileDialog,
-    QHBoxLayout,
-    QHeaderView,
-    QInputDialog,
-    QLabel,
-    QLineEdit,
-    QListView,
-    QListWidget,
-    QListWidgetItem,
-    QMainWindow,
-    QMenu,
-    QMessageBox,
-    QProgressBar,
-    QPushButton,
-    QSpinBox,
-    QSplitter,
-    QStatusBar,
-    QTableView,
-    QTableWidget,
-    QTableWidgetItem,
-    QTabWidget,
-    QTextBrowser,
-    QTextEdit,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QWidget,
-    qApp,
+from PyQt5.QtWidgets import (  # QSplitter,
+    QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget, qApp,
 )
 from xt_File import qsstools
 
@@ -547,7 +515,9 @@ class xt_QTableWidget(QTableWidget):
         [self.removeRow(0) for _ in range(self.rowCount())]
 
     def clean(self):
-        super().clean()
+        self.setRowCount(0)
+        self.clearContents()
+        # super().clean()
 
     def itemClicked_event(self, item):
         # print('QTableWidget_itemClicked_event', item, item.text(), item.row())

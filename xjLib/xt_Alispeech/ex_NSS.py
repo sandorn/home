@@ -13,11 +13,11 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 import os
-import time
 from threading import Semaphore, Thread
 
 import nls
 from pydub import AudioSegment
+from PyQt5.QtCore import QThread
 from xt_Alispeech.conf import Constant, SpeechArgs
 from xt_Alispeech.on_state import on_state_cls
 from xt_String import str_split_limited_list
@@ -68,14 +68,14 @@ class NSS(on_state_cls):
     def _on_data(self, data, *args):
         try:
             self.__f.write(data)
-            time.sleep(0.01)
+            QThread.msleep(100)
         except Exception as e:
             print("write data failed:", e)
 
     def _on_completed(self, message, *args):
         with open(self.__file_name, "rb+") as f:
             __data = f.read()
-        time.sleep(0.01)
+        QThread.msleep(100)
         self.result_list.append([self.__id, __data])
         return __data
 
@@ -118,7 +118,7 @@ class NSS(on_state_cls):
                 # {'enable_subtitle': True},  #输出每个字在音频中的时间位置
             )
 
-            time.sleep(0.01)
+            QThread.msleep(100)
             print('{}: NSS stopped.'.format(self.__id))
 
 
@@ -136,10 +136,9 @@ def TODO_TTS(_in_text, renovate_args: dict = {}, merge=False):
     [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
     reslist, filelist = NSS.wait_completed()
     assert isinstance(reslist, list) and isinstance(filelist, list)
+
     # $处理结果
-    if not merge:  # #不合并则传回结果
-        return (reslist, filelist)
-    else:  # #合并
+    if merge:  # #合并
         filelist.sort(key=lambda x: x[0])
         # $合并音频文件
         if args['aformat'] == 'mp3':
@@ -157,6 +156,9 @@ def TODO_TTS(_in_text, renovate_args: dict = {}, merge=False):
         sound.export(__file_name, format=args['aformat'])  # 保存文件
 
         return __file_name
+
+    else:
+        return (reslist, filelist)  # $不合并直接返回结果
 
 
 if __name__ == '__main__':

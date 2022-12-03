@@ -8,11 +8,14 @@ Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-29 23:53:26
 FilePath     : /项目包/阿里语音生成器/main.py
-LastEditTime : 2022-12-02 00:55:33
+LastEditTime : 2022-12-02 23:58:16
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-from PyQt5.QtCore import Qt, pyqtSlot
+
+from threading import Thread
+
+from PyQt5.QtCore import Qt, QThread, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QSplitter
 from xt_Alispeech.conf import VIOCE
 from xt_Alispeech.ex_NSS import TODO_TTS
@@ -60,10 +63,14 @@ class Ui_MainWindow(xt_QMainWindow):
         self.args_dict.update({'voice': _text})
 
     @pyqtSlot()
-    @EventLoop
     def on_Run_triggered(self, *args, **kwargs):
         self.args_dict.update({'savefile': False})
-        _ = TODO_TTS(self.text, renovate_args=self.args_dict, merge=True)
+        # TODO_TTS(self.text, renovate_args=self.args_dict, merge=True)
+
+        # nowthread = QThread()
+        # nowthread.run = TODO_TTS  # type: ignore
+        # nowthread.run(self.text, self.args_dict, True)
+        Thread(target=TODO_TTS, args=(self.text, self.args_dict, True)).start()
 
     def textChanged_event(self):
         self.text = str_split_limited_list(self.QTextEdit.toPlainText())
