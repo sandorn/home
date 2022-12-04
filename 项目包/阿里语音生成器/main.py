@@ -15,7 +15,7 @@ Github       : https://github.com/sandorn/home
 
 from threading import Thread
 
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt, QThread, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QSplitter
 from xt_Alispeech.conf import VIOCE
 from xt_Alispeech.ex_NSS import TODO_TTS
@@ -46,8 +46,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.splitter.setStretchFactor(1, 6)  # 设定比例
         self.splitter.setOrientation(Qt.Horizontal)  # Qt.Vertical 垂直  # Qt.Horizontal 水平
         self.setCentralWidget(self.splitter)
-        self.QTextEdit.textChanged.connect(self.textChanged_event)  # @绑定方法
-        # self.open_action.triggered.connect(self.on_openObject_triggered)  # @绑定方法
+        self.QTextEdit.textChanged.connect(self.textChanged_event)  # @绑定方法 triggered
 
     @EventLoop
     def bindTable(self):
@@ -66,10 +65,9 @@ class Ui_MainWindow(xt_QMainWindow):
     def on_Run_triggered(self, *args, **kwargs):
         self.args_dict.update({'savefile': False})
         # TODO_TTS(self.text, renovate_args=self.args_dict, merge=True)
-        # nowthread = QThread()
-        # nowthread.run = TODO_TTS  # type: ignore
-        # nowthread.run(self.text, self.args_dict, True)
-        Thread(target=TODO_TTS, args=(self.text, self.args_dict, True)).start()
+        nowthread = QThread()
+        nowthread.run = TODO_TTS(self.text, renovate_args=self.args_dict, merge=True)  # type: ignore
+        # Thread(target=TODO_TTS, args=(self.text, self.args_dict, True)).start()
 
     def textChanged_event(self):
         self.text = str_split_limited_list(self.QTextEdit.toPlainText())

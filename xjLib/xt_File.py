@@ -1,22 +1,23 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-06-05 11:48:40
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
+LastEditTime : 2022-12-03 18:18:08
 FilePath     : /xjLib/xt_File.py
-LastEditTime : 2021-04-14 18:19:43
-#Github       : https://github.com/sandorn/home
-#==============================================================
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import os
 
 
 class filesize:
+
     def __init__(self, filePath):
         self.Bytes = os.path.getsize(filePath)
         self.KB = self.Bytes / 1024
@@ -33,6 +34,7 @@ class filesize:
 
 
 class qsstools:
+
     def __init__(self):
         pass
 
@@ -42,6 +44,14 @@ class qsstools:
     def set(cls, file_path, obj):
         with open(file_path, 'r', encoding='UTF-8') as f:
             obj.setStyleSheet(f.read())
+
+
+import winreg
+
+
+def get_desktop():
+    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
+    return winreg.QueryValueEx(key, "Desktop")[0]
 
 
 def file_to_List(filepath):
@@ -91,3 +101,8 @@ def filedialog(_dir='c:/'):
     _dlg.DoModal()
     filename = _dlg.GetPathName()  # 获取选择的文件名称
     return filename
+
+
+if __name__ == "__main__":
+    print(get_desktop())
+    print(os.getenv('TMP'))

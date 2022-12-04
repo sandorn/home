@@ -68,7 +68,7 @@ class NSR(on_state_cls):
     def __thread_run(self):
         with Sem:
 
-            print('thread:{} start..'.format(self.__id))
+            print('{}: thread start..'.format(self.__id))
 
             _NSR_ = NlsSpeechRecognizer(
                 token=_ACCESS_TOKEN,

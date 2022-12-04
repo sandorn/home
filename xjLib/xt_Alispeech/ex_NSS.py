@@ -7,12 +7,13 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-24 21:36:44
+LastEditTime : 2022-12-03 16:33:15
 FilePath     : /xjLib/xt_Alispeech/ex_NSS.py
-LastEditTime : 2022-11-24 21:50:30
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 import os
+import shutil
 from threading import Semaphore, Thread
 
 import nls
@@ -20,6 +21,7 @@ from pydub import AudioSegment
 from PyQt5.QtCore import QThread
 from xt_Alispeech.conf import Constant, SpeechArgs
 from xt_Alispeech.on_state import on_state_cls
+from xt_File import get_desktop
 from xt_String import str_split_limited_list
 from xt_Time import get_10_timestamp
 
@@ -31,8 +33,7 @@ Sem = Semaphore(2)  # 限制线程并发数
 class NSS(on_state_cls):
     '''文字转语音  NlsSpeechSynthesizer'''
     all_Thread = []  # 类属性或类变量,实例公用
-    result_list = []  # 类属性或类变量,实例公用
-    file_list = []  # 类属性或类变量,实例公用
+    data_list = []  # 类属性或类变量,实例公用
 
     def __init__(self, text, tid=None, args={}):
         self.__th = Thread(target=self.__thread_run)
@@ -40,8 +41,8 @@ class NSS(on_state_cls):
         self.args = args
         self.__text = text
         __fname = f"{self.__id}_{get_10_timestamp()}_{self.args['voice']}_tts.{ self.args['aformat']}"
-        self.__file_name = os.path.dirname(os.path.abspath(__file__)) + '\\' + __fname
-        self.file_list.append([self.__id, self.__file_name])
+        self.__file_name = f"{os.getenv('TMP')}\\{__fname}"
+
         self.start()
 
     def start(self):
@@ -52,7 +53,7 @@ class NSS(on_state_cls):
     def stop_all(self):
         """停止线程池， 所有线程停止工作"""
         for _ in range(len(self.all_Thread)):
-            _thread = self.all_Thread.pop()
+            _thread = self.all_Thread.pop(0)
             _thread.join()
 
     @classmethod
@@ -60,10 +61,10 @@ class NSS(on_state_cls):
         """等待全部线程结束，返回结果"""
         try:
             cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
-            reslist, filelist, cls.result_list, cls.file_list = cls.result_list, cls.file_list, [], []
-            return (reslist, filelist)
+            datalist, cls.data_list = cls.data_list, []
+            return datalist
         except Exception:
-            return ([], [])
+            return []
 
     def _on_data(self, data, *args):
         try:
@@ -73,21 +74,18 @@ class NSS(on_state_cls):
             print("write data failed:", e)
 
     def _on_completed(self, message, *args):
-        with open(self.__file_name, "rb+") as f:
-            __data = f.read()
-        QThread.msleep(100)
-        self.result_list.append([self.__id, __data])
-        return __data
+        # with open(self.__file_name, 'rb') as f:
+        #     __data = f.read()
+        res = [self.__id, self.__file_name]
+        self.data_list.append(res)
+        return res
 
     def _on_close(self, *args):
         self.__f.close()
-        if not self.args['savefile']:
-            os.remove(self.__file_name)
-            print("{} Del File :{}..".format(self.__id, self.__file_name))
 
     def __thread_run(self):
         with Sem:
-            print("thread:{} start..".format(self.__id))
+            print("{}: thread start..".format(self.__id))
 
             _NSS_ = nls.NlsSpeechSynthesizer(
                 token=_ACCESS_TOKEN,
@@ -122,43 +120,59 @@ class NSS(on_state_cls):
             print('{}: NSS stopped.'.format(self.__id))
 
 
-def TODO_TTS(_in_text, renovate_args: dict = {}, merge=False):
+def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
     # $处理参数
     args = SpeechArgs().get_dict()
     args.update(renovate_args)
 
-    if merge is True: args.update({'savefile': True})  # #合并文件必须先保存
-
-    if isinstance(_in_text, str): _in_text = str_split_limited_list(_in_text)
+    if isinstance(_in_text, str):  # $整段文字要合并
+        _in_text = str_split_limited_list(_in_text)
+        merge = True
     assert isinstance(_in_text, list)
 
     # $运行主程序
     [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
-    reslist, filelist = NSS.wait_completed()
-    assert isinstance(reslist, list) and isinstance(filelist, list)
+    datalist = NSS.wait_completed()
 
     # $处理结果
-    if merge:  # #合并
-        filelist.sort(key=lambda x: x[0])
-        # $合并音频文件
-        if args['aformat'] == 'mp3':
-            sound_list = [[item[0], AudioSegment.from_mp3(item[1]), os.remove(item[1])] for item in filelist]
-        else:
-            sound_list = [[item[0], AudioSegment.from_wav(item[1]), os.remove(item[1])] for item in filelist]
+    assert isinstance(datalist, list)
+    datalist.sort(key=lambda x: x[0])
 
-        sound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件
-        for item in sound_list:
-            sound += item[1]  # 把声音文件相加
-
-        # $保存音频文件
-        __fname = f"{get_10_timestamp()}_{args['voice']}_tts.{args['aformat']}"
-        __file_name = os.path.dirname(os.path.abspath(__file__)) + '\\' + __fname
-        sound.export(__file_name, format=args['aformat'])  # 保存文件
-
-        return __file_name
-
+    # ^情形1：不保存文件，返回音频数据
+    if readonly:
+        for index, item in enumerate(datalist):
+            with open(item[1], 'rb') as f:
+                __data = f.read()
+            os.remove(item[1])
+            datalist[index][1] = __data
+        # $[[1, b'xxxx'], [2, b'xxxx'], [3, b'xxxx'],]
+        return datalist  # $返回data音频数据用于朗读
     else:
-        return (reslist, filelist)  # $不合并直接返回结果
+        # ^情形3：保存原始音频文件到桌面
+        desk = get_desktop()
+        for index, item in enumerate(datalist):
+            shutil.move(item[1], desk)
+            datalist[index][1] = desk + "\\" + item[1].split("\\")[-1]
+
+        if not merge:
+            # $[[1, 'D:\\Desktop\\1.mp3'], [2, 'D:\\Desktop\\2.mp3'], [3, 'D:\\Desktop\\3.mp3'],]
+            return datalist
+
+        else:
+            # ^情形3：合并音频,删除过程文件
+            sound_list = [[item[0], AudioSegment.from_file(item[1], format=args['aformat']), os.remove(item[1])] for item in datalist]
+
+            SumSound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件
+            for item in sound_list:
+                SumSound += item[1]  # 把声音文件相加
+
+            # $保存音频文件
+            __fname = f"{get_desktop()}\\{get_10_timestamp()}_{args['voice']}_tts.{args['aformat']}"
+            SumSound.export(__fname, format=args['aformat'])  # 保存文件
+            datalist = [[1, __fname]]
+
+            # $[[1, 'D:\\Desktop\\1.mp3'],]
+            return datalist
 
 
 if __name__ == '__main__':

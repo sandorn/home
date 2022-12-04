@@ -7,8 +7,8 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:56
+LastEditTime : 2022-12-03 16:35:20
 FilePath     : /项目包/小说阅读器/read_ui.py
-LastEditTime : 2022-12-02 23:58:01
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -16,7 +16,7 @@ Github       : https://github.com/sandorn/home
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMetaObject, Qt, QThread, pyqtSlot
 from PyQt5.QtWidgets import QHBoxLayout, QMessageBox, QSplitter, QVBoxLayout
-from xt_Alispeech.xt_Pygame import RSynt_Read_QThread
+from xt_Alispeech.xt_Pygame import Synt_Read_QThread
 from xt_Ls_Bqg import ahttp_get_contents, get_download_url
 from xt_String import str_split_limited_list
 from xt_Ui import (
@@ -34,11 +34,6 @@ from xt_Ui import (
 
 
 class Ui_MainWindow(xt_QMainWindow):
-    '''
-    description:
-    param {*} self
-    return {*}
-    '''
 
     def __init__(self):
         super().__init__('小说阅读器', status=True, tool=True)
@@ -59,7 +54,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.pushButton = xt_QPushButton("&OK 确定")
         self.pushButton.setObjectName('OK')
 
-        self.tabWidget = xt_QTabWidget(["列表显示", "图表显示"])
+        self.tabWidget = xt_QTabWidget(["Table", "List"])
         self.tableWidget = xt_QTableView(['章节', '链接'])
         self.tabWidget.lay[0].addWidget(self.tableWidget)
         self.listWidget = xt_QListWidget()
@@ -117,14 +112,14 @@ class Ui_MainWindow(xt_QMainWindow):
         self.listWidgetCurrentRow = 0
 
     def currentChanged_event(self, index):
-        if index == 0:
-            self.pushButton_read.setHidden(True)
-            self.pushButton_3.setHidden(True)
-            self.pushButton_4.setHidden(True)
-        else:
-            self.pushButton_read.setHidden(False)
-            self.pushButton_3.setHidden(False)
-            self.pushButton_4.setHidden(False)
+        # if index == 0:
+        #     self.pushButton_read.setHidden(True)
+        #     self.pushButton_3.setHidden(True)
+        #     self.pushButton_4.setHidden(True)
+        # else:
+        #     self.pushButton_read.setHidden(False)
+        #     self.pushButton_3.setHidden(False)
+        #     self.pushButton_4.setHidden(False)
         pass
 
     def previous(self):
@@ -158,8 +153,6 @@ class Ui_MainWindow(xt_QMainWindow):
 
     def read_Button_event(self):
         (self.read_read if self.pushButton_read.text() == '&Read' else self.read_stop)()
-        # (func1 if y == 1 else func2)(arg1, arg2)
-        # 如果y等于1,那么调用func1(arg1,arg2)否则调用func2(arg1,arg2)
 
     @EventLoop
     def read_stop(self):
@@ -170,8 +163,8 @@ class Ui_MainWindow(xt_QMainWindow):
     def read_read(self):
         self.pushButton_read.setText('&STOP')
         newText = str_split_limited_list(self.QTextEdit.toPlainText())  # 处理字符串
-        self.runthread = RSynt_Read_QThread(newText)
-        self.runthread._signal.connect(self.playdone)  # #绑定RSynt_Read_QThread中定义的信号
+        self.runthread = Synt_Read_QThread(newText)
+        self.runthread._signal.connect(self.playdone)  # #绑定Synt_Read_QThread中定义的信号
 
     def playdone(self):
         self.read_stop()
@@ -179,6 +172,7 @@ class Ui_MainWindow(xt_QMainWindow):
             QThread.msleep(100)
             self.nextpage()
             QThread.msleep(100)
+
             self.read_read()
 
     @EventLoop

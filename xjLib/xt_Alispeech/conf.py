@@ -75,12 +75,10 @@ class SpeechArgs(dict_mothed_Mixin):
     speech_rate: int = 0
     pitch_rate: int = 0
     text: str = ''
-
     wait_complete: bool = True
     start_timeout: int = 10
     completed_timeout: int = 60
     ex: dict = {}
-    savefile: bool = True
     # {'enable_subtitle': True}
 
 
