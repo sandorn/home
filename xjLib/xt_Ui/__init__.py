@@ -20,8 +20,39 @@ from functools import wraps
 import qdarkstyle
 from PyQt5.QtCore import QEventLoop, QMetaObject, QSize, Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (  # QSplitter,
-    QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget, qApp,
+from PyQt5.QtWidgets import (
+    QAction,
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDesktopWidget,
+    QDoubleSpinBox,
+    QFileDialog,
+    QHBoxLayout,
+    QHeaderView,
+    QInputDialog,
+    QLabel,
+    QLineEdit,
+    QListView,
+    QListWidget,
+    QListWidgetItem,
+    QMainWindow,
+    QMenu,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QSpinBox,
+    QStatusBar,
+    QTableView,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QTextBrowser,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QWidget,
+    qApp,
 )
 from xt_File import qsstools
 
@@ -31,7 +62,7 @@ def EventLoop(function):
 
     @wraps(function)
     def warp(*args, **kwargs):
-        # @忽略用户的输入（鼠标和键盘事件）,显示等待中的鼠标样式
+        # @忽略用户的输入(鼠标和键盘事件),显示等待中的鼠标样式
         QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
@@ -77,7 +108,7 @@ class xt_QProgressBar(QProgressBar):
         if isinstance(value, int) and value > self.maximum():
             value = self.maximum()
 
-        if value is None or isinstance(value, str):  # #传入None或字符，则在原值上+1
+        if value is None or isinstance(value, str):  # #传入None或字符,则在原值上+1
             value = self.value() + 1
 
         self.setValue(int(value))
@@ -95,7 +126,7 @@ class xt_QTabWidget(QTabWidget):
     3.void setTabEnabled(bool); //设置页面是否被激活.
     4.void setTabPosition(QTabPosition::South); //设置页面名字的位置.
     5.void setTabsClosable(bool); //设置页面关闭按钮。
-    6.int currentIndex(); //返回当前页面的下标，从0开始.
+    6.int currentIndex(); //返回当前页面的下标,从0开始.
     7.int count(); //返回页面的数量.
     8.void clear(); //清空所有页面.
     9.void removeTab(int); //删除页面.
@@ -105,11 +136,11 @@ class xt_QTabWidget(QTabWidget):
     13.void setCurrentIndex(int); //设置当前显示的页面.
 
     signals:
-    1.void tabCloseRequested(int). //当点击第参数个选项卡的关闭按钮的时候，发出信号
+    1.void tabCloseRequested(int). //当点击第参数个选项卡的关闭按钮的时候,发出信号
                                     配合setTabsClosable(true)
-    2.void tabBarClicked(int). //当点击第参数个选项卡的时候，发出信号.
-    3.void currentChanged(int). //当改变第参数个选项卡的时候，发出信号.
-    4.void tabBarDoubleClicked(int). //当双击第参数个选项卡的时候，发出信号
+    2.void tabBarClicked(int). //当点击第参数个选项卡的时候,发出信号.
+    3.void currentChanged(int). //当改变第参数个选项卡的时候,发出信号.
+    4.void tabBarDoubleClicked(int). //当双击第参数个选项卡的时候,发出信号
     '''
 
     def __init__(self, textlist, *args, **kwargs):
@@ -177,7 +208,7 @@ class xt_QTableView(QTableView):
     QSqlTableModel	对SQL中的表格进行封装
     QSqlRelationalTableModel	对带有foreign key的SQL表格进行封装
     QSortFilterProxyModel	对模型中的数据进行排序或过滤
-    事件：
+    事件:
     void	clicked ( const QModelIndex & index )
     void	pressed ( const QModelIndex & index )
     '''
@@ -297,18 +328,18 @@ class xt_QTableWidget(QTableWidget):
     setHorizontalHeaderLabels()	设置QTableWidget表格控件的水平标签
     setVerticalHeaderLabels()	设置QTableWidget表格控件的垂直标签
     setItem(int ,int ,QTableWidgetItem)	在QTableWidget表格控件的每个选项的单元控件内添加控件
-    horizontalHeader()	获得QTableWidget表格控件的表格头，以便执行隐藏
+    horizontalHeader()	获得QTableWidget表格控件的表格头,以便执行隐藏
     rowCount()	获得QTableWidget表格控件的行数
     columnCount()	获得QTableWidget表格控件的列数
-    setEditTriggers(EditTriggers triggers)	设置表格是否可以编辑，设置表格的枚举值
+    setEditTriggers(EditTriggers triggers)	设置表格是否可以编辑,设置表格的枚举值
     setSelectionBehavior	设置表格的选择行为
     setTextAlignment()	设置单元格内文本的对齐方式
-    setSpan(int row,int column,int rowSpanCount,int columnSpanCount)	合并单元格，要改变单元格的第row行，column列，要合并rowSpancount行数和columnSpanCount列数
-    row：要改变的行数
-    column：要改变的列数
-    rowSpanCount：需要合并的行数
-    columnSpanCount：需要合并的列数
-    setShowGrid()	在默认情况下表格的显示是有网格的，可以设置True或False用于是否显示，默认True
+    setSpan(int row,int column,int rowSpanCount,int columnSpanCount)	合并单元格,要改变单元格的第row行,column列,要合并rowSpancount行数和columnSpanCount列数
+    row:要改变的行数
+    column:要改变的列数
+    rowSpanCount:需要合并的行数
+    columnSpanCount:需要合并的列数
+    setShowGrid()	在默认情况下表格的显示是有网格的,可以设置True或False用于是否显示,默认True
     setColumnWidth(int column,int width)	设置单元格行的宽度
     setRowHeight(int row,int height)	设置单元格列的高度
     编辑规则的枚举值类型
@@ -329,15 +360,20 @@ class xt_QTableWidget(QTableWidget):
     选项	描述
     Qt.AlignLeft	将单元格内的内容沿单元格的左边缘对齐
     Qt.AlignRight	将单元格内的内容沿单元格的右边缘对齐
-    Qt.AlignHCenter	在可用空间中，居中显示在水平方向上
-    Qt.AlignJustify	将文本在可用空间内对齐，默认从左到右
+    Qt.AlignHCenter	在可用空间中,居中显示在水平方向上
+    Qt.AlignJustify	将文本在可用空间内对齐,默认从左到右
     单元格文本垂直对齐方式
     选项	描述
     Qt.AlignTop	与顶部对齐
     Qt.AlignBottom	与底部对齐
-    Qt.AlignVCenter	在可用空间中，居中显示在垂直方向上
+    Qt.AlignVCenter	在可用空间中,居中显示在垂直方向上
     Qt.AlignBaseline	与基线对齐
-    如果要设置水平和垂直方向对齐方式，比如在表格空间内上下，左右居中对齐，那么只要使用Qt,AlignHCenter和Qt,AlignVCenter即可
+    如果要设置水平和垂直方向对齐方式,比如在表格空间内上下,左右居中对齐,那么只要使用Qt,AlignHCenter和Qt,AlignVCenter即可
+
+
+        # res = [[self.titles[index], self.urls[index]] for index in range(len(self.titles))]
+        # self.tableWidget.appendItems(res)
+        # self.tableWidget.scrollToTop()
     '''
 
     def __init__(self, ColumnsName, *args, **kwargs):
@@ -542,22 +578,22 @@ class xt_QListWidget(QListWidget):
     currentItemChanged	当列表中的条目发生改变时发射此信号
     itemClicked	当点击列表中的条目时发射此信号
 
-    QListWidget自身的信号包括如下：
+    QListWidget自身的信号包括如下:
 
     currentItemChanged(QListWidgetItem current, QListWidgetItem previous)信号
-    当列表部件中的当前项发生变化时发射，带两个参数，分别表示当前选择项和在此之前的选择项。
+    当列表部件中的当前项发生变化时发射,带两个参数,分别表示当前选择项和在此之前的选择项。
 
-    currentRowChanged（int currentRow）信号
-    当列表部件中的当前项发生变化时发射，带一个参数，currentRow表示当前项行号，如果没有当前项，其值为-1。
+    currentRowChanged(int currentRow)信号
+    当列表部件中的当前项发生变化时发射,带一个参数,currentRow表示当前项行号,如果没有当前项,其值为-1。
 
-    currentTextChanged（str currentText)
-    当列表部件中的当前项发生变化时发射，带一个参数，currentText为当前项对应文本。
+    currentTextChanged(str currentText)
+    当列表部件中的当前项发生变化时发射,带一个参数,currentText为当前项对应文本。
 
     itemActivated(QListWidgetItem item)
-    当项激活时发射，项激活是指鼠标单击或双击项，具体依赖于系统配置。项激活还可以是在windows环境下在项上按下回车键，在Mac操作系统下按下Command+O键。
+    当项激活时发射,项激活是指鼠标单击或双击项,具体依赖于系统配置。项激活还可以是在windows环境下在项上按下回车键,在Mac操作系统下按下Command+O键。
 
     itemChanged(QListWidgetItem item)
-    当项的文本发生改变时发射该信号，项文本无论是否真正改变都会发射。
+    当项的文本发生改变时发射该信号,项文本无论是否真正改变都会发射。
 
     itemClicked(QListWidgetItem item)
     当部件中的项被鼠标单击时发射该信号。
@@ -566,13 +602,13 @@ class xt_QListWidget(QListWidget):
     当部件中的项被鼠标双击时发射该信号。
 
     itemEntered(QListWidgetItem item)
-    当部件中的项接收到鼠标光标时发射该信号，发射该信号需设置mouseTracking属性为True，如果未设置该属性，则只有鼠标移动到项时按下按键时才触发。
+    当部件中的项接收到鼠标光标时发射该信号,发射该信号需设置mouseTracking属性为True,如果未设置该属性,则只有鼠标移动到项时按下按键时才触发。
 
     itemPressed(QListWidgetItem item)
     当鼠标在部件中的项上按下时触发。
 
-    itemSelectionChanged（）
-    当列表部件中进行了选择操作后触发，无论选中项是否改变。
+    itemSelectionChanged()
+    当列表部件中进行了选择操作后触发,无论选中项是否改变。
     '''
 
     def __init__(self, *args, **kwargs):
@@ -641,17 +677,17 @@ class xt_QTreeWidget(QTreeWidget):
     QTreeWidget类中的常用方法
     方法	描述
     setColumnWidth(int column,int width)	将指定列的宽度设置为给定的值
-    Column：指定的列
-    width：指定的宽度
+    Column:指定的列
+    width:指定的宽度
     insertTopLevelItems()	在视图的顶层索引中引入项目的列表
     expandAll()	展开所有节点的树形节点
-    invisibleRootItem()	返回树形控件中不可见的根选项（Root Item）
+    invisibleRootItem()	返回树形控件中不可见的根选项(Root Item)
     selectionItems()	返回所有选定的非隐藏项目的列表内
     #@QTreeWidgetItem类中常用的方法
     addChild()	将子项追加到子列表中
     setText()	设置显示的节点文本
     text()	返回显示的节点文本
-    setCheckState(column.state)	设置指定列的选中状态：Qt.Checked:节点选中;Qt.Unchecked:节点没有选中
+    setCheckState(column.state)	设置指定列的选中状态:Qt.Checked:节点选中;Qt.Unchecked:节点没有选中
     setIcon(column,icon)	在指定的列中显示图标
     事件
     clicked,doubleClicked,itemDoubleClicked
@@ -665,7 +701,7 @@ class xt_QTreeWidget(QTreeWidget):
         self.多行选择()
         self.设置自适应列宽()
         self.columns = {index: item for index, item in enumerate(ColumnsName)}
-        # 设置root为self.tree的子树，故root是根节点
+        # 设置root为self.tree的子树,故root是根节点
         self.root = QTreeWidgetItem(self)
         self.root.setText(0, 'root')  # 设置根节点的名称
         self.addTopLevelItem(self.root)
@@ -719,7 +755,7 @@ class xt_QTreeWidget(QTreeWidget):
         pass
 
     def itemDoubleClicked_event(self, item, columnindex):
-        '''QTreeWidgetItem对象，列号'''
+        '''QTreeWidgetItem对象,列号'''
         # print('itemDoubleClicked_event', item.text(columnindex), columnindex, [item.text(index) for index in range(self.columnCount())])
         pass
 
@@ -809,8 +845,8 @@ class xt_QPushButton(QPushButton):
     '''
     setText()设置按钮字符
     text()获取按钮字符
-    按钮字符开头用 & + 字母 ,设置快捷键：alt+字母
-    事件信号： clicked、pressed、released
+    按钮字符开头用 & + 字母 ,设置快捷键:alt+字母
+    事件信号: clicked、pressed、released
     '''
 
     def __init__(self, *args, **kwargs):
@@ -825,16 +861,16 @@ class xt_QPushButton(QPushButton):
 
 class xt_QCheckBox(QCheckBox):
     '''
-    setChecked()	设置复选框的状态，设置为True表示选中，False表示取消选中的复选框
+    setChecked()	设置复选框的状态,设置为True表示选中,False表示取消选中的复选框
     setText()	设置复选框的显示文本
     text()	返回复选框的显示文本
-    isChecked()	检查复选框是否被选中,选中就返回True，否则返回False
+    isChecked()	检查复选框是否被选中,选中就返回True,否则返回False
     setTriState()	设置复选框为一个三态复选框
-    setCheckState()	三态复选框的状态设置，具体设置可以见下表
+    setCheckState()	三态复选框的状态设置,具体设置可以见下表
     checkState() 获取三态复选框状态 Qt.Checked | Qt.Unchecked | Qt.PartiallyChecked
 
     名称	值	含义
-    Qt.Checked	2	组件没有被选中（默认）
+    Qt.Checked	2	组件没有被选中(默认)
     Qt.PartiallyChecked	1	组件被半选中
     Qt.Unchecked	0	组件被选中
 
@@ -869,7 +905,7 @@ class xt_QComboBox(QComboBox):
     信号	含义
     Activated	当用户选中一个下拉选项时发射该信号
     currentIndexChanged	当下拉选项的索引发生改变时发射该信号
-    highlighted	当选中一个已经选中的下拉选项时，发射该信号
+    highlighted	当选中一个已经选中的下拉选项时,发射该信号
     '''
 
     def __init__(self, itemlist=[], *args, **kwargs):
@@ -888,7 +924,7 @@ class xt_QComboBox(QComboBox):
 
 class xt_QSpinBox(QSpinBox):
     '''
-    如果使用prefix(),suffix()和specialValueText()感觉还是不爽，那么你可以继承QSpinBox并重新实现valueFromText()和textFromValue()
+    如果使用prefix(),suffix()和specialValueText()感觉还是不爽,那么你可以继承QSpinBox并重新实现valueFromText()和textFromValue()
 
     def valueFromText(self, str):
         import QRegExp
@@ -906,17 +942,17 @@ class xt_QSpinBox(QSpinBox):
     方法	描述
     setMinimum()	设置计数器的下界
     setMaximum()	设置计数器的上界
-    setRange()	设置计数器的最大值，最小值，步长值
+    setRange()	设置计数器的最大值,最小值,步长值
     setValue()	设置计数器的当前值
     Value()	返回计数器的当前值
     singleStep()	设置计数器的步长值
     信号	含义
-    当值发生改变时，会发射两个valueChanged()信号，其中一个提供int类型，另一个则是QString类型，该QString提供了prefix()和suffix()。当前值可以用value()来读取，setValue()来设置。
+    当值发生改变时,会发射两个valueChanged()信号,其中一个提供int类型,另一个则是QString类型,该QString提供了prefix()和suffix()。当前值可以用value()来读取,setValue()来设置。
     '''
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #QSpinBox旨在处理整数和离散值（例如：月份名称）
+        #QSpinBox旨在处理整数和离散值(例如:月份名称)
 
         self.setObjectName(f"xt_QSpinBox_{id(self)}")
         # 范围
@@ -945,7 +981,7 @@ class xt_QDoubleSpinBox(QDoubleSpinBox):
     '''
     QDoubleSpinBox则用于处理浮点值
     信号	含义
-    当值发生改变时，会发射两个valueChanged()信号，其中一个提供int类型，另一个则是QString类型，该QString提供了prefix()和suffix()。当前值可以用value()来读取，setValue()来设置。
+    当值发生改变时,会发射两个valueChanged()信号,其中一个提供int类型,另一个则是QString类型,该QString提供了prefix()和suffix()。当前值可以用value()来读取,setValue()来设置。
     '''
 
     def __init__(self, *args, **kwargs):
@@ -992,14 +1028,14 @@ class xt_QInputDialog(QInputDialog):
             str, ok = QInputDialog.getText(self,'获取字符串','请输入您的文本',QLineEdit.Normal,'字符串',)
             if ok:
                 self.lineEdit_str.setText(str)
-    QInputDialog.getText(QWidget, str, str, QLineEdit.EchoMode echo=QLineEdit.Normal, str text=QString()）
-    几个参数依次是：父组件；对话框标题；对话框提示信息；对话框中QLineEdit控件的输入模式；默认值。其中，对话框中QLineEdit控件的输入模式有4种，详情如下表：
+    QInputDialog.getText(QWidget, str, str, QLineEdit.EchoMode echo=QLineEdit.Normal, str text=QString())
+    几个参数依次是:父组件；对话框标题；对话框提示信息；对话框中QLineEdit控件的输入模式；默认值。其中,对话框中QLineEdit控件的输入模式有4种,详情如下表:
 
     常量	值	内容
-    QLineEdit.Normal	0	正常显示输入的字符，默认选项。
-    QLineEdit.NoEcho	1	不显示任何输入，常用于密码类型，其密码长度都需要保密的时候。
-    QLineEdit.Password	2	显示平台相关的密码掩码字符，而不是实际的字符输入。
-    QLineEdit.PasswordEchoOnEdit	3	在编辑的时候显示字符，负责显示密码类型。
+    QLineEdit.Normal	0	正常显示输入的字符,默认选项。
+    QLineEdit.NoEcho	1	不显示任何输入,常用于密码类型,其密码长度都需要保密的时候。
+    QLineEdit.Password	2	显示平台相关的密码掩码字符,而不是实际的字符输入。
+    QLineEdit.PasswordEchoOnEdit	3	在编辑的时候显示字符,负责显示密码类型。
 
     '''
 
@@ -1013,7 +1049,7 @@ class xt_QMessageBOx(QMessageBox):
     方法
     information,question,warning,critical,about
 
-    QMessageDialog.question(父组件，’对话框标题‘，’对话框内容‘，按键一|按键二，默认按键)。关于对话框只有一个按键ok，不需要用户指定按键，所以只需要给定前三项参数即可。在示例中，我们使用了Yes和No两个按键，实际上pyqt中案件类型不止这两种。
+    QMessageDialog.question(父组件,’对话框标题‘,’对话框内容‘,按键一|按键二,默认按键)。关于对话框只有一个按键ok,不需要用户指定按键,所以只需要给定前三项参数即可。在示例中,我们使用了Yes和No两个按键,实际上pyqt中案件类型不止这两种。
 
     类型	作用
     QMessage.Yes	是
@@ -1032,21 +1068,21 @@ class xt_QMessageBOx(QMessageBox):
 
 class xt_QFileDialog(QFileDialog):
     '''
-    QFileDialog是用于打开和保存文件的对话框，常用的方法如下：
+    QFileDialog是用于打开和保存文件的对话框,常用的方法如下:
 
     方法	内容
-    getOpenFileName()	返回所选文件的名称，并打开该文件（单个文件）
-    getOpenFileNames()	返回所选文件的名称，并打开该文件（多个文件）
+    getOpenFileName()	返回所选文件的名称,并打开该文件(单个文件)
+    getOpenFileNames()	返回所选文件的名称,并打开该文件(多个文件)
     getSaveFileName()	以用户选择的名称给文件命名
     setFileMode()
-    可以选择文件类型，枚举常量是：
+    可以选择文件类型,枚举常量是:
     QFileDialog.AnyFile 任何文件
     QFileDialog.ExistingFile 已存在的文件
     QFileDialog.Directory 文件目录
     QFileDialog.ExistingFiles 因存在的多个文件
-    setFilter	设置过滤器，只显示过滤器允许的文件类型
-    getOpenFileName()方法的各参数释义如下：(父组件，标题，对话框打开时默认显示的目录，扩展名过滤器)。
-    当扩展名过滤器需要显示多种文件类型时，各类型之间需要用两个分号隔开。
+    setFilter	设置过滤器,只显示过滤器允许的文件类型
+    getOpenFileName()方法的各参数释义如下:(父组件,标题,对话框打开时默认显示的目录,扩展名过滤器)。
+    当扩展名过滤器需要显示多种文件类型时,各类型之间需要用两个分号隔开。
     '''
 
     def __init__(self, *args, **kwargs):
@@ -1088,7 +1124,7 @@ class xt_QMainWindow(QMainWindow):
 
         QMetaObject.connectSlotsByName(self)  # @用于自动绑定信号和函数
         '''
-        继承仍需声明，可能与控件生成顺序有关
+        继承仍需声明,可能与控件生成顺序有关
         事件action:on_objectName_triggered
         按钮button:on_objectName_clicked
         必须使用@PyQt5.QtCore.pyqtSlot()修饰要调用的函数
@@ -1117,7 +1153,7 @@ class xt_QMainWindow(QMainWindow):
         y = int((screen.height() - size.height()) / 2)
         self.move(x, y)
 
-    def mousePressEvent(self, event):  # @重写事件，响应拖动
+    def mousePressEvent(self, event):  # @重写事件,响应拖动
         if event.button() == Qt.LeftButton:
             self.m_drag = True
             self.m_DragPosition = event.globalPos() - self.pos()
@@ -1141,8 +1177,8 @@ class xt_QMainWindow(QMainWindow):
         self.Run_action.setObjectName("Run")
         self.Do_action.setObjectName("Do")
         self.Theme_action.setObjectName("Theme")
-        # !必须,关键，用于自动绑定信号和函数  on_ObjectName_triggered
-        # !配套：QMetaObject.connectSlotsByName(self)
+        # !必须,关键,用于自动绑定信号和函数  on_ObjectName_triggered
+        # !配套:QMetaObject.connectSlotsByName(self)
         self.Close_action = QAction(QIcon(self.basepath + '/ico/close.ico'), '&Quit', self)
         self.Run_action.setShortcut('Ctrl+E')
         self.Do_action.setShortcut('Ctrl+P')
@@ -1222,27 +1258,27 @@ class xt_QMainWindow(QMainWindow):
 
     '''
         #@setWindowFlags(Qt.WindowFlags|Qt.WindowFlags)
-        PYQT基本窗口类型有如下类型：
-        Qt.Qt.Widget#插件默认窗口，有最小化、最大化、关闭按钮
-        Qt.Qt.Window#普通窗口，有最小化、最大化、关闭按钮
-        Qt.Qt.Dialog#对话框窗口，有问号和关闭按钮
-        Qt.Qt.Popup#弹出窗口，窗口无边框化
-        Qt.Qt.ToolTip#提示窗口，窗口无边框化，无任务栏窗口
-        Qt.Qt.SplashScreen#飞溅屏幕，窗口无边框化，无任务栏窗口
-        Qt.Qt.SubWindow#子窗口，窗口无按钮但有标题栏
+        PYQT基本窗口类型有如下类型:
+        Qt.Qt.Widget#插件默认窗口,有最小化、最大化、关闭按钮
+        Qt.Qt.Window#普通窗口,有最小化、最大化、关闭按钮
+        Qt.Qt.Dialog#对话框窗口,有问号和关闭按钮
+        Qt.Qt.Popup#弹出窗口,窗口无边框化
+        Qt.Qt.ToolTip#提示窗口,窗口无边框化,无任务栏窗口
+        Qt.Qt.SplashScreen#飞溅屏幕,窗口无边框化,无任务栏窗口
+        Qt.Qt.SubWindow#子窗口,窗口无按钮但有标题栏
 
-        自定义外观的顶层窗口标志：
+        自定义外观的顶层窗口标志:
         Qt.Qt.MSWindowsFixedSizeDialogHint#窗口无法调整大小
         Qt.Qt.FramelessWindowHint#窗口无边框化
-        Qt.Qt.CustomizeWindowHint#有边框但无标题栏和按钮，不能移动和拖动
+        Qt.Qt.CustomizeWindowHint#有边框但无标题栏和按钮,不能移动和拖动
         Qt.Qt.WindowTitleHint#添加标题栏和一个关闭按钮
         Qt.Qt.WindowSystemMenuHint#添加系统目录和一个关闭按钮
-        Qt.Qt.WindowMaximizeButtonHint#激活最大化和关闭按钮，禁止最小化按钮
-        Qt.Qt.WindowMinimizeButtonHint#激活最小化和关闭按钮，禁止最大化按钮
-        Qt.Qt.WindowMinMaxButtonsHint#激活最小化、最大化和关闭按钮，
+        Qt.Qt.WindowMaximizeButtonHint#激活最大化和关闭按钮,禁止最小化按钮
+        Qt.Qt.WindowMinimizeButtonHint#激活最小化和关闭按钮,禁止最大化按钮
+        Qt.Qt.WindowMinMaxButtonsHint#激活最小化、最大化和关闭按钮,
         #相当于Qt.Qt.WindowMaximizeButtonHint|Qt.Qt.WindowMinimizeButtonHint
         Qt.Qt.WindowCloseButtonHint#添加一个关闭按钮
-        Qt.Qt.WindowContextHelpButtonHint#添加问号和关闭按钮，像对话框一样
+        Qt.Qt.WindowContextHelpButtonHint#添加问号和关闭按钮,像对话框一样
         Qt.Qt.WindowStaysOnTopHint#窗口始终处于顶层位置
         Qt.Qt.WindowStaysOnBottomHint#窗口始终处于底层位置
         Qt.Qt.Tool 有一个小小的关闭按钮

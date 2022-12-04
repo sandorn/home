@@ -187,8 +187,8 @@ class _read_class_meta:
 def get_read_class(meta):
     '''type 动态混入继承，实质是调整 bases'''
     _name = 'QThread' if meta is QThread else 'Thread'
-    ocl = type(f'RSynt_Read_{_name}', (_read_class_meta, meta), {})
-    return ocl
+    _read_class = type(f'RSynt_Read_{_name}', (_read_class_meta, meta), {})
+    return _read_class
 
 
 RSynt_Read_Thread = get_read_class(Thread)

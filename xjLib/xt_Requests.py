@@ -18,7 +18,8 @@ from functools import partial
 
 import requests
 from tenacity import retry as Tretry
-from tenacity import stop_after_attempt, wait_random
+from tenacity.stop import stop_after_attempt
+from tenacity.wait import wait_random
 from xt_Head import MYHEAD
 from xt_Response import ReqResult
 from xt_Tools import try_except_wraps
@@ -176,6 +177,8 @@ class SessionClient:
         self.headers.update(header_dict)
 
 
+if __name__ == '__main__':
+    get('https://www.baidu.com')
 '''
     # @不能用于协程,且不保留最后错误
     # from retrying import retry as Retry

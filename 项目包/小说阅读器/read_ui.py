@@ -27,8 +27,6 @@ from xt_Ui import (
     xt_QListWidget,
     xt_QMainWindow,
     xt_QPushButton,
-    xt_QTableView,
-    xt_QTabWidget,
     xt_QTextBrowser,
 )
 
@@ -53,14 +51,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.lineEdit.setObjectName('lineEditobj')
         self.pushButton = xt_QPushButton("&OK 确定")
         self.pushButton.setObjectName('OK')
-
-        self.tabWidget = xt_QTabWidget(["Table", "List"])
-        self.tableWidget = xt_QTableView(['章节', '链接'])
-        self.tabWidget.lay[0].addWidget(self.tableWidget)
         self.listWidget = xt_QListWidget()
-        self.tabWidget.lay[1].addWidget(self.listWidget)
-        self.tabWidget.setCurrentIndex(1)
-
         self.QTextEdit = xt_QTextBrowser()
 
         self.pushButton_read = xt_QPushButton("&Read")
@@ -96,7 +87,7 @@ class Ui_MainWindow(xt_QMainWindow):
         ht_1.addWidget(self.pushButton_3, stretch=1)
         ht_1.addWidget(self.pushButton_4, stretch=1)
 
-        self.splitter.addWidget(self.tabWidget)
+        self.splitter.addWidget(self.listWidget)
         self.splitter.setStretchFactor(0, 2)  # 设定比例
         self.splitter.addWidget(self.QTextEdit)
         self.splitter.setStretchFactor(1, 5)  # 设定比例
@@ -108,19 +99,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.centralwidget.setLayout(vt_0)
         self.setCentralWidget(self.centralwidget)
         QMetaObject.connectSlotsByName(self)  # @  关键，用于自动绑定信号和函数
-        self.tabWidget.currentChanged.connect(self.currentChanged_event)
         self.listWidgetCurrentRow = 0
-
-    def currentChanged_event(self, index):
-        # if index == 0:
-        #     self.pushButton_read.setHidden(True)
-        #     self.pushButton_3.setHidden(True)
-        #     self.pushButton_4.setHidden(True)
-        # else:
-        #     self.pushButton_read.setHidden(False)
-        #     self.pushButton_3.setHidden(False)
-        #     self.pushButton_4.setHidden(False)
-        pass
 
     def previous(self):
         if self.listWidgetCurrentRow == 0: return
@@ -136,7 +115,7 @@ class Ui_MainWindow(xt_QMainWindow):
     @EventLoop
     def on_OK_clicked(self):
         self.QTextEdit.clear()
-        self.tableWidget.clean()
+        # self.tableWidget.clean()
         self.listWidget.clean()
 
         try:
@@ -144,11 +123,8 @@ class Ui_MainWindow(xt_QMainWindow):
         except Exception as err:
             QMessageBox.warning(None, "警告", f"没有数据，请检查：{err}", QMessageBox.Ok)
         else:
-            self.bindTable()  # 对表格进行填充
             self.bindList()  # 对列表进行填充
-
-            self.listWidget.currentRowChanged.connect(self.currentRowChanged_event)
-            self.tableWidget.clicked.connect(self.tableClick_event)  # @绑定表格单击方法
+            self.listWidget.currentRowChanged.connect(self.currentRowChanged_event)  # @绑定单击方法
         return
 
     def read_Button_event(self):
@@ -186,30 +162,11 @@ class Ui_MainWindow(xt_QMainWindow):
         index, title, content = ahttp_get_contents((1, url))
         return "《" + self.bookname + '->' + title + "》\n\n" + content
 
-    # 将文件显示在Table中（列表显示）
-    @EventLoop
-    def bindTable(self):
-        res = [[self.titles[index], self.urls[index]] for index in range(len(self.titles))]
-        self.tableWidget.appendItems(res)
-        self.tableWidget.scrollToTop()
-
     # 将文件显示在List列表中（图表显示）
     @EventLoop
     def bindList(self):
         self.listWidget.addItems([self.titles[index] for index in range(len(self.titles))])
         self.listWidget.scrollToTop()  # scrollToBottom()
-
-    # Table单击方法，用来打开选中的项
-    @EventLoop
-    def tableClick_event(self, item):
-        self.QTextEdit.clear()
-        QModelIndex = self.tableWidget.model.index(item.row(), 1)
-        nowthread = QThread()
-        nowthread.run = self.getcontent  # type: ignore
-        _text = nowthread.run(QModelIndex.data())
-
-        self.QTextEdit.setFontPointSize(18)
-        self.QTextEdit.setText(_text)
 
     # List列表单击方法，用来打开选中的项
     @EventLoop

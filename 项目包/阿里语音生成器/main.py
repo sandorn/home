@@ -13,8 +13,6 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
-from threading import Thread
-
 from PyQt5.QtCore import Qt, QThread, pyqtSlot
 from PyQt5.QtWidgets import QApplication, QSplitter
 from xt_Alispeech.conf import VIOCE
@@ -58,8 +56,8 @@ class Ui_MainWindow(xt_QMainWindow):
     @EventLoop
     def tableClick_event(self, item):
         QModelIndex = self.tableWidget.model.index(item.row(), 1)
-        _text = QModelIndex.data()
-        self.args_dict.update({'voice': _text})
+        _voice = QModelIndex.data()
+        self.args_dict.update({'voice': _voice})
 
     @pyqtSlot()
     def on_Run_triggered(self, *args, **kwargs):
@@ -67,7 +65,6 @@ class Ui_MainWindow(xt_QMainWindow):
         # TODO_TTS(self.text, renovate_args=self.args_dict, merge=True)
         nowthread = QThread()
         nowthread.run = TODO_TTS(self.text, renovate_args=self.args_dict, merge=True)  # type: ignore
-        # Thread(target=TODO_TTS, args=(self.text, self.args_dict, True)).start()
 
     def textChanged_event(self):
         self.text = str_split_limited_list(self.QTextEdit.toPlainText())
@@ -75,7 +72,6 @@ class Ui_MainWindow(xt_QMainWindow):
 
 if __name__ == "__main__":
     import sys
-
     app = QApplication(sys.argv)
     ui = Ui_MainWindow()
     sys.exit(app.exec())

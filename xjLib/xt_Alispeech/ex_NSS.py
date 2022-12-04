@@ -13,13 +13,17 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 import os
-import shutil
 from threading import Semaphore, Thread
 
 import nls
-from pydub import AudioSegment
 from PyQt5.QtCore import QThread
-from xt_Alispeech.conf import Constant, SpeechArgs
+from xt_Alispeech.conf import (
+    Constant,
+    SpeechArgs,
+    get_voice_data,
+    merge_sound_file,
+    save_sound_file,
+)
 from xt_Alispeech.on_state import on_state_cls
 from xt_File import get_desktop
 from xt_String import str_split_limited_list
@@ -74,8 +78,6 @@ class NSS(on_state_cls):
             print("write data failed:", e)
 
     def _on_completed(self, message, *args):
-        # with open(self.__file_name, 'rb') as f:
-        #     __data = f.read()
         res = [self.__id, self.__file_name]
         self.data_list.append(res)
         return res
@@ -138,41 +140,9 @@ def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
     assert isinstance(datalist, list)
     datalist.sort(key=lambda x: x[0])
 
-    # ^情形1：不保存文件，返回音频数据
-    if readonly:
-        for index, item in enumerate(datalist):
-            with open(item[1], 'rb') as f:
-                __data = f.read()
-            os.remove(item[1])
-            datalist[index][1] = __data
-        # $[[1, b'xxxx'], [2, b'xxxx'], [3, b'xxxx'],]
-        return datalist  # $返回data音频数据用于朗读
-    else:
-        # ^情形3：保存原始音频文件到桌面
-        desk = get_desktop()
-        for index, item in enumerate(datalist):
-            shutil.move(item[1], desk)
-            datalist[index][1] = desk + "\\" + item[1].split("\\")[-1]
-
-        if not merge:
-            # $[[1, 'D:\\Desktop\\1.mp3'], [2, 'D:\\Desktop\\2.mp3'], [3, 'D:\\Desktop\\3.mp3'],]
-            return datalist
-
-        else:
-            # ^情形3：合并音频,删除过程文件
-            sound_list = [[item[0], AudioSegment.from_file(item[1], format=args['aformat']), os.remove(item[1])] for item in datalist]
-
-            SumSound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件
-            for item in sound_list:
-                SumSound += item[1]  # 把声音文件相加
-
-            # $保存音频文件
-            __fname = f"{get_desktop()}\\{get_10_timestamp()}_{args['voice']}_tts.{args['aformat']}"
-            SumSound.export(__fname, format=args['aformat'])  # 保存文件
-            datalist = [[1, __fname]]
-
-            # $[[1, 'D:\\Desktop\\1.mp3'],]
-            return datalist
+    if readonly: return get_voice_data(datalist)
+    if not merge: return save_sound_file(datalist, path=get_desktop())
+    if merge: merge_sound_file(datalist, args, path=get_desktop())
 
 
 if __name__ == '__main__':

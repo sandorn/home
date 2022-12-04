@@ -14,6 +14,7 @@ LastEditTime : 2020-08-14 11:08:33
 '''
 
 import json
+
 from cchardet import detect
 from lxml import etree
 from xt_Class import item_Mixin
@@ -24,7 +25,7 @@ class ReqResult(item_Mixin):
     __slots__ = ('raw', 'clientResponse', '_content', 'index')
 
     # 结构化返回结果
-    def __init__(self, response: object, content: bytes = None, index: int = None) -> object:
+    def __init__(self, response: object, content=None, index=None):
         if response is not None:
             self.raw = self.clientResponse = response
             self._content: bytes = content or response.content
@@ -88,6 +89,7 @@ class ReqResult(item_Mixin):
 
     @property
     def html(self):
+
         def _clean(html_text, filter):
             data = etree.HTML(html_text)
             trashs = data.xpath(filter)

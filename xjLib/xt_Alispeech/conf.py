@@ -18,10 +18,13 @@ appKey = 'Ofm34215thIUdSIX'
 'AccessKey ID': 'LTAI4G5TRjsGy8BNKPtctjXQ',
 'AccessKey Secret': 'hS8Kl0b9orxNUW7IOeBIFUfzgcVn00'
 '''
+import os
+import shutil
 from dataclasses import dataclass
 from typing import Any
 
 from nls.token import getToken
+from pydub import AudioSegment
 from xt_Class import dict_mothed_Mixin
 from xt_Thread.Singleon import Singleton_Mixin
 from xt_Time import get_10_timestamp
@@ -66,7 +69,6 @@ class Constant(Singleton_Mixin):
 # @dataclass
 class SpeechArgs(dict_mothed_Mixin):
     '''TTS参数'''
-
     long_tts: bool = False
     aformat: str = 'mp3'
     sample_rate: int = 16000
@@ -84,20 +86,20 @@ class SpeechArgs(dict_mothed_Mixin):
 
 @dataclass
 class SynResult:
-    '''合成结果'''
-    task_id: str = ''
-    voicedata: Any = ''
+    '''合成结果,暂未使用'''
+    id: str = ''
     filename: str = ''
     text: str = ''
+    vdata: Any = ''
 
 
 @dataclass
 class TransResult:
-    '''识别结果'''
-    task_id: str = ''
-    voicedata: Any = ''
+    '''识别结果,暂未使用'''
+    id: str = ''
     filename: str = ''
     text: str = ''
+    vdata: Any = ''
 
 
 def handle_ex_nsx_result(res):
@@ -110,6 +112,44 @@ def handle_ex_nsx_result(res):
         dictMerged[key] = dict(_dict['header'], **_dict['payload'])
         res_list.append((key, dictMerged[key]['result']))
     return (res_list, dictMerged)
+
+
+def get_voice_data(datalist):
+    '''情形1-不保存文件,返回音频数据,用于朗读'''
+    for index, item in enumerate(datalist):
+        with open(item[1], 'rb') as f:
+            __data = f.read()
+        os.remove(item[1])
+        datalist[index][1] = __data
+    # $[[1, b'xxxx'], [2, b'xxxx'], [3, b'xxxx'],]
+    return datalist
+
+
+def save_sound_file(datalist, path=None):
+    '''情形2-保存音频文件到桌面'''
+    for index, item in enumerate(datalist):
+        shutil.move(item[1], path)
+        datalist[index][1] = path + "\\" + item[1].split("\\")[-1]
+
+        # $[[1, 'D:\\path\\1.mp3'], [2, 'D:\\path\\2.mp3'], [3, 'D:\\path\\3.mp3'],]
+    return datalist
+
+
+def merge_sound_file(datalist, args, path=None):
+    '''情形3-合并音频,删除过程文件'''
+    sound_list = [[item[0], AudioSegment.from_file(item[1], format=args['aformat']), os.remove(item[1])] for item in datalist]
+
+    SumSound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件
+    for item in sound_list:
+        SumSound += item[1]  # 把声音文件相加
+
+    # $保存音频文件
+    __fname = f"{path}\\{get_10_timestamp()}_{args['voice']}_tts.{args['aformat']}"
+    SumSound.export(__fname, format=args['aformat'])  # 保存文件
+    datalist = [[1, __fname]]
+
+    # $[[1, 'D:\\Desktop\\1.mp3'],]
+    return datalist
 
 
 VIOCE = [
