@@ -109,7 +109,7 @@ async def Async_run(self):
 
 def run(tasks, pool):
     if not isinstance(tasks, (list, tuple)):
-        raise "the tasks of run must be a list|tuple object"
+        raise "the tasks of run must be list|tuple object."
 
     result_list = []  # #存放返回结果集合
     loop = asyncio.get_event_loop()
@@ -177,6 +177,7 @@ ahttpGetAll = partial(ahttp_parse_list, "get")
 ahttpPostAll = partial(ahttp_parse_list, "post")
 
 if __name__ == "__main__":
+
     url = "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async"  # 400
     url_get = "https://httpbin.org/get"  # 返回head及ip等信息
     url_post = "https://httpbin.org/post"  # 返回head及ip等信息
