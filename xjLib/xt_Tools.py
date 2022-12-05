@@ -12,7 +12,7 @@
 #Github       : https://github.com/sandorn/home
 #==============================================================
 
-拒绝重复造轮子！python实用工具类及函数大推荐！ - 知乎
+拒绝重复造轮子!python实用工具类及函数大推荐! - 知乎
 https://zhuanlan.zhihu.com/p/31644562
 https://github.com/ShichaoMa
 '''
@@ -35,8 +35,8 @@ class ExceptContext(object):
     def __init__(self, exception=Exception, func_name=None, errback=lambda func_name, *args: traceback.print_exception(*args) is None, finalback=lambda got_err: got_err):
         """
         :param exception: 指定要监控的异常
-        :param func_name: 可以选择提供当前所在函数的名称，回调函数会提交到函数，用于跟踪
-        :param errback: 提供一个回调函数，如果发生了指定异常，就调用该函数，该函数的返回值为True时不会继续抛出异常
+        :param func_name: 可以选择提供当前所在函数的名称,回调函数会提交到函数,用于跟踪
+        :param errback: 提供一个回调函数,如果发生了指定异常,就调用该函数,该函数的返回值为True时不会继续抛出异常
         :param finalback: finally要做的操作
         """
         self.errback = errback
@@ -58,7 +58,7 @@ class ExceptContext(object):
 
 
 def timeout(timeout_time, default):
-    """超时器，装饰函数并指定其超时时间"""
+    """超时器,装饰函数并指定其超时时间"""
 
     class DecoratorTimeout(Exception):
         pass
@@ -89,9 +89,9 @@ def timeout(timeout_time, default):
 def call_later(callback, call_args=tuple(), immediately=True, interval=1):
     """
     应用场景：
-    被装饰的方法需要大量调用，随后需要调用保存方法，但是因为被装饰的方法访问量很高，而保存方法开销很大
-    所以设计在装饰方法持续调用一定间隔后，再调用保存方法。规定间隔内，无论调用多少次被装饰方法，保存方法只会
-    调用一次，除非  immediately=True
+    被装饰的方法需要大量调用,随后需要调用保存方法,但是因为被装饰的方法访问量很高,而保存方法开销很大
+    所以设计在装饰方法持续调用一定间隔后,再调用保存方法。规定间隔内,无论调用多少次被装饰方法,保存方法只会
+    调用一次,除非  immediately=True
     :param callback: 随后需要调用的方法名
     :param call_args: 随后需要调用的方法所需要的参数
     :param immediately: 是否立即调用
@@ -121,7 +121,7 @@ def call_later(callback, call_args=tuple(), immediately=True, interval=1):
 
 
 def freshdefault(func):
-    '''装饰函数，使可变对象可以作为默认值'''
+    '''装饰函数,使可变对象可以作为默认值'''
     fdefaults = func.__defaults__
 
     def refresher(*args, **kwds):
@@ -187,29 +187,29 @@ def catch_wraps(func, bool=False):
     return wrapper
 
 
-def try_except_wraps(fn=None, max_retries: int = 6, delay: (int, float) = 0.2, step: (int, float) = 0.1, exceptions: (BaseException, tuple, list) = BaseException, sleep=time.sleep, process=lambda ex: True, validate=None, callback=None, default=None):
+def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: float = 0.1, exceptions: (BaseException, tuple, list) = BaseException, sleep=time.sleep, process=lambda ex: True, validate=None, callback=None, default=None):
     """
         函数执行出现异常时自动重试的简单装饰器
         :param f: function 执行的函数。
         :param max_retries: int 最多重试次数。
-        :param delay: int/float 每次重试的延迟，单位秒。
-        :param step: int/float 每次重试后延迟递增，单位秒。
-        :param exceptions: BaseException/tuple/list 触发重试的异常类型，单个异常直接传入异常类型，多个异常以tuple或list传入。
-        :param sleep: 实现延迟的方法，默认为time.sleep。
-        在一些异步框架，如tornado中，使用time.sleep会导致阻塞，可以传入自定义的方法来实现延迟。
-        自定义方法函数签名应与time.sleep相同，接收一个参数，为延迟执行的时间。
-        :param process: 处理函数，函数签名应接收一个参数，每次出现异常时，会将异常对象传入。
-        可用于记录异常日志，中断重试等。
-        如处理函数正常执行，并返回True，则表示告知重试装饰器异常已经处理，重试装饰器终止重试，并且不会抛出任何异常。
-        如处理函数正常执行，没有返回值或返回除True以外的结果，则继续重试。
-        如处理函数抛出异常，则终止重试，并将处理函数的异常抛出。
-        :param validate: 验证函数，用于验证执行结果，并确认是否继续重试。
-        函数签名应接收一个参数，每次被装饰的函数完成且未抛出任何异常时，调用验证函数，将执行的结果传入。
-        如验证函数正常执行，且返回False，则继续重试，即使被装饰的函数完成且未抛出任何异常。
-        如验证函数正常执行，没有返回值或返回除False以外的结果，则终止重试，并将函数执行结果返回。
-        如验证函数抛出异常，且异常属于被重试装饰器捕获的类型，则继续重试。
-        如验证函数抛出异常，且异常不属于被重试装饰器捕获的类型，则将验证函数的异常抛出。
-        :param callback: 回调函数，处理结果。
+        :param delay: int/float 每次重试的延迟,单位秒。
+        :param step: int/float 每次重试后延迟递增,单位秒。
+        :param exceptions: BaseException/tuple/list 触发重试的异常类型,单个异常直接传入异常类型,多个异常以tuple或list传入。
+        :param sleep: 实现延迟的方法,默认为time.sleep。
+        在一些异步框架,如tornado中,使用time.sleep会导致阻塞,可以传入自定义的方法来实现延迟。
+        自定义方法函数签名应与time.sleep相同,接收一个参数,为延迟执行的时间。
+        :param process: 处理函数,函数签名应接收一个参数,每次出现异常时,会将异常对象传入。
+        可用于记录异常日志,中断重试等。
+        如处理函数正常执行,并返回True,则表示告知重试装饰器异常已经处理,重试装饰器终止重试,并且不会抛出任何异常。
+        如处理函数正常执行,没有返回值或返回除True以外的结果,则继续重试。
+        如处理函数抛出异常,则终止重试,并将处理函数的异常抛出。
+        :param validate: 验证函数,用于验证执行结果,并确认是否继续重试。
+        函数签名应接收一个参数,每次被装饰的函数完成且未抛出任何异常时,调用验证函数,将执行的结果传入。
+        如验证函数正常执行,且返回False,则继续重试,即使被装饰的函数完成且未抛出任何异常。
+        如验证函数正常执行,没有返回值或返回除False以外的结果,则终止重试,并将函数执行结果返回。
+        如验证函数抛出异常,且异常属于被重试装饰器捕获的类型,则继续重试。
+        如验证函数抛出异常,且异常不属于被重试装饰器捕获的类型,则将验证函数的异常抛出。
+        :param callback: 回调函数,处理结果。
         :param default: 默认值/默认值生成函数
         :return: 被装饰函数的执行结果。
     """
@@ -223,11 +223,11 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: (int, float) = 0.2, s
             while attempts < max_retries:
                 try:
                     result = func(*args, **kwargs)
-                    # #验证函数返回False时，表示告知装饰器验证不通过，继续重试
+                    # #验证函数返回False时,表示告知装饰器验证不通过,继续重试
                     if callable(validate) and validate(result) is False:
                         continue
                     else:
-                        # #回调函数，处理结果
+                        # #回调函数,处理结果
                         if callable(callback): result = callback(result)
                         return result
                 except exceptions as ex:
@@ -235,7 +235,7 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: (int, float) = 0.2, s
                     attempts += 1
                     sleep(delay + step * attempts)
             else:
-                # #重试次数使用完毕，结果错误，返回默认值
+                # #重试次数使用完毕,结果错误,返回默认值
                 print(f'try_except_wraps: [{func.__name__}]\tError: {func_exc!r}')
                 if callable(process) and process(func_exc) is True:
                     return default() if callable(default) else default
