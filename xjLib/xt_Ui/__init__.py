@@ -1097,7 +1097,6 @@ class xt_QMainWindow(QMainWindow):
         # #窗体title,setupUI
         self.title = title
         self.setWindowTitle(title)
-
         self.setupUI()
         self.center()
 

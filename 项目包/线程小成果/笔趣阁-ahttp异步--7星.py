@@ -7,8 +7,8 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:49
+LastEditTime : 2022-12-05 00:21:03
 FilePath     : /项目包/线程小成果/笔趣阁-ahttp异步--7星.py
-LastEditTime : 2022-11-20 12:42:23
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -68,4 +68,4 @@ if __name__ == '__main__':
         'http://www.biqugse.com/96717/',
         'http://www.biqugse.com/2367/',
     ]
-    multpool(urls)  # T_Map
+    # multpool(urls)  # T_Map

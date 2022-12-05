@@ -32,7 +32,7 @@ def pygame_play(data, format='wav'):
     print('py_mixer new loading......')
 
     while pym.get_busy():
-        # 正在播放，等待
+        # 正在播放,等待
         QThread.msleep(2000)
         print('py_mixer.playing......')
         continue
@@ -77,13 +77,13 @@ def create_read_thread(meta):
     def run(self):
         while self._running:
             if self.pym.get_busy():
-                # 正在播放，等待
+                # 正在播放,等待
                 QThread.msleep(2000)
                 print('self.py_mixer.playing......')
                 continue
             else:
                 if len(self.datas_list) > 0:
-                    # 朗读完毕，有未加载数据
+                    # 朗读完毕,有未加载数据
                     _data = self.datas_list.pop(0)
                     pygame.mixer.Sound(_data).play()
                     QThread.msleep(50)
@@ -91,7 +91,7 @@ def create_read_thread(meta):
                     continue
 
                 if not self._MainMonitor.is_alive():
-                    # #合成语音线程结束，朗读完毕，且无未加载数据
+                    # #合成语音线程结束,朗读完毕,且无未加载数据
                     if len(self.textlist) == 0 and len(self.datas_list) == 0:
                         print('all recod play finished!!!!')
                         if self.__isQ: self._signal.emit()
@@ -157,13 +157,13 @@ class _read_class_meta:
     def run(self):
         while self._running:
             if self.pym.get_busy():
-                # 正在播放，等待
+                # 正在播放,等待
                 QThread.msleep(2000)
                 print('self.py_mixer.playing......')
                 continue
             else:
                 if len(self.datas_list) > 0:
-                    # 朗读完毕，有未加载数据
+                    # 朗读完毕,有未加载数据
                     _data = self.datas_list.pop(0)
                     pygame.mixer.Sound(_data).play()
                     QThread.msleep(50)
@@ -171,7 +171,7 @@ class _read_class_meta:
                     continue
 
                 if not self._MainMonitor.is_alive():
-                    # #合成语音线程结束，朗读完毕，且无未加载数据
+                    # #合成语音线程结束,朗读完毕,且无未加载数据
                     if len(self.textlist) == 0 and len(self.datas_list) == 0:
                         print('all recod play finished!!!!')
                         if self.__isQ: self._signal.emit()  # type: ignore
@@ -185,7 +185,7 @@ class _read_class_meta:
 
 
 def get_read_class(meta):
-    '''type 动态混入继承，实质是调整 bases'''
+    '''type 动态混入继承,实质是调整 bases'''
     _name = 'QThread' if meta is QThread else 'Thread'
     _read_class = type(f'RSynt_Read_{_name}', (_read_class_meta, meta), {})
     return _read_class
@@ -195,7 +195,8 @@ RSynt_Read_Thread = get_read_class(Thread)
 RSynt_Read_QThread = get_read_class(QThread)
 
 if __name__ == '__main__':
-    RSynt_Read_Thread([
-        '2022世界杯小组赛C组第二轮，阿根廷2:0力克墨西哥，重新掌握出线主动权。第64分钟，梅西世界波破门，打入个人世界杯第8个进球，进球数追平马拉多纳。',
-        '第87分钟，恩索·费尔南德斯锁定胜局！目前，波兰积4分，阿根廷和沙特同积3分，阿根廷以净胜球优势排名第二，墨西哥积1分。',
-    ])
+    text_list = [
+        '2022世界杯小组赛C组第二轮,阿根廷2:0力克墨西哥,重新掌握出线主动权。第64分钟,梅西世界波破门,打入个人世界杯第8个进球,进球数追平马拉多纳。',
+        '第87分钟,恩索·费尔南德斯锁定胜局！目前,波兰积4分,阿根廷和沙特同积3分,阿根廷以净胜球优势排名第二,墨西哥积1分。',
+    ]
+    RSynt_Read_Thread(text_list)

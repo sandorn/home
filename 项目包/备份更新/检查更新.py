@@ -7,8 +7,8 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:56
+LastEditTime : 2022-12-05 01:20:29
 FilePath     : /项目包/备份更新/检查更新.py
-LastEditTime : 2022-11-12 13:31:04
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -49,33 +49,6 @@ def PIP更新1():
     print("{}个库已全部更新完毕！".format(s))
 
 
-def PIP更新2():
-    print("PIP-review更新：")
-    subprocess.call('pip3 install pip3-review', shell=True, stdout=subprocess.PIPE)
-    subprocess.call('pip-review --local --interactive --auto', shell=True, stdout=subprocess.PIPE)
-    print('结束')
-
-
-def CONDA更新():
-    print("CONDA更新：")
-    # # subprocess.call("conda update -n base -c defaults conda ", shell=True)
-    subprocess.call("conda update --all ", shell=True)
-    subprocess.call("conda upgrade --all ", shell=True)
-    subprocess.call("conda clean -a ", shell=True)
-
-
 if __name__ == '__main__':
-    expression = True
-    while expression:
-        NO = input('''PIP - outdated更新(1)\nPIP - review更新(2)\nCONDA更新(3)\n不更新退出(0)\n输入选项:''')
-        if NO == '1':
-            PIP更新1()
-        elif NO == '2':
-            PIP更新2()
-        elif NO == '3':
-            CONDA更新()
-        elif NO == '0':
-            print('退出更新')
-            expression = False
-        else:
-            print('输入选项错误，请重新输入')
+
+    PIP更新1()

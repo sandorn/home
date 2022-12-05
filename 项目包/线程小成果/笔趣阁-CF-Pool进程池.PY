@@ -13,14 +13,15 @@ python线程池ThreadPoolExecutor与进程池ProcessPoolExecutor - Harvard_Fly -
 https://www.cnblogs.com/FG123/p/9704233.html
 '''
 
+import os
+
 # from concurrent.futures import ProcessPoolExecutor as Pool  # 进程池模块
 from concurrent.futures import ThreadPoolExecutor as Pool  # 线程池模块
 from concurrent.futures import as_completed, wait
-import os
 
 from xt_File import savefile
-from xt_Time import fn_timer
 from xt_Ls_Bqg import get_download_url, map_get_contents
+from xt_Time import fn_timer
 
 texts = []
 
@@ -105,9 +106,9 @@ if __name__ == '__main__':
     bookname, urls, _ = get_download_url('https://www.biqukan8.cc/38_38163/')
 
     main_map(200, bookname, urls)
-    main_wait(200, bookname, urls)
-    main_completed(32, bookname, urls)
-    main_callback(200, bookname, urls)
+    # main_wait(200, bookname, urls)
+    # main_completed(32, bookname, urls)
+    # main_callback(200, bookname, urls)
 
     # 38_38836     34.84 seconds
     '''

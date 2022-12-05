@@ -1,15 +1,16 @@
 ﻿# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2019-05-03 23:26:06
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-13 18:42:41
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:56
+LastEditTime : 2022-12-05 01:23:03
+FilePath     : /项目包/备份更新/备份三方库.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 # 检索需要升级的库，逐个升级
@@ -25,8 +26,7 @@ def PIP_list_备份():
     print("PIP_list_备份:")
     # pip显示需要更新的python列表
     com_list = 'pip3 list '
-    p = subprocess.Popen(
-        com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     # 取命令返回结果，结果是一个二进制字符串，包含了我们上面执行pip list -o后展现的所有内容
     out = p.communicate()[0]
     print("二进制转utf-8字符串")
@@ -67,44 +67,6 @@ def PIP_freeze备份():
     print("PIP_freeze备份完成！")
 
 
-class switch(object):
-    # !不好用，待学习
-    def __init__(self, value):
-        self.value = value
-        self.fall = False
-
-    def __iter__(self):
-        """Return the match method once, then stop"""
-        yield self.match
-        raise StopIteration
-
-    def match(self, *args):
-        """Indicate whether or not to enter a case suite"""
-        if self.fall or not args:
-            return True
-        elif self.value in args:  # changed for v1.5, see below
-            self.fall = True
-            return True
-        else:
-            return False
-
-
 if __name__ == '__main__':
-    expression = True
-    while expression:
-        NO = '9'
-        #input('''PIP_list_备份(1);\nCONDA_list_备份(2);\nPIP_freeze备份(3);\nCONDA_list_e备份(4);\n执行所有备份(9);\n退出备份程序(0);\n输入选项:''')
-
-        if NO == '1':
-            PIP_list_备份()
-        elif NO == '3':
-            PIP_freeze备份()
-        elif NO == '9':
-            PIP_list_备份()
-            PIP_freeze备份()
-            expression = False
-        elif NO == '0':
-            print('退出备份')
-            expression = False
-        else:
-            print('输入选项错误，请重新输入')
+    PIP_list_备份()
+    PIP_freeze备份()
