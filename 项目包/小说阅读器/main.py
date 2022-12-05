@@ -23,7 +23,7 @@ from xt_String import str_split_limited_list
 from xt_Ui import EventLoop
 
 
-class myMainWindow(Ui_Window):
+class NyWindow(Ui_Window):
 
     def __init__(self):
         super().__init__()
@@ -96,7 +96,6 @@ class myMainWindow(Ui_Window):
             QThread.msleep(100)
             self.nextpage()
             QThread.msleep(100)
-
             self.read_read()
 
     @EventLoop
@@ -110,7 +109,7 @@ class myMainWindow(Ui_Window):
         index, title, content = ahttp_get_contents((1, url))
         return "《" + self.bookname + '->' + title + "》\n\n" + content
 
-    # 将文件显示在List列表中（图表显示）
+    # 将文件显示在List列表中(图表显示)
     @EventLoop
     def bindList(self):
         self.listWidget.addItems([self.titles[index] for index in range(len(self.titles))])
@@ -133,5 +132,5 @@ if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    ui = myMainWindow()
+    ui = NyWindow()
     sys.exit(app.exec())
