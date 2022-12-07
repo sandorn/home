@@ -13,6 +13,7 @@ LastEditTime : 2021-03-25 10:03:29
 #==============================================================
 '''
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
+
 # DeclarativeMeta  类;declarative_base类工厂
 from xt_Class import item_Mixin
 from xt_DAO.dbconf import make_connect_string
@@ -68,7 +69,7 @@ class Model_Method_Mixin(item_Mixin):
 
     @classmethod
     def _fields(cls):
-        '''获取字段名列表， # 弃用'''
+        '''获取字段名列表, # 弃用'''
         listtmp = [attr for attr in dir(cls) if not callable(getattr(cls, attr)) and not attr.startswith("__") and attr not in ['_sa_class_manager', '_decl_class_registry', '_sa_instance_state', 'metadata']]
         return listtmp
 
@@ -102,10 +103,10 @@ class parent_model_Mixin:
 
 
 def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict={}):
-    """从指定table_model_cls类继承，重新定义表名；
-    target_table_name：目标表名，用于数据库和返回的类名；
-    table_model_cls：包含字段信息的表model类，必须有__abstract__ = True，或混入继承
-    table_model_cls 例子：
+    """从指定table_model_cls类继承,重新定义表名；
+    target_table_name:目标表名,用于数据库和返回的类名；
+    table_model_cls:包含字段信息的表model类,必须有__abstract__ = True,或混入继承
+    table_model_cls 例子:
     class table_model(Base_Model):
         __tablename__ = _BOOKNAME
 
@@ -139,7 +140,7 @@ def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict={}):
 
 def dictToObj(results, to_class):
     """将字典list或者字典转化为指定类的对象list或指定类的对象
-    python 支持动态给对象添加属性，所以字典中存在而该类不存在的会直接添加到对应对象
+    python 支持动态给对象添加属性,所以字典中存在而该类不存在的会直接添加到对应对象
     """
     if isinstance(results, list):
         objL = []
@@ -161,14 +162,14 @@ def dictToObj(results, to_class):
 
 
 def getModel(source_table_name, engine, target_table_name=None):
-    """读取源表的model类，或copy源表结构，创建新表
-    根据engine连接数据库，读取表source_table_name，返回model类
+    """读取源表的model类,或copy源表结构,创建新表
+    根据engine连接数据库,读取表source_table_name,返回model类
     source_table_name:读取表名
-    target_table_name:另存为表名，如为None则返回source_table_name
-    engine:create_engine 对象，指定要操作的数据库连接
+    target_table_name:另存为表名,如为None则返回source_table_name
+    engine:create_engine 对象,指定要操作的数据库连接
     """
     Base_Model.metadata.reflect(engine)
-    source_table: sqlalchemy.sql.schema.Table = Base_Model.metadata.tables[source_table_name]
+    source_table = Base_Model.metadata.tables[source_table_name]
 
     return_name = target_table_name or source_table_name
     target_kws = {
@@ -205,4 +206,4 @@ if __name__ == "__main__":
     print(t.columns())
     sqlhelper = SqlConnection(t, 'TXbx')
     res = sqlhelper.select()
-    print(2222, res)
+    print(22222222222222, res)

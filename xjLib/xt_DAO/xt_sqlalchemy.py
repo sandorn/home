@@ -28,9 +28,9 @@ def get_engine(key='default', dbmodel=None):
         make_connect_string(key),
         max_overflow=0,  # 超过连接池大小外最多创建的连接
         pool_size=5,  # 连接池大小
-        pool_timeout=30,  # 池中没有线程最多等待的时间，否则报错
+        pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
         pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-        echo=False,  # echo参数为True时，会显示每条执行的SQL语句
+        echo=False,  # echo参数为True时,会显示每条执行的SQL语句
         # poolclass=NullPool, # 禁用池
     )
     session = sessionmaker(bind=engine)  # #单线程
@@ -52,9 +52,9 @@ class SqlConnection(Orm_Meta):
             make_connect_string(key),
             max_overflow=0,  # 超过连接池大小外最多创建的连接
             pool_size=5,  # 连接池大小
-            pool_timeout=30,  # 池中没有线程最多等待的时间，否则报错
+            pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
             pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-            echo=False,  # echo参数为True时，会显示每条执行的SQL语句
+            echo=False,  # echo参数为True时,会显示每条执行的SQL语句
             # poolclass=NullPool, # 禁用池
         )
         self.conn = self.engine.connect()
@@ -102,8 +102,8 @@ class SqlConnection(Orm_Meta):
 
     def update(self, conditions=None, value_dict=None):
         '''
-        conditions：条件字典；where
-        value_dict:更新数据字典：{'字段':字段值}
+        conditions:条件字典;where
+        value_dict:更新数据字典:{'字段':字段值}
         '''
         if conditions and value_dict:
             conditon_list = []
@@ -126,10 +126,10 @@ class SqlConnection(Orm_Meta):
 
     def select(self, conditions=None, Columns=None, count=None):
         '''
-        conditions:字典，条件 where。类似self.params
+        conditions:字典,条件 where。类似self.params
         Columns:选择的列名
         count:返回的记录数
-        return:处理后的list，内含dict(未选择列)，或tuple(选择列)
+        return:处理后的list,内含dict(未选择列),或tuple(选择列)
         '''
         if isinstance(Columns, (tuple, list)) and len(Columns) > 0:
             Columns_list = []
@@ -173,9 +173,9 @@ class SqlConnection(Orm_Meta):
 
     def filter_by(self, filter_kwargs, count=None):
         '''
-        filter_by用于简单查询，不支持比较运算符,不需要额外指定类名。
+        filter_by用于简单查询,不支持比较运算符,不需要额外指定类名。
         filter_by的参数直接支持组合查询。
-        仅支持[等于]、[and]，无需明示，在参数中以字典形式传入
+        仅支持[等于]、[and],无需明示,在参数中以字典形式传入
         '''
         query = self.session.query(self.dbmodel).filter_by(**filter_kwargs)
         if count:

@@ -14,12 +14,13 @@ Github       : https://github.com/sandorn/home
 https://www.yangyanxing.com/article/aiomysql_in_python.html
 https://blog.csdn.net/ydyang1126/article/details/78226701/
 '''
-import traceback
-import aiomysql
 import asyncio
-from xt_DAO.dbconf import db_conf
+import traceback
 from copy import deepcopy
+
+import aiomysql
 from xt_Class import item_Mixin
+from xt_DAO.dbconf import db_conf
 
 
 class xt_aiomysql(item_Mixin):
@@ -143,11 +144,12 @@ if __name__ == '__main__':
     executemany_sql = "update users2 set username=%s where ID = %s"
     executemany_data = [('刘澈', 1), ('刘新军', 2)]
     loop = asyncio.get_event_loop()
-    # loop.run_until_complete(execute_aiomysql('TXbx', execute_sql))
-    executemany_res = loop.run_until_complete(executemany_aiomysql('TXbx', executemany_sql, executemany_data))
-    print(executemany_res)
-    query_res = loop.run_until_complete(query_aiomysql('TXbx', query_list))
-    print(query_res)
+    execute_sql_res = loop.run_until_complete(execute_aiomysql('TXbx', execute_sql))
+    print(execute_sql_res)
+    executemany_sql_res = loop.run_until_complete(executemany_aiomysql('TXbx', executemany_sql, executemany_data))
+    print(executemany_sql_res)
+    query_list_res = loop.run_until_complete(query_aiomysql('TXbx', query_list))
+    print(query_list_res)
 '''
 python并发编程之asyncio协程(三) - 天宇之游 - 博客园
 https://www.cnblogs.com/cwp-bg/p/9590700.html

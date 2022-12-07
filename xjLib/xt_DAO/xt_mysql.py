@@ -13,24 +13,25 @@
 #==============================================================
 '''
 
+from copy import deepcopy
+
 import MySQLdb
 import pymysql
-from copy import deepcopy
 from xt_DAO.dbconf import db_conf
 
 
 class engine(object):
     """
-    mysql数据库对象，参数：db_name , odbc
-    可选驱动：[mysql.connector 出错禁用]、[pymysql]、[MySQLdb]
+    mysql数据库对象,参数:db_name , odbc
+    可选驱动:[mysql.connector 出错禁用]、[pymysql]、[MySQLdb]
     """
 
     def __init__(self, key='default', odbc='pymysql'):
         self.db_name = key
         self.odbc = odbc
-        if key not in db_conf: raise ('错误提示：检查数据库配置：' + self.db_name)
+        if key not in db_conf: raise ValueError(f'错误提示:检查数据库配置:{key}')
         self.conf = deepcopy(db_conf[self.db_name])
-        if 'type' in self.conf: self.conf.pop('type')
+        self.conf.pop('type', None)
 
         try:
             if odbc == 'pymysql':
@@ -48,8 +49,8 @@ class engine(object):
             print(f'{self.odbc}  connect<{self.db_name}> Ok!')
 
     '''
-    对with的处理:所求值的对象必须有一个__enter__()方法，一个__exit__()方法。
-    跟with后面的语句被求值后，返回对象的__enter__()方法被调用，这个方法的返回值将被赋值给as后面的变量。当with后面的代码块全部被执行完之后，将调用前面返回对象的__exit__()方法。
+    对with的处理:所求值的对象必须有一个__enter__()方法,一个__exit__()方法。
+    跟with后面的语句被求值后,返回对象的__enter__()方法被调用,这个方法的返回值将被赋值给as后面的变量。当with后面的代码块全部被执行完之后,将调用前面返回对象的__exit__()方法。
     '''
 
     def __enter__(self):
@@ -70,8 +71,8 @@ class engine(object):
     def __str__(self):
         """返回一个对象的描述信息"""
         return f'''
-        mysql数据库对象，<odbc：[{self.odbc}],db_name:[{self.db_name}] >,
-        可选驱动：[[pymysql | MySQLdb]；默认[MySQLdb]。
+        mysql数据库对象,<odbc:[{self.odbc}],db_name:[{self.db_name}] >,
+        可选驱动:[[pymysql | MySQLdb];默认[MySQLdb]。
         '''
 
     def has_tables(self, table_name):
@@ -98,7 +99,7 @@ class engine(object):
             return False
 
     def insertMany(self, datas, tb_name, keys=None):
-        if not isinstance(datas, (list, tuple)): raise "must send list|tuple object for me"
+        if not isinstance(datas, (list, tuple)): raise ValueError("must send list|tuple object for me")
 
         if keys is None: keys = [k for k in datas[0].keys()]
         cols = ", ".join("`{}`".format(k) for k in keys)
@@ -116,7 +117,7 @@ class engine(object):
             return False
 
     def insert(self, data, tb_name):
-        if not isinstance(data, dict): raise "must send dict object for me"
+        if not isinstance(data, dict): raise ValueError("must send dict object for me")
         cols = ", ".join("`{}`".format(k) for k in data.keys())
         val_cols = ", ".join("'{}'".format(v) for v in data.values())
         res_sql = f"insert into `{tb_name}`({cols}) values({val_cols})"
@@ -124,7 +125,7 @@ class engine(object):
 
     def update(self, new_data, condition, tb_name):
         #@ sql语句表名、字段名均需用``表示
-        if not isinstance(new_data, dict): raise "must send dict object for me"
+        if not isinstance(new_data, dict): raise ValueError("must send dict object for me")
         sql = "UPDATE `%s` SET " % tb_name + ",".join(["`%s`='%s'" % (k, new_data[k]) for k in new_data]) + " WHERE " + " AND ".join(["`%s`='%s'" % (k, condition[k]) for k in condition])
         self.execute(sql.replace('%', '%%'))
 
@@ -134,7 +135,7 @@ class engine(object):
         self.cur.execute(sql)
         #  使用 fetchone() 方法获取一条数据库。
         _版本号 = self.cur.fetchone()
-        return _版本号[0] or False
+        return _版本号[0] if _版本号 else None
 
     def query(self, sql, args=None):
         try:

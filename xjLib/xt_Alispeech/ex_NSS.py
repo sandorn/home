@@ -25,7 +25,6 @@ from xt_Alispeech.conf import (
     save_sound_file,
 )
 from xt_Alispeech.on_state import on_state_cls
-from xt_File import get_desktop
 from xt_String import str_split_limited_list
 from xt_Time import get_10_timestamp
 
@@ -141,8 +140,8 @@ def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
     datalist.sort(key=lambda x: x[0])
 
     if readonly: return get_voice_data(datalist)
-    if not merge: return save_sound_file(datalist, path=get_desktop())
-    if merge: merge_sound_file(datalist, args, path=get_desktop())
+    if not merge: return save_sound_file(datalist)
+    if merge: merge_sound_file(datalist, args)
 
 
 if __name__ == '__main__':

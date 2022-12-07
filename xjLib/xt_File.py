@@ -67,7 +67,7 @@ def file_to_List(filepath):
 def savefile(_filename, _list_texts, br=''):
     """
     函数说明:将多层次的list 或 tupl写入文件,迭代多层
-    br为元素结束标志，可以用'\t'  '\n'  等
+    br为元素结束标志,可以用'\t'  '\n'  等
     """
     if not isinstance(_list_texts, (list, tuple)):
         return
@@ -83,7 +83,7 @@ def savefile(_filename, _list_texts, br=''):
                 else:
                     file.write(str(value) + br)
 
-            # # 最后一个元素已处理完毕，添加换行
+            # # 最后一个元素已处理完毕,添加换行
             file.write('\n')
 
         file.write(_filename + '\n')

@@ -26,6 +26,7 @@ from typing import Any
 from nls.token import getToken
 from pydub import AudioSegment
 from xt_Class import dict_mothed_Mixin
+from xt_File import get_desktop
 from xt_Thread.Singleon import Singleton_Mixin
 from xt_Time import get_10_timestamp
 
@@ -125,8 +126,9 @@ def get_voice_data(datalist):
     return datalist
 
 
-def save_sound_file(datalist, path=None):
+def save_sound_file(datalist, path=''):
     '''情形2-保存音频文件到桌面'''
+    if path == '': path = get_desktop()
     for index, item in enumerate(datalist):
         shutil.move(item[1], path)
         datalist[index][1] = path + "\\" + item[1].split("\\")[-1]
@@ -135,8 +137,9 @@ def save_sound_file(datalist, path=None):
     return datalist
 
 
-def merge_sound_file(datalist, args, path=None):
+def merge_sound_file(datalist, args, path=''):
     '''情形3-合并音频,删除过程文件'''
+    if path == '': path = get_desktop()
     sound_list = [[item[0], AudioSegment.from_file(item[1], format=args['aformat']), os.remove(item[1])] for item in datalist]
 
     SumSound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件

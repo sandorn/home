@@ -57,7 +57,7 @@ class CustomThread(Thread, item_get_Mixin):
         self.all_Thread.append(self)
 
     def run(self):
-        self.Result = self._target(*self._args, **self._kwargs)
+        self.Result = self._target(*self._args, **self._kwargs)  # type: ignore
         self.result_list.append(self.Result)
 
     def getResult(self):
@@ -235,7 +235,7 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
 
 
 def make_singleton_thread_class(name):
-    # #使用类装饰器 from xt_Singleon import singleton_wrap_return_class，转换为单例类
+    # #使用类装饰器 singleton_wrap_return_class 转换为单例类
     _cls = singleton_wrap_return_class(CustomThread)
     _cls.__name__ = name  # @单例线程运行结束判断依据
     _cls.result_list = []  # @单独配置结果字典
@@ -244,7 +244,7 @@ def make_singleton_thread_class(name):
 
 
 def make_queue_singleton_thread_class(name):
-    # #使用类装饰器 from xt_Singleon import singleton_wrap_return_class，转换为单例类
+    # #使用类装饰器 singleton_wrap_return_class 转换为单例类
     _cls = singleton_wrap_return_class(CustomThread_Queue)
     _cls.__name__ = name  # @单例线程运行结束判断依据
     _cls.result_list = []  # @单独配置结果字典
