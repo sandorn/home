@@ -1,3 +1,13 @@
+/*
+ * @Description  :
+ * @Develop      : VSCode
+ * @Author       : Even.Sand
+ * @Contact      : sandorn@163.com
+ * @Date         : 2020-11-26 19:38:53
+ * @LastEditTime : 2022-12-08 00:08:27
+ * @FilePath     : /xjLib/xt_Ui/dark_orange.qss
+ * @Github       : https://github.com/sandorn/home
+ */
 * {
     font: 11pt 'Sarasa Term SC';
     outline: none;

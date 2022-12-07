@@ -195,7 +195,9 @@ def str_split_limited_list_0(string, maxlen=300):
 
 
 def dict2qss(dict_tmp):
-    '''字典形式的QSS转字符串'''
+    '''字典形式的QSS转字符串
+        弃用，qdarkstyle.utils.scss._dict_to_scss 替代
+    '''
     # # 排序  print key, dict[key] for key in sorted(dict.keys())
     if isinstance(dict_tmp, dict):
         temp = json.dumps(dict_tmp)

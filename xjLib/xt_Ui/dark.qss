@@ -1,14 +1,18 @@
 /*
+ * @Description  :
+ * @Develop      : VSCode
+ * @Author       : Even.Sand
+ * @Contact      : sandorn@163.com
+ * @Date         : 2020-11-26 19:38:53
+ * @LastEditTime : 2022-12-08 00:08:38
+ * @FilePath     : /xjLib/xt_Ui/dark.qss
+ * @Github       : https://github.com/sandorn/home
+
 * The MIT License (MIT)
-*
 * Copyright : http://blog.csdn.net/liang19890820
-*
 * Author : 一去丶二三里
-*
 * Date : 2016/07/22
-*
 * Description : 黑色炫酷
-*
 * styleFile = './style.qss'
 *     qssStyle = qss.read(styleFile)
 *     win.setStyleSheet(qssStyle)

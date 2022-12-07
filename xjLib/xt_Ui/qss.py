@@ -88,8 +88,7 @@ allstyles = QStatusBarstyle + QProgressBarstyle + QToolBarstyle + QMenuBarstyle 
 
 if __name__ == "__main__":
     pass
-    from xt_File import dict2qss
-    from qdarkstyle.utils.scss import create_custom_qss
+    from qdarkstyle.utils.scss import _dict_to_scss, create_custom_qss_from_dict
     temp = {
         'QPushButton': {
             'background-color': 'rgb(248,242,220)',
@@ -106,26 +105,25 @@ if __name__ == "__main__":
         'QPushButton:pressed': {
             'background-color': 'rgb(163,159,147)',
             'border-style': 'inset'
-        }
+        },
     }
-    style = dict2qss(temp)
+    style = _dict_to_scss(temp)
 
-    # print(style, QPushButtonstyle)
+    print(style, QPushButtonstyle)
 
-    qss = create_custom_qss(
-        name='name',
-        path='d:/',
-        color_background_light='#FFFF99',
-        color_background_normal='#006600',
-        color_background_dark='#99CC99',
-        color_foreground_light='#99CCFF',
-        color_foreground_normal='#333366',
-        color_foreground_dark='#003366',
-        color_selection_light='#CCCCFF',
-        color_selection_normal='#999999',
-        color_selection_dark='#660033',
-        border_radius='0px',
-    )
+    qss = create_custom_qss_from_dict('myname', 'd:/', {
+        'color_background_light': '#FFFF99',
+        'color_background_normal': '#006600',
+        'color_background_dark': '#99CC99',
+        'color_foreground_light': '#99CCFF',
+        'color_foreground_normal': '#333366',
+        'color_foreground_dark': '#003366',
+        'color_selection_light': '#CCCCFF',
+        'color_selection_normal': '#999999',
+        'color_selection_dark': '#660033',
+        'border_radius': '0px',
+    })
+    print(qss)
 '''
     import sys, qdarkstyle
     app.setStyleSheet(qdarkstyle.load_stylesheet())
