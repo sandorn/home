@@ -17,7 +17,7 @@ from threading import Semaphore, Thread
 
 import nls
 from PyQt5.QtCore import QThread
-from xt_Alispeech.conf import (
+from xt_Alispeech.cfg import (
     Constant,
     SpeechArgs,
     get_voice_data,

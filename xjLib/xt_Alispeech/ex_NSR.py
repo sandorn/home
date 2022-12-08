@@ -17,7 +17,7 @@ import time
 from threading import Semaphore, Thread
 
 from nls import NlsSpeechRecognizer
-from xt_Alispeech.conf import Constant, handle_ex_nsx_result
+from xt_Alispeech.cfg import Constant, handle_ex_nsx_result
 from xt_Alispeech.on_state import on_state_cls
 
 _ACCESS_APPKEY = Constant().appKey

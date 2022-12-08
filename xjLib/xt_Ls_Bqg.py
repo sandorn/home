@@ -16,7 +16,7 @@ LastEditTime : 2021-04-14 19:36:16
 from xt_Ahttp import ahttpGet
 from xt_Requests import get
 from xt_Response import ReqResult
-from xt_String import Re_Sub, Str_Clean, Str_Replace, upprintable_chars
+from xt_String import Re_Sub, Str_Clean, Str_Replace, UNprintable_Chars
 
 
 def clean_Content(in_str):
@@ -46,7 +46,7 @@ def clean_Content(in_str):
         '<br />',
         '\t',
     ]
-    clean_list += upprintable_chars
+    clean_list += UNprintable_Chars
     sub_list = [
         (r'\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)', ''),
     ]
@@ -154,6 +154,6 @@ if __name__ == "__main__":
     _title = "".join(response.xpath('//h1/text()'))
     title = Str_Replace(_title, [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
     _showtext = response.xpath('//*[@id="content"]/text()')
-    print(title, '\n', '*' * 88)
+    print(title, '\n', '******************************************************************')
 
-    print(clean_Content(_showtext), '\n', '*' * 88)
+    print(clean_Content(_showtext), '\n', '******************************************************************')

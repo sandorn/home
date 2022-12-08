@@ -17,10 +17,10 @@ from copy import deepcopy
 
 import MySQLdb
 import pymysql
-from xt_DAO.dbconf import db_conf
+from xt_DAO.cfg import DB_CONFIG  # type: ignore
 
 
-class engine(object):
+class DbEngine(object):
     """
     mysql数据库对象,参数:db_name , odbc
     可选驱动:[mysql.connector 出错禁用]、[pymysql]、[MySQLdb]
@@ -29,8 +29,8 @@ class engine(object):
     def __init__(self, key='default', odbc='pymysql'):
         self.db_name = key
         self.odbc = odbc
-        if key not in db_conf: raise ValueError(f'错误提示:检查数据库配置:{key}')
-        self.conf = deepcopy(db_conf[self.db_name])
+        if key not in DB_CONFIG: raise ValueError(f'错误提示:检查数据库配置:{key}')
+        self.conf = deepcopy(DB_CONFIG[self.db_name])
         self.conf.pop('type', None)
 
         try:
@@ -48,10 +48,7 @@ class engine(object):
             self.cur = self.conn.cursor()
             print(f'{self.odbc}  connect<{self.db_name}> Ok!')
 
-    '''
-    对with的处理:所求值的对象必须有一个__enter__()方法,一个__exit__()方法。
-    跟with后面的语句被求值后,返回对象的__enter__()方法被调用,这个方法的返回值将被赋值给as后面的变量。当with后面的代码块全部被执行完之后,将调用前面返回对象的__exit__()方法。
-    '''
+    '''对with的处理:所求值的对象必须有一个__enter__()方法,一个__exit__()方法。'''
 
     def __enter__(self):
         print(f"{ self.odbc}\t{self.db_name}\tIn __enter__()")
@@ -72,7 +69,7 @@ class engine(object):
         """返回一个对象的描述信息"""
         return f'''
         mysql数据库对象,<odbc:[{self.odbc}],db_name:[{self.db_name}] >,
-        可选驱动:[[pymysql | MySQLdb];默认[MySQLdb]。
+        可选驱动:[[pymysql | MySQLdb];默认[pymysql]。
         '''
 
     def has_tables(self, table_name):

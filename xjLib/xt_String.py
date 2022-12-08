@@ -157,15 +157,14 @@ def str_split_limited_list(intext, mix=100, max=280):
     return out_text
 
 
-def str_split_limited_list_0(string, maxlen=300):
+def str_split_limited_list_0(intext, maxlen=300):
     # @出现超出长度的字符串
-    # newText = [string[i:i+maxlen] for i in range(0, len(string), maxlen)]
+    # newText = [intext[i:i+maxlen] for i in range(0, len(intext), maxlen)]
     newText = []
     _temp = ''
 
-    _temp_list = string.strip().split('\n')
-    line_Text = [item.strip() for item in _temp_list]
-    for index, text in enumerate(line_Text):
+    _temp_list = intext.strip().split('\n|。')
+    for index, text in enumerate(_temp_list):
         if len(text) > maxlen:
             if _temp != '':
                 newText.append(_temp)
@@ -196,7 +195,7 @@ def str_split_limited_list_0(string, maxlen=300):
 
 def dict2qss(dict_tmp):
     '''字典形式的QSS转字符串
-        弃用，qdarkstyle.utils.scss._dict_to_scss 替代
+        弃用: qdarkstyle.utils.scss._dict_to_scss 替代
     '''
     # # 排序  print key, dict[key] for key in sorted(dict.keys())
     if isinstance(dict_tmp, dict):
@@ -235,7 +234,7 @@ def class_add_dict(in_obj):
     return in_obj.__dict__
 
 
-upprintable_chars = [
+UNprintable_Chars = [
     '\U0001f50d',
     '\u200b',
     '\ue627',
@@ -1459,8 +1458,4 @@ upprintable_chars = [
     '\u2648',
     #'\u033',
 ]
-'''
-lists = ['神奇', '建投', '证券', '有限公司', '今天', '投资', '了', '一', '款',"神迹",'游戏']
-replace_dict = {'神奇':"奇幻","神迹":"奇迹"}
-new_lists =[replace_dict[i] if i in replace_dict else i for i in lists]
-'''
+'''无法打印的字符'''

@@ -17,7 +17,7 @@ sandorn@163.com
 Sand@2808
 '''
 
-db_conf = {
+DB_CONFIG = {
     'TXbook': {
         'type': 'mysql',
         'host': 'cdb-lfp74hz4.bj.tencentcdb.com',
@@ -82,12 +82,12 @@ db_conf = {
 
 # # 有优化空间
 
-db_conf['default'] = db_conf['dbtest']
+DB_CONFIG['default'] = DB_CONFIG['dbtest']
 
 
 def make_connect_string(key, odbc=None):
-    if key in db_conf:
-        types = db_conf[key]['type']
+    if key in DB_CONFIG:
+        types = DB_CONFIG[key]['type']
     else:
         raise ('错误提示：检查数据库配置：' + key)
 
@@ -102,7 +102,7 @@ def make_connect_string(key, odbc=None):
             drver = 'mysql+oursql'
         else:
             drver = 'mysql'
-        return f"{drver}://{db_conf[key]['user']}:{db_conf[key]['password']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
+        return f"{drver}://{DB_CONFIG[key]['user']}:{DB_CONFIG[key]['password']}@{DB_CONFIG[key]['host']}:{DB_CONFIG[key]['port']}/{DB_CONFIG[key]['db']}?charset={DB_CONFIG[key]['charset']}"
 
     if types == 'PostgreSQL':
         if odbc == 'psycopg2':
@@ -111,14 +111,14 @@ def make_connect_string(key, odbc=None):
             drver = 'postgresql+pg8000'
         else:
             drver = 'postgresql'
-        return f"{drver}://{db_conf[key]['user']}:{db_conf[key]['password']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
+        return f"{drver}://{DB_CONFIG[key]['user']}:{DB_CONFIG[key]['password']}@{DB_CONFIG[key]['host']}:{DB_CONFIG[key]['port']}/{DB_CONFIG[key]['db']}?charset={DB_CONFIG[key]['charset']}"
 
     if types == 'Oracle':
         if odbc == 'cx_oracle':
             drver = 'oracle+cx_oracle'
         else:
             drver = 'oracle'
-        return f"{drver}//{db_conf[key]['user']}:{db_conf[key]['password']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
+        return f"{drver}//{DB_CONFIG[key]['user']}:{DB_CONFIG[key]['password']}@{DB_CONFIG[key]['host']}:{DB_CONFIG[key]['port']}/{DB_CONFIG[key]['db']}?charset={DB_CONFIG[key]['charset']}"
         # cx_oracle:'oracle+cx_oracle://scott:tiger@tnsname'
 
     if types == 'SQLServer':
@@ -126,20 +126,20 @@ def make_connect_string(key, odbc=None):
             drver = 'mssql+pyodbc'
         else:
             drver = 'mssql+pymssql'
-        return f"{drver}://{db_conf[key]['user']}:{db_conf[key]['password']}@{db_conf[key]['host']}:{db_conf[key]['port']}/{db_conf[key]['db']}?charset={db_conf[key]['charset']}"
+        return f"{drver}://{DB_CONFIG[key]['user']}:{DB_CONFIG[key]['password']}@{DB_CONFIG[key]['host']}:{DB_CONFIG[key]['port']}/{DB_CONFIG[key]['db']}?charset={DB_CONFIG[key]['charset']}"
         # pyodbc:'mssql+pyodbc://scott:tiger@mydsn'
 
     if types == 'SQLite':
         drver = 'sqlite'
-        return f"{drver}:///{db_conf[key]['host']}"
+        return f"{drver}:///{DB_CONFIG[key]['host']}"
 
     if types == 'access':
         drver = 'access+pyodbc'
-        return f"{drver}://{db_conf[key]['host']}"
+        return f"{drver}://{DB_CONFIG[key]['host']}"
 
     if types == 'monetdb':
         if odbc == 'lite':
             drver = 'monetdb+lite'
         else:
             drver = 'monetdb'
-        return f"{drver}:///{db_conf[key]['host']}"
+        return f"{drver}:///{DB_CONFIG[key]['host']}"

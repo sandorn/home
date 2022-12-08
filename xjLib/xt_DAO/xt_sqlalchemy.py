@@ -19,7 +19,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import DeclarativeMeta  # 类;declarative_base类工厂
 from sqlalchemy.orm import scoped_session, sessionmaker
 from xt_Class import typed_property
-from xt_DAO.dbconf import make_connect_string
+from xt_DAO.cfg import make_connect_string  # type: ignore
 from xt_DAO.xt_chemyMeta import Orm_Meta
 
 

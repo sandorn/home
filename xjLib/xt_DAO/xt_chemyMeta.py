@@ -16,7 +16,7 @@ from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 
 # DeclarativeMeta  类;declarative_base类工厂
 from xt_Class import item_Mixin
-from xt_DAO.dbconf import make_connect_string
+from xt_DAO.cfg import make_connect_string  # type: ignore
 
 
 class Orm_Meta:

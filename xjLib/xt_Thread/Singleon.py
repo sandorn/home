@@ -18,9 +18,9 @@ from threading import Lock
 
 
 class Singleton_Mixin:
-    '''单例模式，可混入继承，可多次init，
-    可用类调用classmethod，可照写
-    # 可通过self._intialed判断，设定初始化次数
+    '''单例模式,可混入继承,可多次init,
+    可用类调用classmethod,可照写
+    # 可通过self._intialed判断,设定初始化次数
     '''
     _lock = Lock()
     _instance = None
@@ -30,7 +30,7 @@ class Singleton_Mixin:
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)  # ! *args, **kwargs出错
-                    # #__init__标志，可避免重复初始化
+                    # #__init__标志,可避免重复初始化
                     cls._instance._intialed = False
         return cls._instance
 
@@ -41,9 +41,9 @@ class Singleton_Mixin:
 
 class Singleton_Base:
     '''
-    单例模式基类，用于继承，可多次init，
-    可用类调用classmethod
-    # 可通过self._intialed判断，设定初始化次数
+    单例模式基类,用于继承,可多次init,
+    可用类调用 classmethod
+    # 可通过self._intialed判断,设定初始化次数
     '''
     _instance = dict()
     _lock = Lock()
@@ -53,15 +53,15 @@ class Singleton_Base:
             with cls._lock:
                 if cls not in cls._instance:
                     cls._instance[cls] = super().__new__(cls)  # ! *args, **kwargs出错
-                    # #__init__标志，可避免重复初始化
+                    # #__init__标志,可避免重复初始化
                     cls._instance[cls]._intialed = False
 
         return cls._instance[cls]
 
 
 def singleton_wrap_return_class(_cls):
-    '''单例类装饰器，多次init，返回类，类属性及方法通用
-    # 可通过self._intialed判断，设定初始化次数'''
+    '''单例类装饰器,多次init,返回类,类属性及方法通用
+    # 可通过self._intialed判断,设定初始化次数'''
 
     class class_wrapper(_cls):
 
@@ -85,7 +85,7 @@ def singleton_wrap_return_class(_cls):
 
 
 def singleton_wrap(cls):
-    '''单例装饰器，单次init，只能实例调用classmethod'''
+    '''单例装饰器,单次init,只能实例调用classmethod'''
     _instance = {}
     _lock = Lock()
 
@@ -101,7 +101,7 @@ def singleton_wrap(cls):
 
 
 class singleton_wrap_class:
-    '''单例类装饰器，单次init，只能实例调用classmethod'''
+    '''单例类装饰器,单次init,只能实例调用classmethod'''
     _lock = Lock()
 
     def __init__(self, cls):
@@ -117,8 +117,8 @@ class singleton_wrap_class:
 
 
 class Singleton_Meta(type):
-    '''单例模式元类，metaclass=Singleton_Meta，
-    # @单次init，可用类调用classmethod'''
+    '''单例模式元类,metaclass=Singleton_Meta,
+    # @单次init,可用类调用classmethod'''
 
     _lock = Lock()
 

@@ -12,10 +12,11 @@ LastEditTime : 2021-04-16 13:39:27
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-import random
-import time
-import string
 import os
+import random
+import string
+import time
+
 import win32com.client
 
 delay = time.sleep
@@ -36,7 +37,7 @@ def sp2tab(源串, 分割1, 分割2):
     return ret
 
 
-dm_path = "D:\\CODE\\xjLib\\.res\\dm.dll"
+dm_path = "D:/program/大漠/3.1233/dm.dll"
 
 
 class dmobject():
@@ -47,7 +48,7 @@ class dmobject():
         try:
             self.dm = win32com.client.Dispatch("dm.dmsoft")
         except Exception:
-            os.system(r'regsvr32 /s D:\CODE\xjLib\.res\dm.dll')
+            os.system(f'regsvr32 /s {dm_path}')
             self.dm = win32com.client.Dispatch("dm.dmsoft")
 
         # self.dm.setDict(0,  "C:\\Users\\Li\\Desktop\\help\\data\\num.txt"
@@ -237,6 +238,9 @@ class dmobject():
         return 控制开关
 
 
+if __name__ == '__main__':
+    mydm = dmobject()
+    print(mydm.dm.Ver())
 '''
 dm_object.绑定窗口 = @.绑定窗口(hwnd/*窗口句柄*/\n, display/*显示参数:"normal", "gdi", "gdi2", "dx2", "dx3", "dx"*/\n, mouse/*鼠标参数:"normal", "windows", "windows2", "windows3", "dx"*/\n, keypad/*键盘参数:"normal", "windows", "dx"*/\n, mode/*绑定模式:0, 2, 4*/)
 dm_object.找字单击至消失 = @.找字单击至消失(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/, False/*中心点*/)

@@ -19,6 +19,8 @@ from asyncio.coroutines import iscoroutine
 from functools import wraps
 from threading import Thread
 
+from xt_Requests import get
+
 TIMEOUT = 20
 
 
@@ -96,15 +98,15 @@ if __name__ == '__main__':
     b = AioCrawl()
 
     for _ in range(2):
-        a.add_fetch_tasks(['https://www.baidu.com' for _ in range(2)])  # 模拟动态添加任务
+        a.add_tasks([get('https://www.baidu.com') for _ in range(2)])  # 模拟动态添加任务
 
-    t = a.wait_completed()
-    for i in t:
-        print(i)
+    res = a.wait_completed()
+    for item in res:
+        print(item)
 
     for _ in range(2):
-        b.add_fetch_tasks(['https://httpbin.org/get' for _ in range(2)])  # 模拟动态添加任务
+        b.add_tasks([get('https://httpbin.org/get') for _ in range(2)])  # 模拟动态添加任务
 
-    t1 = b.wait_completed()
-    for i in t1:
+    res_b = b.wait_completed()
+    for i in res_b:
         print(i)

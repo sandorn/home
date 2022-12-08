@@ -20,23 +20,20 @@ from copy import deepcopy
 
 import aiomysql
 from xt_Class import item_Mixin
-from xt_DAO.dbconf import db_conf
+from xt_DAO.cfg import DB_CONFIG  # type: ignore
 
 
-class xt_aiomysql(item_Mixin):
+class AioMysql(item_Mixin):
 
     def __init__(self):
         self.coon = None
         self.pool = None
 
     async def initpool(self, key='default'):
+        if key not in DB_CONFIG: raise ValueError(f'错误提示:检查数据库配置:{key}')
+        conf = deepcopy(DB_CONFIG[key])
+        conf.pop('type', None)
         try:
-            if key not in db_conf:
-                raise ('错误提示：检查数据库配置：' + self.db_name)
-            else:
-                conf = deepcopy(db_conf[key])
-            if 'type' in conf: conf.pop('type')
-
             self.pool = await aiomysql.create_pool(
                 minsize=5,  # 连接池最小值
                 maxsize=10,  # 连接池最大值
@@ -110,26 +107,26 @@ class xt_aiomysql(item_Mixin):
             return affetced
 
 
-async def Create_xt_aiomysql(db_name='default'):
-    Aiomysql_obj = xt_aiomysql()
+async def create_xt_aiomysql(db_name='default'):
+    Aiomysql_obj = AioMysql()
     await Aiomysql_obj.initpool(db_name)
     return Aiomysql_obj
 
 
 async def query_aiomysql(db_name, sql_list):
-    Aiomysql_obj = await Create_xt_aiomysql(db_name)
+    Aiomysql_obj = await create_xt_aiomysql(db_name)
     results = await asyncio.gather(*[Aiomysql_obj.query(sql) for sql in sql_list])
     return results
 
 
 async def execute_aiomysql(db_name, sql_list):
-    Aiomysql_obj = await Create_xt_aiomysql(db_name)
+    Aiomysql_obj = await create_xt_aiomysql(db_name)
     results = await asyncio.gather(*[Aiomysql_obj.execute(sql) for sql in sql_list])
     return results
 
 
 async def executemany_aiomysql(db_name, sql_mode, data):
-    Aiomysql_obj = await Create_xt_aiomysql(db_name)
+    Aiomysql_obj = await create_xt_aiomysql(db_name)
     results = await asyncio.gather(Aiomysql_obj.executemany(sql_mode, data))
     return results
 

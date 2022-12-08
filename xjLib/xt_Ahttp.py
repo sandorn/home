@@ -109,7 +109,7 @@ async def Async_run(self):
 
 def run(tasks, pool):
     if not isinstance(tasks, (list, tuple)):
-        raise "the tasks of run must be list|tuple object."
+        raise Exception("the tasks of run must be list|tuple object.")
 
     result_list = []  # #存放返回结果集合
     loop = asyncio.get_event_loop()

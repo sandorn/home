@@ -68,14 +68,14 @@ class CustomThread(Thread, item_get_Mixin):
             return None
 
     def stop_all(self):
-        """停止线程池， 所有线程停止工作"""
+        """停止线程池, 所有线程停止工作"""
         for _ in range(len(self.all_Thread)):
             thread = self.all_Thread.pop()
             thread.join()  # @单例无效
 
     @classmethod
     def wait_completed(cls):
-        """等待全部线程结束，返回结果
+        """等待全部线程结束,返回结果
         # @单例无效"""
         try:
             cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
@@ -86,7 +86,7 @@ class CustomThread(Thread, item_get_Mixin):
 
     @classmethod
     def getAllResult(cls):
-        """利用enumerate,根据类名判断线程结束，返回结果"""
+        """利用enumerate,根据类名判断线程结束,返回结果"""
         cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
         # finished = True
         while not cls.finished.is_set():
@@ -104,9 +104,9 @@ class CustomThread(Thread, item_get_Mixin):
 
 
 class CustomThread_Queue(Thread, item_get_Mixin):
-    """单例多线程，继承自threading.Thread"""
+    """单例多线程,继承自threading.Thread"""
     """采用queue传递工作任务"""
-    all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
+    all_Thread = []  # 线程列表,用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
     task_queue = Queue()
 
@@ -124,7 +124,7 @@ class CustomThread_Queue(Thread, item_get_Mixin):
         target = args.pop(0)
         self.Result = target(*args)  # 获取结果
         self.result_list.append(self.Result)
-        self.task_queue.task_done()  # @发出此队列完成信号，放在函数运行后
+        self.task_queue.task_done()  # @发出此队列完成信号,放在函数运行后
 
     def getResult(self):
         """获取当前线程结果"""
@@ -147,7 +147,7 @@ class CustomThread_Queue(Thread, item_get_Mixin):
             self.task_queue.all_tasks_done.release()
 
     def stop_all(self):
-        """停止线程池， 所有线程停止工作"""
+        """停止线程池, 所有线程停止工作"""
         for _ in range(len(self.all_Thread)):
             thread = self.all_Thread.pop()
             thread.join()
@@ -155,7 +155,7 @@ class CustomThread_Queue(Thread, item_get_Mixin):
 
     @classmethod
     def wait_completed(cls):
-        """等待全部线程结束，返回结果"""
+        """等待全部线程结束,返回结果"""
         try:
             cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
             res, cls.result_list = cls.result_list, []
@@ -165,17 +165,17 @@ class CustomThread_Queue(Thread, item_get_Mixin):
 
     @classmethod
     def getAllResult(cls):
-        """等待线程，超时结束，返回结果"""
+        """等待线程,超时结束,返回结果"""
         cls.join_with_timeout(cls)  # !queue.join,使用带timeout
         res, cls.result_list = cls.result_list, []
         return res
 
 
 class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
-    """单例多线程，继承自threading.Thread"""
+    """单例多线程,继承自threading.Thread"""
     # #照写 from xt_Singleon import Singleton_Model
 
-    all_Thread = []  # 线程列表，用于jion。类属性或类变量,实例公用
+    all_Thread = []  # 线程列表,用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
     finished = Event()
 
@@ -197,14 +197,14 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
             return None
 
     def stop_all(self):
-        """停止线程池， 所有线程停止工作"""
+        """停止线程池, 所有线程停止工作"""
         for _ in range(len(self.all_Thread)):
             thread = self.all_Thread.pop()
             thread.join()  # @单例无效
 
     @classmethod
     def wait_completed(cls):
-        """等待全部线程结束，返回结果
+        """等待全部线程结束,返回结果
         # @单例无效"""
         try:
             cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
@@ -215,7 +215,7 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
 
     @classmethod
     def getAllResult(cls):
-        """利用enumerate,根据类名判断线程结束，返回结果"""
+        """利用enumerate,根据类名判断线程结束,返回结果"""
         cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
         # finished = True
         while not cls.finished.is_set():
@@ -257,12 +257,12 @@ SigThreadQ = make_queue_singleton_thread_class('SigThreadQ')
 
 
 class CustomThread_Singleton(CustomThread, Singleton_Mixin):
-    # #混入继承Singleton_Mixin，转换为单例类
+    # #混入继承Singleton_Mixin,转换为单例类
     pass
 
 
 class CustomThread_Queue_Singleton(CustomThread_Queue, Singleton_Mixin):
-    # #混入继承Singleton_Mixin，转换为单例类
+    # #混入继承Singleton_Mixin,转换为单例类
     pass
 
 
