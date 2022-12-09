@@ -74,7 +74,7 @@ class AioCrawl:
             raise Exception('传入非list或tuple')
 
         for task in tasks:
-            if not (iscoroutine(task)): continue
+            if not iscoroutine(task): continue
             future = asyncio.run_coroutine_threadsafe(task, self.event_loop)
             self.future_list.append(future)
             self.concurrent += 1  # 并发数加 1
@@ -100,13 +100,13 @@ if __name__ == '__main__':
     for _ in range(2):
         a.add_tasks([get('https://www.baidu.com') for _ in range(2)])  # 模拟动态添加任务
 
-    res = a.wait_completed()
+    res = a.getAllResult()
     for item in res:
         print(item)
 
     for _ in range(2):
         b.add_tasks([get('https://httpbin.org/get') for _ in range(2)])  # 模拟动态添加任务
 
-    res_b = b.wait_completed()
+    res_b = b.getAllResult()
     for i in res_b:
         print(i)

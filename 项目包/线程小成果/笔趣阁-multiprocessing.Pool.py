@@ -7,18 +7,19 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:55
+LastEditTime : 2022-12-09 10:46:42
 FilePath     : /项目包/线程小成果/笔趣阁-multiprocessing.Pool.py
-LastEditTime : 2022-11-12 17:15:14
 Github       : https://github.com/sandorn/home
 ==============================================================
+multiprocessing 自写线程池
 '''
 
-from multiprocessing import Pool
 import os
+from multiprocessing import Pool
 
 from xt_File import savefile
+from xt_Ls_Bqg import ahttp_get_contents, get_download_url
 from xt_Time import fn_timer
-from xt_Ls_Bqg import get_download_url, ahttp_get_contents
 
 
 @fn_timer

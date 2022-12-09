@@ -14,47 +14,48 @@ Github       : https://github.com/sandorn/home
 '''
 
 import multiprocessing
-
-Cpucount = multiprocessing.cpu_count()
 from concurrent.futures import ProcessPoolExecutor  # @进程池模块,可添加
 from concurrent.futures import ThreadPoolExecutor  # @线程池模块,不可添加
 from concurrent.futures import as_completed
 
+CPUNUM = multiprocessing.cpu_count()
+
 # #futuresMap, futuresSub, futuresPool
 # #T_Map, T_Sub, T_Pool,P_Map,P_Sub,P_Pool
-# #使用类工厂，动态生成基于线程或进程的类
+# #使用类工厂,动态生成基于线程或进程的类
 
 
 def futuresMap(_cls):
 
-    class class_wrapper(_cls):
+    class Class_Wrapper(_cls):
 
         def __init__(self, func, args_iter, MaxSem=66):
-            if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = Cpucount
+            if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
+            # if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = CPUNUM
             super().__init__(max_workers=MaxSem)
             self.future_generator = self.map(func, args_iter)
 
         def wait_completed(self):
-            '''等待线程池结束，返回全部结果，有序'''
+            '''等待线程池结束,返回全部结果,有序'''
             result_list = []
             for resp in self.future_generator:  # 此时将阻塞 , 直到线程完成或异常
                 result_list.append(resp)
             return result_list
 
         def getAllResult(self):
-            '''等待线程池结束，返回全部结果，有序'''
+            '''等待线程池结束,返回全部结果,有序'''
             return self.wait_completed()
 
-    class_wrapper.__name__ = _cls.__name__  # 保留原类的名字
-    return class_wrapper
+    Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
+    return Class_Wrapper
 
 
 def futuresSub(_cls):
 
-    class class_wrapper(_cls):
+    class Class_Wrapper(_cls):
 
         def __init__(self, func, args_iter, callback=None, MaxSem=66):
-            if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = Cpucount
+            if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
             super().__init__(max_workers=MaxSem)
             self.future_tasks = []
 
@@ -65,7 +66,7 @@ def futuresSub(_cls):
                     task.add_done_callback(callback)
 
         def wait_completed(self):
-            '''as_completed等待线程池结束，返回全部结果，无序'''
+            '''as_completed等待线程池结束,返回全部结果,无序'''
             self.shutdown(wait=True)
             result_list = []
             for future in as_completed(self.future_tasks):  # 迭代生成器,统一结束'
@@ -78,7 +79,7 @@ def futuresSub(_cls):
             return result_list
 
         def getAllResult(self):
-            '''等待线程池结束，返回全部有序结果'''
+            '''等待线程池结束,返回全部有序结果'''
             self.shutdown(wait=True)
             result_list = []
             for future in self.future_tasks:
@@ -89,8 +90,8 @@ def futuresSub(_cls):
                     print('exception :', err)
             return result_list
 
-    class_wrapper.__name__ = _cls.__name__  # 保留原类的名字
-    return class_wrapper
+    Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
+    return Class_Wrapper
 
 
 def futuresPool(_cls):
@@ -98,7 +99,7 @@ def futuresPool(_cls):
     class class_wrapper(_cls):
 
         def __init__(self, MaxSem=66):
-            if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = Cpucount
+            if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
             super().__init__(max_workers=MaxSem)
             self.future_tasks = []
 
@@ -109,28 +110,38 @@ def futuresPool(_cls):
             for item in args_iter:
                 task = self.submit(func, *item)
                 self.future_tasks.append(task)
-                if callback:
-                    task.add_done_callback(callback)
+                if callback: task.add_done_callback(callback)
 
-        def wait_map(self):
-            # !add_map返回结果，有序
+        def wait_map_completed(self):
+            '''返回结果,有序'''
             result_list = []
             for resp in self.future_generator:  # 此时将阻塞 , 直到线程完成或异常
                 result_list.append(resp)
             return result_list
 
-        def wait_sub(self):
-            # !add_sub方式获取结果，无序
+        def wait_sub_completed(self):
+            '''获取结果,无序'''
             self.shutdown(wait=True)
             result_list = []
             for future in as_completed(self.future_tasks):  # 迭代生成器,统一结束'
-                # for future in self.future_tasks:
                 try:
                     resp = future.result()
                     result_list.append(resp)
                 except Exception as err:
                     print('exception :', err)
 
+            return result_list
+
+        def get_sub_result(self):
+            '''等待线程池结束,返回全部结果,有序'''
+            self.shutdown(wait=True)
+            result_list = []
+            for future in self.future_tasks:
+                try:
+                    res = future.result()
+                    result_list.append(res)
+                except Exception as err:
+                    print('exception :', err)
             return result_list
 
     class_wrapper.__name__ = _cls.__name__  # 保留原类的名字
