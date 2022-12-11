@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-03-02 09:07:36
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:53
+LastEditTime : 2022-12-11 23:15:24
 FilePath     : /xjLib/xt_Thread/__init__.py
-LastEditTime : 2021-01-04 14:14:07
-#Github       : https://github.com/sandorn/home
-#==============================================================
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 __doc__ = [
     'SingletonThread',  # 单例
@@ -33,10 +33,20 @@ __doc__ = [
 ]
 
 # #引入自定义thread
-from .Custom import stop_thread, CustomThread, CustomThread_Queue, SingletonThread, SigThread, SigThreadQ, CustomThread_Singleton, CustomThread_Queue_Singleton
-# #引入装饰器
-from .wraps import thread_wrap_class, thread_wrap, thread_safe
+from .Custom import (
+    CustomThread,
+    CustomThread_Queue,
+    CustomThread_Queue_Singleton,
+    CustomThread_Singleton,
+    SigThread,
+    SigThreadQ,
+    SingletonThread,
+    stop_thread,
+)
+from .futures import P_Map, P_Sub, ProcessPool, T_Map, T_Sub, ThreadPool
+
 # #引入自定义thread pool
 from .manage import WorkManager, thread_pool
 
-from .futures import T_Map, T_Sub, T_Pool, P_Map, P_Sub, P_Pool
+# #引入装饰器
+from .wraps import thread_safe, thread_wrap, thread_wrap_class

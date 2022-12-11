@@ -7,12 +7,11 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:49
+LastEditTime : 2022-12-11 23:19:14
 FilePath     : /xjLib/xt_Thread/qThread.py
-LastEditTime : 2022-12-03 11:12:08
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
 from threading import Lock
 
 from PyQt5.QtCore import QThread
@@ -20,7 +19,7 @@ from xt_Class import repr_Mixin
 
 
 class CustomQThread(QThread, repr_Mixin):
-    """单例多线程，继承自threading.Thread"""
+    """单例多线程,继承自threading.Thread"""
 
     __instance_lock = Lock()
 
@@ -41,7 +40,7 @@ class CustomQThread(QThread, repr_Mixin):
         self.start()
 
     def run(self):
-        # 调用线程函数，并将元组类型的参数值分解为单个的参数值传入线程函数
+        # 调用线程函数,并将元组类型的参数值分解为单个的参数值传入线程函数
         self.Result = self._target(*self._args, **self._kwargs)
         # 获取结果
         self.result_list.append(self.Result)

@@ -1,15 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-04 09:01:10
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-11 10:58:25
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
+LastEditTime : 2022-12-10 21:23:42
+FilePath     : /xjLib/xt_Ahttp.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 import asyncio
 from functools import partial
@@ -83,6 +84,7 @@ class AsyncTask:
         future = asyncio.ensure_future(Async_run(self))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(future)
+        # return future.result()
         return self.result
 
 

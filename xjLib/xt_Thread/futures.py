@@ -31,7 +31,6 @@ def futuresMap(_cls):
 
         def __init__(self, func, args_iter, MaxSem=66):
             if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
-            # if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = CPUNUM
             super().__init__(max_workers=MaxSem)
             self.future_generator = self.map(func, args_iter)
 
@@ -65,7 +64,7 @@ def futuresSub(_cls):
                 if callback:
                     task.add_done_callback(callback)
 
-        def wait_completed(self):
+        def getAllResult(self):
             '''as_completed等待线程池结束,返回全部结果,无序'''
             self.shutdown(wait=True)
             result_list = []
@@ -78,7 +77,7 @@ def futuresSub(_cls):
 
             return result_list
 
-        def getAllResult(self):
+        def wait_completed(self):
             '''等待线程池结束,返回全部有序结果'''
             self.shutdown(wait=True)
             result_list = []
@@ -100,6 +99,7 @@ def futuresPool(_cls):
 
         def __init__(self, MaxSem=66):
             if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
+            # if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = CPUNUM
             super().__init__(max_workers=MaxSem)
             self.future_tasks = []
 
@@ -112,6 +112,11 @@ def futuresPool(_cls):
                 self.future_tasks.append(task)
                 if callback: task.add_done_callback(callback)
 
+        def wait_completed(self):
+            '''返回结果,有序'''
+            if self.future_tasks: return self.wait_sub_completed()
+            else: return self.wait_map_completed()
+
         def wait_map_completed(self):
             '''返回结果,有序'''
             result_list = []
@@ -120,6 +125,18 @@ def futuresPool(_cls):
             return result_list
 
         def wait_sub_completed(self):
+            '''等待线程池结束,返回全部结果,有序'''
+            self.shutdown(wait=True)
+            result_list = []
+            for future in self.future_tasks:
+                try:
+                    res = future.result()
+                    result_list.append(res)
+                except Exception as err:
+                    print('exception :', err)
+            return result_list
+
+        def get_sub_result(self):
             '''获取结果,无序'''
             self.shutdown(wait=True)
             result_list = []
@@ -132,18 +149,6 @@ def futuresPool(_cls):
 
             return result_list
 
-        def get_sub_result(self):
-            '''等待线程池结束,返回全部结果,有序'''
-            self.shutdown(wait=True)
-            result_list = []
-            for future in self.future_tasks:
-                try:
-                    res = future.result()
-                    result_list.append(res)
-                except Exception as err:
-                    print('exception :', err)
-            return result_list
-
     class_wrapper.__name__ = _cls.__name__  # 保留原类的名字
     return class_wrapper
 
@@ -152,5 +157,5 @@ T_Map = futuresMap(ThreadPoolExecutor)
 P_Map = futuresMap(ProcessPoolExecutor)
 T_Sub = futuresSub(ThreadPoolExecutor)
 P_Sub = futuresSub(ProcessPoolExecutor)
-T_Pool = futuresPool(ThreadPoolExecutor)
-P_Pool = futuresPool(ProcessPoolExecutor)
+ThreadPool = futuresPool(ThreadPoolExecutor)
+ProcessPool = futuresPool(ProcessPoolExecutor)
