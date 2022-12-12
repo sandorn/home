@@ -65,6 +65,20 @@ class SqlConnection(Orm_Meta):
         # @self.dbmodel.query_property = self.session.query_property()
         # @self.dbmodel.query = self.session.query()
 
+    def __enter__(self):
+        self.session = scoped_session(sessionmaker(bind=self.engine))
+        # self.session = self.sessionmaker()
+        # self.session.begin()   #如果session_make()是auto_commit=True就要写
+        return self.session
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.session.rollback()
+        else:
+            self.session.commit()
+        self.session.close()
+        return False if exc_type else True
+
     def drop_db(self):
         """删除init传入的self.dbmodel"""
         drop_sql = "DROP TABLE if exists {}".format(self.dbmodel.__tablename__)

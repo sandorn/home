@@ -7,8 +7,8 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-11-14 21:48:46
+LastEditTime : 2022-12-12 16:55:23
 FilePath     : /项目包/BQG.spider/BQG/spiders/xiashu.py
-LastEditTime : 2022-11-19 13:59:08
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -33,7 +33,7 @@ class XiashuSpider(scrapy.Spider):
     custom_settings = {
         # 设置管道下载
         'ITEM_PIPELINES': {
-            # 'BQG.pipelines.Pipeline2Csv': 40
+            'BQG.pipelines.Pipeline2Csv': 40
             # 'BQG.pipelines.PipelineToTxt': 100,
             # 'BQG.pipelines.PipelineToJson': 200,
             # 'BQG.pipelines.PipelineToJsonExp': 250,

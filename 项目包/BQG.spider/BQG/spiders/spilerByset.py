@@ -25,7 +25,7 @@ from items import BqgItem
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from xt_DAO.xt_chemyMeta import Base_Model
-from xt_DAO.xt_mysql import engine as mysql
+from xt_DAO.xt_mysql import DbEngine as mysql
 from xt_Ls_Bqg import clean_Content
 from xt_String import Str_Replace, align
 
@@ -52,8 +52,8 @@ class Spider(scrapy.Spider):
     custom_settings = {
         #$ 使用数据库,判断重复入库
         'ITEM_PIPELINES': {
-            'BQG.pipelines.PipelineToAiomysql': 20,
-            # 'BQG.pipelines.PipelineToSqlalchemy': 20,
+            # 'BQG.pipelines.PipelineToAiomysql': 20,
+            'BQG.pipelines.PipelineToSqlalchemy': 20,
             # 'BQG.pipelines.PipelineToSqlTwisted': 30,
             # 'BQG.pipelines.PipelineToMysql': 40,
         },
