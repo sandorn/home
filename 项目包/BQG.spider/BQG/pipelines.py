@@ -21,18 +21,15 @@ import csv
 import json
 from copy import deepcopy
 
-import MySQLdb
-import numpy
-import pandas
 from scrapy.exporters import JsonItemExporter
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from twisted.enterprise import adbapi
-from xt_DAO.dbconf import db_conf
+from xt_DAO.cfg import DB_CONFIG
 from xt_DAO.xt_Aiomysql import execute_aiomysql
 from xt_DAO.xt_chemyMeta import Base_Model
-from xt_DAO.xt_mysql import engine as mysql
-from xt_DAO.xt_sqlalchemy import Sqlconnion
+from xt_DAO.xt_mysql import DbEngine as mysql
+from xt_DAO.xt_sqlalchemy import SqlConnection
 
 
 def make_model(_BOOKNAME):
@@ -85,7 +82,7 @@ class PipelineToSqlalchemy(object):
         if _BOOKNAME not in self.db:
             # @连接数据库，无表则创建
             self.DBtable = make_model(_BOOKNAME)
-            self.sqlconn = Sqlconnion(self.DBtable, 'TXbook')
+            self.sqlconn = SqlConnection(self.DBtable, 'TXbook')
             self.db.add(_BOOKNAME)
 
         ZJHERF_list = self.sqlconn.pd_get_list(_BOOKNAME, 'ZJHERF') or []
@@ -106,7 +103,7 @@ class PipelineToSqlTwisted(object):
     @classmethod
     def from_settings(cls, settings):
         # #用于获取settings配置文件中的信息
-        config = deepcopy(db_conf['TXbook'])
+        config = deepcopy(DB_CONFIG['TXbook'])
         if 'type' in config: config.pop('type')
         dbpool = adbapi.connionPool("MySQLdb", **config)
         return cls(dbpool)

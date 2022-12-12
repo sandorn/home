@@ -43,8 +43,8 @@ class task_object:
 
 class WorkManager(object):
     '''自编线程池，可以再次添加任务;\n
-    获取阶段结果：getAllResult();\n
-    关闭线程获取最终结果：wait_completed()'''
+    获取阶段结果:getAllResult();\n
+    关闭线程获取最终结果:wait_completed()'''
 
     def __init__(self, items=None, MaxSem=66, callback=None, exc_callback=_handle_thread_exception, **kwds):
         self.work_queue = Queue()  # 任务队列
