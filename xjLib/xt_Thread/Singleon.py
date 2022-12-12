@@ -65,8 +65,8 @@ def singleton_wrap_return_class(_cls):
 
     class class_wrapper(_cls):
 
-        _instance = None
         _lock = Lock()
+        _instance = None
 
         def __new__(cls, *args, **kwargs):
             if cls._instance is None:
@@ -139,15 +139,31 @@ if __name__ == "__main__":
             self.age = age
 
     class sample(sss, Singleton_Mixin):
+        # # Singleton_Base
         pass
+
+    @singleton_wrap_return_class
+    class t():
+        ...
+
+    @singleton_wrap
+    class tt:
+        ...
 
     aa = sample('张三')
     print(aa.__dict__)
     bb = sample('李四', 28)
-    print(aa is bb, id(aa), id(bb), aa.__dict__, bb.__dict__)
+    bb.ages = 99
+    cc = t()
+    cc.a = 88
+    dd = tt()
+    ee = tt()
+    ee.b = 987
+    dd.a = 4444
+    print(aa is bb, ee is dd, id(aa), id(bb), id(cc), id(dd), aa.__dict__, bb.__dict__, cc.__dict__, dd.__dict__)
     print(11111, sample.__mro__)
     print(22222, sample.__base__)
     print(33333, sample.__bases__)
-    sample.__bases__ += (Singleton_Base, )
-    print(44444, sample.__bases__)
+    # sample.__bases__ += (Singleton_Base, )
+    # print(44444, sample.__bases__)
     print(55555, sample.__mro__)

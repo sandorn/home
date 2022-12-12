@@ -191,12 +191,17 @@ def get_read_class(meta):
     return _read_class
 
 
-RSynt_Read_Thread = get_read_class(Thread)
+class RSynt_Read_Thread(_read_class_meta, Thread):
+    ...
+
+
 RSynt_Read_QThread = get_read_class(QThread)
 
 if __name__ == '__main__':
+    # import snoop
     text_list = [
         '2022世界杯小组赛C组第二轮,阿根廷2:0力克墨西哥,重新掌握出线主动权。第64分钟,梅西世界波破门,打入个人世界杯第8个进球,进球数追平马拉多纳。',
         '第87分钟,恩索·费尔南德斯锁定胜局！目前,波兰积4分,阿根廷和沙特同积3分,阿根廷以净胜球优势排名第二,墨西哥积1分。',
     ]
+
     RSynt_Read_Thread(text_list)
