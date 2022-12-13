@@ -1,21 +1,21 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-06-05 10:04:55
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
+LastEditTime : 2022-12-13 19:18:59
 FilePath     : /xjLib/xt_Time.py
-LastEditTime : 2021-04-14 18:19:18
-#Github       : https://github.com/sandorn/home
-#==============================================================
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 import datetime
 import time
-from functools import wraps
 import traceback
+from functools import wraps
 
 
 def fn_timer(function):
@@ -23,10 +23,10 @@ def fn_timer(function):
 
     @wraps(function)
     def function_timer(*args, **kwargs):
-        t0 = time.time()
+        start_time = time.perf_counter()
         result = function(*args, **kwargs)
-        t = time.time() - t0
-        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> total run:{t: .2f} seconds")
+        end_time = time.perf_counter()
+        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> total run:{end_time-start_time: .2f} seconds")
         return result
 
     stack = traceback.extract_stack()

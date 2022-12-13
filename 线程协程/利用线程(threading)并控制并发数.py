@@ -1,22 +1,21 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-15 15:51:57
-@LastEditors: Even.Sand
-@LastEditTime: 2020-04-01 18:25:20
-
-#!应该是无效！！
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:55
+LastEditTime : 2022-12-13 15:09:18
+FilePath     : /线程协程/利用线程(threading)并控制并发数.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
-from time import sleep
+import random
 import threading  # multiprocessing
 from queue import Queue
-import random
+from time import sleep
 
 
 # 下面是利用线程和queue队列的实现方法
@@ -52,7 +51,7 @@ num = threading.Semaphore(3)  # 设置同时执行的线程数为3，其他等�
 
 def aaa():
     # 启动所有线程
-    for i in range(5):  # 总共需要执行的次数
+    for i in range(30):  # 总共需要执行的次数
         t = Test(queue, lock, num)
         t.start()
         threads.append(t)
@@ -67,7 +66,7 @@ def aaa():
 
 
 def yyy():
-    for i in range(5):  # 总共需要执行的次数
+    for i in range(30):  # 总共需要执行的次数
         thread = Test(queue, lock, num)
         thread.start()
         threads.append(thread)
@@ -81,6 +80,6 @@ def yyy():
 if __name__ == "__main__":
     aaa()
     print('aaa所有执行完毕')
-    yyy()
-    print('yyy所有执行完毕')
+    # yyy()
+    # print('yyy所有执行完毕')
     print(threading.active_count(), threading.enumerate())
