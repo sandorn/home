@@ -17,6 +17,7 @@ import json
 
 from cchardet import detect
 from lxml import etree
+from requests_html import HTML
 from xt_Class import item_Mixin
 
 
@@ -25,7 +26,7 @@ class ReqResult(item_Mixin):
     __slots__ = ('raw', 'clientResponse', '_content', 'index')
 
     # 结构化返回结果
-    def __init__(self, response: object, content=None, index=None):
+    def __init__(self, response, content=None, index=None):
         if response is not None:
             self.raw = self.clientResponse = response
             self._content: bytes = content or response.content
@@ -48,29 +49,29 @@ class ReqResult(item_Mixin):
 
     @property
     def elapsed(self):
-        if hasattr(self.raw, 'elapsed'):
-            return self.raw.elapsed
+        if hasattr(self.clientResponse, 'elapsed'):
+            return self.clientResponse.elapsed
         else:
             return None
 
     @property
     def seconds(self):
-        if hasattr(self.raw, 'elapsed'):
-            return self.raw.elapsed.total_seconds()
+        if hasattr(self.clientResponse, 'elapsed'):
+            return self.clientResponse.elapsed.total_seconds()
         else:
             return 0
 
     @property
     def url(self):
-        return self.raw.url
+        return self.clientResponse.url
 
     @property
     def cookies(self):
-        return self.raw.cookies
+        return self.clientResponse.cookies
 
     @property
     def headers(self):
-        return self.raw.headers
+        return self.clientResponse.headers
 
     @property
     def json(self):
@@ -82,10 +83,10 @@ class ReqResult(item_Mixin):
 
     @property
     def status(self):
-        if hasattr(self.raw, 'status'):
-            return self.raw.status
+        if hasattr(self.clientResponse, 'status'):
+            return self.clientResponse.status
         else:
-            return self.raw.status_code
+            return self.clientResponse.status_code
 
     @property
     def html(self):
@@ -102,6 +103,15 @@ class ReqResult(item_Mixin):
     @property
     def element(self):
         return etree.HTML(self.text)
+
+    @property
+    def dom(self):
+        """
+        返回一个requests_html对象,支持所有requests_html的html对象的操作。例如find, xpath, render（先安装chromium浏览器）
+        """
+        html = HTML(html=self.text)
+        html.url = self.raw.url
+        return html
 
     def __repr__(self):
         return f"<ReqResult status:[{self.status}]; ID:[{self.index}]， url:[{self.url}] >"
