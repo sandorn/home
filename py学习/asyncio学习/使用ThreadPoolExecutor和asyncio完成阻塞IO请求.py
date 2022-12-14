@@ -1,20 +1,20 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-06-28 20:49:22
-#FilePath     : /asyncio学习/使用ThreadPoolExecutor和asyncio完成阻塞IO请求.py
-#LastEditTime : 2020-06-28 21:05:19
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:36:04
+LastEditTime : 2022-12-14 23:35:46
+FilePath     : /py学习/asyncio学习/使用ThreadPoolExecutor和asyncio完成阻塞IO请求.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import socket
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 
 
@@ -34,9 +34,7 @@ def get_url_socket(url):
     # 不停的询问连接是否建立好， 需要while循环不停的去检查状态
     # 做计算任务或者再次发起其他的连接请求
 
-    client.send(
-        "GET {} HTTP/1.1\r\nHost:{}\r\nConnection:close\r\n\r\n".format(
-            path, host).encode("utf8"))
+    client.send("GET {} HTTP/1.1\r\nHost:{}\r\nConnection:close\r\n\r\n".format(path, host).encode("utf8"))
 
     data = b""
     while True:
@@ -59,7 +57,7 @@ if __name__ == "__main__":
     pool = ThreadPoolExecutor(3)
     tasks = []
     for index in range(20):
-        url = "http://shop.projectsedu.com/goods/{}/".format(index)
+        url = "https://www.baidu.com/"
         task = loop.run_in_executor(pool, get_url_socket, url)
         tasks.append(task)
     loop.run_until_complete(asyncio.wait(tasks))

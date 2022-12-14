@@ -1,15 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-03 18:51:43
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-03 22:15:54
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:36:04
+LastEditTime : 2022-12-14 23:20:56
+FilePath     : /py学习/asyncio学习/协程停止.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 import asyncio
 
@@ -19,6 +20,7 @@ async def test1(num):
     await asyncio.sleep(1 / num)
     print(num * 10)
     return num * num * 100
+
 
 tasks = [
     asyncio.ensure_future(test1(1)),
@@ -68,4 +70,5 @@ def func3():
 
 
 if __name__ == "__main__":
+    # func()
     func3()

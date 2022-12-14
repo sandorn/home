@@ -114,7 +114,7 @@ def Str_Clean(replacement, trims):
     # return replacement
 
     # 第二种方法  # replacement 为初始值，最后传入，在lambda中最先接收
-    return reduce(lambda strtmp, item: strtmp.replace(item, ''), trims, replacement)
+    return reduce(lambda strtmp, item: strtmp.replace(item, ""), trims, replacement)
 
 
 def Re_Sub(replacement, trims=None):

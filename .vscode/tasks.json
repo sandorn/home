@@ -6,8 +6,11 @@
     "command": "cmd",
     // global args
     // 在Linux和Mac系统中使用"-c"(注意大小写).
-    "args": ["/C"],
-    "tasks": [{
+    "args": [
+        "/C"
+    ],
+    "tasks": [
+        {
             "label": "verify",
             "type": "shell",
             "command": "mvn -B verify",
@@ -16,7 +19,14 @@
         {
             "label": "python",
             "type": "shell",
-            "args": ["${file}"]
+            "args": [
+                "${file}"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
         }
     ]
 }
