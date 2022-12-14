@@ -61,14 +61,12 @@ class SqlConnection(Orm_Meta):
         self.session = scoped_session(sessionmaker(bind=self.engine))
         self.dbmodel.metadata.create_all(self.engine)
 
-        # @实现user.query.xxxx  # FROM tablename
+        # @实现 user.query.xxxx  # FROM tablename
         # @self.dbmodel.query_property = self.session.query_property()
         # @self.dbmodel.query = self.session.query()
 
     def __enter__(self):
         self.session = scoped_session(sessionmaker(bind=self.engine))
-        # self.session = self.sessionmaker()
-        # self.session.begin()   #如果session_make()是auto_commit=True就要写
         return self.session
 
     def __exit__(self, exc_type, exc_val, exc_tb):

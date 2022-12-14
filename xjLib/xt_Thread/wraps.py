@@ -35,7 +35,7 @@ def thread_safe(lock=None):
 
 
 class _MyThread(Thread):
-    '''不单独使用,供线程装饰器调用'''
+    '''#@不单独使用,供线程装饰器调用'''
 
     def __init__(self, func, name, *args, **kwargs):
         super().__init__(target=func, name=name, args=args, kwargs=kwargs)

@@ -7,18 +7,19 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:55
+LastEditTime : 2022-12-14 18:53:16
 FilePath     : /线程协程/2k小说-ahttp异步.py
-LastEditTime : 2022-10-22 16:01:48
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
 import os
 import time
+
 from xt_Ahttp import ahttpGet, ahttpGetAll
-from xt_String import Ex_Re_Sub, Ex_Re_Repl
-from xt_Time import get_time
 from xt_File import savefile
+from xt_String import Str_Clean, Str_Replace
+from xt_Time import get_time
 
 
 def get_download_url(target):
@@ -47,15 +48,15 @@ def callback(resp):
     _name = "".join(response.xpath('//h2/text()'))
     _showtext = "".join(response.xpath('//*[@class="Text"]/text()'))
 
-    name = Ex_Re_Sub(_name, {' ': ' ', '\xa0': ' '})
-    text = Ex_Re_Repl(
+    name = Str_Replace(_name, [[' ', ' '], ['\xa0', ' ']])
+    text = Str_Clean(
         _showtext.strip("\n\r　  \xa0"),
-        {
-            '    ': '\n',
-            '\xa0': ' ',  # 表示空格  &nbsp;
-            '\u3000': ' ',  # 全角空格
-            '2k小说阅读网': ' ',  # 全角空格
-        },
+        [
+            '    ',
+            '\xa0',
+            '\u3000',
+            '2k小说阅读网',
+        ],
     )
 
     texts.append([index, name, '    ' + text])

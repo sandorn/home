@@ -84,8 +84,7 @@ def 结果处理(resps):
     _texts = []
 
     for resp in resps:
-        if resp is None:
-            continue
+        if resp is None: continue
         index = resp.index
         response = resp.element if resp.element is not None else resp.html
 

@@ -149,8 +149,7 @@ class Work(Thread):
 
 
 class thread_pool:
-    '''仿写vthread,
-    # thread_pool(200)'''
+    '''仿写vthread,  thread_pool(200)'''
 
     def __init__(self, pool_num=10):
         self._pool_queue = Queue()  # #任务存储,组内queue
@@ -181,8 +180,7 @@ class thread_pool:
         def _pools_pull():
             while True:
                 args_list = self._pool_queue.get()
-                if args_list == 'KillThreadParams':
-                    return
+                if args_list == 'KillThreadParams': return
                 try:
                     func, args, kw = args_list
                     Result = func(*args, **kw)  # 获取结果
@@ -200,10 +198,11 @@ class thread_pool:
     def main_monitor(self):
 
         def _func():
+            _main_thr = main_thread()
             while True:
 
-                sleep(0.25)
-                if not main_thread().isAlive():
+                sleep(0.2)
+                if not _main_thr.isAlive():
                     self.close_all()
                     break
 

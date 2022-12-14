@@ -51,16 +51,14 @@ import winreg
 
 def get_desktop():
     key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
-    return winreg.QueryValueEx(key, "Desktop")[0]
+    if path := winreg.QueryValueEx(key, "Desktop")[0]: return path
 
 
 def file_to_List(filepath):
     res_list = []
     with open(filepath, 'r') as file_to_read:
-        while True:
-            line = file_to_read.readline().strip('\n')
-            if line:
-                res_list.append(line)
+        while content := file_to_read.readline():
+            res_list.append(content)
     return res_list
 
 
@@ -69,15 +67,12 @@ def savefile(_filename, _list_texts, br=''):
     函数说明:将多层次的list 或 tupl写入文件,迭代多层
     br为元素结束标志,可以用'\t'  '\n'  等
     """
-    if not isinstance(_list_texts, (list, tuple)):
-        return
+    if not isinstance(_list_texts, (list, tuple)): return
 
     with open(_filename, 'w', encoding='utf-8') as file:
-        # file.seek(0)  # 定位文件首
-        # file.truncate()  # 清除所有内容
 
         def each(data):
-            for index, value in enumerate(data):
+            for value in data:
                 if isinstance(value, (list, tuple)):
                     each(value)
                 else:
@@ -90,6 +85,7 @@ def savefile(_filename, _list_texts, br=''):
         each(_list_texts)
 
     size = f"size: {filesize(_filename)}"
+
     print(f'[{_filename}]保存完成,\tfile {size}。')
 
 
@@ -106,3 +102,10 @@ def filedialog(_dir='c:/'):
 if __name__ == "__main__":
     print(get_desktop())
     print(os.getenv('TMP'))
+    nums = [4, 9, 16, 25, 36, 49]
+
+    def f(x):
+        print('调用次数')
+        return x**0.5
+
+    print([n for i in nums if (n := f(i)) >= 5])

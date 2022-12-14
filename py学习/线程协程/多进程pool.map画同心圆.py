@@ -1,17 +1,20 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-14 20:42:20
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-14 20:51:49
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:55
+LastEditTime : 2022-12-14 21:13:38
+FilePath     : /线程协程/多进程pool.map画同心圆.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
-import turtle
 import time
-from multiprocessing import Process, Pool
+import turtle
+from multiprocessing import Pool, Process
 
 
 def cir(n, m):
