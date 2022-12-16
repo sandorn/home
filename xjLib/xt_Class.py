@@ -45,8 +45,8 @@ class attr_get_Mixin:
     '''原点调用obj.key'''
 
     def __getattr__(self, key):
-        return self.__dict__.get(key)
         # return super().__getattribute__(key)
+        return self.__dict__.get(key)
 
 
 class attr_set_Mixin:
@@ -86,21 +86,21 @@ class iter_Mixin(dict_mothed_Mixin):
     '''
 
     def __iter__(self):
-        return iter(self.get_dict().items())
         # for attr, value in self.__dict__.items():
         #     yield attr, value
+        return iter(self.get_dict().items())
 
 
 class repr_Mixin(dict_mothed_Mixin):
     '''用于打印显示'''
+
+    # __str__ = __repr__
 
     def __repr__(self):
         dic = self.__dict__
 
         # # __class__.__name__
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
-
-    # __str__ = __repr__
 
 
 class Class_Meta(item_Mixin, iter_Mixin, repr_Mixin):
@@ -134,20 +134,17 @@ def typeassert(**kwargs):
             self.expected_type = expected_type
 
         def __get__(self, instance, cls):
-            if instance is None:
-                return self
-            else:
-                return instance.__dict__[self.name]
+            if instance is None: return self
+            return instance.__dict__[self.name]
 
         def __set__(self, instance, value):
-            if not isinstance(value, self.expected_type):
-                raise TypeError('Expected ' + str(self.expected_type))
+            assert isinstance(value, self.expected_type)
+            # raise TypeError('Expected ' + str(self.expected_type))
             instance.__dict__[self.name] = value
 
         def __delete__(self, instance):
             del instance.__dict__[self.name]
 
-    # Class decorator that applies it to selected attributes
     def decorate(cls):
         for name, expected_type in kwargs.items():
             # Attach a Typed descriptor to the class

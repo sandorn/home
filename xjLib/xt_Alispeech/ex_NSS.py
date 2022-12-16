@@ -141,7 +141,7 @@ def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
 
     if readonly: return get_voice_data(datalist)
     if not merge: return save_sound_file(datalist)
-    if merge: merge_sound_file(datalist, args)
+    if merge: return merge_sound_file(datalist, args)
 
 
 if __name__ == '__main__':

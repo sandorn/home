@@ -142,6 +142,7 @@ class _read_class_meta:
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
                 datalist = self._target(text, {'aformat': self.aformat}, readonly=True)
+                assert isinstance(datalist, list)
                 datalist.sort(key=lambda x: x[0])
                 [self.datas_list.append(item[1]) for item in datalist]
 

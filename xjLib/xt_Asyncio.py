@@ -45,17 +45,19 @@ class AioCrawl:
     def __init__(self):
         # 启动事件循环
         self.event_loop = asyncio.new_event_loop()
-        self.thr = Thread(target=self.start_loop, args=(self.event_loop, ))
-        self.thr.setDaemon(True)
+        self.thr = Thread(
+            target=self.start_loop,
+            daemon=True,
+        )
         self.thr.start()
 
         self.future_list = []
         self.result_list = []
         self.concurrent = 0  # 记录并发数
 
-    def start_loop(self, loop):
-        asyncio.set_event_loop(loop)
-        loop.run_forever()
+    def start_loop(self):
+        asyncio.set_event_loop(self.event_loop)
+        self.event_loop.run_forever()
         # self.event_loop.stop()
 
     async def fetch(self, url, method='GET', headers=None, timeout=TIMEOUT, cookies=None, data=None, proxy=None):

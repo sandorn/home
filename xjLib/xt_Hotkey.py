@@ -11,7 +11,6 @@
 #LastEditTime : 2020-07-16 18:42:31
 #Github       : https://github.com/sandorn/home
 #==============================================================
-
 原文链接：https://blog.csdn.net/lsjweiyi/article/details/79137931
 '''
 
@@ -24,6 +23,7 @@ user32 = ctypes.windll.user32  # 加载user32.dll
 
 
 class Hotkey(threading.Thread):  # 创建一个Thread.threading的扩展类
+
     def __init__(self, ikey1=105, ikey2=106):
         super().__init__()
         self.RUN = False  # 用来传递运行一次的参数
