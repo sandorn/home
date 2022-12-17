@@ -1,3 +1,4 @@
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
@@ -6,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-16 12:19:18
-LastEditTime : 2022-12-17 21:37:42
+LastEditTime : 2022-12-17 23:36:27
 FilePath     : /xjLib/xt_DAO/xt_Xlwings.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -31,3 +32,4 @@ if __name__ == "__main__":
     pid = app.pid
     print(pid)
     # app.quit()
+    # app.kill(pid)

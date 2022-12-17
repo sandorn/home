@@ -1,3 +1,4 @@
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
@@ -6,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-16 21:34:18
-LastEditTime : 2022-12-17 20:52:50
+LastEditTime : 2022-12-17 23:42:05
 FilePath     : /py学习/数据/xlwings--test.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -53,5 +54,6 @@ sht.range("A1:C3").columns.autofit()  # 自动根据单元格中内容调整单�
 sht.range("A1:B1").api.Merge()  # 合并
 print(sht.range("A1").merge_area)  # 返回涉及range的那些合并的单元格
 
-print(sht.range("A4:C4").merge_cells)  # 是merge的元素,返回True,不是返回false,超过merge的范围返回None
+print(sht.range("A4:C4").merge_cells)
+# 是merge的元素,返回True,不是返回false,超过merge的范围返回None
 sht.range("A1:B1").api.UnMerge()  # 取消合并单元格
