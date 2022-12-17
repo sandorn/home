@@ -7,18 +7,20 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-16 12:19:18
-LastEditTime : 2022-12-16 18:14:29
+LastEditTime : 2022-12-17 15:28:05
 FilePath     : /xjLib/xt_DAO/xt_Xlwings.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 import xlwings as xw
+class xwobj:
 
 
 class ExcelHandler():
     ''' xlwings操作Excel xlsx文件的类 '''
 
     def __init__(self, Book='工作簿1', sheet_name=None, Range='A1'):
+        self.app = xw.App(add_book=False)
         self.Book = Book
         self.Sheet = sheet_name or self.Book.active
         self.Range = Range
@@ -47,7 +49,6 @@ class ExcelHandler():
                 self.Sheet.range(m_col + str(i)).api.EntireRow.Delete()
                 k = i + 1
 
-    #通过手动输入改写地址的方法，可分别改写，也可一起改写：
     def getbook(self):
         self.Book = input('请输入工作簿名称：')
 
