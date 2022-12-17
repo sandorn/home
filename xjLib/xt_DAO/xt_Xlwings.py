@@ -7,23 +7,45 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-16 12:19:18
-LastEditTime : 2022-12-17 15:28:05
+LastEditTime : 2022-12-17 17:17:06
+FilePath     : /xjLib/xt_DAO/xt_Xlwings.py
+Github       : https://github.com/sandorn/home
+==============================================================
+'''
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2022-12-16 12:19:18
+LastEditTime : 2022-12-17 16:47:04
 FilePath     : /xjLib/xt_DAO/xt_Xlwings.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 import xlwings as xw
-class xwobj:
+
+
+class XwType:
+
+    def __init__(self):
+        self.app = xw.App(add_book=False)
+        self.Book = {}
+        self.Sheet = {}
+        self.Range = {}
 
 
 class ExcelHandler():
     ''' xlwings操作Excel xlsx文件的类 '''
 
-    def __init__(self, Book='工作簿1', sheet_name=None, Range='A1'):
+    def __init__(self, book='工作簿1', sheet_name=None, range='A1'):
         self.app = xw.App(add_book=False)
-        self.Book = Book
+        self.Book = book
         self.Sheet = sheet_name or self.Book.active
-        self.Range = Range
+        self.Range = range
 
     def __enter__(self):
         return self
@@ -42,12 +64,14 @@ class ExcelHandler():
                 k = i + 1
 
     def xl_delete(self, m_col, m_text):
-        k = 0  # 记录行
+
+        _tmp_rows = 0  # 记录行
         for i in range(self.Sheet.used_range.last_cell.row, 1, -1):
             if (self.Sheet.range(m_col + str(i)).value == m_text):
                 print("对第 " + str(i) + " 行进行了删除行操作！")
                 self.Sheet.range(m_col + str(i)).api.EntireRow.Delete()
-                k = i + 1
+                _tmp_rows = i + 1
+        return _tmp_rows
 
     def getbook(self):
         self.Book = input('请输入工作簿名称：')

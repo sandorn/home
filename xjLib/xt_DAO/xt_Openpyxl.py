@@ -52,7 +52,7 @@ class ExcelHandler():
         self.wb.close()
         return False if exc_type else True
 
-    def CreateSheet(self, sheet_name):
+    def create_sheet(self, sheet_name):
         _sh = self.wb.create_sheet(sheet_name)
         assert isinstance(_sh, Worksheet)
         self.sh = _sh
