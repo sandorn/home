@@ -29,7 +29,7 @@ class ExcelHandler():
         '''初始化函数'''
         self.file = file
         if not os.path.exists(file):
-            #新建一个新工作表
+            # 新建一个新工作表
             _wb = openpyxl.Workbook()
             _wb.save(file)
             _wb.close()
@@ -57,12 +57,12 @@ class ExcelHandler():
         assert isinstance(_sh, Worksheet)
         self.sh = _sh
 
-    #创建新表单
-    def createNewSheet(self, location, newSheetName):
+    def createsheet(self, location, newSheetName):
+        # 创建新表单
         self.wb.create_sheet(index=location, title=newSheetName)
 
-    #删除表单
     def removeSheet(self, sheetName):
+        # 删除表单
         self.wb.remove(sheetName)
 
     def read_header(self, sheet_name=None):
@@ -124,8 +124,8 @@ class ExcelHandler():
             _sh = self.wb[sheet_name]
             assert isinstance(_sh, Worksheet)
             self.sh = _sh
-
-        return [*tuple(self.sh.iter_cols(min_col=col, max_col=col, values_only=True))[0]]
+        _r = tuple(self.sh.iter_cols(min_col=col, max_col=col, values_only=True))[0]
+        return [*_r]
 
     def read_all_dict(self, sheet_name=None):
         '''
@@ -153,7 +153,7 @@ class ExcelHandler():
         '''读取单元格数据'''
         return self.sh.cell(row, column).value
 
-    #修改单元格方法
+    # 修改单元格方法
     def write_cell(self, row, column, value):
         self.sh.cell(row, column).value = value
         self.wb.save(self.file)
@@ -167,7 +167,7 @@ class ExcelHandler():
             self.sh.append(tdd)
         self.wb.save(self.file)
 
-    #保存文件方法
+    # 保存文件方法
     def save_wb(self, excel_path=None):
         if excel_path is not None: self.wb.save(excel_path)
         self.wb.save(self.file)

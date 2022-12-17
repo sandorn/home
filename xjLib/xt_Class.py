@@ -216,7 +216,7 @@ if __name__ == "__main__":
         bb = Animal()
         print(bb)
         for k, v in bb:
-            print(k.ljust(8), ':', v)
+            print(k.ljust(6), ':', v)
             pass
 
     def itat():
