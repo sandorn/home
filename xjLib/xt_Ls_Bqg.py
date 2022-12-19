@@ -117,7 +117,7 @@ def get_biqugse_download_url(target):
     temp_urls = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href')
     titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()')
     baseurl = '/'.join(target.split('/')[0:-2])
-    urls = [baseurl + item for item in temp_urls]  ## 章节链接
+    urls = [baseurl + item for item in temp_urls]  # # 章节链接
     return bookname, urls, titles
 
 

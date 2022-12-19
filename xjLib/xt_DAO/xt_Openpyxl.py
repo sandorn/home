@@ -19,7 +19,14 @@ https://blog.csdn.net/weixin_45417815/article/details/122015992
 import os
 
 import openpyxl
+from openpyxl.utils import column_index_from_string, get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
+
+
+def rename(file_path):
+    (filepath, tempfilename) = os.path.split(file_path)
+    (filename, extension) = os.path.splitext(tempfilename)
+    return os.path.join(filepath, 'OpenPyXl-' + filename + extension)
 
 
 class ExcelHandler():
@@ -27,14 +34,14 @@ class ExcelHandler():
 
     def __init__(self, file, sheet_name=None):
         '''初始化函数'''
-        self.file = file
+        self.file = rename(file)
         if not os.path.exists(file):
             # 新建一个新工作表
             _wb = openpyxl.Workbook()
-            _wb.save(file)
+            _wb.save(self.file)
             _wb.close()
 
-        self.wb = openpyxl.load_workbook(self.file)
+        self.wb = openpyxl.load_workbook(file)
         self.sh_name_list = self.wb.sheetnames
 
         if sheet_name is None: _sh = self.wb.active
@@ -52,18 +59,13 @@ class ExcelHandler():
         self.wb.close()
         return False if exc_type else True
 
-    def create_sheet(self, sheet_name):
-        _sh = self.wb.create_sheet(sheet_name)
-        assert isinstance(_sh, Worksheet)
-        self.sh = _sh
-
-    def createsheet(self, location, newSheetName):
-        # 创建新表单
-        self.wb.create_sheet(index=location, title=newSheetName)
+    def createsheet(self, index=None, title=None):
+        self.wb.create_sheet(index=index, title=title)
+        self.save_wb()
 
     def removeSheet(self, sheetName):
-        # 删除表单
         self.wb.remove(sheetName)
+        self.save_wb()
 
     def read_header(self, sheet_name=None):
         '''获取表头'''
@@ -91,14 +93,6 @@ class ExcelHandler():
         data = [[cell.value for cell in row] for row in self.sh.rows]
         return data
 
-    def read_rows(self, sheet_name=None):
-        '''
-        读取除表头外所有数据（除第一行外的所有数据）
-        返回的内容是一个二维列表,若想获取每一行的数据,可使用for循环或*解包
-        '''
-        data = self.read_all(sheet_name)
-        return data[1:]
-
     def read_row(self, row, sheet_name=None):
         '''读取某一行数据'''
         if sheet_name is not None:
@@ -113,7 +107,7 @@ class ExcelHandler():
         获取某一行数据,且将表头中的内容与数据结合展示（以字典的形式）
         如：{'序号':1,'会员卡号': '680021685898','机场名称':'上海机场'}
         '''
-        row_data = self.read_row(row)
+        row_data = self.read_row(row, sheet_name)
         titles = self.read_header()
         data_dict = dict(zip(titles, row_data))
         return data_dict
@@ -129,11 +123,8 @@ class ExcelHandler():
 
     def read_all_dict(self, sheet_name=None):
         '''
-        获取所有数据,且将表头中的内容与数据结合展示（以字典的形式）
-        如：[
-        {'序号':1,'会员卡号': '680021685898','机场名称':'上海机场'},
-        {'序号':2,'会员卡号': '680021685899','机场名称':'广州机场'}
-        ]
+        获取所有数据,且将表头中的内容与数据结合展示（以字典的形式）如：
+        [ {'序号':1,'会员卡号': '680021685898','机场名称':'上海机场'}, ]
         '''
         if sheet_name is not None:
             _sh = self.wb[sheet_name]
@@ -141,11 +132,10 @@ class ExcelHandler():
             self.sh = _sh
 
         data = []
-        rows = list(self.sh.rows)
+        rows = self.read_all()[1:]
         titles = self.read_header()
-        for row in rows[1:]:
-            rwo_data = [cell.value for cell in row]
-            data_dict = dict(zip(titles, rwo_data))
+        for row in rows:
+            data_dict = dict(zip(titles, row))
             data.append(data_dict)
         return data
 
@@ -153,34 +143,30 @@ class ExcelHandler():
         '''读取单元格数据'''
         return self.sh.cell(row, column).value
 
-    # 修改单元格方法
     def write_cell(self, row, column, value):
         self.sh.cell(row, column).value = value
-        self.wb.save(self.file)
+        self.save_wb()
 
-    def write_add(self, data_list):
+    def append(self, data_list):
         '''
         追加写入xlsx格式文件
         参数:data_list:将要写入表格的数据(二维列表)
         '''
         for tdd in data_list:
             self.sh.append(tdd)
-        self.wb.save(self.file)
+        self.save_wb()
 
-    # 保存文件方法
     def save_wb(self, excel_path=None):
         if excel_path is not None: self.wb.save(excel_path)
         self.wb.save(self.file)
 
     @staticmethod
-    def write_change(file, sheet_name, row, column, data):
-        '''写入Excel数据'''
-        wb = openpyxl.load_workbook(file)
-        sh = wb[sheet_name]
-        assert isinstance(sh, Worksheet)
-        sh.cell(row, column).value = data
-        wb.save(file)
-        wb.close()
+    def get_num(_col_str):
+        return column_index_from_string(_col_str)
+
+    @staticmethod
+    def get_letter(_col_num):
+        return get_column_letter(_col_num)
 
 
 if __name__ == "__main__":
@@ -189,12 +175,23 @@ if __name__ == "__main__":
         rows = he.read_all()
         # he.write_add(rows)
         # print(he.read_all_dict())
-        print(he.read_row(1))
-        # print(he.read_cell(1, 3))
+        # print(he.read_row(1))
+        print(he.read_cell(1, 1))
         print(he.sh_name_list)
         # he2 = ExcelHandler("d:/2.xlsx")
         # he2.write_add(rows)
-        print(he.read_col(1))
+        print(he.read_col(2))
+        # he.createsheet()
+        he.append([
+            [
+                1111,
+                2222,
+                3333,
+                4444,
+                5555,
+            ],
+        ])
+        he.write_cell(28, 1, 9876)
 ####################################################
 # he = ExcelHandler("d:/1.xlsx", "Sheet1")
 # he.write_cell(1, 2, '2019年')
