@@ -35,12 +35,10 @@ class ReqResult(item_Mixin):
     @property
     def content(self):
         if self._content is None: return None
-
         code_type = detect(self._content)
-
-        if code_type != 'utf-8':
+        if code_type['encoding'] not in ('utf-8', 'UTF-8'):
             self._content = self._content.decode(code_type['encoding'], 'ignore')
-            self._content = self._content.encode('utf-8')
+            self._content = self._content.encode('UTF-8')
         return self._content
 
     @property

@@ -178,10 +178,11 @@ class SessionClient:
 
 
 if __name__ == '__main__':
-    res = get('https://www.baidu.com')
+    res = get("https://www.biqukan8.cc/38_38163/")  # 'https://www.baidu.com'
     print(res)
     print(res.dom.xpath('//title/text()'))
     print(res.html.xpath('//title/text()'))
+    print(res.element.xpath('//title/text()'))
 '''
     # @不能用于协程,且不保留最后错误
     # from retrying import retry as Retry

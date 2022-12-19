@@ -7,12 +7,11 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:56
-LastEditTime : 2022-12-12 17:08:57
+LastEditTime : 2022-12-19 19:34:39
 FilePath     : /项目包/备份更新/检查更新.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
 # 检索需要升级的库,逐个升级
 import subprocess
 
@@ -20,15 +19,18 @@ import subprocess
 def PIP更新():
     print("PIP-outdated更新:")
     # pip显示需要更新的python列表
-    com_list_o = 'pip3 list --outdated'
+    p = subprocess.Popen(
+        'pip3 list --outdated',
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        encoding='utf-8',
+        errors='ignore',
+    )
 
-    # 执行命令并返回结果
-    p = subprocess.Popen(com_list_o, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    # 取命令返回结果,结果是一个二进制字符串,包含了我们上面执行pip list -o后展现的所有内容
+    # 取命令返回结果,包含了我们上面执行pip list -o后展现的所有内容
+
     out = p.communicate()[0]
-
-    print("二进制转utf-8字符串....")
-    out = str(out, 'utf-8')
 
     print("切出待升级的包名, 并存入列表........")
     need_update = []
@@ -40,8 +42,8 @@ def PIP更新():
     # 执行升级命令,每次取一个包进行升级,pip只支持一个包一个包的升级
     n = 1
     for nu in need_update:
-        # com_update = f'pip3 install --upgrade {nu}'
-        com_update = f'pip3 install -U {nu}'
+        #  --upgrade-strategy only-if-needed 会升级到最新的兼容版本
+        com_update = f'pip3 install --upgrade-strategy only-if-needed {nu}'
         print("正在更新第{}/{}个库[{}],\n执行:{},请等待...".format(n, s, nu, com_update))
         subprocess.call(com_update)
         n += 1

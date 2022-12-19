@@ -12,6 +12,8 @@ aiosignal
 aip
 alabaster
 alibabacloud-nls-java-sdk
+alibabacloud-nls-java-sdk
+alibabacloud-nls-java-sdk
 aliyun-python-sdk-core
 aliyun-python-sdk-ecs
 aliyun-python-sdk-kms
@@ -41,6 +43,7 @@ astunparse
 async-generator
 async-lru
 async-timeout
+asyncio
 atk
 atomicwrites
 attrs
@@ -92,6 +95,7 @@ cffi
 Chameleon
 chardet
 charset-normalizer
+cheap-repr
 cheroot
 CherryPy
 chromedriver
@@ -103,6 +107,8 @@ cloudpickle
 clyent
 colorama
 colorlog
+comm
+commonmark
 comtypes
 config
 configobj
@@ -144,6 +150,7 @@ django-bootstrap-toolkit
 dnspython
 docopt
 docutils
+dodgy
 Dora
 easydict
 easygui
@@ -166,12 +173,14 @@ fastjsonschema
 ffmpeg
 filelock
 flake8
+flake8-polyfill
 Flask
 Flask-Login
 flatbuffers
 flexx
 fonttools
 FormEncode
+fqdn
 frozenlist
 fsspec
 func-timeout
@@ -185,6 +194,8 @@ Genshi
 gevent
 ggplot
 ghp-import
+gitdb
+GitPython
 glob2
 google-auth
 google-auth-oauthlib
@@ -231,6 +242,7 @@ ipykernel
 ipython
 ipython-genutils
 ipywidgets
+isoduration
 isort
 itchat
 itemadapter
@@ -251,12 +263,15 @@ joblib
 jsmin
 json5
 jsonpath
+jsonpointer
 jsonschema
 jupyter
 jupyter_client
 jupyter-console
 jupyter_core
-jupyter-server
+jupyter-events
+jupyter_server
+jupyter_server_terminals
 jupyterlab
 jupyterlab-pygments
 jupyterlab_server
@@ -314,7 +329,7 @@ multimethod
 multipledispatch
 multiprocess
 mxnet
-mypy-extensions
+mypy
 mysql-connector
 mysql-connector-python
 mysqlclient
@@ -369,6 +384,7 @@ pdoc
 peewee
 pefile
 pep517
+pep8-naming
 pexpect
 phik
 phonenumbers
@@ -376,6 +392,7 @@ pickleshare
 pika
 Pillow
 pip
+pip-review
 pkginfo
 pkgutil_resolve_name
 plaster
@@ -386,12 +403,14 @@ plotly
 pluggy
 plumbum
 ply
+poetry-semver
 portend
 prettypandas
 prettytable
 profig
 prometheus-client
 prompt-toolkit
+prospector
 Protego
 protobuf
 pscript
@@ -413,6 +432,7 @@ pycares
 Pycco
 pycodestyle
 pycosat
+pycountry
 pycparser
 pycryptodome
 pycurl
@@ -438,6 +458,10 @@ PyJWT
 pykeyboard
 pylama
 pylint
+pylint-celery
+pylint-django
+pylint-flask
+pylint-plugin-utils
 pymongo
 PyMouse
 PyMySQL
@@ -451,6 +475,7 @@ PyPDF2
 pypiwin32
 pypng
 pyppeteer
+pyproject_api
 PyQRCode
 PyQt5
 pyqt5-plugins
@@ -541,8 +566,12 @@ requests_download
 requests-file
 requests-html
 requests-oauthlib
+requirements-detector
 retrying
+rfc3339-validator
 rfc3986
+rfc3986-validator
+rich
 rope
 Routes
 rq
@@ -564,7 +593,9 @@ seaborn
 selection
 selenium
 Send2Trash
+sentinels
 service-identity
+setoptconf-tmp
 setuptools
 sh
 shiboken2
@@ -576,12 +607,15 @@ singledispatch
 six
 sklearn
 smartypants
+smmap
 sniffio
+snoop
 snowballstemmer
 sortedcollections
 sortedcontainers
 soundfile
 soupsieve
+sourceinspect
 Sphinx
 sphinxcontrib-applehelp
 sphinxcontrib-devhelp
@@ -604,6 +638,7 @@ sympy
 tables
 tablib
 tabulate
+taichi
 tangled-up-in-unicode
 tblib
 Tempita
@@ -614,6 +649,7 @@ tensorboard-data-server
 tensorboard-plugin-wit
 tensorflow
 tensorflow-estimator
+tensorflow-intel
 tensorflow-io-gcs-filesystem
 termcolor
 terminado
@@ -650,7 +686,8 @@ Twisted
 twisted-iocpsupport
 txZMQ
 typed-ast
-typing_extensions
+typeguard
+typing-extensions
 tzdata
 tzlocal
 u-msgpack-python
@@ -660,6 +697,7 @@ unittest-xml-reporting
 unoconv
 untangle
 update-checker
+uri-template
 urllib3
 user-agent
 venusian
@@ -673,6 +711,7 @@ waitress
 watchdog
 wcwidth
 web.py
+webcolors
 webencodings
 weblib
 WebOb
