@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-19 14:26:15
-LastEditTime : 2022-12-20 13:34:25
+LastEditTime : 2022-12-20 20:27:40
 FilePath     : /py学习/数据/数据计算-taichi.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -69,5 +69,7 @@ def main2(num):
 
 
 if __name__ == "__main__":
+    import sys
+    print(sys.path)
     main(2000000)
     main2(2000000)

@@ -1,17 +1,14 @@
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
 '''
-@==============================================================
-@Descripttion : None
-@Develop      : VSCode
-@Author       : Even.Sand
-@Contact      : sandorn@163.com
-@Date         : 2020-02-14 20:38:57
-FilePath     : /xjLib/xt_DAO/dbconf.PY
-LastEditTime : 2020-08-24 13:56:46
-@Github       : https://github.com/sandorn/home
-#==============================================================
-
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:50
+LastEditTime : 2022-12-20 20:23:27
+FilePath     : /xjLib/xt_DAO/cfg.PY
+Github       : https://github.com/sandorn/home
+==============================================================
 Navicat
 sandorn@163.com
 Sand@2808
