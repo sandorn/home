@@ -20,24 +20,82 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from xt_Alispeech.ex_NSS import TODO_TTS
 
 
-def pygame_play(data, format='wav'):
-    pygame.mixer.init(frequency=8000)
-    pym = ''
-    if format == 'wav':
-        pym = pygame.mixer
-        pym.Sound(data).play()
-    else:
-        pym = pygame.mixer.music
-        pym.load(BytesIO(data)).play(1, 0.07)  # type: ignore
-    print('py_mixer new loading......')
+class thread_play(Thread):
 
-    while pym.get_busy():
-        # 正在播放,等待
-        QThread.msleep(2000)
-        print('py_mixer.playing......')
-        continue
-    pym.stop()
-    print('py_mixer.stoping!!!!!!')
+    def __init__(self, data, format='wav'):
+        super().__init__()
+        self._running = True
+        self.data = data
+        self.format = format
+        self.start()
+
+    def run(self):
+        print(self, 'thread_play playing......')
+        pygame.mixer.init(frequency=8000)
+        if self.format == 'wav':
+            self.pym = pygame.mixer
+            self.pym.Sound(self.data).play()
+        else:
+            self.pym = pygame.mixer.music
+            self.pym.load(BytesIO(self.data)).play()  # type: ignore
+        print('py_mixer new loading......')
+
+        while self.pym.get_busy():
+            # 停止标志位,停止播放
+            if not self._running: break
+            # 正在播放,等待
+            QThread.msleep(1000)
+            print('py_mixer.playing......')
+            continue
+
+        self.stop()
+
+    def stop(self):
+        self._running = False
+
+    def wait(self):
+        self.join()
+
+
+class qthread_play(QThread):
+    _signal = pyqtSignal()
+
+    def __init__(self, data, format='wav'):
+        super().__init__()
+        self._running = True
+        self.data = data
+        self.format = format
+        self.start()
+
+    def run(self):
+        print(self, 'qthread_play playing......')
+        pygame.mixer.init(frequency=8000)
+        if self.format == 'wav':
+            self.pym = pygame.mixer
+            self.pym.Sound(self.data).play()
+        else:
+            self.pym = pygame.mixer.music
+            self.pym.load(BytesIO(self.data)).play()  # type: ignore
+        print('py_mixer new loading......')
+
+        while self.pym.get_busy():
+            # 停止标志位,停止播放
+            if not self._running: break
+            # 正在播放,等待
+            QThread.msleep(1000)
+            print('py_mixer.playing......')
+            continue
+
+    def stop(self):
+        self._running = False
+        self._signal.emit()
+
+    def join(self):
+        self.wait()
+        self._signal.emit()
+
+
+#####################################################
 
 
 def create_read_thread(meta):
@@ -160,7 +218,7 @@ class _read_class_meta:
             if self.pym.get_busy():
                 # 正在播放,等待
                 QThread.msleep(2000)
-                print('self.py_mixer.playing......')
+                print('py_mixer.playing......')
                 continue
             else:
                 if len(self.datas_list) > 0:
@@ -168,7 +226,7 @@ class _read_class_meta:
                     _data = self.datas_list.pop(0)
                     pygame.mixer.Sound(_data).play()
                     QThread.msleep(50)
-                    print('self.py_mixer new loading......')
+                    print('py_mixer new loading......')
                     continue
 
                 if not self._MainMonitor.is_alive():
@@ -182,7 +240,7 @@ class _read_class_meta:
         self._running = False
         self.pym.stop()
         QThread.msleep(50)
-        print('self.py_mixer.stoping!!!!')
+        print('py_mixer.stoping!!!!')
 
 
 def get_read_class(meta):

@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-16 12:19:18
-LastEditTime : 2022-12-18 00:04:08
+LastEditTime : 2022-12-19 22:43:12
 FilePath     : /xjLib/xt_DAO/xt_Xlwings.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -58,5 +58,9 @@ if __name__ == "__main__":
     app = xw.App(visible=True, add_book=False)
     pid = app.pid
     print(pid)
-    # app.quit()
-    # app.kill(pid)
+    wb = app.books.add()  # 创建一个临时表格
+    wb.sheets.add(name='hello_friend')
+    sht = wb.sheets['hello_friend']  # 选中hello_friend的sheet,也可以用sheets[0]去选中
+    sht.range("A1").value = 1  # 给指定单元格赋值
+# app.quit()
+# app.kill(pid)

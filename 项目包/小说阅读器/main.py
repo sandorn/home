@@ -17,9 +17,10 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QThread, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 from read_ui import Ui_Window
-from xt_Alispeech.xt_Pygame import Synt_Read_QThread
-from xt_Ls_Bqg import ahttp_get_contents, get_download_url
+from xt_Alispeech.Play import Synt_Read_QThread
+from xt_Ls_Bqg import get_contents, get_download_url
 from xt_String import str_split_limited_list
+from xt_Thread import Thread_wrap
 from xt_Ui import EventLoop
 
 
@@ -106,7 +107,7 @@ class NyWindow(Ui_Window):
 
     @EventLoop
     def getcontent(self, url):
-        index, title, content = ahttp_get_contents((1, url))
+        index, title, content = get_contents((1, url))
         return "《" + self.bookname + '->' + title + "》\n\n" + content
 
     # 将文件显示在List列表中(图表显示)
@@ -120,9 +121,11 @@ class NyWindow(Ui_Window):
     def currentRowChanged_event(self, row):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
-        nowthread = QThread()
-        nowthread.run = self.getcontent  # type: ignore
-        _text = nowthread.run(self.urls[row])
+        _qh = Thread_wrap(self.getcontent, self.urls[row])
+        _text = _qh.Result
+        # nowthread = QThread()
+        # nowthread.run = self.getcontent  # type: ignore
+        # _text = nowthread.run(self.urls[row])
 
         self.QTextEdit.setFontPointSize(16)  # 设置字号
         self.QTextEdit.setText(_text)

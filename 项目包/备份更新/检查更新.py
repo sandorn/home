@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:56
-LastEditTime : 2022-12-19 19:34:39
+LastEditTime : 2022-12-19 22:48:28
 FilePath     : /项目包/备份更新/检查更新.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -43,7 +43,8 @@ def PIP更新():
     n = 1
     for nu in need_update:
         #  --upgrade-strategy only-if-needed 会升级到最新的兼容版本
-        com_update = f'pip3 install --upgrade-strategy only-if-needed {nu}'
+        # com_update = f'pip3 install --upgrade-strategy only-if-needed {nu}'
+        com_update = f'pip3 install -U {nu}'
         print("正在更新第{}/{}个库[{}],\n执行:{},请等待...".format(n, s, nu, com_update))
         subprocess.call(com_update)
         n += 1

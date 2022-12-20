@@ -7,27 +7,15 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:53
-LastEditTime : 2022-12-14 20:03:15
+LastEditTime : 2022-12-20 00:45:00
 FilePath     : /xjLib/xt_Thread/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
 # #引入自定义thread
-from .Custom import (
-    CustomThread,
-    CustomThread_Queue,
-    CustomThread_Queue_Singleton,
-    CustomThread_Singleton,
-    SigThread,
-    SigThreadQ,
-    SingletonThread,
-    stop_thread,
-)
+from .Custom import (CustomThread, CustomThread_Queue, CustomThread_Queue_Singleton, CustomThread_Singleton, SigThread, SigThreadQ, SingletonThread, stop_thread)
 from .futures import P_Map, P_Sub, ProcessPool, T_Map, T_Sub, ThreadPool
-
 # #引入自定义thread pool
 from .manage import WorkManager, thread_pool
-
 # #引入装饰器
-from .wraps import thread_print, thread_safe, thread_wrap, thread_wrap_class
+from .wraps import (QThread_wrap, Thread_wrap, Thread_wrap_class, thread_print, thread_safe)

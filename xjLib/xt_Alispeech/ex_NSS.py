@@ -17,14 +17,9 @@ from threading import Semaphore, Thread
 
 import nls
 from PyQt5.QtCore import QThread
-from xt_Alispeech.cfg import (
-    Constant,
-    SpeechArgs,
-    get_voice_data,
-    merge_sound_file,
-    save_sound_file,
-)
+from xt_Alispeech.cfg import Constant, SpeechArgs
 from xt_Alispeech.on_state import on_state_cls
+from xt_Alispeech.util import get_voice_data, merge_sound_file, save_sound_file
 from xt_String import str_split_limited_list
 from xt_Time import get_10_timestamp
 
@@ -86,7 +81,7 @@ class NSS(on_state_cls):
 
     def __thread_run(self):
         with Sem:
-            print("{}: thread start..".format(self.__id))
+            print("thread {}: start..".format(self.__id))
 
             _NSS_ = nls.NlsSpeechSynthesizer(
                 token=_ACCESS_TOKEN,
@@ -99,8 +94,6 @@ class NSS(on_state_cls):
                 on_close=self._on_close,
                 callback_args=[self.__id],
             )
-
-            print("{}: session start".format(self.__id))
 
             _NSS_.start(
                 text=self.__text,
@@ -118,7 +111,7 @@ class NSS(on_state_cls):
             )
 
             QThread.msleep(100)
-            print('{}: NSS stopped.'.format(self.__id))
+            print('thread {}: NSS stopped.'.format(self.__id))
 
 
 def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
@@ -147,26 +140,21 @@ def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
 if __name__ == '__main__':
 
     _text = '''
-    财务科目排查要点
-
-一、总公司及分支公司排查要点
-（一）应收应付类科目检查及清理
+应收应付类科目检查及清理
 1.业务类应收科目
 对“应收保费”科目，应按照保单号、应收日期、宽限期截止日、保单状态逐笔分析；对“垫交保费”和“保户质押贷款”科目应按照保单号、垫交日期或质押贷款日期、保单状态逐笔进行分析，保证财务与业务数据核对相符。
 2.业务类预收和应付科目
-各分公司对“预收保费”科目应按照投保单号、预收账龄逐笔核对，保证业务与财务数据相符。年末余额主要为暂收客户的尚未签单或生效的保费，或者其他保全加费等。对于长期挂账的预收保费应与业务部门进行确认，对于预收保费明细账户余额异常的，应查明原因后进行账务处理，保证数据正确。对“应付赔付款”明细科目余额应逐项核对，与业务部门进行数据核实，确认数据是否合理，保证财务数据与业务数据核对一致。对于存在的差异或者长期挂账的应付数据，应及时查找原因并上报总公司审核后进行账务处理。
-3.清理“应付佣金”和“应付手续费”
-对“应付佣金”和“应付手续费”科目进行清理，年末余额应为当年据实发生的应付未付的佣金和手续费。对于长期挂账的数据应查找原因，如果属于确实不再支付的项目应进行清理，在上报总公司审核后进行账务处理。
-4.核实“应付职工薪酬”
-财务部门应与人力资源部对“应付职工薪酬”各明细项目进行核实确认，年末余额应为经人力资源部确认的据实发生的各项应付明细余额，如有不符，应查明原因并及时处理。对于已经计提但确实不再需要支付的数据，经人力资源部审核后进行相应的账务处理。
-5.核对投资类应收科目
-对“应收利息”及“应收股利”科目进行核实，对账户余额分类整理、及时清理，保证应收利息及股利数据的真实和准确。对投资业务的应收款和预付款进行逐项核实，结合其基础资产风险情况、担保及信用增级情况和诉讼判决执行情况等综合判断是否涉及减值损失，并根据《君康人寿保险股份有限公司应收应付款项管理办法（2018修订版）》要求计提减值准备。
-6.核对费用类应收应付科目
-对于费用应收及预付项目，应逐项核实是否符合费用计提条件，不得少计、漏记费用。对于长期挂账的应收应付项目，应核实挂账原因，并根据公司相关制度进行处理。
-7.核对再保类应收应付
-对于再保业务形成的应收应付款项，对已出账单部分，应与账单金额充分核对，保证余额与账单金额一致；对未出账单部分，应以产品精算部与再保公司达成一致的预估方法入账。
-8.梳理或有事项
-公司法务部应梳理公司存在的未决诉讼，并在12月28日前提交财务管理部（若期后诉讼情况发生变动的，应及时更新）。符合负债确认条件的，应按照会计准则要求确认对应负债。'''
+各分公司对“预收保费”科目应按照投保单号、预收账龄逐笔核对，保证业务与财务数据相符。年末余额主要为暂收客户的尚未签单或生效的保费，或者其他保全加费等。对于长期挂账的预收保费应与业务部门进行确认，对于预收保费明细账户余额异常的，应查明原因后进行账务处理，保证数据正确。
+'''
 
-    out_file = TODO_TTS(_text, merge=True)
-    print(out_file)
+    out_file = TODO_TTS(_text, {'aformat': 'wav'}, readonly=True)
+
+    from PyQt5.QtCore import QThread
+    from xt_Alispeech.Play import qthread_play, thread_play
+
+    for oufile in out_file:
+        task = qthread_play(oufile[1])
+        task.join()
+        task2 = thread_play(oufile[1])
+        QThread.msleep(10000)
+        task2.stop()

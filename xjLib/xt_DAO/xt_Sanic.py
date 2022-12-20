@@ -1,19 +1,20 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-08-10 13:40:31
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:50
+LastEditTime : 2022-12-19 22:35:27
 FilePath     : /xjLib/xt_DAO/xt_Sanic.py
-LastEditTime : 2020-08-26 10:54:26
-#Github       : https://github.com/sandorn/home
-#==============================================================
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import asyncio
+
 from sanicdb import SanicDB
 
 
@@ -24,8 +25,9 @@ async def index(loop):
     print(data)
 
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(index(loop))
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(index(loop))
 '''from sanic import Sanic
 from sanic import response
 # 导入

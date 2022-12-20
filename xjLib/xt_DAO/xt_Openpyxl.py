@@ -203,3 +203,57 @@ if __name__ == "__main__":
 # print(he.sh_name_list)
 # he2 = ExcelHandler("d:/2.xlsx", "Sheet99")
 # he2.write_add(rows)
+'''
+Openpyxl库对excel的常规处理详解_sweet tea111的博客-CSDN博客_load_work openpyxl
+https://blog.csdn.net/weixin_44390373/article/details/118153901
+
+from openpyxl import load_workbook
+from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
+wb = load_workbook("xxx.xlsx")
+ws = wb.active
+-------------------------------------------------------------------------
+#Border 边框Side边线
+#eg:将A1:D5范围的边框显示
+thin = Side(border_style="thin", color="000000")
+border = Border(left=thin, right=thin, top=thin, bottom=thin)
+for row in ws[A1:D5]:
+    for cell in row:
+        cell.border = border
+--------------------------------------------------------------------------
+#Alignment 单元格对齐方式
+#horizontal:代表水平方向，left:左对齐;center:居中对齐;right:右对齐;distributed:分散对齐;centerContinuous:跨列居中;justify:两端对齐
+#vertical
+#vertical:代表垂直方向，center:居中;top:靠上;bottom:靠下;justify:两端对齐;distributed:分散对齐
+#wrap_text或者wrapText:自动换行
+#eg:将单元格A3设置为水平右对齐，垂直居中，自动换行
+align = Alignment(horizontal='right', vertical='center', wrap_text=True)
+ws['A3'].alignment = align
+------------------------------------------------------------------------------
+#Font 字体设置
+#name:字体名字
+#size:字体大小
+#color:字体颜色
+#bold:加粗 True or False
+#italic:斜体 True or False
+#strike:删除线 True or False
+#vertAlign = None 垂直对齐
+#纵向对齐方式有3种：baseline superscript subscript
+#underline = 'none':下划线
+#eg
+font = Font(size=11, bold=True, name='微软雅黑', color="FF0000")
+WS['A3'].font = font
+------------------------------------------------------------------------------
+#PatternFill 填充
+#fill_type:填充类型，若没有特别指定类型，则后续的参数都无效
+#soild:纯色填充、其余类型：'none'/'darkDown'/'darkGray'/'darkGrid'/'darkHorizontal'等
+#start_color:前景色 end_color:背景色
+#eg
+
+```python
+fill = PatternFill(patternType="solid",start_color="33CCFF")
+ws['A3'].fill = fill
+-------------------------------------------------------------------------------
+
+
+
+'''

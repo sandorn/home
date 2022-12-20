@@ -11,91 +11,66 @@
 #LastEditTime : 2020-07-22 13:27:36
 #Github       : https://github.com/sandorn/home
 #==============================================================
-
-用户登录名称:sandorn_ram@1915355838841755.onaliyun.com
-登录密码:rH17b#9{$gDqRiJXB3flDaWqbMPAEz{n
-appKey = 'Ofm34215thIUdSIX'
-'AccessKey ID': 'LTAI4G5TRjsGy8BNKPtctjXQ',
-'AccessKey Secret': 'hS8Kl0b9orxNUW7IOeBIFUfzgcVn00'
 '''
-from dataclasses import dataclass
-from typing import Any
+import os
+import shutil
 
-from nls.token import getToken
-from xt_Class import dict_mothed_Mixin
-from xt_Thread.Singleon import Singleton_Mixin
+from pydub import AudioSegment
+from xt_File import get_desktop
 from xt_Time import get_10_timestamp
 
-_ACCESS_APPKEY = 'Ofm34215thIUdSIX'
-_ACCESS_KeyId = 'LTAI4G5TRjsGy8BNKPtctjXQ'
-_ACCESS_Secret = 'hS8Kl0b9orxNUW7IOeBIFUfzgcVn00'
+
+def handle_ex_nsx_result(res):
+    '''处理 ex_NSR ex_NST 结果'''
+    dictMerged = {}
+    res_list = []
+    for key, values in res.items():
+        _dict = eval(values)
+
+        dictMerged[key] = dict(_dict['header'], **_dict['payload'])
+        res_list.append((key, dictMerged[key]['result']))
+    return (res_list, dictMerged)
 
 
-class Constant(Singleton_Mixin):
-    '''Constant : 常量参数'''
-    __appKey = _ACCESS_APPKEY
-    __accessKeyId = _ACCESS_KeyId
-    __accessKeySecret = _ACCESS_Secret
-    __token = ''
-    __ExpireTime = 0
+def get_voice_data(datalist):
+    '''情形1-不保存文件,返回音频数据,用于朗读'''
+    for index, item in enumerate(datalist):
+        with open(item[1], 'rb') as f:
+            __data = f.read()
+        os.remove(item[1])
+        datalist[index][1] = __data
 
-    appKey = property(lambda cls: cls.__appKey)
-    accessKeyId = property(lambda cls: cls.__accessKeyId)
-    accessKeySecret = property(lambda cls: cls.__accessKeySecret)
-    expire_time = property(lambda cls: cls.__ExpireTime)
-
-    def __init__(self):
-        self.__renew_token__()
-
-    # token = property(lambda cls: cls.__token)
-    # 第二种方法
-    @property
-    def token(self):
-        self.__renew_token__()
-        return self.__token
-
-    def __renew_token__(self):
-        now = get_10_timestamp()
-        # #token生命周期缩短10分钟
-        if (self.__ExpireTime - 60 * 10) <= now:
-            self.__token, self.__ExpireTime = getToken(self.__accessKeyId, self.__accessKeySecret)
-        return self.__token
+    # $[[1, b'xxxx'], [2, b'xxxx'], [3, b'xxxx'],]
+    return datalist
 
 
-# @dataclass
-class SpeechArgs(dict_mothed_Mixin):
-    '''TTS参数'''
-    long_tts: bool = False
-    aformat: str = 'mp3'
-    sample_rate: int = 16000
-    voice: str = 'Aida'  # aida   # ailun  # kenny  # aijing # aixia
-    volume: int = 50
-    speech_rate: int = 0
-    pitch_rate: int = 0
-    text: str = ''
-    wait_complete: bool = True
-    start_timeout: int = 10
-    completed_timeout: int = 60
-    ex: dict = {}
-    # {'enable_subtitle': True}
+def save_sound_file(datalist, path=None):
+    '''情形2-保存音频文件到桌面'''
+    if path is None: path = get_desktop() or ''
+    for index, item in enumerate(datalist):
+        shutil.move(item[1], path)
+        datalist[index][1] = path + "\\" + item[1].split("\\")[-1]
+
+        # $[[1, 'D:\\path\\1.mp3'], [2, 'D:\\path\\2.mp3'], [3, 'D:\\path\\3.mp3'],]
+    return datalist
 
 
-@dataclass
-class SynResult:
-    '''合成结果,暂未使用'''
-    id: str = ''
-    filename: str = ''
-    text: str = ''
-    vdata: Any = ''
+def merge_sound_file(datalist, args, path=''):
+    '''情形3-合并音频,删除过程文件'''
+    if path == '': path = get_desktop()
+    sound_list = [[item[0], AudioSegment.from_file(item[1], format=args['aformat']), os.remove(item[1])] for item in datalist]
 
+    SumSound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件
+    for item in sound_list:
+        SumSound += item[1]  # 把声音文件相加
 
-@dataclass
-class TransResult:
-    '''识别结果,暂未使用'''
-    id: str = ''
-    filename: str = ''
-    text: str = ''
-    vdata: Any = ''
+    # $保存音频文件
+    __fname = f"{path}\\{get_10_timestamp()}_{args['voice']}_tts.{args['aformat']}"
+    SumSound.export(__fname, format=args['aformat'])  # 保存文件
+    datalist = [[1, __fname]]
+
+    # $[[1, 'D:\\Desktop\\1.mp3'],]
+    return datalist
 
 
 VIOCE = [

@@ -6,8 +6,8 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2019-04-26 12:33:32
-LastEditTime : 2022-12-05 01:25:44
+Date         : 2020-11-26 19:38:56
+LastEditTime : 2022-12-19 22:50:48
 FilePath     : /项目包/备份更新/安装三方库.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -52,4 +52,4 @@ def 执行安装(filename, comm_1="pip3"):
 
 if __name__ == "__main__":
     # 执行安装(filename)
-    执行安装("D:\\CODE\\项目包\\备份更新\\PIP-list-20221113101840.txt")
+    执行安装("D:/CODE/项目包/备份更新/PIP-list-20221113101840.txt")
