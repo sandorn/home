@@ -18,14 +18,14 @@ import os
 from multiprocessing import Pool
 
 from xt_File import savefile
-from xt_Ls_Bqg import ahttp_get_contents, get_download_url
+from xt_Ls_Bqg import ahttp_get_contents, get_biqugse_download_url
 from xt_Time import fn_timer
 
 
 @fn_timer
 def main_Pool(target):
     texts_list = []
-    bookname, urls, _ = get_download_url(target)
+    bookname, urls, _ = get_biqugse_download_url(target)
 
     print('multiprocessing.pool,开始下载:《' + bookname + '》', flush=True)
     mypool = Pool(32)  # !进程数,不能超过61
@@ -40,6 +40,6 @@ def main_Pool(target):
 
 
 if __name__ == '__main__':
-    main_Pool('https://www.biqukan8.cc/38_38163/')
+    main_Pool('http://www.biqugse.com/96703/')
     # 38_38836     34.84 seconds
     # 2_2714      215.40 seconds

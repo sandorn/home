@@ -147,12 +147,8 @@ def map_get_contents_ahttp(args):
 
 
 if __name__ == "__main__":
-    url = 'https://www.biqukan.com/69_69034/458679741.html'
-    res = ahttpGet(url)
-    response = res.element
-    _title = "".join(response.xpath('//h1/text()'))
-    title = Str_Replace(_title, [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
-    _showtext = response.xpath('//*[@id="content"]/text()')
-    print(title, '\n', '******************************************************************')
-
-    print(clean_Content(_showtext), '\n', '******************************************************************')
+    url = 'https://www.biqukan8.cc/38_38163/'
+    bookname, urls, titles = get_download_url(url)
+    print(bookname)
+    for i in range(len(urls)):
+        print(urls[i], titles[i])

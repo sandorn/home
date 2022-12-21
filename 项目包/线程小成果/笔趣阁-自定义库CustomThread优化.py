@@ -7,16 +7,15 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:55
-LastEditTime : 2022-12-20 20:32:08
+LastEditTime : 2022-12-21 11:53:52
 FilePath     : /项目包/线程小成果/笔趣阁-自定义库CustomThread优化.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
 import os
 
 from xt_File import savefile
-from xt_Ls_Bqg import get_contents, get_download_url
+from xt_Ls_Bqg import get_biqugse_download_url, get_contents
 from xt_Thread import CustomThread, WorkManager
 from xt_Time import fn_timer
 
@@ -43,7 +42,10 @@ def manager(bookname, args):
 
 
 if __name__ == "__main__":
-    bookname, urls, _ = get_download_url('https://www.biqukan8.cc/38_38163/')
+    bookname, urls, _ = get_biqugse_download_url('http://www.biqugse.com/96703/')
+    # 'http://www.biqugse.com/96703/'
+    # 'https://www.biqukan8.cc/38_38163/'
+
     # # 38_38836  #2_2714  2_2760
 
     main(bookname, urls)

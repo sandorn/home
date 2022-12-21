@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-16 12:19:18
-LastEditTime : 2022-12-20 19:54:41
+LastEditTime : 2022-12-20 22:12:23
 FilePath     : /xjLib/xt_DAO/xt_Xlwings.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -62,5 +62,10 @@ if __name__ == "__main__":
     wb.sheets.add(name='hello_friend')
     sht = wb.sheets['hello_friend']  # 选中hello_friend的sheet,也可以用sheets[0]去选中
     sht.range("A1").value = 1  # 给指定单元格赋值
+
+    import sys
+    print(sys.version)
+    print(sys.executable)
+    print(sys.path)
 # app.quit()
 # app.kill(pid)

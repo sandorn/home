@@ -7,6 +7,20 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:49
+LastEditTime : 2022-12-21 14:23:05
+FilePath     : /项目包/线程小成果/笔趣阁-自定义库futures-.py
+Github       : https://github.com/sandorn/home
+==============================================================
+'''
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2020-11-26 19:38:49
 LastEditTime : 2022-12-09 15:10:53
 FilePath     : /项目包/线程小成果/笔趣阁-自定义库futures-.py
 Github       : https://github.com/sandorn/home

@@ -70,7 +70,7 @@ def _request_parse(method, url, *args, **kwargs):
     if func_exc: return None
 
 
-def _request_try_wraps(method, url, *args, **kwargs):
+def _request_wraps(method, url, *args, **kwargs):
     '''利用自编重试装饰器，实现重试'''
     kwargs = _setKw(kwargs)
 
@@ -108,12 +108,12 @@ def _request_tretry(method, url, *args, **kwargs):
         return ReqResult(response)
 
 
-get_parse = partial(_request_parse, "get")
-post_parse = partial(_request_parse, "post")
-get_wraps = partial(_request_try_wraps, "get")
-post_wraps = partial(_request_try_wraps, "post")
-get = partial(_request_tretry, "get")
-post = partial(_request_tretry, "post")
+get = partial(_request_parse, "get")
+post = partial(_request_parse, "post")
+get_wraps = partial(_request_wraps, "get")
+post_wraps = partial(_request_wraps, "post")
+get_tretry = partial(_request_tretry, "get")
+post_tretry = partial(_request_tretry, "post")
 
 
 class SessionClient:
@@ -165,7 +165,6 @@ class SessionClient:
     def __getitem__(self, method):
         if method in ['get', 'post']:
             self.method = method
-            # @不带括号,传递*args, **kwargs参数
             return self.__create_params
 
     def update_cookies(self, cookie_dict):
@@ -178,11 +177,13 @@ class SessionClient:
 
 
 if __name__ == '__main__':
-    res = get("https://www.biqukan8.cc/38_38163/")  # 'https://www.baidu.com'
-    print(res)
-    print(res.dom.xpath('//title/text()'))
-    print(res.html.xpath('//title/text()'))
-    print(res.element.xpath('//title/text()'))
+    urls = ['http://www.baidu.com', 'http://www.163.com', 'http://dangdang.com', 'https://www.biqukan8.cc/38_38163/']
+    for url in urls:
+        res = get(url)
+        print(res)
+        print(res.dom.xpath('//title/text()'))
+        print(res.html.xpath('//title/text()'))
+        print(res.element.xpath('//title/text()'))
 '''
     # @不能用于协程,且不保留最后错误
     # from retrying import retry as Retry

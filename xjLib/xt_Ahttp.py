@@ -99,13 +99,12 @@ async def Async_run(self):
     try:
         await _fetch_run()
     except Exception as err:
-        print(f'Async_run:{self}; RetryErr:{err!r}')
+        print(f'RetryErr Async_run:{self}; RetryErr:{err!r}')
         return None
     else:
         # #返回结果,不管是否正确
         self.result = ReqResult(self.response, self.content, index=self.index)
-        if self.callback:  # 有回调则调用
-            self.result = self.callback(self.result)
+        if self.callback: self.result = self.callback(self.result)
         return self.result
 
 
@@ -145,7 +144,7 @@ async def Async_Fetch(task, result_list, session):
     try:
         await _fetch_run()
     except Exception as err:
-        print(f'Async_Fetch:{task}; RetryErr:{err!r}')
+        print(f'RetryErr Async_Fetch:{task}; RetryErr:{err!r}')
         task.response = task.content = task.result = None
         result_list.append(None)
         return None
@@ -186,8 +185,8 @@ if __name__ == "__main__":
     url_g = "http://g.cn"  # 返回head及ip等信息
 
     res = ahttpGet(url_g)
-    print(res)
+    # print(res)
     res = ahttpPost(url_post)
-    print(res)
+    # print(res)
     res = ahttpGetAll([url_g, url_get])
-    print(res)
+    # print(res)

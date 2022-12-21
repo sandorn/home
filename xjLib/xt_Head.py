@@ -275,12 +275,12 @@ def get_user_agent():
 MYHEAD = {
     'User-Agent': get_user_agent(),
     'Accept': '*/*,application/*,application/json,text/*,text/html',
-    'Accept-Encoding': 'gzip,compress,deflate,br',
+    'Accept-Encoding': 'gzip, deflate',
     'Content-Encoding': 'gzip,deflate,compress',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
-    'Accept-Charset': 'gb2312,utf-8;q=0.7,*;q=0.7',
+    'Accept-Charset': 'UTF-8,GB2312,GBK,GB18030,ISO-8859-1,ISO-8859-5;q=0.7,*;q=0.7',
     'Connection': 'close',  # 'keep-alive',
-    # 'Content-Type': 'application/json',
+    'Content-Type': 'text/html,application/x-www-form-unlencoded; charset=UTF-8',
 }
 '''
     在网络请求中，常用的Content-Type有如下：

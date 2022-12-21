@@ -39,7 +39,7 @@ class AsySpider(object):
     def get_page(self, url):
         try:
             response = yield httpclient.AsyncHTTPClient().fetch(url)
-            print('######fetched %s' % url)
+            print('fetched :  %s' % url)
         except Exception as e:
             print('Exception: %s %s' % (e, url))
             raise gen.Return('')
@@ -55,7 +55,7 @@ class AsySpider(object):
                 if current_url in self._fetching:
                     return
 
-                print('fetching****** %s' % current_url)
+                print('fetching : %s' % current_url)
                 self._fetching.add(current_url)
                 html = yield self.get_page(current_url)
                 self._fetched.add(current_url)
@@ -109,11 +109,10 @@ def main():
     print(res)
 
     for i in res:
-        p.apply_async(
-            run_spider, args=(
-                i[0],
-                i[1],
-            ))
+        p.apply_async(run_spider, args=(
+            i[0],
+            i[1],
+        ))
     p.close()
     p.join()
 
