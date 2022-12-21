@@ -244,9 +244,7 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
 
         return wrapper
 
-    if callable(fn):
-        return decorator(fn)
-    return decorator
+    return decorator(fn) if callable(fn) else decorator
 
 
 def gethelp(obj):
