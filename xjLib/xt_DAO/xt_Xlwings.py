@@ -6,8 +6,8 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2022-12-16 12:19:18
-LastEditTime : 2022-12-20 22:12:23
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2022-12-22 19:33:44
 FilePath     : /xjLib/xt_DAO/xt_Xlwings.py
 Github       : https://github.com/sandorn/home
 ==============================================================
