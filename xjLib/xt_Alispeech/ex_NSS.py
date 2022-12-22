@@ -20,7 +20,7 @@ from PyQt5.QtCore import QThread
 from xt_Alispeech.cfg import Constant, SpeechArgs
 from xt_Alispeech.on_state import on_state_cls
 from xt_Alispeech.util import get_voice_data, merge_sound_file, save_sound_file
-from xt_String import str_split_limited_list
+from xt_String import str2list
 from xt_Time import get_10_timestamp
 
 _ACCESS_APPKEY = Constant().appKey
@@ -120,7 +120,7 @@ def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
     args.update(renovate_args)
 
     if isinstance(_in_text, str):  # $整段文字要合并
-        _in_text = str_split_limited_list(_in_text)
+        _in_text = str2list(_in_text)
         merge = True
     assert isinstance(_in_text, list)
 
@@ -133,18 +133,16 @@ def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
     datalist.sort(key=lambda x: x[0])
 
     if readonly: return get_voice_data(datalist)
-    if not merge: return save_sound_file(datalist)
     if merge: return merge_sound_file(datalist, args)
+    else: return save_sound_file(datalist)
 
 
 if __name__ == '__main__':
 
     _text = '''
-应收应付类科目检查及清理
-1.业务类应收科目
-对“应收保费”科目，应按照保单号、应收日期、宽限期截止日、保单状态逐笔分析；对“垫交保费”和“保户质押贷款”科目应按照保单号、垫交日期或质押贷款日期、保单状态逐笔进行分析，保证财务与业务数据核对相符。
-2.业务类预收和应付科目
-各分公司对“预收保费”科目应按照投保单号、预收账龄逐笔核对，保证业务与财务数据相符。年末余额主要为暂收客户的尚未签单或生效的保费，或者其他保全加费等。对于长期挂账的预收保费应与业务部门进行确认，对于预收保费明细账户余额异常的，应查明原因后进行账务处理，保证数据正确。
+立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年
+“青年强，则国家强。当代中国青年生逢其时，施展才干的舞台无比广阔，实现梦想的前景无比光明。”习近平总书记在党的二十大报告中勉励广大青年坚定不移听党话、跟党走，怀抱梦想又脚踏实地，敢想敢为又善作善成，立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年，让青春在全面建设社会主义现代化国家的火热实践中绽放绚丽之花。
+未来属于青年，希望寄予青年。认真学习贯彻党的二十大精神，广大青年纷纷表示，一定牢记习近平总书记嘱托，坚定理想信念，筑牢精神之基，厚植爱国情怀，矢志不渝跟党走，以实现中华民族伟大复兴为己任，增强做中国人的志气、骨气、底气，不负时代，不负韶华，不负党和人民的殷切期望。
 '''
 
     out_file = TODO_TTS(_text, {'aformat': 'wav'}, readonly=True)
@@ -155,6 +153,6 @@ if __name__ == '__main__':
     for oufile in out_file:
         task = qthread_play(oufile[1])
         task.join()
-        task2 = thread_play(oufile[1])
-        QThread.msleep(10000)
-        task2.stop()
+        # task2 = thread_play(oufile[1])
+        # QThread.msleep(10000)
+        # task2.stop()

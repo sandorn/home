@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  :process_time
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2020-11-26 19:38:49
-LastEditTime : 2022-12-14 17:55:43
+LastEditTime : 2022-12-21 21:52:46
 FilePath     : /xjLib/xt_Time.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -19,14 +19,14 @@ from functools import wraps
 
 
 def fn_timer(function):
-    '''定义一个装饰器来测量函数的执行时间'''
+    '''装饰器：测量函数执行时长'''
 
     @wraps(function)
     def func_timer(*args, **kwargs):
-        start_time = time.perf_counter()
+        start_time = time.process_time()
         result = function(*args, **kwargs)
-        end_time = time.perf_counter()
-        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> total run:{end_time-start_time: .2f} seconds")
+        se = (end_time := time.process_time()) - start_time
+        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> total run:{se: .2f} seconds")
         return result
 
     stack = traceback.extract_stack()
@@ -48,7 +48,7 @@ def get_sql_time():
 
 
 def get_10_timestamp(timestr=None):
-    '''获取当前时间的时间戳（10位）'''
+    '''获取当前时间的时间戳-10位'''
     if timestr is None:
         timestr = time.time()
         return int(round(timestr))
@@ -58,7 +58,7 @@ def get_10_timestamp(timestr=None):
 
 
 def get_13_timestamp(timestr=None):
-    '''获取当前时间的时间戳（13位）'''
+    '''获取当前时间的时间戳-13位'''
     return get_10_timestamp(timestr) * 1000
 
 

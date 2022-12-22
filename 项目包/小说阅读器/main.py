@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import QMessageBox
 from read_ui import Ui_Window
 from xt_Alispeech.Play import Synt_Read_QThread
 from xt_Ls_Bqg import get_contents, get_download_url
-from xt_String import str_split_limited_list
+from xt_String import str2list
 from xt_Thread import Thread_wrap
 from xt_Ui import EventLoop
 
@@ -87,7 +87,7 @@ class NyWindow(Ui_Window):
     @EventLoop
     def read_read(self):
         self.pushButton_read.setText('&STOP')
-        newText = str_split_limited_list(self.QTextEdit.toPlainText())  # 处理字符串
+        newText = str2list(self.QTextEdit.toPlainText())  # 处理字符串
         self.runthread = Synt_Read_QThread(newText)
         self.runthread._signal.connect(self.playdone)  # #绑定Synt_Read_QThread中定义的信号
 
@@ -106,6 +106,7 @@ class NyWindow(Ui_Window):
         return
 
     @EventLoop
+    @Thread_wrap
     def getcontent(self, url):
         index, title, content = get_contents((1, url))
         return "《" + self.bookname + '->' + title + "》\n\n" + content
@@ -121,10 +122,10 @@ class NyWindow(Ui_Window):
     def currentRowChanged_event(self, row):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
-        _qh = Thread_wrap(self.getcontent, self.urls[row])
-        _text = _qh.Result
+        _qh = self.getcontent(self.urls[row])
+        _text = _qh.getResult()
         # nowthread = QThread()
-        # nowthread.run = self.getcontent  # type: ignore
+        # nowthread.run = self.getcontent
         # _text = nowthread.run(self.urls[row])
 
         self.QTextEdit.setFontPointSize(16)  # 设置字号

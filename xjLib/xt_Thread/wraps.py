@@ -26,7 +26,6 @@ def thread_safe(func=None, lock=Lock()):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            '''函数的线程安全化'''
             with lock:
                 return func(*args, **kwargs)
 
@@ -44,12 +43,8 @@ class _MyThread(Thread):
 
     def run(self):
         self.callback = self._kwargs.pop('callback', None)
-        self.Result_dict = self._kwargs.pop('Result_dict', {})
         self.Result = self._target(*self._args, **self._kwargs)
-
-        if self.callback is not None and callable(self.callback):
-            self.Result = self.callback(self.Result)
-        self.Result_dict[self.ident] = self.Result
+        self.Result = self.callback(self.Result) if callable(self.callback) else self.Result
 
     def getResult(self):
         """获取当前线程结果"""
@@ -74,7 +69,7 @@ def Thread_wrap(func=None, *args, **kwargs):
     可在调用被装饰函数添加daemon=True,callback等参数'''
 
     # 需要再次嵌套一层装饰器,才可以供下面运行时使用
-    def wrapper(fun, *args, **kwargs):
+    def wrapper(fun):
 
         def inner(*args, **kwargs):
             _mythr = _MyThread(
@@ -85,17 +80,13 @@ def Thread_wrap(func=None, *args, **kwargs):
             )
             _mythr.daemon = kwargs.pop('daemon', False)
             _mythr.start()
-            _mythr.Result = _mythr.getResult()
             print(f"{_mythr} start with thread_wrap...")
             return _mythr
 
-        return inner(*args, **kwargs)
-
-    # 判断func(参数)
-    if func is None: return wrapper
+        return inner
 
     # 如果func是可以调用的函数
-    if callable(func): return wrapper(func, *args, **kwargs)
+    return wrapper(func, *args, **kwargs) if callable(func) else wrapper
 
 
 def QThread_wrap(func=None, *args, **kwargs):
@@ -104,29 +95,27 @@ def QThread_wrap(func=None, *args, **kwargs):
     可在调用被装饰函数添加daemon=True,callback等参数'''
 
     # 需要再次嵌套一层装饰器,才可以供下面运行时使用
-    def wrapper(fun, *args, **kwargs):
+    def wrapper(fun):
 
         def inner(*args, **kwargs):
             _mythr = QThread()
             _mythr.run = fun
             _mythr.join = _mythr.wait
-            print(f"{fun.__name__} start with QThread_wrap...")
+            print(f"{_mythr} | {fun.__name__} start with QThread_wrap...")
             _mythr.Result = _mythr.run(*args, **kwargs)
 
             return _mythr
 
-        return inner(*args, **kwargs)
-
-    # 判断func(参数)
-    if func is None: return wrapper
+        return inner
 
     # 如果func是可以调用的函数
-    if callable(func): return wrapper(func, *args, **kwargs)
+    return wrapper(func, *args, **kwargs) if callable(func) else wrapper
 
 
 class Thread_wrap_class:
-    '''函数的线程装饰器,无括号(),返回线程实例,\n
-    getResult获取结果,类或实例getAllResult获取结果集合,\n
+    '''无特别用处，暂停使用
+    函数的线程装饰器,无括号(),返回线程实例,
+    getResult获取结果,类或实例getAllResult获取结果集合,
     可在调用被装饰函数添加daemon=True,callback等参数'''
     Result_dict = {}
     thread_dict = {}
@@ -135,8 +124,7 @@ class Thread_wrap_class:
         self.func = func
 
     def __call__(self, *args, **kwargs):
-        print(f"{self.func.__name__} start with thread_wrap_class...")
-        kwargs.update({'Result_dict': thread_wrap_class.Result_dict})
+        kwargs.update({'Result_dict': Thread_wrap_class.Result_dict})
         _mythr = _MyThread(
             self.func,
             self.func.__name__,
@@ -144,8 +132,8 @@ class Thread_wrap_class:
             **kwargs,
         )
 
+        print(f"{_mythr} start with thread_wrap_class...")
         _mythr.daemon = kwargs.pop('daemon', False)
-        _mythr.getAllResult = self.getAllResult
         _mythr.start()
         self.thread_dict[_mythr.ident] = _mythr
         return _mythr
@@ -159,20 +147,32 @@ class Thread_wrap_class:
         return res
 
 
+def create_mixin_class(name, cls, meta, kwargs={}):
+    '''type动态混入继承,实质是调整 bases'''
+    _return_class = type(name, (cls, meta), kwargs)
+    return _return_class
+    # sample.__bases__ += (Singleton_Base, )
+
+
+def mixin_class_bases(cls, bases):
+    '''混入类的继承，不会覆盖原有继承'''
+    cls.__bases__ += (bases, )
+    return cls
+
+
 thread_print = thread_safe(print)
 
 if __name__ == "__main__":
 
     @Thread_wrap
-    def b(i):
-        return i * 10
-
-    @Thread_wrap_class
     def a(i):
         return i * 2
 
+    @QThread_wrap
+    def b(i):
+        return i * 10
+
     res = a(2)
-    print(res.getResult())
+    print(res.Result)
     cc = b(5)
-    print(cc.getResult())
-    thread_print("hello world")
+    print(cc.Result)

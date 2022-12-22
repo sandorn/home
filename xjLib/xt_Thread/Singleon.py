@@ -139,8 +139,10 @@ if __name__ == "__main__":
             self.name = string
             self.age = age
 
+    super_sss = type('super_sss', (sss, Singleton_Base), {})
+
     class sample(sss, Singleton_Mixin):
-        # # Singleton_Base
+        # Singleton_Base
         pass
 
     @singleton_wrap_return_class
@@ -162,9 +164,11 @@ if __name__ == "__main__":
     ee.b = 987
     dd.a = 4444
     print(aa is bb, ee is dd, id(aa), id(bb), id(cc), id(dd), aa.__dict__, bb.__dict__, cc.__dict__, dd.__dict__)
-    print(11111, sample.__mro__)
-    print(22222, sample.__base__)
-    print(33333, sample.__bases__)
+    # print(11111, sample.__mro__)
+    # print(22222, sample.__base__)
+    # print(33333, sample.__bases__)
     # sample.__bases__ += (Singleton_Base, )
-    # print(44444, sample.__bases__)
-    print(55555, sample.__mro__)
+    # print(44444, sample.__mro__)
+    t1 = super_sss('习近平')
+    t2 = super_sss('胡锦涛')
+    print(t1 is t2, t1.__dict__, t2.__dict__, aa.__dict__, bb.__dict__, cc.__dict__, dd.__dict__)

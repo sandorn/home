@@ -18,6 +18,7 @@ from threading import Thread
 import pygame
 from PyQt5.QtCore import QThread, pyqtSignal
 from xt_Alispeech.ex_NSS import TODO_TTS
+from xt_Thread import create_mixin_class
 
 
 class thread_play(Thread):
@@ -243,18 +244,11 @@ class _read_class_meta:
         print('py_mixer.stoping!!!!')
 
 
-def get_read_class(meta):
-    '''type 动态混入继承,实质是调整 bases'''
-    _name = 'QThread' if meta is QThread else 'Thread'
-    _read_class = type(f'RSynt_Read_{_name}', (_read_class_meta, meta), {})
-    return _read_class
-
-
 class RSynt_Read_Thread(_read_class_meta, Thread):
     ...
 
 
-RSynt_Read_QThread = get_read_class(QThread)
+RSynt_Read_QThread = create_mixin_class('QThread', _read_class_meta, QThread)
 
 if __name__ == '__main__':
     # import snoop
