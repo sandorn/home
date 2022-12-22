@@ -108,7 +108,7 @@ class NyWindow(Ui_Window):
     @EventLoop
     @Thread_wrap
     def getcontent(self, url):
-        index, title, content = get_contents((1, url))
+        _, title, content = get_contents((1, url))
         return "《" + self.bookname + '->' + title + "》\n\n" + content
 
     # 将文件显示在List列表中(图表显示)
