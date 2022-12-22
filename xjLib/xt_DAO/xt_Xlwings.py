@@ -7,11 +7,12 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-22 19:33:44
+LastEditTime : 2022-12-22 22:34:53
 FilePath     : /xjLib/xt_DAO/xt_Xlwings.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import xlwings as xw
 
 
@@ -67,5 +68,5 @@ if __name__ == "__main__":
     print(sys.version)
     print(sys.executable)
     print(sys.path)
-# app.quit()
-# app.kill(pid)
+app.quit()
+app.kill(pid)
