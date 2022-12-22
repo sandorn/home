@@ -13,7 +13,6 @@ LastEditTime : 2021-03-25 10:03:29
 #==============================================================
 '''
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-
 # DeclarativeMeta  类;declarative_base类工厂
 from xt_Class import item_Mixin
 from xt_DAO.cfg import make_connect_string  # type: ignore
@@ -206,4 +205,4 @@ if __name__ == "__main__":
     print(t.columns())
     sqlhelper = SqlConnection(t, 'TXbx')
     res = sqlhelper.select()
-    print(22222222222222, res)
+    print(res)
