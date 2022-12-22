@@ -21,40 +21,40 @@ from xt_DAO.cfg import make_connect_string  # type: ignore
 class Orm_Meta:
 
     def init_db(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def drop_db(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def insert(self, dict=None):
-        raise NotImplemented
+        raise NotImplementedError
 
     def insert_all(self, dict=None):
-        raise NotImplemented
+        raise NotImplementedError
 
     def delete(self, conditions=None):
-        raise NotImplemented
+        raise NotImplementedError
 
     def update(self, conditions=None, value=None):
-        raise NotImplemented
+        raise NotImplementedError
 
     def select(self, conditions=None, Columns=None, count=None, show=False):
-        raise NotImplemented
+        raise NotImplementedError
 
     def from_statement(self, sql, conditions=None, show=False):
-        raise NotImplemented
+        raise NotImplementedError
 
     def filter(self, conditions, show=False):
-        raise NotImplemented
+        raise NotImplementedError
 
     def filter_by(self, conditions, show=False):
-        raise NotImplemented
+        raise NotImplementedError
 
     def _result_refine(self, result):
-        raise NotImplemented
+        raise NotImplementedError
 
     def close(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class Model_Method_Mixin(item_Mixin):
@@ -197,7 +197,7 @@ def Data_Model_2_py(tablename, filename=None, key='default'):
 
 
 if __name__ == "__main__":
-    # Data_Model_2_py('uuu', 'd:/1', 'TXbook')
+    # Data_Model_2_py('uuu', 'd:/1.py', 'TXbook')  # 待测试
     from xt_DAO.xt_sqlalchemy import SqlConnection, get_engine
     engine, session = get_engine('TXbx')
     t = getModel('users2', engine)  # , 'users99')
