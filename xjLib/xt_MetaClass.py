@@ -165,6 +165,10 @@ if __name__ == "__main__":
             cls.__init__(cls, *args, **kwargs)
             return obj
 
+        def __instancecheck__(cls, instance):
+            print('===>Mymeta.__instancecheck__')
+            return isinstance(instance, cls)
+
     class Foo(metaclass=Mymeta):
         yaml_tag = '!Foo'
 
