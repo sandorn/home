@@ -185,8 +185,8 @@ if __name__ == "__main__":
     url_g = "http://g.cn"  # 返回head及ip等信息
 
     res = ahttpGet(url_g)
-    # print(res)
+    # print(res.text)
     res = ahttpPost(url_post)
-    # print(res)
+    # print(res.text)
     res = ahttpGetAll([url_g, url_get])
-    # print(res)
+    print(res)
