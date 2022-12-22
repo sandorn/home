@@ -6,8 +6,8 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:49
-LastEditTime : 2022-12-11 23:19:14
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2022-12-22 23:15:28
 FilePath     : /xjLib/xt_Thread/qThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
     a = CustomQThread(f, 4)
-    print(a)
+    print(111111111111, a)
     b = CustomQThread(f, 6)
     print(a is b, id(a), id(b), a, b)
 
