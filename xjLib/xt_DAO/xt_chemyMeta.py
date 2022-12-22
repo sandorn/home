@@ -197,7 +197,7 @@ def Data_Model_2_py(tablename, filename=None, key='default'):
 
 
 if __name__ == "__main__":
-    Data_Model_2_py('uuu', 'd:/1.py', 'TXbook')
+    # Data_Model_2_py('uuu', 'd:/1', 'TXbook')
     from xt_DAO.xt_sqlalchemy import SqlConnection, get_engine
     engine, session = get_engine('TXbx')
     t = getModel('users2', engine)  # , 'users99')
