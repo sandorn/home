@@ -14,7 +14,7 @@ LastEditTime : 2021-04-14 19:36:16
 '''
 
 from xt_Ahttp import ahttpGet
-from xt_Requests import get
+from xt_Requests import get, html_xpath
 from xt_Response import ReqResult
 from xt_String import Re_Sub, Str_Clean, Str_Replace, UNprintable_Chars
 
@@ -85,43 +85,66 @@ def 结果处理(resps):
 
     for resp in resps:
         if resp is None: continue
-        index = resp.index
-        response = resp.element if resp.element is not None else resp.html
-
-        _title = "".join(response.xpath('//h1/text()'))
-        title = Str_Replace(_title, [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
-        _showtext = response.xpath('//*[@id="content"]/text()')
+        _xpath = (
+            '//h1/text()',
+            '//*[@id="content"]/text()',
+        )
+        _title, _showtext = html_xpath(resp, _xpath)
+        title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
         content = clean_Content(_showtext)
-        _texts.append([index, title, content])
+        _texts.append([resp.index, title, content])
 
     return _texts
 
 
 def get_download_url(target):
-    res = get(target)
-    assert isinstance(res, ReqResult)
-    response = res.element
-    bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
-    temp_urls = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
-    titles = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()')
+    resp = get(target)
+    assert isinstance(resp, ReqResult)
+    _xpath = (
+        '//meta[@property="og:title"]//@content',
+        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href',
+        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()',
+    )
+    bookname, temp_urls, titles = html_xpath(resp, _xpath)
+
+    bookname = bookname[0]
     baseurl = '/'.join(target.split('/')[0:-2])
     urls = [baseurl + item for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
 
 def get_biqugse_download_url(target):
-    res = get(target)
-    assert isinstance(res, ReqResult)
-    response = res.element
-    bookname = response.xpath('//meta[@property="og:title"]//@content')[0]
-    temp_urls = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href')
-    titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()')
+    resp = get(target)
+    assert isinstance(resp, ReqResult)
+    _xpath = (
+        '//meta[@property="og:title"]//@content',
+        '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href',
+        '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()',
+    )
+    bookname, temp_urls, titles = html_xpath(resp, _xpath)
+
+    bookname = bookname[0]
     baseurl = '/'.join(target.split('/')[0:-2])
     urls = [baseurl + item for item in temp_urls]  # # 章节链接
     return bookname, urls, titles
 
 
 def get_contents(args, func=get):
+    index, target = args
+    resp = func(target)
+    assert isinstance(resp, ReqResult)
+    _xpath = (
+        '//h1/text()',
+        '//*[@id="content"]/text()',
+    )
+
+    _title, _showtext = html_xpath(resp, _xpath)
+    title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
+    content = clean_Content(_showtext)
+    return [index, title, content]
+
+
+def get_contents_0(args, func=get):
     (index, target) = args
     res = func(target)
     assert isinstance(res, ReqResult)
@@ -134,16 +157,18 @@ def get_contents(args, func=get):
     return [index, title, content]
 
 
-def map_get_contents(args):
-    return get_contents(args)
-
-
 def ahttp_get_contents(args):
-    return get_contents(args, ahttpGet)
-
-
-def map_get_contents_ahttp(args):
-    return ahttp_get_contents(args)
+    index, target = args
+    resp = ahttpGet(target)
+    assert isinstance(resp, ReqResult)
+    _xpath = (
+        '//h1/text()',
+        '//*[@id="content"]/text()',
+    )
+    _title, _showtext = html_xpath(resp, _xpath)
+    title = Str_Replace(_title, [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
+    content = clean_Content(_showtext)
+    return [index, title, content]
 
 
 if __name__ == "__main__":
@@ -151,4 +176,7 @@ if __name__ == "__main__":
     bookname, urls, titles = get_download_url(url)
     print(bookname)
     for i in range(len(urls)):
-        print(urls[i], titles[i])
+        ...
+        # print(urls[i], titles[i])
+    res = get_contents((1, urls[1]))
+    print(res)

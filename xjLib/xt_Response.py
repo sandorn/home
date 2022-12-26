@@ -111,6 +111,15 @@ class ReqResult(item_Mixin):
         html.url = self.clientResponse.url
         return html
 
+    def xpath(self, args):
+        element = self.element if self.element is not None else self.html
+        if isinstance(args, str): return element.xpath(args)
+
+        ele_list = []
+        for arg in args:
+            ele_list.append(element.xpath(arg))
+        return ele_list
+
     def __repr__(self):
         return f"<ReqResult status:[{self.status}]; ID:[{self.index}]， url:[{self.url}] >"
 

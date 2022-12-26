@@ -6,22 +6,8 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:49
-LastEditTime : 2022-12-21 14:23:05
-FilePath     : /项目包/线程小成果/笔趣阁-自定义库futures-.py
-Github       : https://github.com/sandorn/home
-==============================================================
-'''
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
-==============================================================
-Description  :
-Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:49
-LastEditTime : 2022-12-09 15:10:53
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2022-12-25 13:08:13
 FilePath     : /项目包/线程小成果/笔趣阁-自定义库futures-.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -74,5 +60,5 @@ if __name__ == '__main__':
         # 'http://www.biqugse.com/2367/',
         # 'http://www.biqugse.com/2367/',
     ]
-    multpool(urls)
+    # multpool(urls)
     thrtpool(urls)

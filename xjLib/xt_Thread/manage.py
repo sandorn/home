@@ -19,13 +19,15 @@ from queue import Queue
 from threading import Event, Thread, main_thread
 from time import sleep
 
+from xt_Class import iter_Mixin
+
 
 def _handle_thread_exception(request, exc_info):
     """默认错误处理"""
     traceback.print_exception(*exc_info)
 
 
-class task_object:
+class task_object(iter_Mixin):
     '''任务处理的对象类'''
 
     def __init__(self, func, args=None, kwds=None, callback=None, exc_callback=_handle_thread_exception):

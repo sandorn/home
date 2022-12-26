@@ -6,12 +6,13 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:55
-LastEditTime : 2022-12-21 11:53:52
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2022-12-25 13:34:16
 FilePath     : /项目包/线程小成果/笔趣阁-自定义库CustomThread优化.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import os
 
 from xt_File import savefile
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     # 'http://www.biqugse.com/96703/'
     # 'https://www.biqukan8.cc/38_38163/'
 
-    # # 38_38836  #2_2714  2_2760
+    # 38_38836  #2_2714  2_2760
 
-    main(bookname, urls)
-    # manager(bookname, urls)
+    # main(bookname, urls)
+    manager(bookname, urls)

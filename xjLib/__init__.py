@@ -6,8 +6,8 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:49
-LastEditTime : 2022-12-15 11:51:02
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2022-12-24 23:47:46
 FilePath     : /xjLib/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -19,4 +19,4 @@ Github       : https://github.com/sandorn/home
 __author__ = 'Even.Sand'
 __license__ = 'NewSea'
 
-xjLib_VERSION = __version__ = '0.7'
+xjLib_VERSION = __version__ = '0.8'

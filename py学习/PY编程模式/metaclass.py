@@ -6,8 +6,8 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2022-12-22 13:57:05
-LastEditTime : 2022-12-22 13:57:07
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2022-12-25 15:07:21
 FilePath     : /py学习/PY编程模式/metaclass.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -67,5 +67,5 @@ class Foo(object, metaclass=MyMeta):
 
 print('test start')
 foo = Foo('test')
-foo.aaa()
+foo.aaa()  # 'Foo' object has no attribute 'aaa'
 print('test end')

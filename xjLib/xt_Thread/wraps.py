@@ -147,7 +147,7 @@ class Thread_wrap_class:
         return res
 
 
-def create_mixin_class(name, cls, meta, kwargs={}):
+def create_mixin_class(name, cls, meta, **kwargs):
     '''type动态混入继承,实质是调整 bases'''
     _return_class = type(name, (cls, meta), kwargs)
     return _return_class

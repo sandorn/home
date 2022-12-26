@@ -201,8 +201,9 @@ def groupby(iterobj, key):
     return groups
 
 
-def random_char(length=20, string=[]):
+def random_char(length=20):
     """实现指定长度的随机数"""
+    string = []
     for i in range(length):
         x = random.randint(1, 2)
         if x == 1:

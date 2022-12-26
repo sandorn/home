@@ -7,11 +7,12 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-22 23:15:28
+LastEditTime : 2022-12-24 23:51:15
 FilePath     : /xjLib/xt_Thread/qThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 from threading import Lock
 
 from PyQt5.QtCore import QThread
@@ -36,24 +37,31 @@ class CustomQThread(QThread, repr_Mixin):
         self._args = args
         self._kwargs = kwargs
         self._running = True
-        self.result_list = []
         self.start()
 
     def run(self):
-        # 调用线程函数,并将元组类型的参数值分解为单个的参数值传入线程函数
         self.Result = self._target(*self._args, **self._kwargs)
-        # 获取结果
-        self.result_list.append(self.Result)
 
     def __del__(self):
         # 线程状态改变与线程终止
         self._running = False
-        self.wait()  # # 线程不退出
+        self.wait()  # 等待线程执行完毕
 
     def stop(self):
         self._running = False
-        self.terminate()  # #强制结束线程
-        # # quit()  exit() 均无效
+        self.terminate()  # 线程终止
+
+    def getResult(self):
+        """获取当前线程结果"""
+        try:
+            self.wait()
+            return self.Result
+        except Exception:
+            return None
+
+    def join(self):
+        '''等待线程执行完毕'''
+        self.wait()
 
 
 if __name__ == "__main__":

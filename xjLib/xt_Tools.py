@@ -182,7 +182,7 @@ def catch_wraps(func, bool=False):
         except Exception as err:
             print(f'catch_wraps: [{func.__name__}]\tError: {err!r}')
             if bool: traceback.print_exc()
-            return
+            return None
 
     return wrapper
 
@@ -245,12 +245,6 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
         return wrapper
 
     return decorator(fn) if callable(fn) else decorator
-
-
-def gethelp(obj):
-    '''获取对象帮助'''
-    from inspect import signature
-    return signature(obj)
 
 
 if __name__ == '__main__':

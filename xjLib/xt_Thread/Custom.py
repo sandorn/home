@@ -142,7 +142,7 @@ class CustomThread_Queue(Thread, item_get_Mixin):
                 if remaining <= 0.0:
                     print('unfinished_tasks in task_queue : ', self.task_queue.unfinished_tasks)
                     break
-                self.task_queue.all_tasks_done.wait(0.2)
+                self.task_queue.all_tasks_done.wait(0.1)
         finally:
             self.task_queue.all_tasks_done.release()
 
@@ -230,8 +230,6 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
 
         res, cls.result_list = cls.result_list, []
         return res
-
-    # wait_completed, getAllResult = getAllResult, wait_completed
 
 
 def make_singleton_thread_class(name):

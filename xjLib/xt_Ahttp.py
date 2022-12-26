@@ -39,7 +39,7 @@ post = partial(create_session, "post")
 class SessionMeta:
 
     def __init__(self, *args, **kwargs):
-        pass
+        ...
 
     def __getattr__(self, name):
         if name in ['get', 'post']:
@@ -113,8 +113,9 @@ def run(tasks, pool):
         raise Exception("the tasks of run must be list|tuple object.")
 
     result_list = []  # #存放返回结果集合
+    future = asyncio.ensure_future(multi_req(tasks, pool, result_list))
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(multi_req(tasks, pool, result_list))
+    loop.run_until_complete(future)
     # 返回结果集合
     return result_list
 
@@ -185,8 +186,8 @@ if __name__ == "__main__":
     url_g = "http://g.cn"  # 返回head及ip等信息
 
     res = ahttpGet(url_g)
-    # print(res.text)
+    print(res)
     res = ahttpPost(url_post)
-    # print(res.text)
+    print(res)
     res = ahttpGetAll([url_g, url_get])
     print(res)

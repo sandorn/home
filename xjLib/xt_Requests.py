@@ -28,7 +28,7 @@ TIMEOUT = 20  # (30, 9, 9)
 RETRY_TIME = 6  # 最大重试次数
 
 TRETRY = Tretry(
-    reraise=True,  # #保留最后一次错误
+    reraise=True,  # 保留最后一次错误
     stop=stop_after_attempt(RETRY_TIME),
     wait=wait_random(min=0, max=1),
 )
@@ -47,6 +47,7 @@ def _request_parse(method, url, *args, **kwargs):
     response = None
     func_exc = False
     kwargs = _setKw(kwargs)
+    callback = kwargs.pop("callback", None)
 
     while attempts:
         try:
@@ -64,8 +65,9 @@ def _request_parse(method, url, *args, **kwargs):
             print(f'parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Err:{err!r}')
         else:
             # #返回正确结果
-            return ReqResult(response)
-
+            new_res = ReqResult(response)
+            if callback: new_res = callback(new_res)
+            return new_res
     # #错误返回None
     if func_exc: return None
 
@@ -73,6 +75,7 @@ def _request_parse(method, url, *args, **kwargs):
 def _request_wraps(method, url, *args, **kwargs):
     '''利用自编重试装饰器，实现重试'''
     kwargs = _setKw(kwargs)
+    callback = kwargs.pop("callback", None)
 
     @try_except_wraps
     def _fetch_run():
@@ -84,13 +87,16 @@ def _request_wraps(method, url, *args, **kwargs):
     # #错误返回None
     if response is None: return None
     # #返回正确结果
-    return ReqResult(response)
+    new_res = ReqResult(response)
+    if callback: new_res = callback(new_res)
+    return new_res
 
 
 def _request_tretry(method, url, *args, **kwargs):
     '''利用TRETRY三方库实现重试'''
     response = None
     kwargs = _setKw(kwargs)
+    callback = kwargs.pop("callback", None)
 
     @TRETRY
     def _fetch_run():
@@ -105,7 +111,9 @@ def _request_tretry(method, url, *args, **kwargs):
         return None
     else:
         # #返回正确结果
-        return ReqResult(response)
+        new_res = ReqResult(response)
+        if callback: new_res = callback(new_res)
+        return new_res
 
 
 get = partial(_request_parse, "get")
@@ -139,10 +147,8 @@ class SessionClient:
         else:
             # #返回正确结果
             self.update_cookies(self.response.cookies)
-
             new_res = ReqResult(self.response)
-            if self.callback:  # 有回调则调用
-                new_res = self.callback(new_res)
+            if self.callback: new_res = self.callback(new_res)
             return new_res
 
     def __create_params(self, *args, **kwargs):
@@ -176,14 +182,23 @@ class SessionClient:
         self.headers.update(header_dict)
 
 
+def html_xpath(resp, args):
+    assert isinstance(resp, ReqResult)
+    element = resp.element if resp.element is not None else resp.html
+    ele_list = []
+    for arg in args:
+        ele_list.append(element.xpath(arg))
+    return ele_list
+
+
 if __name__ == '__main__':
     urls = ['http://www.baidu.com', 'http://www.163.com', 'http://dangdang.com', 'https://www.biqukan8.cc/38_38163/']
     for url in urls:
         res = get(url)
         print(res)
-        print(res.dom.xpath('//title/text()'))
-        print(res.html.xpath('//title/text()'))
-        print(res.element.xpath('//title/text()'))
+        print(res.xpath('//title/text()'))
+        print(res.xpath('//title/text()'))
+        print(res.xpath('//title/text()'))
 '''
     # @不能用于协程,且不保留最后错误
     # from retrying import retry as Retry

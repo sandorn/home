@@ -55,9 +55,9 @@ def save_sound_file(datalist, path=None):
     return datalist
 
 
-def merge_sound_file(datalist, args, path=''):
+def merge_sound_file(datalist, args, path=None):
     '''情形3-合并音频,删除过程文件'''
-    if path == '': path = get_desktop()
+    if path is None: path = get_desktop() or ''
     sound_list = [[item[0], AudioSegment.from_file(item[1], format=args['aformat']), os.remove(item[1])] for item in datalist]
 
     SumSound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件
