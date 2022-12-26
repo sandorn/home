@@ -144,19 +144,6 @@ def get_contents(args, func=get):
     return [index, title, content]
 
 
-def get_contents_0(args, func=get):
-    (index, target) = args
-    res = func(target)
-    assert isinstance(res, ReqResult)
-    response = res.element
-
-    _title = "".join(response.xpath('//h1/text()'))
-    title = Str_Replace(_title, [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
-    _showtext = response.xpath('//*[@id="content"]/text()')
-    content = clean_Content(_showtext)
-    return [index, title, content]
-
-
 def ahttp_get_contents(args):
     index, target = args
     resp = ahttpGet(target)
