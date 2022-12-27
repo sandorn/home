@@ -36,10 +36,7 @@ def futuresMap(_cls):
 
         def wait_completed(self):
             '''等待线程池结束,返回全部结果,有序'''
-            result_list = []
-            for resp in self.future_generator:  # 此时将阻塞 , 直到线程完成或异常
-                result_list.append(resp)
-            return result_list
+            return list(self.future_generator)
 
         def getAllResult(self):
             '''等待线程池结束,返回全部结果,有序'''
@@ -119,10 +116,7 @@ def futuresPool(_cls):
 
         def wait_map_completed(self):
             '''返回结果,有序'''
-            result_list = []
-            for resp in self.future_generator:  # 此时将阻塞 , 直到线程完成或异常
-                result_list.append(resp)
-            return result_list
+            return list(self.future_generator)
 
         def wait_sub_completed(self):
             '''等待线程池结束,返回全部结果,有序'''

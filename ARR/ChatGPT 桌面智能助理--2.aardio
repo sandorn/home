@@ -14,7 +14,7 @@ static={cls="static";text="文本提示：";left=14;top=401;right=95;bottom=427;
 winform.btnGen.oncommand = function(id,event){
     winform.btnGen.disabled = true; 
     winform.plus.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250';text=''}
-     
+    winform.plus.background = null
     //创建线程
     thread.invoke( 
         function(winform){

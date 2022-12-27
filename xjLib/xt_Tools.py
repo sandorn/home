@@ -21,7 +21,7 @@ import signal
 import time
 import traceback
 from copy import deepcopy
-from functools import wraps
+from functools import reduce, wraps
 from types import FunctionType
 
 
@@ -223,13 +223,11 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
             while attempts < max_retries:
                 try:
                     result = func(*args, **kwargs)
-                    # #验证函数返回False时,表示告知装饰器验证不通过,继续重试
                     if callable(validate) and validate(result) is False:
                         continue
-                    else:
-                        # #回调函数,处理结果
-                        if callable(callback): result = callback(result)
-                        return result
+                    # #回调函数,处理结果
+                    if callable(callback): result = callback(result)
+                    return result
                 except exceptions as ex:
                     func_exc, exc_traceback = ex, traceback.format_exc()
                     attempts += 1
@@ -239,8 +237,6 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
                 print(f'try_except_wraps: [{func.__name__}]\tError: {func_exc!r}')
                 if callable(process) and process(func_exc) is True:
                     return default() if callable(default) else default
-
-            pass
 
         return wrapper
 
@@ -257,9 +253,8 @@ if __name__ == '__main__':
 
         @catch_wraps
         def readFile(filename):
-            f = open(filename, "r")
-            print(len(f.readlines()))
-            f.close()
+            with open(filename, "r") as f:
+                print(len(f.readlines()))
 
         @catch_wraps
         def add(a, b):
@@ -269,14 +264,14 @@ if __name__ == '__main__':
         @try_except_wraps
         def assertSumIsPositive(*args):
             print('222222,assertSumIsPositive')
-            sum = reduce(add, *args)
-            assert sum >= 0
+            _sum = reduce(add, *args)
+            assert _sum >= 0
 
         @try_except_wraps()
         def checkLen(**keyargs):
             print('333333,checkLen')
             if len(keyargs) < 3:
-                raise Exception('Number of key args should more than 3.')
+                raise ValueError('Number of key args should more than 3.')
 
         simple()
         readFile("UnexistFile.txt")
@@ -311,7 +306,11 @@ if __name__ == '__main__':
             print(attr, ':', getattr(foo_func, attr))
 
         for attr in func_code_name_list:
-            print('foo_func.__code__.' + attr.ljust(33), ':', getattr(foo_func.__code__, attr))
+            print(
+                f'foo_func.__code__.{attr.ljust(33)}',
+                ':',
+                getattr(foo_func.__code__, attr),
+            )
         print(_create_func.__dict__)
 
     trys()

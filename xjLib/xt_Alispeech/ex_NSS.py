@@ -33,10 +33,10 @@ class NSS(on_state_cls):
     all_Thread = []  # 类属性或类变量,实例公用
     data_list = []  # 类属性或类变量,实例公用
 
-    def __init__(self, text, tid=None, args={}):
+    def __init__(self, text, tid=None, args=None):
         self.__th = Thread(target=self.__thread_run)
         self.__id = tid or id(self.__th)
-        self.args = args
+        self.args = args or {}
         self.__text = text
         __fname = f"{self.__id}_{get_10_timestamp()}_{self.args['voice']}_tts.{ self.args['aformat']}"
         self.__file_name = f"{os.getenv('TMP')}\\{__fname}"
@@ -81,7 +81,7 @@ class NSS(on_state_cls):
 
     def __thread_run(self):
         with Sem:
-            print("thread {}: start..".format(self.__id))
+            print(f"thread {self.__id}: start..")
 
             _NSS_ = nls.NlsSpeechSynthesizer(
                 token=_ACCESS_TOKEN,
@@ -111,10 +111,11 @@ class NSS(on_state_cls):
             )
 
             QThread.msleep(100)
-            print('thread {}: NSS stopped.'.format(self.__id))
+            print(f'thread {self.__id}: NSS stopped.')
 
 
-def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
+def TODO_TTS(_in_text, renovate_args=None, readonly=False, merge=False):
+    if renovate_args is None: renovate_args = {}
     # $处理参数
     args = SpeechArgs().get_dict()
     args.update(renovate_args)
@@ -133,8 +134,7 @@ def TODO_TTS(_in_text, renovate_args: dict = {}, readonly=False, merge=False):
     datalist.sort(key=lambda x: x[0])
 
     if readonly: return get_voice_data(datalist)
-    if merge: return merge_sound_file(datalist, args)
-    else: return save_sound_file(datalist)
+    return merge_sound_file(datalist, args) if merge else save_sound_file(datalist)
 
 
 if __name__ == '__main__':
@@ -153,6 +153,6 @@ if __name__ == '__main__':
     for oufile in out_file:
         task = qthread_play(oufile[1])
         task.join()
-        # task2 = thread_play(oufile[1])
+        task2 = thread_play(oufile[1])
         # QThread.msleep(10000)
         # task2.stop()

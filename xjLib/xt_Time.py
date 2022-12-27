@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :process_time
+Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:49
-LastEditTime : 2022-12-21 21:52:46
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2022-12-27 17:05:37
 FilePath     : /xjLib/xt_Time.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -19,13 +19,13 @@ from functools import wraps
 
 
 def fn_timer(function):
-    '''装饰器：测量函数执行时长'''
+    '''装饰器:测量函数执行时长,不包含sleep'''
 
     @wraps(function)
     def func_timer(*args, **kwargs):
         start_time = time.process_time()
         result = function(*args, **kwargs)
-        se = (end_time := time.process_time()) - start_time
+        se = time.process_time() - start_time
         print(f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> total run:{se: .2f} seconds")
         return result
 
@@ -71,24 +71,19 @@ if __name__ == '__main__':
     print(get_10_timestamp('2020-06-15 13:28:27'))
     print(get_13_timestamp('2020-06-15 13:28:27'))
 
-    print('我是time()方法：{}'.format(time.time()))
-    print('我是perf_counter()方法：{}'.format(time.perf_counter()))
-    print('我是process_time()方法：{}'.format(time.process_time()))
+    print(f'我是time()方法：{time.time()}')
+    print(f'我是perf_counter()方法：{time.perf_counter()}')
+    print(f'我是process_time()方法：{time.process_time()}')
     t0 = time.time()
     c0 = time.perf_counter()
     p0 = time.process_time()
-    r = 0
-    for i in range(10000000):
-        r += i
+    r = sum(range(10000000))
     time.sleep(2)
     print(r)
     t1 = time.time()
     c1 = time.perf_counter()
     p1 = time.process_time()
-    spend1 = t1 - t0
-    spend2 = c1 - c0
-    spend3 = p1 - p0
-    print("time()方法用时：{}s".format(spend1))
-    print("perf_counter()用时：{}s".format(spend2))
-    print("process_time()用时：{}s".format(spend3))
+    print(f"time()方法用时：{t1 - t0}s")
+    print(f"perf_counter()用时：{c1 - c0}s")
+    print(f"process_time()用时：{p1 - p0}s")
     print("测试完毕")

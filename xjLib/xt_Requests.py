@@ -185,10 +185,7 @@ class SessionClient:
 def html_xpath(resp, args):
     assert isinstance(resp, ReqResult)
     element = resp.element if resp.element is not None else resp.html
-    ele_list = []
-    for arg in args:
-        ele_list.append(element.xpath(arg))
-    return ele_list
+    return [element.xpath(arg) for arg in args]
 
 
 if __name__ == '__main__':

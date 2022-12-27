@@ -69,7 +69,7 @@ class NSR(on_state_cls):
     def __thread_run(self):
         with Sem:
 
-            print('{}: thread start..'.format(self.__id))
+            print(f'{self.__id}: thread start..')
 
             _NSR_ = NlsSpeechRecognizer(
                 token=_ACCESS_TOKEN,
@@ -82,7 +82,7 @@ class NSR(on_state_cls):
                 callback_args=[self.__id],
             )
 
-            print('{}: session start'.format(self.__id))
+            print(f'{self.__id}: session start')
 
             _NSR_.start(
                 aformat="pcm",
@@ -103,7 +103,7 @@ class NSR(on_state_cls):
                 time.sleep(0.01)
 
             _NSR_.stop()
-            print('{}: NSR stopped.'.format(self.__id))
+            print(f'{self.__id}: NSR stopped.')
 
 
 if __name__ == '__main__':

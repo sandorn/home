@@ -18,7 +18,7 @@ import os
 from xt_Ahttp import Async_run, ahttpGetAll, get, multi_req
 from xt_Asyncio import AioCrawl
 from xt_File import savefile
-from xt_Ls_Bqg import clean_Content, 结果处理, get_biqugse_download_url
+from xt_Ls_Bqg import clean_Content, get_biqugse_download_url, 结果处理
 from xt_Response import ReqResult
 from xt_Time import fn_timer
 
@@ -52,7 +52,7 @@ def Aio_run_Task(bookname, urls):
     texts = 结果处理(resps)
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'Aio_run_Task.txt', texts, br='\n')
+    savefile(f'{files}&{bookname}Aio_run_Task.txt', texts, br='\n')
 
 
 @fn_timer
@@ -69,7 +69,7 @@ def Aio_run_Task_Back(bookname, urls):
     texts = myaio.getAllResult()  # #callback=handle_resp处理以后的结果
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'Aio_run_Task_Back.txt', texts, br='\n')
+    savefile(f'{files}&{bookname}Aio_run_Task_Back.txt', texts, br='\n')
 
 
 @fn_timer
@@ -78,7 +78,7 @@ def Aio_ahttpGetAll(bookname, urls):
     texts = 结果处理(resps)
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'ahttpGetAll.txt', texts, br='\n')
+    savefile(f'{files}&{bookname}ahttpGetAll.txt', texts, br='\n')
 
 
 @fn_timer
@@ -91,7 +91,7 @@ def Aio_multi_req(bookname, urls):
     texts = 结果处理(resps[0])
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'Aio_multi_req.txt', texts, br='\n')
+    savefile(f'{files}&{bookname}Aio_multi_req.txt', texts, br='\n')
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2022-12-25 13:34:16
+LastEditTime : 2022-12-27 18:19:45
 FilePath     : /项目包/线程小成果/笔趣阁-自定义库CustomThread优化.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -29,7 +29,7 @@ def main(bookname, args):
     # text_list = [[row[i] for i in range(1, 3)] for row in text_list]
     # files = os.path.split(__file__)[-1].split(".")[0]
     # savefile(files + '＆' + bookname + 'CustomThread.txt', text_list, br='\n')
-    savefile(bookname + 'CustomThread.txt', text_list, br='\n')
+    savefile(f'{bookname}CustomThread.txt', text_list, br='\n')
 
 
 @fn_timer
@@ -39,7 +39,7 @@ def manager(bookname, args):
     text_list = WM.wait_completed()
     text_list.sort(key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
-    savefile(files + '＆' + bookname + 'WorkManager.txt', text_list, br='\n')
+    savefile(f'{files}＆{bookname}WorkManager.txt', text_list, br='\n')
 
 
 if __name__ == "__main__":

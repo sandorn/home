@@ -34,12 +34,8 @@ def has_defined_metaclass(cls):
 
 
 def _get_class_flag(cls):
-    if is_metaclass(cls):
-        return META_CLS
-    if has_defined_metaclass(cls):
-        return HAS_META_CLS
-    else:
-        return COMMON_CLS
+    if is_metaclass(cls): return META_CLS
+    return HAS_META_CLS if has_defined_metaclass(cls) else COMMON_CLS
 
 
 def _get_three_kinds_of_classes(*mixins):
@@ -102,8 +98,8 @@ def generate_base(*mixins):
 
             def filter_name(name):
                 filters = ['type', 'CombinedMeta', 'object']
-
-                return not any((i in name for i in filters))
+                # return not any((i in name for i in filters))
+                return all(i not in name for i in filters)
 
             metas = [m for m in mro if filter_name(m.__name__)]
 
@@ -159,15 +155,15 @@ if __name__ == "__main__":
             print(cls.__name__)
             return type.__new__(cls, *args, **kwargs)
 
-        def __call__(cls, *args, **kwargs):
+        def __call__(self, *args, **kwargs):
             print('===>Mymeta.__call__')
-            obj = cls.__new__(cls)
-            cls.__init__(cls, *args, **kwargs)
+            obj = self.__new__(self)
+            self.__init__(self, *args, **kwargs)
             return obj
 
-        def __instancecheck__(cls, instance):
+        def __instancecheck__(self, instance):
             print('===>Mymeta.__instancecheck__')
-            return isinstance(instance, cls)
+            return isinstance(instance, self)
 
     class Foo(metaclass=Mymeta):
         yaml_tag = '!Foo'

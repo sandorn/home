@@ -41,14 +41,10 @@ class thread_play(Thread):
             self.pym.load(BytesIO(self.data)).play()  # type: ignore
         print('py_mixer new loading......')
 
-        while self.pym.get_busy():
-            # 停止标志位,停止播放
-            if not self._running: break
+        while self.pym.get_busy() and self._running:
             # 正在播放,等待
             QThread.msleep(1000)
             print('py_mixer.playing......')
-            continue
-
         self.stop()
 
     def stop(self):
@@ -79,13 +75,10 @@ class qthread_play(QThread):
             self.pym.load(BytesIO(self.data)).play()  # type: ignore
         print('py_mixer new loading......')
 
-        while self.pym.get_busy():
-            # 停止标志位,停止播放
-            if not self._running: break
+        while self.pym.get_busy() and self._running:
             # 正在播放,等待
             QThread.msleep(1000)
             print('py_mixer.playing......')
-            continue
 
     def stop(self):
         self._running = False
@@ -149,12 +142,10 @@ def create_read_thread(meta):
                     print('self.py_mixer new loading......')
                     continue
 
-                if not self._MainMonitor.is_alive():
-                    # #合成语音线程结束,朗读完毕,且无未加载数据
-                    if len(self.textlist) == 0 and len(self.datas_list) == 0:
-                        print('all recod play finished!!!!')
-                        if self.__isQ: self._signal.emit()
-                        self.stop()
+                if (not self._MainMonitor.is_alive() and len(self.textlist) == 0 and len(self.datas_list) == 0):
+                    print('all recod play finished!!!!')
+                    if self.__isQ: self._signal.emit()
+                    self.stop()
 
     def stop(self):
         self._running = False
@@ -230,12 +221,10 @@ class _read_class_meta:
                     print('py_mixer new loading......')
                     continue
 
-                if not self._MainMonitor.is_alive():
-                    # #合成语音线程结束,朗读完毕,且无未加载数据
-                    if len(self.textlist) == 0 and len(self.datas_list) == 0:
-                        print('all recod play finished!!!!')
-                        if self.__isQ: self._signal.emit()  # type: ignore
-                        self.stop()
+                if (not self._MainMonitor.is_alive() and len(self.textlist) == 0 and len(self.datas_list) == 0):
+                    print('all recod play finished!!!!')
+                    if self.__isQ: self._signal.emit()  # type: ignore
+                    self.stop()
 
     def stop(self):
         self._running = False

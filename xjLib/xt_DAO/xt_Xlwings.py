@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-22 22:34:53
+LastEditTime : 2022-12-27 18:27:33
 FilePath     : /xjLib/xt_DAO/xt_Xlwings.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -68,5 +68,5 @@ if __name__ == "__main__":
     print(sys.version)
     print(sys.executable)
     print(sys.path)
-app.quit()
-app.kill(pid)
+    app.quit()
+    app.kill(pid)

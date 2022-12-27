@@ -77,7 +77,7 @@ class WorkManager(object):
 
     def create_work_thread(self, MaxSem, **kwds):
         """按照设计数量，初始化线程并运行"""
-        for i in range(MaxSem):
+        for _ in range(MaxSem):
             self.all_Thread.append(Work(self.work_queue, self.result_queue, **kwds))
 
     def close_work_thread(self, num_workers):
@@ -99,17 +99,15 @@ class WorkManager(object):
         '''禁止添加任务，等待所有线程运行完毕,返回尚未获取的全部结果'''
         self.work_queue.join()  # #确保所有任务完成
         self.close_work_thread(len(self.all_Thread))  # #再关闭全部工作线程
-
-        result_list = []
-        while not self.result_queue.empty():
-            res = self.result_queue.get_nowait()
-            # !  get(False) 任务异步出队 get_nowait()
-            result_list.append(res)
-        return result_list
+        return self._extracted_from_getResult()
 
     def getAllResult(self):
         '''获取之前任务的全部结果，work_thread继续值机'''
         self.work_queue.join()
+        return self._extracted_from_getResult()
+
+    # TODO Rename this here and in `wait_completed` and `getAllResult`
+    def _extracted_from_getResult(self):
         result_list = []
         while not self.result_queue.empty():
             res = self.result_queue.get_nowait()
@@ -137,10 +135,10 @@ class Work(Thread):
                 except Exception as err:
                     task.exception = err
                     if task.exc_callback: task.exc_callback(err)
-                    self.result_queue.put(task)  # 存储错误信息
+                    self.result_queue.put(err)  # 存储错误信息
                 else:
-                    self.result_queue.put(result)  # 取得函数返回值
-                    if task.callback: task.callback(err)
+                    if task.callback: result = task.callback(result)
+                    self.result_queue.put(result)  # 函数返回值
                 self.work_queue.task_done()  # 通知系统任务完成
             else:
                 self._stop_event.wait(0.2)

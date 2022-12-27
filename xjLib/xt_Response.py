@@ -114,14 +114,10 @@ class ReqResult(item_Mixin):
     def xpath(self, args):
         element = self.element if self.element is not None else self.html
         if isinstance(args, str): return element.xpath(args)
-
-        ele_list = []
-        for arg in args:
-            ele_list.append(element.xpath(arg))
-        return ele_list
+        if isinstance(args, (list, tuple)): return [element.xpath(arg) for arg in args]
 
     def __repr__(self):
-        return f"<ReqResult status:[{self.status}]; ID:[{self.index}]， url:[{self.url}] >"
+        return f"<ReqResult status:[{self.status}]; ID:[{self.index}], url:[{self.url}] >"
 
 
 '''
@@ -131,7 +127,7 @@ for each in jxdm:
     href = each.attrib['href']  #获取属性方法2
     href = each.get('href')  #获取属性方法3
 
-    text = each.xpath("string(.)").strip()  #获取文本方法1，全
-    text = each.text.strip()  #获取文本方法2，可能不全
+    text = each.xpath("string(.)").strip()  #获取文本方法1,全
+    text = each.text.strip()  #获取文本方法2,可能不全
 
 '''

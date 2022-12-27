@@ -69,8 +69,12 @@ class Model_Method_Mixin(item_Mixin):
     @classmethod
     def _fields(cls):
         '''获取字段名列表, # 弃用'''
-        listtmp = [attr for attr in dir(cls) if not callable(getattr(cls, attr)) and not attr.startswith("__") and attr not in ['_sa_class_manager', '_decl_class_registry', '_sa_instance_state', 'metadata']]
-        return listtmp
+        return [attr for attr in dir(cls) if not callable(getattr(cls, attr)) and not attr.startswith("__") and attr not in [
+            '_sa_class_manager',
+            '_decl_class_registry',
+            '_sa_instance_state',
+            'metadata',
+        ]]
 
     @classmethod
     def make_dict(cls, result):
@@ -101,7 +105,7 @@ class parent_model_Mixin:
     __abstract__ = True
 
 
-def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict={}):
+def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict=None):
     """从指定table_model_cls类继承,重新定义表名；
     target_table_name:目标表名,用于数据库和返回的类名；
     table_model_cls:包含字段信息的表model类,必须有__abstract__ = True,或混入继承
@@ -116,10 +120,11 @@ def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict={}):
         ZJTEXT = Column(TEXT, nullable=False)
         ZJHERF = Column(VARCHAR(255), nullable=False)
     """
+    if cid_class_dict is None: cid_class_dict = {}
     if not isinstance(table_model_cls, DeclarativeMeta):
-        raise Exception('table_model_cls must be a DeclarativeMeta class')
+        raise TypeError('table_model_cls must be a DeclarativeMeta class')
     if not hasattr(table_model_cls, '__abstract__'):
-        raise Exception('table_model_cls must has __abstract__')
+        raise ValueError('table_model_cls must has __abstract__')
 
     if target_table_name not in cid_class_dict:
         cls = type(

@@ -73,9 +73,9 @@ class AioCrawl:
         """
 
         method = 'POST' if method.upper() == 'POST' else 'GET'
-        headers = headers if headers else MYHEAD
+        headers = headers or MYHEAD
         timeout = ClientTimeout(total=timeout)
-        cookies = cookies if cookies else None
+        cookies = cookies or None
         data = data if data and isinstance(data, dict) else {}
 
         tcp_connector = TCPConnector(ssl=False)  # 禁用证书验证
@@ -106,8 +106,7 @@ class AioCrawl:
 
     def add_tasks(self, tasks, callback=None):
         """添加纤程任务"""
-        if not isinstance(tasks, (list, tuple)):
-            raise Exception('传入非list或tuple')
+        if not isinstance(tasks, (list, tuple)): raise TypeError('传入非list或tuple')
 
         for task in tasks:
             if not iscoroutine(task): continue
@@ -128,10 +127,8 @@ class AioCrawl:
     def wait_completed(self):
         while True:
             tmp = [fu._state for fu in self.future_list]
-            if 'PENDING' in tmp:
-                continue
-            else:
-                break
+            if 'PENDING' in tmp: continue
+            else: break
 
         return self.getAllResult()
 

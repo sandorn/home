@@ -77,9 +77,7 @@ class DbEngine(object):
         self.cur.execute("show tables")
         tablerows = self.cur.fetchall()
         if len(tablerows) == 0: return False
-        for rows in tablerows:
-            if rows[0] == table_name: return True
-        return False
+        return any(rows[0] == table_name for rows in tablerows)
 
     def close(self):
         pass
@@ -96,13 +94,13 @@ class DbEngine(object):
             return False
 
     def insertMany(self, datas, tb_name, keys=None):
-        if not isinstance(datas, (list, tuple)): raise ValueError("must send list|tuple object for me")
+        if not isinstance(datas, (list, tuple)): raise TypeError("must send list|tuple object for me")
 
-        if keys is None: keys = [k for k in datas[0].keys()]
-        cols = ", ".join("`{}`".format(k) for k in keys)
-        val_cols = ", ".join("%({})s".format(k) for k in keys)
-        sql = "insert into `%s`(%s) values(%s)"
-        res_sql = sql % (tb_name, cols, val_cols)
+        if keys is None:
+            keys = list(datas[0].keys())
+        cols = ", ".join(f"`{k}`" for k in keys)
+        val_cols = ", ".join(f"%({k})s" for k in keys)
+        res_sql = f"insert into `{tb_name}`({cols}) values({val_cols})"
 
         try:
             self.cur.executemany(res_sql, datas)
@@ -115,15 +113,15 @@ class DbEngine(object):
 
     def insert(self, data, tb_name):
         if not isinstance(data, dict): raise ValueError("must send dict object for me")
-        cols = ", ".join("`{}`".format(k) for k in data.keys())
-        val_cols = ", ".join("'{}'".format(v) for v in data.values())
+        cols = ", ".join(f"`{k}`" for k in data.keys())
+        val_cols = ", ".join(f"'{v}'" for v in data.values())
         res_sql = f"insert into `{tb_name}`({cols}) values({val_cols})"
         self.execute(res_sql.replace('%', '%%'))
 
     def update(self, new_data, condition, tb_name):
         #@ sql语句表名、字段名均需用``表示
         if not isinstance(new_data, dict): raise ValueError("must send dict object for me")
-        sql = "UPDATE `%s` SET " % tb_name + ",".join(["`%s`='%s'" % (k, new_data[k]) for k in new_data]) + " WHERE " + " AND ".join(["`%s`='%s'" % (k, condition[k]) for k in condition])
+        sql = (f"UPDATE `{tb_name}` SET " + ",".join([f"`{k}`='{new_data[k]}'" for k in new_data]) + " WHERE " + " AND ".join([f"`{k}`='{condition[k]}'" for k in condition]))
         self.execute(sql.replace('%', '%%'))
 
     def ver(self):
@@ -137,8 +135,7 @@ class DbEngine(object):
     def query(self, sql, args=None):
         try:
             self.cur.execute(sql, args)
-            data = self.cur.fetchall()
-            return data
+            return self.cur.fetchall()
         except Exception as e:
             print(e)
 
@@ -146,8 +143,7 @@ class DbEngine(object):
         sql = f" select * from {table_name}"
         try:
             self.cur.execute(sql, args)
-            data = self.cur.fetchall()
-            return data
+            return self.cur.fetchall()
         except Exception as e:
             print(e)
 

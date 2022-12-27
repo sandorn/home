@@ -33,7 +33,7 @@ class xt_log(object):
 
     def __init__(self, level=logging.DEBUG, logger=__name__):
         self.level = level
-        self.filename = datetime.today().strftime('%Y%m%d') + '-' + _levelToName.get(level) + '.log'
+        self.filename = (datetime.now().strftime('%Y%m%d') + '-' + _levelToName.get(level) + '.log')
         # #定义字典
         self.conf_dic = {
             'version': 1,

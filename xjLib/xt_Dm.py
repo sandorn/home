@@ -57,15 +57,13 @@ class dmobject():
     # 大漠绑定
     def 绑定窗口(self, 局部窗口句柄, 显示参数="normal", 鼠标参数="normal", 键盘参数="normal", 绑定模式=0):
         ret = self.dm.BindWindow(局部窗口句柄, 显示参数, 鼠标参数, 键盘参数, 绑定模式)
-        if (ret != 1):
-            return self.dm.GetLastError()
-        return True
+        return self.dm.GetLastError() if (ret != 1) else True
 
     # #--------------------找字单击至消失--------------------#
     def 找字单击至消失(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=1000, 中心点=False):
         控制开关 = False
         延迟 = ran(50, 400)
-        intx, inty = 0
+        intx = inty = 0
         起始时间 = tim()
         while ((tim() - 起始时间) < t):
             ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, 字名, 颜色值, 0.9, intx, inty)
@@ -86,7 +84,7 @@ class dmobject():
     def 找字单击(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=1000, 中心点=False):
         控制开关 = True
         延迟 = ran(50, 400)
-        ret, intx, inty = 0
+        ret = intx = inty = 0
         起始时间 = tim()
         while ((tim() - 起始时间) < t):
             ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, 字名, 颜色值, 0.9, intx, inty)
@@ -106,7 +104,7 @@ class dmobject():
     def 找字返回坐标(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=1000):
         控制开关 = False
         延迟 = ran(50, 400)
-        ret, intx, inty = 0
+        ret = intx = inty = 0
         起始时间 = tim()
         while ((tim() - 起始时间) < t):
             ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, 字名, 颜色值, 0.9, intx, inty)
@@ -124,7 +122,7 @@ class dmobject():
     def 简易找字(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=1000):
         控制开关 = False
         延迟 = ran(50, 400)
-        ret, intx, inty = 0
+        ret = intx = inty = 0
         起始时间 = tim()
         while ((tim() - 起始时间) < t):
             ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, 字名, 颜色值, 0.9, intx, inty)
@@ -142,7 +140,7 @@ class dmobject():
     def 找图单击至消失(self, x_1, y_1, x_2, y_2, 图片名, t=1000, 扫描方式=0, 中心点=False):
         控制开关 = False
         延迟 = ran(50, 400)
-        ret, intx, inty = 0
+        ret = intx = inty = 0
         # 起始时间 = tim()
         while (控制开关):
             ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, 图片名, "000000", 0.9, 扫描方式)
@@ -160,7 +158,7 @@ class dmobject():
     def 找图单击(self, x_1, y_1, x_2, y_2, 图片名, t=1000, 扫描方式=0, 中心点=False):
         控制开关 = False
         延迟 = ran(50, 400)
-        ret, intx, inty = 0
+        ret = intx = inty = 0
         起始时间 = tim()
         while ((tim() - 起始时间) < t):
             ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, 图片名, "000000", 0.9, 扫描方式)
@@ -178,7 +176,7 @@ class dmobject():
     def 找图返回坐标(self, x_1, y_1, x_2, y_2, 图片名, t=1000, 扫描方式=0):
         控制开关 = False
         延迟 = ran(50, 400)
-        ret, intx, inty = 0
+        ret = intx = inty = 0
         起始时间 = tim()
         while ((tim() - 起始时间) < t):
             ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, 图片名, "000000", 0.9, 扫描方式)
@@ -195,7 +193,7 @@ class dmobject():
     def 简易找图(self, x_1, y_1, x_2, y_2, 图片名, t=1000, 扫描方式=0):
         控制开关 = False
         延迟 = ran(50, 400)
-        ret, intx, inty = 0
+        ret = intx = inty = 0
         起始时间 = tim()
         while ((tim() - 起始时间) < t):
             ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, 图片名, "000000", 0.9, 扫描方式)
@@ -227,12 +225,10 @@ class dmobject():
         起始时间 = tim()
 
         while ((tim() - 起始时间) < t):
-            认字 = self.dm.Ocr(x_1, y_1, x_2, y_2, 颜色, 相似度)
-            if (认字):
+            if 认字 := self.dm.Ocr(x_1, y_1, x_2, y_2, 颜色, 相似度):
                 delay(延迟)
                 控制开关 = True
                 return 认字
-                break
             delay(延迟)
 
         return 控制开关

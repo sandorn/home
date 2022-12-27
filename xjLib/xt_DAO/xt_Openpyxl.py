@@ -26,7 +26,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 def rename(file_path):
     (filepath, tempfilename) = os.path.split(file_path)
     (filename, extension) = os.path.splitext(tempfilename)
-    return os.path.join(filepath, 'OpenPyXl-' + filename + extension)
+    return os.path.join(filepath, f'OpenPyXl-{filename}{extension}')
 
 
 class ExcelHandler():
@@ -57,7 +57,7 @@ class ExcelHandler():
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.wb.close()
-        return False if exc_type else True
+        return not exc_type
 
     def createsheet(self, index=None, title=None):
         self.wb.create_sheet(index=index, title=title)
@@ -72,10 +72,7 @@ class ExcelHandler():
         # 表头信息为当前表单的标题,限制最大行为1,values_only= True返回单元格的值
         # 如果不加tuple,返回的只是一个对象
         if sheet_name is not None:
-            _sh = self.wb[sheet_name]
-            assert isinstance(_sh, Worksheet)
-            self.sh = _sh
-
+            self._extracted_read_sheet(sheet_name)
         self.headers = tuple(self.sh.iter_rows(max_row=1, values_only=True))[0]
         return self.headers
 
@@ -86,20 +83,13 @@ class ExcelHandler():
             data:表格中的数据
         '''
         if sheet_name is not None:
-            _sh = self.wb[sheet_name]
-            assert isinstance(_sh, Worksheet)
-            self.sh = _sh
-
-        data = [[cell.value for cell in row] for row in self.sh.rows]
-        return data
+            self._extracted_read_sheet(sheet_name)
+        return [[cell.value for cell in row] for row in self.sh.rows]
 
     def read_row(self, row, sheet_name=None):
         '''读取某一行数据'''
         if sheet_name is not None:
-            _sh = self.wb[sheet_name]
-            assert isinstance(_sh, Worksheet)
-            self.sh = _sh
-
+            self._extracted_read_sheet(sheet_name)
         return [cell.value for cell in self.sh[row]]
 
     def read_row_dict(self, row, sheet_name=None):
@@ -109,15 +99,12 @@ class ExcelHandler():
         '''
         row_data = self.read_row(row, sheet_name)
         titles = self.read_header()
-        data_dict = dict(zip(titles, row_data))
-        return data_dict
+        return dict(zip(titles, row_data))
 
     def read_col(self, col, sheet_name=None):
         '''读取某一列数据'''
         if sheet_name is not None:
-            _sh = self.wb[sheet_name]
-            assert isinstance(_sh, Worksheet)
-            self.sh = _sh
+            self._extracted_read_sheet(sheet_name)
         _r = tuple(self.sh.iter_cols(min_col=col, max_col=col, values_only=True))[0]
         return [*_r]
 
@@ -127,17 +114,18 @@ class ExcelHandler():
         [ {'序号':1,'会员卡号': '680021685898','机场名称':'上海机场'}, ]
         '''
         if sheet_name is not None:
-            _sh = self.wb[sheet_name]
-            assert isinstance(_sh, Worksheet)
-            self.sh = _sh
-
+            self._extracted_read_sheet(sheet_name)
         data = []
         rows = self.read_all()[1:]
         titles = self.read_header()
-        for row in rows:
-            data_dict = dict(zip(titles, row))
-            data.append(data_dict)
+        data.extend(dict(zip(titles, row)) for row in rows)
         return data
+
+    # TODO Rename this here and in `read_header`, `read_all`, `read_row`, `read_col` and `read_all_dict`
+    def _extracted_read_sheet(self, sheet_name):
+        _sh = self.wb[sheet_name]
+        assert isinstance(_sh, Worksheet)
+        self.sh = _sh
 
     def read_cell(self, row, column):
         '''读取单元格数据'''

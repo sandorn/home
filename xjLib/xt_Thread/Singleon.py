@@ -156,7 +156,7 @@ if __name__ == "__main__":
     aa = sample('张三')
     print(aa.__dict__)
     bb = sample('李四', 28)
-    bb.ages = 99
+    bb.old = 99
     cc = t()
     cc.a = 88
     dd = tt()

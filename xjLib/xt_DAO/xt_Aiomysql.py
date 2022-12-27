@@ -115,20 +115,17 @@ async def create_xt_aiomysql(db_name='default'):
 
 async def query_aiomysql(db_name, sql_list):
     Aiomysql_obj = await create_xt_aiomysql(db_name)
-    results = await asyncio.gather(*[Aiomysql_obj.query(sql) for sql in sql_list])
-    return results
+    return await asyncio.gather(*[Aiomysql_obj.query(sql) for sql in sql_list])
 
 
 async def execute_aiomysql(db_name, sql_list):
     Aiomysql_obj = await create_xt_aiomysql(db_name)
-    results = await asyncio.gather(*[Aiomysql_obj.execute(sql) for sql in sql_list])
-    return results
+    return await asyncio.gather(*[Aiomysql_obj.execute(sql) for sql in sql_list])
 
 
 async def executemany_aiomysql(db_name, sql_mode, data):
     Aiomysql_obj = await create_xt_aiomysql(db_name)
-    results = await asyncio.gather(Aiomysql_obj.executemany(sql_mode, data))
-    return results
+    return await asyncio.gather(Aiomysql_obj.executemany(sql_mode, data))
 
 
 if __name__ == '__main__':

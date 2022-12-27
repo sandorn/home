@@ -26,7 +26,7 @@ __all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
 
 def create_session(method, *args, **kw):
-    session = SessionMeta()  # SessionMeta类
+    session = SessionMeta()
     _dict = {"get": session.get, "post": session.post}
     return _dict[method](*args, **kw)
 
@@ -56,8 +56,7 @@ class AsyncTask:
         self.pool = 1
 
     def __iter__(self):
-        for attr, value in self.__dict__.iteritems():
-            yield attr, value
+        yield from self.__dict__.iteritems()
 
     def __getattr__(self, name):
         if name in ['get', 'post']:
@@ -110,7 +109,7 @@ async def Async_run(self):
 
 def run(tasks, pool):
     if not isinstance(tasks, (list, tuple)):
-        raise Exception("the tasks of run must be list|tuple object.")
+        raise TypeError("the tasks of run must be list|tuple object.")
 
     result_list = []  # #存放返回结果集合
     future = asyncio.ensure_future(multi_req(tasks, pool, result_list))
@@ -161,15 +160,13 @@ async def Async_Fetch(task, result_list, session):
 
 def ahttp_parse(method, url, *args, **kwargs):
     task = eval(method)(url, *args, **kwargs)
-    res = task.run()
-    return res
+    return task.run()
 
 
 def ahttp_parse_list(method, urls, pool=200, *args, **kwargs):
     tasks = [eval(method)(url, *args, **kwargs) for url in urls]
     if len(tasks) < pool: pool = len(tasks)
-    resps = run(tasks, pool)
-    return resps
+    return run(tasks, pool)
 
 
 ahttpGet = partial(ahttp_parse, "get")

@@ -95,10 +95,8 @@ class repr_Mixin(dict_mothed_Mixin):
     '''用于打印显示'''
 
     # __str__ = __repr__
-
     def __repr__(self):
         dic = self.__dict__
-
         # # __class__.__name__
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
@@ -134,8 +132,7 @@ def typeassert(**kwargs):
             self.expected_type = expected_type
 
         def __get__(self, instance, cls):
-            if instance is None: return self
-            return instance.__dict__[self.name]
+            return self if instance is None else instance.__dict__[self.name]
 
         def __set__(self, instance, value):
             assert isinstance(value, self.expected_type)
@@ -156,7 +153,7 @@ def typeassert(**kwargs):
 
 def typed_property(name, expected_type):
     '''class类property属性生成器,限制赋值类型'''
-    storage_name = '_' + name
+    storage_name = f'_{name}'
 
     @property
     def prop(self):
@@ -217,7 +214,6 @@ if __name__ == "__main__":
         print(bb)
         for k, v in bb:
             print(k.ljust(6), ':', v)
-            pass
 
     def itat():
 

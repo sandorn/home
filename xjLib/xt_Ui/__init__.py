@@ -18,42 +18,9 @@ import random
 from functools import wraps
 
 import qdarkstyle
-from PyQt5.QtCore import QEventLoop, QMetaObject, QSize, Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import (QEventLoop, QMetaObject, QSize, Qt, pyqtSignal, pyqtSlot)
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (
-    QAction,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDesktopWidget,
-    QDoubleSpinBox,
-    QFileDialog,
-    QHBoxLayout,
-    QHeaderView,
-    QInputDialog,
-    QLabel,
-    QLineEdit,
-    QListView,
-    QListWidget,
-    QListWidgetItem,
-    QMainWindow,
-    QMenu,
-    QMessageBox,
-    QProgressBar,
-    QPushButton,
-    QSpinBox,
-    QStatusBar,
-    QTableView,
-    QTableWidget,
-    QTableWidgetItem,
-    QTabWidget,
-    QTextBrowser,
-    QTextEdit,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QWidget,
-    qApp,
-)
+from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget, qApp)
 from xt_File import qsstools
 
 
@@ -159,7 +126,7 @@ class xt_QTabWidget(QTabWidget):
         elif isinstance(int(textlist), int):  # 可以输入数值
             for index in range(int(textlist)):
                 self.tab[index] = QWidget()
-                self.addTab(self.tab[index], 'TAB_' + str(index))
+                self.addTab(self.tab[index], f'TAB_{str(index)}')
         else:
             self.addTab(self.tab[0], 'TAB_0')
 
@@ -179,11 +146,9 @@ class xt_QTabWidget(QTabWidget):
 
     def tabCloseRequested_event(self, index):
         self.removeTab(index)
-        pass
 
     def tabBarDoubleClicked_event(self, index):
         self.removeTab(index)
-        pass
 
     # @动态调整tab页签宽度
     def resizeEvent(self, event):
@@ -213,7 +178,8 @@ class xt_QTableView(QTableView):
     void	pressed ( const QModelIndex & index )
     '''
 
-    def __init__(self, ColumnsName=[], *args, **kwargs):
+    def __init__(self, ColumnsName=None, *args, **kwargs):
+        if ColumnsName is None: ColumnsName = []
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTableView_{id(self)}")
         self.model = QStandardItemModel(0, len(ColumnsName))  # type: ignore
@@ -282,7 +248,8 @@ class xt_QTableView(QTableView):
         self.model.setHorizontalHeaderLabels(Columnslist)
 
     @EventLoop
-    def appendItem(self, item=[]):
+    def appendItem(self, item=None):
+        if item is None: item = []
         # #取消自动排序
         self.setSortingEnabled(False)
 
@@ -296,7 +263,8 @@ class xt_QTableView(QTableView):
         self.setSort(self.des_sort)  # type: ignore
 
     @EventLoop
-    def appendItems(self, items=[]):
+    def appendItems(self, items=None):
+        if items is None: items = []
         self.setUpdatesEnabled(False)  # 暂停界面刷新
         if isinstance(items, list) and isinstance(items[0], list):
             for item in items:
@@ -504,16 +472,13 @@ class xt_QTableWidget(QTableWidget):
 
     def setSort(self, sbool=None):
         # TODO 设置单一竖直表头
-        if sbool is None:
-            self.des_sort = not self.des_sort
-        else:
-            self.des_sort = sbool
-
+        self.des_sort = not self.des_sort if sbool is None else sbool
         self.setSortingEnabled(self.des_sort)
         return self.des_sort
 
     @EventLoop
-    def appendItem(self, item=[]):
+    def appendItem(self, item=None):
+        if item is None: item = []
         # #取消自动排序
         self.setSortingEnabled(False)
 
@@ -531,7 +496,8 @@ class xt_QTableWidget(QTableWidget):
         self.setSort(self.des_sort)
 
     @EventLoop
-    def appendItems(self, items=[]):
+    def appendItems(self, items=None):
+        if items is None: items = []
         self.setUpdatesEnabled(False)  # 暂停界面刷新
         if isinstance(items, list) and isinstance(items[0], list):
             for item in items:
@@ -700,7 +666,7 @@ class xt_QTreeWidget(QTreeWidget):
         self.setHeaderLabels(ColumnsName)  # 设置头部信息对应列的标识符
         self.多行选择()
         self.设置自适应列宽()
-        self.columns = {index: item for index, item in enumerate(ColumnsName)}
+        self.columns = dict(enumerate(ColumnsName))
         # 设置root为self.tree的子树,故root是根节点
         self.root = QTreeWidgetItem(self)
         self.root.setText(0, 'root')  # 设置根节点的名称
@@ -737,7 +703,8 @@ class xt_QTreeWidget(QTreeWidget):
     def 设置平均列宽(self):
         self.header().setSectionResizeMode(QHeaderView.Stretch)
 
-    def addItem(self, name_list=[], parent=None):
+    def addItem(self, name_list=None, parent=None):
+        if name_list is None: name_list = []
         if parent is None:
             child = QTreeWidgetItem(self.root)
         else:
@@ -833,12 +800,10 @@ class xt_QLineEdit(QLineEdit):
         self.textEdited.connect(self.textEdited_event)
 
     def textChanged_event(self):
-        # print('textChanged', self.text())
-        pass
+        print('textChanged', self.text())
 
     def textEdited_event(self):
-        # print('textEdited', self.text())
-        pass
+        print('textEdited', self.text())
 
 
 class xt_QPushButton(QPushButton):
@@ -908,7 +873,8 @@ class xt_QComboBox(QComboBox):
     highlighted	当选中一个已经选中的下拉选项时,发射该信号
     '''
 
-    def __init__(self, itemlist=[], *args, **kwargs):
+    def __init__(self, itemlist=None, *args, **kwargs):
+        if itemlist is None: itemlist = []
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QComboBox_{id(self)}")
 
@@ -1137,7 +1103,7 @@ class xt_QMainWindow(QMainWindow):
     def setupUI(self):
         # #窗体icon,size...
         self.basepath = os.path.dirname(__file__)
-        self.setWindowIcon(QIcon(self.basepath + '/ico/ico.ico'))
+        self.setWindowIcon(QIcon(f'{self.basepath}/ico/ico.ico'))
         # @将窗口大小调整为可用屏幕空间的百分比
         self.resize(QDesktopWidget().availableGeometry(self).size() * 0.618)
         # self.setGeometry(300, 300, 1024, 768)
@@ -1170,15 +1136,15 @@ class xt_QMainWindow(QMainWindow):
 
     def action_init(self):  # #QAction
         # _path = os.path.dirname(__file__) + '/'
-        self.Run_action = QAction(QIcon(self.basepath + '/ico/Execute.png'), '&Execute', self)
-        self.Do_action = QAction(QIcon(self.basepath + '/ico/Performing.png'), '&Performing', self)
-        self.Theme_action = QAction(QIcon(self.basepath + '/ico/color.ico'), '&Theme', self)
+        self.Run_action = QAction(QIcon(f'{self.basepath}/ico/Execute.png'), '&Execute', self)
+        self.Do_action = QAction(QIcon(f'{self.basepath}/ico/Performing.png'), '&Performing', self)
+        self.Theme_action = QAction(QIcon(f'{self.basepath}/ico/color.ico'), '&Theme', self)
         self.Run_action.setObjectName("Run")
         self.Do_action.setObjectName("Do")
         self.Theme_action.setObjectName("Theme")
         # !必须,关键,用于自动绑定信号和函数  on_ObjectName_triggered
         # !配套:QMetaObject.connectSlotsByName(self)
-        self.Close_action = QAction(QIcon(self.basepath + '/ico/close.ico'), '&Quit', self)
+        self.Close_action = QAction(QIcon(f'{self.basepath}/ico/close.ico'), '&Quit', self)
         self.Run_action.setShortcut('Ctrl+E')
         self.Do_action.setShortcut('Ctrl+P')
         self.Theme_action.setShortcut('Ctrl+T')
@@ -1242,18 +1208,17 @@ class xt_QMainWindow(QMainWindow):
     def on_Theme_triggered(self):
         # #根据名称绑定的函数
         qss_list = [
-            self.basepath + '/blue.qss',
-            self.basepath + '/css.qss',
-            self.basepath + '/dark_orange.qss',
-            self.basepath + '/dark.qss',
-            self.basepath + '/grey.qss',
-            self.basepath + '/qdark.qss',
-            self.basepath + '/white.qss',
+            f'{self.basepath}/blue.qss',
+            f'{self.basepath}/css.qss',
+            f'{self.basepath}/dark_orange.qss',
+            f'{self.basepath}/dark.qss',
+            f'{self.basepath}/grey.qss',
+            f'{self.basepath}/qdark.qss',
+            f'{self.basepath}/white.qss',
         ]
         file_name = random.choice(qss_list)
-        self.setWindowTitle(self.title + '--' + file_name.split('/')[-1].split('.')[0])
+        self.setWindowTitle(f'{self.title}--' + file_name.split('/')[-1].split('.')[0])
         qsstools.set(file_name, self)
-        pass
 
     '''
         #@setWindowFlags(Qt.WindowFlags|Qt.WindowFlags)

@@ -282,6 +282,8 @@ MYHEAD = {
     'Connection': 'close',  # 'keep-alive',
     'Content-Type': 'text/html,application/x-www-form-unlencoded; charset=UTF-8',
 }
+
+###########################################################################################
 '''
     在网络请求中，常用的Content-Type有如下：
     text/html, text/plain, text/css, text/javascript, image/jpeg, image/png, image/gif

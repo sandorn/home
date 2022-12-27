@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-25 15:51:34
-LastEditTime : 2022-12-25 15:53:26
+LastEditTime : 2022-12-27 16:47:27
 FilePath     : /py学习/PY编程模式/回调-2.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -44,10 +44,8 @@ class CallbackBase:
         return f
 
     def dispatch(self, event):
-        l = self.__callbackMap[event]
-        f = lambda *args, **kargs: \
-            map(lambda x: x(*args, **kargs), l)
-        return f
+        _l = self.__callbackMap[event]
+        return lambda *args, **kargs: map(lambda x: x(*args, **kargs), _l)
 
 
 class MyClass(CallbackBase):
@@ -56,12 +54,12 @@ class MyClass(CallbackBase):
 
     @CallbackBase.callback(EVENT1)
     def handler1(self, param=None):
-        print("handler1 with param: %s" % str(param))
+        print(f"handler1 with param: {str(param)}")
         return None
 
     @CallbackBase.callbacklist([EVENT1, EVENT2])
     def handler2(self, param=None):
-        print("handler2 with param: %s" % str(param))
+        print(f"handler2 with param: {str(param)}")
         return None
 
     def run(self, event, param=None):

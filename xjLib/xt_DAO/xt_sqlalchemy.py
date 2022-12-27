@@ -19,7 +19,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import DeclarativeMeta  # 类;declarative_base类工厂
 from sqlalchemy.orm import scoped_session, sessionmaker
 from xt_Class import typed_property
-from xt_DAO.cfg import make_connect_string  # type: ignore
+from xt_DAO.cfg import make_connect_string
 from xt_DAO.xt_chemyMeta import Orm_Meta
 
 
@@ -75,11 +75,11 @@ class SqlConnection(Orm_Meta):
         else:
             self.session.commit()
         self.session.close()
-        return False if exc_type else True
+        return not exc_type
 
     def drop_db(self):
         """删除init传入的self.dbmodel"""
-        drop_sql = "DROP TABLE if exists {}".format(self.dbmodel.__tablename__)
+        drop_sql = f"DROP TABLE if exists {self.dbmodel.__tablename__}"
         self.session.execute(drop_sql)
         # self.dbmodel.__table__.drop(self.engine)# 未生效
         # self.dbmodel.metadata.drop_all(self.engine) # 未生效
@@ -98,14 +98,7 @@ class SqlConnection(Orm_Meta):
 
     def delete(self, conditions=None):
         if conditions:
-            conditon_list = []
-            for key in list(conditions.keys()):
-                if self.params.get(key, None):
-                    conditon_list.append(self.params.get(key) == conditions.get(key))
-            conditions = conditon_list
-            query = self.session.query(self.dbmodel)
-            for condition in conditions:
-                query = query.filter(condition)
+            query = self._extracted_from_update(conditions)
             deleteNum = query.delete()
             self.session.commit()
         else:
@@ -118,23 +111,22 @@ class SqlConnection(Orm_Meta):
         value_dict:更新数据字典:{'字段':字段值}
         '''
         if conditions and value_dict:
-            conditon_list = []
-            for key in list(conditions.keys()):
-                if self.params.get(key, None):
-                    conditon_list.append(self.params.get(key) == conditions.get(key))
-            conditions = conditon_list
-            query = self.session.query(self.dbmodel)
-            for condition in conditions:
-                query = query.filter(condition)
-            updatevalue = {}
-            for key in list(value_dict.keys()):
-                if self.params.get(key, None):
-                    updatevalue[self.params.get(key, None)] = value_dict.get(key)
+            query = self._extracted_from_update(conditions)
+            updatevalue = {self.params.get(key, None): value_dict.get(key) for key in list(value_dict.keys()) if self.params.get(key, None)}
             updateNum = query.update(updatevalue)
             self.session.commit()
         else:
             updateNum = 0
         return updateNum
+
+    # TODO Rename this here and in `delete` and `update`
+    def _extracted_from_update(self, conditions):
+        conditon_list = [self.params.get(key) == conditions.get(key) for key in list(conditions.keys()) if self.params.get(key, None)]
+        conditions = conditon_list
+        result = self.session.query(self.dbmodel)
+        for condition in conditions:
+            result = result.filter(condition)
+        return result
 
     def select(self, conditions=None, Columns=None, count=None):
         '''
@@ -144,10 +136,7 @@ class SqlConnection(Orm_Meta):
         return:处理后的list,内含dict(未选择列),或tuple(选择列)
         '''
         if isinstance(Columns, (tuple, list)) and len(Columns) > 0:
-            Columns_list = []
-            for key in Columns:
-                if self.params.get(key, None):
-                    Columns_list.append(self.params.get(key))
+            Columns_list = [self.params.get(key) for key in Columns if self.params.get(key, None)]
             Columns = Columns_list
         else:
             Columns = [self.dbmodel]
@@ -155,32 +144,23 @@ class SqlConnection(Orm_Meta):
         query = self.session.query(*Columns)
 
         if isinstance(conditions, dict):
-            conditon_list = []
-            for key in list(conditions.keys()):
-                if self.params.get(key, None):
-                    conditon_list.append(self.params.get(key) == conditions.get(key))
+            conditon_list = [self.params.get(key) == conditions.get(key) for key in list(conditions.keys()) if self.params.get(key, None)]
             conditions = conditon_list
         else:
             conditions = []
 
-        if len(conditions) > 0:
+        if conditions:
             for condition in conditions:
                 query = query.filter(condition)
 
-        if count: return query.limit(count).all()
-        else: return query.all()
+        return query.limit(count).all() if count else query.all()
 
     def from_statement(self, sql, conditions=None):
         '''使用完全基于字符串的语句'''
         if sql:
             query = self.session.query(self.dbmodel).from_statement(text(sql))
-        if conditions:
-            result = query.params(**conditions).all()
-            self.session.commit()
-        else:
-            result = query.all()
-            self.session.commit()
-
+        result = query.params(**conditions).all() if conditions else query.all()
+        self.session.commit()
         return result
 
     def filter_by(self, filter_kwargs, count=None):
@@ -190,10 +170,7 @@ class SqlConnection(Orm_Meta):
         仅支持[等于]、[and],无需明示,在参数中以字典形式传入
         '''
         query = self.session.query(self.dbmodel).filter_by(**filter_kwargs)
-        if count:
-            return query.limit(count).all()
-        else:
-            return query.all()
+        return query.limit(count).all() if count else query.all()
 
     def get_dict(self, result=None):
         if result is None:
@@ -201,17 +178,14 @@ class SqlConnection(Orm_Meta):
             result = query.limit(None).all()
         data_dict = [dict(zip(res.keys, res)) for res in result]
         # #data_dict = [dict(zip(res['key'],res['value'])) for res in result]
-        if len(data_dict): return data_dict
-        else: return False
+        return data_dict if len(data_dict) else False
 
     def pd_get_dict(self, table_name):
         result = pandas.read_sql_table(table_name, con=self.conn)
         data_dict = result.to_dict(orient="records")
-        if len(data_dict): return data_dict
-        else: return False
+        return data_dict if len(data_dict) else False
 
     def pd_get_list(self, table_name, Columns):
         result = pandas.read_sql_table(table_name, con=self.conn)
         pd_list = result[Columns].drop_duplicates().values.tolist()
-        if len(pd_list): return pd_list
-        else: return False
+        return pd_list if len(pd_list) else False

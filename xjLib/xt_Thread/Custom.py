@@ -88,13 +88,11 @@ class CustomThread(Thread, item_get_Mixin):
     def getAllResult(cls):
         """利用enumerate,根据类名判断线程结束,返回结果"""
         cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
-        # finished = True
+        nowlist = enumerate()  # 线程list
         while not cls.finished.is_set():
-            nowlist = enumerate()  # 线程list
             list_tmp = [type(nowlist[index]).__name__ for index in range(len(nowlist))]
             if cls.__name__ in list_tmp:
                 cls.finished.wait(0.1)  # sleep(0.1)
-                continue
             else:
                 cls.finished.set()
                 break
@@ -217,13 +215,11 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
     def getAllResult(cls):
         """利用enumerate,根据类名判断线程结束,返回结果"""
         cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
-        # finished = True
+        nowlist = enumerate()  # 线程list
         while not cls.finished.is_set():
-            nowlist = enumerate()  # 线程list
             list_tmp = [type(nowlist[index]).__name__ for index in range(len(nowlist))]
             if cls.__name__ in list_tmp:
                 cls.finished.wait(0.1)  # sleep(0.1)
-                continue
             else:
                 cls.finished.set()
                 break

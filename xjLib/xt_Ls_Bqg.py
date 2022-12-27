@@ -108,7 +108,7 @@ def get_download_url(target):
     bookname, temp_urls, titles = html_xpath(resp, _xpath)
 
     bookname = bookname[0]
-    baseurl = '/'.join(target.split('/')[0:-2])
+    baseurl = '/'.join(target.split('/')[:-2])
     urls = [baseurl + item for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
@@ -124,7 +124,7 @@ def get_biqugse_download_url(target):
     bookname, temp_urls, titles = html_xpath(resp, _xpath)
 
     bookname = bookname[0]
-    baseurl = '/'.join(target.split('/')[0:-2])
+    baseurl = '/'.join(target.split('/')[:-2])
     urls = [baseurl + item for item in temp_urls]  # # 章节链接
     return bookname, urls, titles
 
@@ -162,8 +162,7 @@ if __name__ == "__main__":
     url = 'https://www.biqukan8.cc/38_38163/'
     bookname, urls, titles = get_download_url(url)
     print(bookname)
-    for i in range(len(urls)):
+    for _ in range(len(urls)):
         ...
-        # print(urls[i], titles[i])
     res = get_contents((1, urls[1]))
     print(res)

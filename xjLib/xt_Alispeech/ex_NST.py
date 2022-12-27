@@ -70,7 +70,7 @@ class NST(on_state_cls):
 
         with Sem:
 
-            print("{}: thread start..".format(self.__id))
+            print(f"{self.__id}: thread start..")
 
             _NST_ = NlsSpeechTranscriber(
                 token=_ACCESS_TOKEN,
@@ -85,7 +85,7 @@ class NST(on_state_cls):
                 callback_args=[self.__id],
             )
 
-            print("{}: session start".format(self.__id))
+            print(f"{self.__id}: session start")
 
             _NST_.start(
                 aformat="pcm",
@@ -106,7 +106,7 @@ class NST(on_state_cls):
                 time.sleep(0.01)
 
             _NST_.stop()
-            print('{}: NST stopped.'.format(self.__id))
+            print(f'{self.__id}: NST stopped.')
 
 
 if __name__ == '__main__':

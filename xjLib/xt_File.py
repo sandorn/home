@@ -25,12 +25,11 @@ class filesize:
 
     def __str__(self):
         if self.MB > 10:
-            res = f'{self.MB:.2f} MB'
+            return f'{self.MB:.2f} MB'
         elif self.KB > 10:
-            res = f'{self.KB:.2f} KB'
+            return f'{self.KB:.2f} KB'
         else:
-            res = f'{self.Bytes} Bytes'
-        return res
+            return f'{self.Bytes} Bytes'
 
 
 class qsstools:
@@ -95,8 +94,7 @@ def filedialog(_dir='c:/'):
     _dlg = win32ui.CreateFileDialog(1)  # 1表示打开文件对话框
     _dlg.SetOFNInitialDir(_dir)  # 设置打开文件对话框中的初始显示目录
     _dlg.DoModal()
-    filename = _dlg.GetPathName()  # 获取选择的文件名称
-    return filename
+    return _dlg.GetPathName()
 
 
 if __name__ == "__main__":
