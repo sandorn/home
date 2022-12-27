@@ -32,33 +32,33 @@ def handle_ex_nsx_result(res):
     return (res_list, dictMerged)
 
 
-def get_voice_data(datalist):
+def get_voice_data(voice_file_list):
     '''情形1-不保存文件,返回音频数据,用于朗读'''
-    for index, item in enumerate(datalist):
+    for index, item in enumerate(voice_file_list):
         with open(item[1], 'rb') as f:
             __data = f.read()
         os.remove(item[1])
-        datalist[index][1] = __data
+        voice_file_list[index][1] = __data
 
     # $[[1, b'xxxx'], [2, b'xxxx'], [3, b'xxxx'],]
-    return datalist
+    return voice_file_list
 
 
-def save_sound_file(datalist, path=None):
-    '''情形2-保存音频文件到桌面'''
+def save_sound_file(voice_file_list, path=None):
+    '''情形2-保存音频文件指定到位置或桌面'''
     if path is None: path = get_desktop() or ''
-    for index, item in enumerate(datalist):
+    for index, item in enumerate(voice_file_list):
         shutil.move(item[1], path)
-        datalist[index][1] = path + "\\" + item[1].split("\\")[-1]
+        voice_file_list[index][1] = path + "\\" + item[1].split("\\")[-1]
 
         # $[[1, 'D:\\path\\1.mp3'], [2, 'D:\\path\\2.mp3'], [3, 'D:\\path\\3.mp3'],]
-    return datalist
+    return voice_file_list
 
 
-def merge_sound_file(datalist, args, path=None):
+def merge_sound_file(voice_file_list, args, path=None):
     '''情形3-合并音频,删除过程文件'''
     if path is None: path = get_desktop() or ''
-    sound_list = [[item[0], AudioSegment.from_file(item[1], format=args['aformat']), os.remove(item[1])] for item in datalist]
+    sound_list = [[item[0], AudioSegment.from_file(item[1], format=args['aformat']), os.remove(item[1])] for item in voice_file_list]
 
     SumSound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件
     for item in sound_list:
@@ -67,10 +67,10 @@ def merge_sound_file(datalist, args, path=None):
     # $保存音频文件
     __fname = f"{path}\\{get_10_timestamp()}_{args['voice']}_tts.{args['aformat']}"
     SumSound.export(__fname, format=args['aformat'])  # 保存文件
-    datalist = [[1, __fname]]
+    voice_file_list = [[1, __fname]]
 
     # $[[1, 'D:\\Desktop\\1.mp3'],]
-    return datalist
+    return voice_file_list
 
 
 VIOCE = [

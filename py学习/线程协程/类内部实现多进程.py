@@ -6,9 +6,9 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:55
-FilePath     : /线程协程/类内部实现多进程.py
-LastEditTime : 2022-04-13 10:53:41
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2022-12-27 20:53:19
+FilePath     : /py学习/线程协程/类内部实现多进程.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -17,33 +17,35 @@ import multiprocessing
 import time
 from multiprocessing import Process
 
+from xt_Time import fn_timer
+
 
 class A(object):
+
     def __init__(self):
         self.a = None
         self.b = None
         # 初始化一个共享字典
         self.my_dict = multiprocessing.Manager().dict()
 
-    def get_num_a(self):
-        time.sleep(3)
-        self.my_dict["a"] = 10
+    def get_num_a(self, num):
+        time.sleep(0.1)
+        self.my_dict["a"] = num
 
-    def get_num_b(self):
-        time.sleep(5)
-        self.my_dict["b"] = 6
+    def get_num_b(self, num):
+        time.sleep(0.1)
+        self.my_dict["b"] = num
 
     def sum(self):
         self.a = self.my_dict["a"]
         self.b = self.my_dict["b"]
-        print("a的值为:{}".format(self.a))
-        print("b的值为:{}".format(self.b))
-        ret = self.a + self.b
-        return ret
+        print(f"a的值为:{self.a}")
+        print(f"b的值为:{self.b}")
+        return self.a + self.b
 
-    def run(self):
-        p1 = multiprocessing.Process(target=self.get_num_a)
-        p2 = multiprocessing.Process(target=self.get_num_b)
+    def run(self, num):
+        p1 = multiprocessing.Process(target=self.get_num_a, args=(num, ))
+        p2 = multiprocessing.Process(target=self.get_num_b, args=(num, ))
         p1.start()
         p2.start()
         p1.join()
@@ -51,27 +53,26 @@ class A(object):
         print(self.sum())
 
 
-def main1():
-    t1 = time.time()
+@fn_timer
+def main(num):
     a = A()
-    a.run()
-    t2 = time.time()
-    print("cost time :{}".format(t2 - t1))
+    a.run(num)
 
 
 class MyProcess(Process):
-    def __init__(self, loop):
-        Process.__init__(self)
-        self.loop = loop
+
+    def __init__(self, index):
+        super().__init__()
+        self.index = index
 
     def run(self):
-        for count in range(self.loop):
-            main1()
-            time.sleep(1)
-            print('Pid: ' + str(self.pid) + ' LoopCount: ' + str(count))
+        for count in range(self.index):
+            main(count)
+            time.sleep(0.1)
+            print(f'Pid: {self.pid} Count: {count}')
 
 
 if __name__ == '__main__':
-    for i in range(2, 5):
+    for i in range(10):
         p = MyProcess(i)
         p.start()

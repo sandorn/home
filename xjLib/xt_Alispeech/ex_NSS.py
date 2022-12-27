@@ -127,14 +127,14 @@ def TODO_TTS(_in_text, renovate_args=None, readonly=False, merge=False):
 
     # $运行主程序
     [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
-    datalist = NSS.wait_completed()
+    voice_file_list = NSS.wait_completed()
 
     # $处理结果
-    assert isinstance(datalist, list)
-    datalist.sort(key=lambda x: x[0])
+    assert isinstance(voice_file_list, list)
+    voice_file_list.sort(key=lambda x: x[0])
 
-    if readonly: return get_voice_data(datalist)
-    return merge_sound_file(datalist, args) if merge else save_sound_file(datalist)
+    if readonly: return get_voice_data(voice_file_list)
+    return merge_sound_file(voice_file_list, args) if merge else save_sound_file(voice_file_list)
 
 
 if __name__ == '__main__':
@@ -148,11 +148,11 @@ if __name__ == '__main__':
     out_file = TODO_TTS(_text, {'aformat': 'wav'}, readonly=True)
 
     from PyQt5.QtCore import QThread
-    from xt_Alispeech.Play import qthread_play, thread_play
+    from xt_Alispeech.Play import Qthread_play, Thread_play
 
     for oufile in out_file:
-        task = qthread_play(oufile[1])
+        task = Qthread_play(oufile[1])
         task.join()
-        task2 = thread_play(oufile[1])
-        # QThread.msleep(10000)
-        # task2.stop()
+        task2 = Thread_play(oufile[1])
+        QThread.msleep(10000)
+        task2.stop()
