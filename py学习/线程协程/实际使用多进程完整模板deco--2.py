@@ -6,31 +6,31 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:55
-LastEditTime : 2022-12-13 15:20:07
-FilePath     : /线程协程/实际使用多进程完整模板deco--2.py
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2022-12-27 23:32:42
+FilePath     : /py学习/线程协程/实际使用多进程完整模板deco--2.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import os
 import time
 
 from deco import concurrent, synchronized
 
+temp_dict = {i: f'{i}pid' for i in range(10)}
 
-@concurrent  # (processes=24)
+
+@concurrent
 def test_concurrent(input_):
     print(input_, os.getpid())
-    time.sleep(0.1)
-    return os.getpid()
+    time.sleep(5)
+    return input_, os.getpid()
 
 
 @synchronized
 def test_synchronized():
-    result = {}
-    for i in range(100):
-        result[i] = test_concurrent('{} pid'.format(i))
-    return result
+    return {k: test_concurrent(v) for k, v in temp_dict.items()}
 
 
 if __name__ == '__main__':

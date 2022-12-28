@@ -14,6 +14,8 @@ Github       : https://github.com/sandorn/home
 带装饰器的Python中的简化多进程、多线程并发（装饰并发-Python多线程、进程神器）_陆壹佛爷Tong_T-CSDN博客_python multiprocess 装饰器装饰
 https://blog.csdn.net/Tong_T/article/details/103064827?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.nonecase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.nonecase
 '''
+
+import itertools
 import os
 import random
 import time
@@ -48,9 +50,8 @@ def process_data_set(data):
     :return:
     """
     results = defaultdict(dict)
-    for lat in range(10):
-        for lon in range(10):
-            results[lat][lon] = process_lat_lon(lat, lon, data)
+    for lat, lon in itertools.product(range(10), range(10)):
+        results[lat][lon] = process_lat_lon(lat, lon, data)
     return dict(results)
 
 

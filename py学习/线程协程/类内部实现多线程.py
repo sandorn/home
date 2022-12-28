@@ -6,16 +6,15 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-27 20:53:19
-FilePath     : /py学习/线程协程/类内部实现多进程.py
+Date         : 2022-12-27 23:20:54
+LastEditTime : 2022-12-27 23:20:55
+FilePath     : /py学习/线程协程/类内部实现多线程.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
-import multiprocessing
+import threading
 import time
-from multiprocessing import Process
+from threading import Thread
 
 from xt_Time import fn_timer
 
@@ -23,29 +22,25 @@ from xt_Time import fn_timer
 class A(object):
 
     def __init__(self):
-        self.a = None
-        self.b = None
-        # 初始化一个共享字典
-        self.my_dict = multiprocessing.Manager().dict()
+        self.a = 0
+        self.b = 0
 
     def get_num_a(self, num):
         time.sleep(0.1)
-        self.my_dict["a"] = num
+        self.a = num
 
     def get_num_b(self, num):
         time.sleep(0.1)
-        self.my_dict["b"] = num
+        self.b = num
 
     def sum(self):
-        self.a = self.my_dict["a"]
-        self.b = self.my_dict["b"]
         print(f"a的值为:{self.a},b的值为:{self.b}")
         return self.a + self.b
 
     def run(self, num):
-        print(f'第2次层Process:{num}')
-        p1 = Process(target=self.get_num_a, args=(num, ))
-        p2 = Process(target=self.get_num_b, args=(num, ))
+        print(f'第2次层Thread:{num}')
+        p1 = Thread(target=self.get_num_a, args=(num, ))
+        p2 = Thread(target=self.get_num_b, args=(num, ))
         p1.start()
         p2.start()
         p1.join()
@@ -53,22 +48,22 @@ class A(object):
         print(f"合计：{self.sum()}")
 
 
-class MyProcess(Process):
+class MyThread(Thread):
 
     def __init__(self, index):
         super().__init__()
         self.index = index
 
     def run(self):
-        print(f'第1次层Process:{ self.index}')
+        print(f'第1次层Thread:{ self.index}')
         for count in range(self.index):
             a = A()
             a.run(count)
             time.sleep(0.1)
-            print(f'Pid: {self.pid} Count: {count}')
+            print(f'ident: {self.ident} Count: {count}')
 
 
 if __name__ == '__main__':
     for i in range(10):
-        p = MyProcess(i)
+        p = MyThread(i)
         p.start()
