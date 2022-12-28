@@ -6,13 +6,12 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:55
-LastEditTime : 2022-12-21 21:55:10
-FilePath     : /项目包/线程小成果/笔趣阁-threading-继承-5星.py
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2022-12-29 00:41:07
+FilePath     : /项目包/线程小成果/笔趣阁-CustomThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-import os
 
 from xt_File import savefile
 from xt_Ls_Bqg import get_biqugse_download_url, get_contents
@@ -23,15 +22,12 @@ from xt_Time import fn_timer
 @fn_timer
 def main_thread(target):
     bookname, urls, _ = get_biqugse_download_url(target)
-    print('threading-继承，开始下载：《' + bookname + '》', flush=True)
-    # 设置同时执行的线程数，其他等待执行
+    print(f'CustomThread,开始下载:《{bookname}》', flush=True)
     _ = [CustomThread(get_contents, (index, urls[index])) for index in range(len(urls))]
-    # 获取全部线程结果
     text_list = CustomThread.getAllResult()
     text_list.sort(key=lambda x: x[0])  # #排序
     # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
-    files = os.path.split(__file__)[-1].split(".")[0]
-    savefile(files + '＆' + bookname + '.txt', text_list, br='\n')
+    savefile(f'{bookname}&CustomThread.txt', text_list, br='\n')
 
 
 if __name__ == '__main__':

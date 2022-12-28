@@ -28,7 +28,7 @@ def multpool_ahttp_All(url):
     text_list = 结果处理(resps)
     text_list.sort(key=lambda x: x[0])  # #排序
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'ahttp_All.txt', text_list, br='\n')
+    savefile(f'{files}&{bookname}ahttp_All.txt', text_list, br='\n')
 
 
 def multpool(urls):
@@ -42,12 +42,12 @@ def thrtpool(url_list):
     bookname, urls, _ = get_biqugse_download_url(url_list[0])
     urls = [[url] for url in urls]
     mypool.add_sub(get, urls)
-    resps = mypool.wait_completed()
+    resps = mypool.wait_sub_completed()
 
     text_list = 结果处理(resps)
     text_list.sort(key=lambda x: x[0])  # #排序
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'thrtpool.txt', text_list, br='\n')
+    savefile(f'{files}&{bookname}thrtpool.txt', text_list, br='\n')
 
 
 if __name__ == '__main__':

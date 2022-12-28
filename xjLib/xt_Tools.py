@@ -223,11 +223,9 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
             while attempts < max_retries:
                 try:
                     result = func(*args, **kwargs)
-                    if callable(validate) and validate(result) is False:
-                        continue
+                    if callable(validate) and validate(result) is False: continue
                     # #回调函数,处理结果
-                    if callable(callback): result = callback(result)
-                    return result
+                    return callback(result) if callable(callback) else result
                 except exceptions as ex:
                     func_exc, exc_traceback = ex, traceback.format_exc()
                     attempts += 1
@@ -276,8 +274,8 @@ if __name__ == '__main__':
         simple()
         readFile("UnexistFile.txt")
         print(add(1, 2))
-        assertSumIsPositive(1, 2, -3, -4)
-        checkLen(a=5, b=2)
+        # assertSumIsPositive(1, 2, -3, -4)
+        # checkLen(a=5, b=2)
 
     def fre():
         # 可变对象默认装饰器

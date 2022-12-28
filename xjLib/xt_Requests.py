@@ -191,7 +191,7 @@ def html_xpath(resp, args):
 if __name__ == '__main__':
     urls = ['http://www.baidu.com', 'http://www.163.com', 'http://dangdang.com', 'https://www.biqukan8.cc/38_38163/']
     for url in urls:
-        res = get(url)
+        res = get_wraps(url)
         print(res)
         print(res.xpath('//title/text()'))
         print(res.xpath('//title/text()'))

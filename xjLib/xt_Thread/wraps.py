@@ -99,8 +99,11 @@ def QThread_wrap(func=None, *args, **kwargs):
 
         def inner(*args, **kwargs):
             _mythr = QThread()
-            _mythr.run = fun
+            _mythr.daemon = kwargs.pop('daemon', False)
+            _mythr.callback = kwargs.pop('callback', None)
+            _mythr.setObjectName(fun.__name__)
             _mythr.join = _mythr.wait
+            _mythr.run = fun
             print(f"{_mythr} | {fun.__name__} start with QThread_wrap...")
             _mythr.Result = _mythr.run(*args, **kwargs)
 
@@ -124,7 +127,7 @@ class Thread_wrap_class:
         self.func = func
 
     def __call__(self, *args, **kwargs):
-        kwargs.update({'Result_dict': Thread_wrap_class.Result_dict})
+        kwargs['Result_dict'] = Thread_wrap_class.Result_dict
         _mythr = _MyThread(
             self.func,
             self.func.__name__,
@@ -149,14 +152,14 @@ class Thread_wrap_class:
 
 def create_mixin_class(name, cls, meta, **kwargs):
     '''type动态混入继承,实质是调整 bases'''
-    _return_class = type(name, (cls, meta), kwargs)
-    return _return_class
+    return type(name, (cls, meta), kwargs)
     # sample.__bases__ += (Singleton_Base, )
 
 
-def mixin_class_bases(cls, bases):
+def mixin_class_bases(cls, bases, name=None):
     '''混入类的继承，不会覆盖原有继承'''
     cls.__bases__ += (bases, )
+    if name: cls.__name__ = name
     return cls
 
 
@@ -176,3 +179,7 @@ if __name__ == "__main__":
     print(res.Result)
     cc = b(5)
     print(cc.Result)
+    print(cc.callback)
+    print(cc.daemon)
+    print(cc.objectName())
+    print(thread_print.__name__)
