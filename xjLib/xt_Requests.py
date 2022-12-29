@@ -194,8 +194,10 @@ if __name__ == '__main__':
         res = get_wraps(url)
         print(res)
         print(res.xpath('//title/text()'))
-        print(res.xpath('//title/text()'))
-        print(res.xpath('//title/text()'))
+        print(res.dom.xpath('//title/text()'))
+        print(res.html.xpath('//title/text()'))
+        print(res.element.xpath('//title/text()'))
+        print(res.__bool__())
 '''
     # @不能用于协程,且不保留最后错误
     # from retrying import retry as Retry
