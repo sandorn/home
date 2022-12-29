@@ -9,36 +9,28 @@
 @LastEditors: Even.Sand
 @LastEditTime: 2019-05-17 22:00:51
 '''
-import time
-from urllib import parse
-import requests
 import os
-import gevent
-from gevent import monkey
 import random
 import re
+import time
+from urllib import parse
+
+import gevent
+import requests
+from gevent import monkey
 from lxml import etree
+
 monkey.patch_all(select=False)
 
 
 def getNoval(url, id):
     headers = {
-        'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
-        'Accept':
-            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language':
-            'zh-CN,zh;q=0.9',
-        'Cookie':
-            '__cfduid=d820fcba1e8cf74caa407d320e0af6b5d1518500755; UM_distinctid=1618db2bfbb140-060057ff473277-4323461-e1000-1618db2bfbc1e4; ctrl_time=1; CNZZDATA1272873873=2070014299-1518497311-https%253A%252F%252Fwww.baidu.com%252F%7C1518507528; yjs_id=69163e1182ffa7d00c30fa85105b2432; jieqiVisitTime=jieqiArticlesearchTime%3D1518509603'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'Cookie': '__cfduid=d820fcba1e8cf74caa407d320e0af6b5d1518500755; UM_distinctid=1618db2bfbb140-060057ff473277-4323461-e1000-1618db2bfbc1e4; ctrl_time=1; CNZZDATA1272873873=2070014299-1518497311-https%253A%252F%252Fwww.baidu.com%252F%7C1518507528; yjs_id=69163e1182ffa7d00c30fa85105b2432; jieqiVisitTime=jieqiArticlesearchTime%3D1518509603'
     }
-    IPs = [{
-        'HTTPS': 'https://115.237.16.200:8118'
-    }, {
-        'HTTPS': 'https://42.49.119.10:8118'
-    }, {
-        'HTTPS': 'http://60.174.74.40:8118'
-    }]
+    IPs = [{'HTTPS': 'https://115.237.16.200:8118'}, {'HTTPS': 'https://42.49.119.10:8118'}, {'HTTPS': 'http://60.174.74.40:8118'}]
     IP = random.choice(IPs)
     res = requests.get(url, headers=headers, proxies=IP)
     res.encoding = 'GB18030'
@@ -49,30 +41,18 @@ def getNoval(url, id):
     if len(ps) != 0:
         s = ps[0].text + '\n'
         s = s + content[0].xpath("string(.)")
-        with open(
-                '%d.txt' % id, 'w', encoding='gb18030',
-                errors='ignore') as f:
+        with open('%d.txt' % id, 'w', encoding='gb18030', errors='ignore') as f:
             f.write(s)
 
 
 def getContentFile(url):
     headers = {
-        'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
-        'Accept':
-            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language':
-            'zh-CN,zh;q=0.9',
-        'Cookie':
-            '__cfduid=d820fcba1e8cf74caa407d320e0af6b5d1518500755; UM_distinctid=1618db2bfbb140-060057ff473277-4323461-e1000-1618db2bfbc1e4; ctrl_time=1; CNZZDATA1272873873=2070014299-1518497311-https%253A%252F%252Fwww.baidu.com%252F%7C1518507528; yjs_id=69163e1182ffa7d00c30fa85105b2432; jieqiVisitTime=jieqiArticlesearchTime%3D1518509603'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'Cookie': '__cfduid=d820fcba1e8cf74caa407d320e0af6b5d1518500755; UM_distinctid=1618db2bfbb140-060057ff473277-4323461-e1000-1618db2bfbc1e4; ctrl_time=1; CNZZDATA1272873873=2070014299-1518497311-https%253A%252F%252Fwww.baidu.com%252F%7C1518507528; yjs_id=69163e1182ffa7d00c30fa85105b2432; jieqiVisitTime=jieqiArticlesearchTime%3D1518509603'
     }
-    IPs = [{
-        'HTTPS': 'https://115.237.16.200:8118'
-    }, {
-        'HTTPS': 'https://42.49.119.10:8118'
-    }, {
-        'HTTPS': 'http://60.174.74.40:8118'
-    }]
+    IPs = [{'HTTPS': 'https://115.237.16.200:8118'}, {'HTTPS': 'https://42.49.119.10:8118'}, {'HTTPS': 'http://60.174.74.40:8118'}]
     IP = random.choice(IPs)
     res = requests.get(url, headers=headers)  # , proxies=IP)
     res.encoding = 'GB18030'
@@ -80,7 +60,7 @@ def getContentFile(url):
     bookname = page.xpath('//div[@id="info"]/h1')[0].xpath('string(.)')
     dl = page.xpath('//div[@id="list"]/dl/dd/a')
     splitHTTP = parse.urlsplit(url)
-    url = splitHTTP.scheme + '://' + splitHTTP.netloc
+    url = f'{splitHTTP.scheme}://{splitHTTP.netloc}'
     return list(map(lambda x: url + x.get('href'), dl)), bookname
 
 
@@ -89,34 +69,22 @@ def BuildGevent(baseurl):
     steps = 200
     beginIndex, length = steps, len(content)
     count = 0
-    name = "%s.txt" % bookname
+    name = f"{bookname}.txt"
     while (count - 1) * steps < length:
-        WaitigList = [
-            gevent.spawn(getNoval, content[i + count * steps],
-                         i + count * steps)
-            for i in range(steps)
-            if i + count * steps < length
-        ]
+        WaitigList = [gevent.spawn(getNoval, content[i + count * steps], i + count * steps) for i in range(steps) if i + count * steps < length]
         gevent.joinall(WaitigList)
-        NovalFile = list(
-            filter(lambda x: x[:x.index('.')].isdigit(), os.listdir('./Noval')))
+        NovalFile = list(filter(lambda x: x[:x.index('.')].isdigit(), os.listdir('./Noval')))
         NovalFile.sort(key=lambda x: int(re.match('\d+', x).group()))
         String = ''
         for dirFile in NovalFile:
-            with open(
-                    './Noval/' + dirFile, 'r', encoding='gb18030',
-                    errors='ignore') as f:
+            with open(f'./Noval/{dirFile}', 'r', encoding='gb18030', errors='ignore') as f:
                 String = String + '\n' + f.read()
-            os.remove('./Noval/%s' % dirFile)
+            os.remove(f'./Noval/{dirFile}')
         if count == 0:
-            with open(
-                    './Noval/' + name, 'w', encoding='gb18030',
-                    errors='ignore') as ff:
+            with open(f'./Noval/{name}', 'w', encoding='gb18030', errors='ignore') as ff:
                 ff.write(String)
         else:
-            with open(
-                    './Noval/' + name, 'a', encoding='gb18030',
-                    errors='ignore') as ff:
+            with open(f'./Noval/{name}', 'a', encoding='gb18030', errors='ignore') as ff:
                 ff.write(String)
         count += 1
 
@@ -128,7 +96,7 @@ if __name__ == '__main__':
     endtime = time.time()
     print("Total use time: %.6f" % (endtime - starttime))
 '''---------------------
-作者：肥宅_Sean
-来源：CSDN
-原文：https://blog.csdn.net/a19990412/article/details/79323191
-版权声明：本文为博主原创文章，转载请附上博文链接！'''
+作者:肥宅_Sean
+来源:CSDN
+原文:https://blog.csdn.net/a19990412/article/details/79323191
+版权声明:本文为博主原创文章，转载请附上博文链接！'''

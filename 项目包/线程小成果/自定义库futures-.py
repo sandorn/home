@@ -7,18 +7,16 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2022-12-25 13:08:13
-FilePath     : /项目包/线程小成果/笔趣阁-自定义库futures-.py
+LastEditTime : 2022-12-29 12:54:53
+FilePath     : /项目包/线程小成果/自定义库futures-.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
 import os
 
 from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
-from xt_Ls_Bqg import get_biqugse_download_url, 结果处理
-from xt_Requests import get
+from xt_Ls_Bqg import get_biqugse_download_url, get_contents, 结果处理
 from xt_Thread import ProcessPool, ThreadPool
 
 
@@ -37,17 +35,16 @@ def multpool(urls):
     mypool.wait_completed()
 
 
-def thrtpool(url_list):
+def thrtpool(url):
     mypool = ThreadPool()
-    bookname, urls, _ = get_biqugse_download_url(url_list[0])
-    urls = [[url] for url in urls]
-    mypool.add_sub(get, urls)
-    resps = mypool.wait_sub_completed()
-
-    text_list = 结果处理(resps)
+    bookname, urls, _ = get_biqugse_download_url(url)
+    args = [[index, url] for index, url in enumerate(urls)]
+    mypool.add_sub(get_contents, args)
+    text_list = mypool.wait_sub_completed()
+    # text_list = 结果处理(resps)
     text_list.sort(key=lambda x: x[0])  # #排序
-    files = os.path.basename(__file__).split(".")[0]
-    savefile(f'{files}&{bookname}thrtpool.txt', text_list, br='\n')
+    files = os.path.split(__file__)[-1].split(".")[0]
+    savefile(f'{files}&{bookname}&Thrtpool.txt', text_list, br='\n')
 
 
 if __name__ == '__main__':
@@ -61,4 +58,4 @@ if __name__ == '__main__':
         # 'http://www.biqugse.com/2367/',
     ]
     # multpool(urls)
-    thrtpool(urls)
+    thrtpool(url)

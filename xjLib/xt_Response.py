@@ -127,6 +127,9 @@ class ReqResult(item_Mixin):
     def __bool__(self):
         return self.status == 200
 
+    def __eq__(self, other):
+        return self.index == other.index
+
 
 '''
 jxdm = response.xpath('//h3/a')

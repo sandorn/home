@@ -14,7 +14,7 @@ LastEditTime : 2021-04-14 19:36:16
 '''
 
 from xt_Ahttp import ahttpGet
-from xt_Requests import get, html_xpath
+from xt_Requests import get
 from xt_Response import ReqResult
 from xt_String import Re_Sub, Str_Clean, Str_Replace, UNprintable_Chars
 
@@ -89,7 +89,7 @@ def 结果处理(resps):
             '//h1/text()',
             '//*[@id="content"]/text()',
         )
-        _title, _showtext = html_xpath(resp, _xpath)
+        _title, _showtext = resp.xpath(_xpath)
         title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
         content = clean_Content(_showtext)
         _texts.append([resp.index, title, content])
@@ -121,7 +121,7 @@ def get_biqugse_download_url(target):
         '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href',
         '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()',
     )
-    bookname, temp_urls, titles = html_xpath(resp, _xpath)
+    bookname, temp_urls, titles = resp.xpath(_xpath)
 
     bookname = bookname[0]
     baseurl = '/'.join(target.split('/')[:-2])
@@ -129,16 +129,16 @@ def get_biqugse_download_url(target):
     return bookname, urls, titles
 
 
-def get_contents(args, func=get):
+def get_contents(*args):
     index, target = args
-    resp = func(target)
+    resp = get(target)
     assert isinstance(resp, ReqResult)
     _xpath = (
         '//h1/text()',
         '//*[@id="content"]/text()',
     )
 
-    _title, _showtext = html_xpath(resp, _xpath)
+    _title, _showtext = resp.xpath(_xpath)
     title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
     content = clean_Content(_showtext)
     return [index, title, content]

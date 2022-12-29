@@ -6,9 +6,9 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:55
-LastEditTime : 2022-12-21 22:09:42
-FilePath     : /项目包/线程小成果/笔趣阁-Vthread自制thread_pool.py
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2022-12-29 13:45:25
+FilePath     : /项目包/线程小成果/自定义库thread_pool.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''

@@ -27,7 +27,7 @@ def main_Pool(target):
     texts_list = []
     bookname, urls, _ = get_biqugse_download_url(target)
 
-    print('multiprocessing.pool,开始下载:《' + bookname + '》', flush=True)
+    print(f'multiprocessing.pool,开始下载:《{bookname}》', flush=True)
     mypool = Pool(32)  # !进程数,不能超过61
     mypool.map_async(func=ahttp_get_contents, iterable=[(index, urls[index]) for index in range(len(urls))], callback=lambda res: texts_list.append(res))
     # mypool.apply_async(func=ahttp_get_contents,callback=_callback_func)
@@ -36,7 +36,7 @@ def main_Pool(target):
 
     texts_list.sort(key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
-    savefile(files + '＆' + bookname + 'multiprocessing.txt', texts_list, br='\n')
+    savefile(f'{files}&{bookname}multiprocessing.txt', texts_list, br='\n')
 
 
 if __name__ == '__main__':
