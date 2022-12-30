@@ -66,7 +66,6 @@ class SqlConnection(Orm_Meta):
         # @self.dbmodel.query = self.session.query()
 
     def __enter__(self):
-        self.session = scoped_session(sessionmaker(bind=self.engine))
         return self.session
 
     def __exit__(self, exc_type, exc_val, exc_tb):

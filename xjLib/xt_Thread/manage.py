@@ -30,14 +30,14 @@ def _handle_thread_exception(request, exc_info):
 class task_object(iter_Mixin):
     '''任务处理的对象类'''
 
-    def __init__(self, func, args=None, kwds=None, callback=None, exc_callback=_handle_thread_exception):
+    def __init__(self, func, *args, **kwds):
         self.requestID = id(self)
         self.exception = False
-        self.callback = callback
-        self.exc_callback = exc_callback
+        self.callback = kwds.pop('callback', None)
+        self.exc_callback = kwds.pop('exc_callback', _handle_thread_exception)
         self.func = func
-        self.args = args or []
-        self.kwds = kwds or {}
+        self.args = list(*args) or []
+        self.kwds = dict(**kwds) or {}
 
     def __str__(self):
         return f"<work_task_object id={self.requestID} target={self.func}  args={ self.args} kwargs={self.kwds} exception={self.exception}>"

@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-27 23:32:42
+LastEditTime : 2022-12-30 11:19:53
 FilePath     : /py学习/线程协程/实际使用多进程完整模板deco--2.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -30,7 +30,9 @@ def test_concurrent(input_):
 
 @synchronized
 def test_synchronized():
-    return {k: test_concurrent(v) for k, v in temp_dict.items()}
+    for k, v in temp_dict.items():
+        temp_dict[k] = test_concurrent(v)
+    return temp_dict
 
 
 if __name__ == '__main__':

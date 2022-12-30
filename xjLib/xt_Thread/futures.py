@@ -29,10 +29,10 @@ def futuresMap(_cls):
 
     class Class_Wrapper(_cls):
 
-        def __init__(self, func, args_iter, MaxSem=66):
+        def __init__(self, func, *args_iter, MaxSem=66):
             if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
             super().__init__(max_workers=MaxSem)
-            self.future_generator = self.map(func, args_iter)
+            self.future_generator = self.map(func, *args_iter)
 
         def wait_completed(self):
             '''等待线程池结束,返回全部结果,有序'''
@@ -100,10 +100,10 @@ def futuresPool(_cls):
             super().__init__(max_workers=MaxSem)
             self.future_tasks = []
 
-        def add_map(self, func, args_iter):
+        def add_map(self, func, *args_iter):
             self.future_generator = self.map(func, args_iter)
 
-        def add_sub(self, func, args_iter, callback=None):
+        def add_sub(self, func, *args_iter, callback=None):
             for item in args_iter:
                 task = self.submit(func, *item)
                 self.future_tasks.append(task)

@@ -15,8 +15,10 @@ LastEditTime : 2020-08-14 11:08:33
 
 import json
 
+from bs4 import BeautifulSoup
 from chardet import detect
 from lxml import etree
+from pyquery import PyQuery
 from requests_html import HTML
 from xt_Class import item_Mixin
 
@@ -110,6 +112,10 @@ class ReqResult(item_Mixin):
         html = HTML(html=self._content)
         html.url = self.clientResponse.url
         return html
+
+    @property
+    def pyquery(self):
+        return PyQuery(self.html)  # , parser='xml')
 
     def xpath(self, selectors=None):
         element = self.element if self.element is not None else self.html

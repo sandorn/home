@@ -100,16 +100,23 @@ def 结果处理(resps):
 def get_download_url(target):
     resp = get(target)
     assert isinstance(resp, ReqResult)
-    _xpath = (
-        '//meta[@property="og:title"]//@content',
-        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href',
-        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()',
-    )
-    bookname, temp_urls, titles = html_xpath(resp, _xpath)
+    # #pyquery
+    # pr = resp.pyquery('.listmain dl dd:gt(11)').children() # 从第二个dt开始，获取后面所有的兄弟节点
+    # pr = res.pyquery('dt').eq(1).nextAll()  # 从第二个dt开始，获取后面所有的兄弟节点
+    # bookname = resp.pyquery('h2').text()
+    # urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
+    # titles = [i.text() for i in pr.items()]
 
+    _xpath = (
+        # '//meta[@property="og:novel:book_name"]/@content',
+        '//h2/text()',
+        '//dt[2]/following-sibling::dd/a/@href',
+        '//dt[2]/following-sibling::dd/a/text()',
+        # '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href',
+    )
+    bookname, temp_urls, titles = resp.xpath(_xpath)
     bookname = bookname[0]
-    baseurl = '/'.join(target.split('/')[:-2])
-    urls = [baseurl + item for item in temp_urls]  # 章节链接
+    urls = ['/'.join(target.split('/')[:-2]) + item for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
 
@@ -118,8 +125,9 @@ def get_biqugse_download_url(target):
     assert isinstance(resp, ReqResult)
     _xpath = (
         '//meta[@property="og:title"]//@content',
-        '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href',
-        '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()',
+        '//dt[2]/following-sibling::dd/a/@href',
+        '//dt[2]/following-sibling::dd/a/text()',
+        # '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()',
     )
     bookname, temp_urls, titles = resp.xpath(_xpath)
 
@@ -129,16 +137,20 @@ def get_biqugse_download_url(target):
     return bookname, urls, titles
 
 
-def get_contents(*args):
-    index, target = args
+def get_contents(index, target):
     resp = get(target)
     assert isinstance(resp, ReqResult)
+
+    # #pyquery
+    # _title = resp.pyquery('h1').text()
+    # _showtext = resp.pyquery('#content').text()
+
     _xpath = (
         '//h1/text()',
         '//*[@id="content"]/text()',
     )
-
     _title, _showtext = resp.xpath(_xpath)
+
     title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
     content = clean_Content(_showtext)
     return [index, title, content]
@@ -164,5 +176,5 @@ if __name__ == "__main__":
     print(bookname)
     for _ in range(len(urls)):
         ...
-    res = get_contents((1, urls[1]))
-    print(res)
+    res = get_contents(1, urls[1])
+    # print(res)

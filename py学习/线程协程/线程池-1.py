@@ -1,33 +1,36 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-13 08:02:30
-@LastEditors  : Even.Sand
-@LastEditTime : 2020-02-10 16:51:20
-
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2022-12-30 11:11:29
+FilePath     : /py学习/线程协程/线程池-1.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
-from multiprocessing.dummy import Pool as ThreadPool  # 线程池
-import threading
-from functools import partial
 
 import queue
+import threading
+from multiprocessing.dummy import Pool as ThreadPool  # 线程池
+
+from xt_Thread import thread_print
+
 que = queue.Queue()
 que2 = queue.Queue()
-for i in range(12):
+
+for i in range(20, 30):
     que.put(i)
 
-for i in range(10, 100, 10):
+for i in range(40, 50):
     que2.put(i)
 
 
 def job(*args):
-    print('args:', args, '\tthreading.current_thread:', threading.current_thread(), '\n')
+    thread_print('args:', args, '\tthreading.current_thread:', threading.current_thread(), '\n')
 
 
 if __name__ == '__main__':

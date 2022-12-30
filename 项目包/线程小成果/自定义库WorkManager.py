@@ -25,7 +25,7 @@ from xt_Time import fn_timer
 def manager(url):
     bookname, urls, _ = get_biqugse_download_url(url)
     WM = WorkManager()
-    WM.add_work_queue([[get_contents, (index, url)] for index, url in enumerate(urls)])
+    WM.add_work_queue([[get_contents, index, url] for index, url in enumerate(urls)])
     text_list = WM.wait_completed()
     text_list.sort(key=lambda x: x[0])
     # files = os.path.split(__file__)[-1].split(".")[0]

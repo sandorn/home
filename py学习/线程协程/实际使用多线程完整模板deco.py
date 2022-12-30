@@ -6,12 +6,12 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:55
-LastEditTime : 2022-12-13 15:25:23
-FilePath     : /线程协程/实际使用多线程完整模板deco.py
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2022-12-30 11:02:53
+FilePath     : /py学习/线程协程/实际使用多线程完整模板deco.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-带装饰器的Python中的简化多进程、多线程并发（装饰并发-Python多线程、进程神器）_陆壹佛爷Tong_T-CSDN博客_python multiprocess 装饰器装饰
+带装饰器的Python中的简化多进程、多线程并发(装饰并发-Python多线程、进程神器)_陆壹佛爷Tong_T-CSDN博客_python multiprocess 装饰器装饰
 https://blog.csdn.net/Tong_T/article/details/103064827?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.nonecase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-2.nonecase
 '''
 

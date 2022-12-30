@@ -7,14 +7,10 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-29 00:31:09
+LastEditTime : 2022-12-30 11:00:25
 FilePath     : /py学习/线程协程/使用Python爬取小说(多进程版).py
 Github       : https://github.com/sandorn/home
 ==============================================================
-作者:程序猿洋洋
-来源:CSDN
-原文:https://blog.csdn.net/hhy1107786871/article/details/88177482
-版权声明：本文为博主原创文章，转载请附上博文链接！
 '''
 import random
 import time
@@ -39,8 +35,8 @@ class ScrapyOne(object):
         assert isinstance(resp, ReqResult)
         _xpath = [
             '//meta[@property="og:title"]//@content',
-            '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href',
-            '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()',
+            '//dt[2]/following-sibling::dd/a/@href',
+            '//dt[2]/following-sibling::dd/a/text()',
         ]
         bookname, temp_urls, self.titles = resp.xpath(_xpath)
 

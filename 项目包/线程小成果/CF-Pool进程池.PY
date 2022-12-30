@@ -35,7 +35,7 @@ def callback_func(future):
 def main_callback(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        _ = [pool.submit(get_contents, (index, urls[index])).add_done_callback(callback_func) for index in range(len(urls))]
+        _ = [pool.submit(get_contents, index, urls[index]).add_done_callback(callback_func) for index in range(len(urls))]
 
     texts.sort(key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
@@ -46,7 +46,7 @@ def main_callback(max, bookname, urls):
 def main_completed(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = [pool.submit(get_contents, (index, urls[index])) for index in range(len(urls))]
+        future_tasks = [pool.submit(get_contents, index, urls[index]) for index in range(len(urls))]
 
     texts = []
     for future in as_completed(future_tasks):  # 迭代生成器
@@ -65,7 +65,7 @@ def main_completed(max, bookname, urls):
 def main_wait(max, bookname, urls):
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = [pool.submit(get_contents, (index, urls[index])) for index in range(len(urls))]
+        future_tasks = [pool.submit(get_contents, index, urls[index]) for index in range(len(urls))]
 
     texts = []
 
@@ -83,12 +83,11 @@ def main_wait(max, bookname, urls):
     savefile(f'{files}&{bookname}main_wait.txt', textssord, br='\n')
 
 
-@fn_timer
 def main_map(max, bookname, urls):
-    args = list(enumerate(urls))
+    indexs: list[int] = list(range(len(urls)))
     # 创建多进程队列
     with Pool(max) as pool:
-        future_tasks = pool.map(get_contents, args)
+        future_tasks = pool.map(get_contents, indexs, urls)
 
     texts = list(future_tasks)
     texts = sorted(texts, key=lambda x: x[0])

@@ -73,7 +73,7 @@ def _request_parse(method, url, *args, **kwargs):
 
 
 def _request_wraps(method, url, *args, **kwargs):
-    '''利用自编重试装饰器，实现重试'''
+    '''利用自编重试装饰器,实现重试'''
     kwargs = _setKw(kwargs)
     callback = kwargs.pop("callback", None)
 
@@ -125,7 +125,7 @@ post_tretry = partial(_request_tretry, "post")
 
 
 class SessionClient:
-    '''封装session，保存cookies，利用TRETRY三方库实现重试'''
+    '''封装session,保存cookies,利用TRETRY三方库实现重试'''
     __slots__ = ('sson', 'headers', 'cookies', 'response', 'url', 'method', 'args', 'kwargs', 'callback')
 
     def __init__(self):
@@ -191,13 +191,29 @@ def html_xpath(resp, args):
 if __name__ == '__main__':
     urls = ['http://www.baidu.com', 'http://www.163.com', 'http://dangdang.com', 'https://www.biqukan8.cc/38_38163/']
     for url in urls:
-        res = get_wraps(url)
-        print(res)
-        print(res.xpath('//title/text()'))
-        print(res.dom.xpath('//title/text()'))
-        print(res.html.xpath('//title/text()'))
-        print(res.element.xpath('//title/text()'))
-        print(res.__bool__())
+        ...
+        # res = get_wraps(url)
+        # print(res)
+        # print(res.xpath('//title/text()'))
+        # print(res.dom.xpath('//title/text()'))
+        # print(res.html.xpath('//title/text()'))
+        # print(res.element.xpath('//title/text()'))
+        # print(res.pyquery('title').text())
+
+    res = get_wraps('https://www.biqukan8.cc/38_38163/')
+    pr = res.pyquery('.listmain dl dd:gt(11)').children()
+    bookname = res.pyquery('h2').text()
+    temp_urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
+    titles = [i.text() for i in pr.items()]
+    res2 = get_wraps(temp_urls[0])
+    title = res2.pyquery('h1').text()
+    content = res2.pyquery('#content').text()
+    # print(bookname, title, '\n', content)
+    # pr = res.pyquery('.listmain dl dt+dd~dd')
+    div = res.pyquery('dt').eq(1).nextAll()
+    urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
+    titles = [i.text() for i in pr.items()]
+    print(len(urls), len(titles))
 '''
     # @不能用于协程,且不保留最后错误
     # from retrying import retry as Retry
@@ -246,6 +262,6 @@ if __name__ == '__main__':
         print(each.attrib['href'])  # 获取属性方法2
         print(each.get('href'))  # 获取属性方法3
 
-        print(each.xpath("string(.)").strip())  # 获取文本方法1，全
-        print(each.text.strip())  # 获取文本方法2，可能不全
+        print(each.xpath("string(.)").strip())  # 获取文本方法1,全
+        print(each.text.strip())  # 获取文本方法2,可能不全
 '''

@@ -57,5 +57,5 @@ if __name__ == '__main__':
         # 'http://www.biqugse.com/2367/',
         # 'http://www.biqugse.com/2367/',
     ]
-    # multpool(urls)
-    thrtpool(url)
+    multpool(urls)
+    # thrtpool(url)

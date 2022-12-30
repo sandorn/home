@@ -164,6 +164,7 @@ def mixin_class_bases(cls, bases, name=None):
 
 
 thread_print = thread_safe(print)
+print_lock = thread_safe(print)
 
 if __name__ == "__main__":
 
