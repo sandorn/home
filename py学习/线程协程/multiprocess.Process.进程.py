@@ -1,20 +1,19 @@
-# ！/usr/bin/env python
-# -*- coding:utf -8-*-
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-12 13:55:08
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-14 11:14:24
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-01 00:25:18
+FilePath     : /py学习/线程协程/multiprocess.Process.进程.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import multiprocess
-
-# import sys, os, time
 
 
 def do(n):
@@ -26,15 +25,8 @@ def do(n):
 if __name__ == '__main__':
     numList = []
     for i in range(20):
-        p = multiprocess.Process(target=do, args=(i,))
+        p = multiprocess.Process(target=do, args=(i, ))
         numList.append(p)
         p.start()
         p.join()
     print("All Process end.")
-'''
----------------------
-作者：徐为波
-来源：CSDN
-原文：https://blog.csdn.net/xwbk12/article/details/77624248
-版权声明：本文为博主原创文章，转载请附上博文链接！
-'''

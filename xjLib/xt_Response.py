@@ -15,9 +15,9 @@ LastEditTime : 2020-08-14 11:08:33
 
 import json
 
-from bs4 import BeautifulSoup
 from chardet import detect
 from lxml import etree
+from multipledispatch import dispatch
 from pyquery import PyQuery
 from requests_html import HTML
 from xt_Class import item_Mixin
@@ -117,11 +117,28 @@ class ReqResult(item_Mixin):
     def pyquery(self):
         return PyQuery(self.html)  # , parser='xml')
 
-    def xpath(self, selectors=None):
+    @dispatch()
+    def xpath(self, selectors: str):
+        # print(1111111111111, 'selectors: str')
         element = self.element if self.element is not None else self.html
-        if isinstance(selectors, str): return [*element.xpath(selectors)]
-        if isinstance(selectors, (list, tuple)):
-            return [element.xpath(selector) for selector in selectors]
+        return [*element.xpath(selectors)]
+
+    @dispatch()
+    def xpath(self, selectors: (list, tuple)):
+        # print(2222222222222, 'selectors: (list, tuple)')
+        element = self.element if self.element is not None else self.html
+        return [element.xpath(selector) for selector in selectors]
+
+    @dispatch()
+    def xpath(self, selectors=None):
+        # print(33333333333333, 'selectors=None')
+        element = self.element if self.element is not None else self.html
+        return [element]
+
+    @dispatch()
+    def xpath(self, selectors: (dict, int, float, bool, type(None))):
+        # print(444444444444444, 'selectors: (dict, int, float, bool, type(None))')
+        element = self.element if self.element is not None else self.html
         return [element]
 
     def __repr__(self):

@@ -20,7 +20,7 @@ from threading import Event, Thread, enumerate
 from time import time
 
 from xt_Class import item_get_Mixin
-from xt_Thread.Singleon import Singleton_Mixin, singleton_wrap_return_class
+from xt_Thread import Singleton_Mixin, singleton_wrap_return_class
 
 
 def stop_thread(thread):
@@ -50,14 +50,17 @@ class CustomThread(Thread, item_get_Mixin):
     result_list = []  # 类属性或类变量,实例公用
     finished = Event()
 
-    def __init__(self, func, *args, **kwargs):
-        super().__init__(target=func, args=args, kwargs=kwargs)
+    def __init__(self, target, *args, **kwargs):
+        super().__init__(target=target, args=args, kwargs=kwargs)
+        self._target = target
+        self._args = args
+        self._kwargs = kwargs
         self.daemon = True
         self.start()
         self.all_Thread.append(self)
 
     def run(self):
-        self.Result = self._target(*self._args, **self._kwargs)  # type: ignore
+        self.Result = self._target(*self._args, **self._kwargs)
         self.result_list.append(self.Result)
 
     def getResult(self):
@@ -171,14 +174,16 @@ class CustomThread_Queue(Thread, item_get_Mixin):
 
 class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
     """单例多线程,继承自threading.Thread"""
-    # #照写 from xt_Singleon import Singleton_Model
 
     all_Thread = []  # 线程列表,用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
     finished = Event()
 
-    def __init__(self, func, *args, **kwargs):
-        super().__init__(target=func, args=args, kwargs=kwargs)
+    def __init__(self, target, *args, **kwargs):
+        super().__init__(target=target, args=args, kwargs=kwargs)
+        self._target = target
+        self._args = args
+        self._kwargs = kwargs
         self.daemon = True
         self.start()
         self.all_Thread.append(self)

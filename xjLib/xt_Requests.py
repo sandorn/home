@@ -192,14 +192,15 @@ if __name__ == '__main__':
     urls = ['http://www.baidu.com', 'http://www.163.com', 'http://dangdang.com', 'https://www.biqukan8.cc/38_38163/']
     for url in urls:
         ...
-        # res = get_wraps(url)
+        res = get_wraps(url)
         # print(res)
-        # print(res.xpath('//title/text()'))
+        print(res.xpath('//title/text()'))
+        print(res.xpath())
         # print(res.dom.xpath('//title/text()'))
         # print(res.html.xpath('//title/text()'))
         # print(res.element.xpath('//title/text()'))
         # print(res.pyquery('title').text())
-
+'''
     res = get_wraps('https://www.biqukan8.cc/38_38163/')
     pr = res.pyquery('.listmain dl dd:gt(11)').children()
     bookname = res.pyquery('h2').text()
@@ -214,6 +215,7 @@ if __name__ == '__main__':
     urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
     titles = [i.text() for i in pr.items()]
     print(len(urls), len(titles))
+'''
 '''
     # @不能用于协程,且不保留最后错误
     # from retrying import retry as Retry

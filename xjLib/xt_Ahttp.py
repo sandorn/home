@@ -108,8 +108,7 @@ async def Async_run(self):
 
 
 def run(tasks, pool):
-    if not isinstance(tasks, (list, tuple)):
-        raise TypeError("the tasks of run must be list|tuple object.")
+    assert isinstance(tasks, (list, tuple)), "tasks must be list or tuple"
 
     result_list = []  # #存放返回结果集合
     future = asyncio.ensure_future(multi_req(tasks, pool, result_list))

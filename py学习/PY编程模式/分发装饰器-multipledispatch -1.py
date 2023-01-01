@@ -16,13 +16,13 @@ Github       : https://github.com/sandorn/home
 from multipledispatch import dispatch
 
 
-@dispatch(int, int)
-def ddd(x, y):
+@dispatch()
+def ddd(x:int, y:int):
     return x + y
 
 
-@dispatch(object, object)
-def ddd(x, y):
+@dispatch()
+def ddd(x: object, y: object):
     return f"{x} + {y}"
 
 

@@ -44,8 +44,8 @@ def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
     :param reverse: 是否反向去重
     :return:
     """
-    result = list()
-    duplicator = list()
+    result = []
+    duplicator = []
     if reverse:
         iterable = reversed(iterable)
     for i in iterable:
@@ -55,20 +55,6 @@ def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
             result.append(keep_field)
             duplicator.append(key_words)
     return list(reversed(result)) if reverse else result
-
-
-def chain_all(iterobj):
-    """连接多个序列或字典"""
-    iterobj = list(iterobj)
-    if not iterobj:
-        return []
-    if isinstance(iterobj[0], dict):
-        result = {}
-        for i in iterobj:
-            result.update(i)
-    else:
-        result = reduce(lambda x, y: list(x) + list(y), iterobj)
-    return result
 
 
 def align(str1, distance=66, alignment='left'):
@@ -203,16 +189,12 @@ def groupby(iterobj, key):
 
 def random_char(length=20):
     """实现指定长度的随机数"""
-    string = []
-    for i in range(length):
+    res_str = []
+    for _ in range(length):
         x = random.randint(1, 2)
-        if x == 1:
-            y = str(random.randint(0, 9))
-        else:
-            y = chr(random.randint(97, 122))
-        string.append(y)
-    string = ''.join(string)
-    return string
+        y = str(random.randint(0, 9)) if x == 1 else chr(random.randint(97, 122))
+        res_str.append(y)
+    return ''.join(res_str)
 
 
 def class_add_dict(in_obj):

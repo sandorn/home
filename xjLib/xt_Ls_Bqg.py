@@ -171,8 +171,10 @@ def ahttp_get_contents(args):
 
 
 if __name__ == "__main__":
-    url = 'https://www.biqukan8.cc/38_38163/'
-    bookname, urls, titles = get_download_url(url)
+    url = 'http://www.biqugse.com/96703/'
+    # 'http://www.biqugse.com/96703/'
+    # 'https://www.biqukan8.cc/38_38163/'
+    bookname, urls, titles = get_biqugse_download_url(url)
     print(bookname)
     for _ in range(len(urls)):
         ...

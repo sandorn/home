@@ -14,9 +14,7 @@ Github       : https://github.com/sandorn/home
 '''
 
 import multiprocessing
-from concurrent.futures import ProcessPoolExecutor  # @进程池模块,可添加
-from concurrent.futures import ThreadPoolExecutor  # @线程池模块,不可添加
-from concurrent.futures import as_completed
+from concurrent.futures import (ProcessPoolExecutor, ThreadPoolExecutor, as_completed)
 
 CPUNUM = multiprocessing.cpu_count()
 
@@ -27,7 +25,7 @@ CPUNUM = multiprocessing.cpu_count()
 
 def futuresMap(_cls):
 
-    class Class_Wrapper(_cls):
+    class FuturesMap_Class_Wrapper(_cls):
 
         def __init__(self, func, *args_iter, MaxSem=66):
             if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
@@ -42,13 +40,13 @@ def futuresMap(_cls):
             '''等待线程池结束,返回全部结果,有序'''
             return self.wait_completed()
 
-    Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
-    return Class_Wrapper
+    FuturesMap_Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
+    return FuturesMap_Class_Wrapper
 
 
 def futuresSub(_cls):
 
-    class Class_Wrapper(_cls):
+    class FuturesSub_Class_Wrapper(_cls):
 
         def __init__(self, func, args_iter, callback=None, MaxSem=66):
             if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
@@ -86,22 +84,22 @@ def futuresSub(_cls):
                     print('exception :', err)
             return result_list
 
-    Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
-    return Class_Wrapper
+    FuturesSub_Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
+    return FuturesSub_Class_Wrapper
 
 
 def futuresPool(_cls):
 
-    class class_wrapper(_cls):
+    class FuturesPool_Class_Wrapper(_cls):
 
-        def __init__(self, MaxSem=66):
+        def __init__(self, MaxSem=24):
             if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
             # if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = CPUNUM
             super().__init__(max_workers=MaxSem)
             self.future_tasks = []
 
         def add_map(self, func, *args_iter):
-            self.future_generator = self.map(func, args_iter)
+            self.future_generator = self.map(func, *args_iter)
 
         def add_sub(self, func, *args_iter, callback=None):
             for item in args_iter:
@@ -111,14 +109,14 @@ def futuresPool(_cls):
 
         def wait_completed(self):
             '''返回结果,有序'''
-            if self.future_tasks: return self.wait_sub_completed()
-            else: return self.wait_map_completed()
+            if self.future_tasks: return self._wait_sub_completed()
+            else: return self._wait_map_completed()
 
-        def wait_map_completed(self):
+        def _wait_map_completed(self):
             '''返回结果,有序'''
             return list(self.future_generator)
 
-        def wait_sub_completed(self):
+        def _wait_sub_completed(self):
             '''等待线程池结束,返回全部结果,有序'''
             self.shutdown(wait=True)
             result_list = []
@@ -143,8 +141,8 @@ def futuresPool(_cls):
 
             return result_list
 
-    class_wrapper.__name__ = _cls.__name__  # 保留原类的名字
-    return class_wrapper
+    FuturesPool_Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
+    return FuturesPool_Class_Wrapper
 
 
 T_Map = futuresMap(ThreadPoolExecutor)

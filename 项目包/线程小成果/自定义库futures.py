@@ -7,8 +7,8 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2022-12-29 12:54:53
-FilePath     : /项目包/线程小成果/自定义库futures-.py
+LastEditTime : 2023-01-01 17:57:31
+FilePath     : /项目包/线程小成果/自定义库futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -18,9 +18,11 @@ from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
 from xt_Ls_Bqg import get_biqugse_download_url, get_contents, 结果处理
 from xt_Thread import ProcessPool, ThreadPool
+from xt_Time import fn_timer
 
 
-def multpool_ahttp_All(url):
+@fn_timer
+def ahttp_All(url):
     bookname, urls, _ = get_biqugse_download_url(url)
     resps = ahttpGetAll(urls)
     text_list = 结果处理(resps)
@@ -29,33 +31,60 @@ def multpool_ahttp_All(url):
     savefile(f'{files}&{bookname}ahttp_All.txt', text_list, br='\n')
 
 
-def multpool(urls):
-    mypool = ProcessPool()
-    mypool.add_map(multpool_ahttp_All, urls)
+def thrPool_ahttp(urls):
+    # # 无效
+    mypool = ThreadPool()
+    mypool.add_map(ahttp_All, urls)
     mypool.wait_completed()
 
 
-def thrtpool(url):
+@fn_timer
+def multpool_ahttp(urls):
+    mypool = ProcessPool()
+    mypool.add_map(ahttp_All, urls)
+    mypool.wait_completed()
+
+
+def thr_sub(url):
     mypool = ThreadPool()
     bookname, urls, _ = get_biqugse_download_url(url)
-    args = [[index, url] for index, url in enumerate(urls)]
-    mypool.add_sub(get_contents, args)
-    text_list = mypool.wait_sub_completed()
+    args = [[i, u] for i, u in enumerate(urls)]
+    mypool.add_sub(get_contents, *args)
+    text_list = mypool.wait_completed()
     # text_list = 结果处理(resps)
     text_list.sort(key=lambda x: x[0])  # #排序
     files = os.path.split(__file__)[-1].split(".")[0]
     savefile(f'{files}&{bookname}&Thrtpool.txt', text_list, br='\n')
 
 
+@fn_timer
+def multpool_thrsub(urls):
+    mypool = ProcessPool()
+    mypool.add_map(thr_sub, urls)
+    mypool.wait_completed()
+
+
+@fn_timer
+def thrPool_thrsub(urls):
+    mypool = ThreadPool()
+    mypool.add_map(thr_sub, urls)
+    mypool.wait_completed()
+
+
 if __name__ == '__main__':
     url = 'http://www.biqugse.com/96703/'
-    # multpool_ahttp_All(url)
+    # ahttp_All(url)
+    # thr_sub(url)
 
     urls = [
         'http://www.biqugse.com/96703/',
         'http://www.biqugse.com/96717/',
-        # 'http://www.biqugse.com/2367/',
-        # 'http://www.biqugse.com/2367/',
+        'http://www.biqugse.com/76169/',
+        'http://www.biqugse.com/82744/',
+        'http://www.biqugse.com/96095/',
+        'http://www.biqugse.com/92385/',
     ]
-    multpool(urls)
-    # thrtpool(url)
+    # thrPool_ahttp(urls)  # 无效
+    multpool_ahttp(urls)  # 68sec
+    # thrPool_thrsub(urls)  # 148sec
+    # multpool_thrsub(urls)  # 110sec

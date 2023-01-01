@@ -17,7 +17,7 @@ import os
 
 from xt_File import savefile
 from xt_Ls_Bqg import get_biqugse_download_url, get_contents
-from xt_Thread.Custom import CustomThread
+from xt_Thread import CustomThread
 from xt_Time import fn_timer
 
 
@@ -35,5 +35,5 @@ def main_thread(target):
 
 if __name__ == '__main__':
     main_thread('http://www.biqugse.com/96703/')
-    # '38_38836'    7秒
+    # 'https://www.biqukan8.cc/38_38163/'    7秒
     # "2_2714"   #《武炼巅峰》1724万字,47839kb, #!72秒。无线程限制
