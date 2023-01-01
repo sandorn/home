@@ -13,10 +13,11 @@
 #==============================================================
 '''
 
-from pyparsing import Word, OneOrMore, Optional, Group, Suppress, alphanums
+from pyparsing import Group, OneOrMore, Optional, Suppress, Word, alphanums
 
 
 class Gate:
+
     def __init__(self):
         self.is_open = False
 
@@ -33,6 +34,7 @@ class Gate:
 
 
 class Garage:
+
     def __init__(self):
         self.is_open = False
 
@@ -49,6 +51,7 @@ class Garage:
 
 
 class Aircondition:
+
     def __init__(self):
         self.is_on = False
 
@@ -65,6 +68,7 @@ class Aircondition:
 
 
 class Heating:
+
     def __init__(self):
         self.is_on = False
 
@@ -81,34 +85,36 @@ class Heating:
 
 
 class Boiler:
+
     def __init__(self):
         self.temperature = 83  # in celsius
 
     def __str__(self):
-        return 'boiler temperature: {}'.format(self.temperature)
+        return f'boiler temperature: {self.temperature}'
 
     def increase_temperature(self, amount):
-        print("increasing the boiler's temperature by {} degrees".format(amount))
+        print(f"increasing the boiler's temperature by {amount} degrees")
         self.temperature += amount
 
     def decrease_temperature(self, amount):
-        print("decreasing the boiler's temperature by {} degrees".format(amount))
+        print(f"decreasing the boiler's temperature by {amount} degrees")
         self.temperature -= amount
 
 
 class Fridge:
+
     def __init__(self):
         self.temperature = 2  # 单位为摄氏度
 
     def __str__(self):
-        return 'fridge temperature: {}'.format(self.temperature)
+        return f'fridge temperature: {self.temperature}'
 
     def increase_temperature(self, amount):
-        print("increasing the fridge's temperature by {} degrees".format(amount))
+        print(f"increasing the fridge's temperature by {amount} degrees")
         self.temperature += amount
 
     def decrease_temperature(self, amount):
-        print("decreasing the fridge's temperature by {} degrees".format(amount))
+        print(f"decreasing the fridge's temperature by {amount} degrees")
         self.temperature -= amount
 
 
@@ -146,7 +152,7 @@ def main():
             try:
                 num_arg = int(arg_str.split()[0])  # 抽取数值部分
             except ValueError as err:
-                print("expected number but got: '{}'".format(arg_str[0]))
+                print(f"expected number but got: '{arg_str[0]}'")
             if 'increase' in cmd_str and num_arg > 0:
                 open_actions[dev_str](num_arg)
             elif 'decrease' in cmd_str and num_arg > 0:

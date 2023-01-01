@@ -15,6 +15,7 @@
 
 
 class SensitiveInfo:
+
     def __init__(self):
         self.users = ['nick', 'tom', 'ben', 'mike']
 
@@ -28,6 +29,7 @@ class SensitiveInfo:
 
 class Info:
     '''SensitiveInfo的保护代理'''
+
     def __init__(self):
         self.protected = SensitiveInfo()
         self.secret = '0xdeadbeef'
@@ -53,7 +55,7 @@ def main():
         elif key == '3':
             exit()
         else:
-            print('unknown option: {}'.format(key))
+            print(f'unknown option: {key}')
 
 
 if __name__ == '__main__':

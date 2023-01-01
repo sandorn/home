@@ -39,7 +39,7 @@ async def main_pool():
     ]
     async with Pool() as pool:
         result = await pool.map(get, urls)
-        print(2222222222, result)
+        print(33333333333333, result)
 
 
 if __name__ == "__main__":
