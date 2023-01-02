@@ -6,12 +6,13 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:55
-LastEditTime : 2022-12-14 21:13:38
-FilePath     : /线程协程/多进程pool.map画同心圆.py
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-02 23:41:41
+FilePath     : /py学习/线程协程/多进程pool.map画同心圆.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import time
 import turtle
 from multiprocessing import Pool, Process
@@ -54,4 +55,5 @@ def main2():
 
 
 if __name__ == '__main__':
+    # main()
     main2()

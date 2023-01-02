@@ -22,8 +22,9 @@ from xt_Requests import get
 from xt_String import Str_Replace
 
 
-@concurrent
+@concurrent.threaded(processes=16)
 def test_concurrent(index, target):
+    # print(f'进程{os.getpid()}正在处理{index}')
     resp = get(target)
     _xpath = (
         '//h1/text()',
@@ -58,5 +59,5 @@ def test_synchronized(target):
 
 if __name__ == '__main__':
     _res = test_synchronized('http://www.biqugse.com/96703/')
-    # # '96703'    17秒
+    # @concurrent.threaded(processes=16)   11秒  # 24 9秒  # 36 8秒
     # print(_res)

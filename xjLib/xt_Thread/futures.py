@@ -13,10 +13,7 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
-import multiprocessing
 from concurrent.futures import (ProcessPoolExecutor, ThreadPoolExecutor, as_completed)
-
-CPUNUM = multiprocessing.cpu_count()
 
 # #futuresMap, futuresSub, futuresPool
 # #T_Map, T_Sub, T_Pool,P_Map,P_Sub,P_Pool
@@ -27,9 +24,8 @@ def futuresMap(_cls):
 
     class FuturesMap_Class_Wrapper(_cls):
 
-        def __init__(self, func, *args_iter, MaxSem=66):
-            if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
-            super().__init__(max_workers=MaxSem)
+        def __init__(self, func, *args_iter):
+            super().__init__()
             self.future_generator = self.map(func, *args_iter)
 
         def wait_completed(self):
@@ -49,8 +45,7 @@ def futuresSub(_cls):
     class FuturesSub_Class_Wrapper(_cls):
 
         def __init__(self, func, args_iter, callback=None, MaxSem=66):
-            if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
-            super().__init__(max_workers=MaxSem)
+            super().__init__()
             self.future_tasks = []
 
             for item in args_iter:
@@ -92,10 +87,8 @@ def futuresPool(_cls):
 
     class FuturesPool_Class_Wrapper(_cls):
 
-        def __init__(self, MaxSem=24):
-            if _cls.__name__ == "ProcessPoolExecutor": MaxSem = min(MaxSem, CPUNUM)
-            # if MaxSem > 61 and _cls.__name__ == "ProcessPoolExecutor": MaxSem = CPUNUM
-            super().__init__(max_workers=MaxSem)
+        def __init__(self):
+            super().__init__()
             self.future_tasks = []
 
         def add_map(self, func, *args_iter):
@@ -114,6 +107,7 @@ def futuresPool(_cls):
 
         def _wait_map_completed(self):
             '''返回结果,有序'''
+            self.shutdown(wait=True)  # 新增
             return list(self.future_generator)
 
         def _wait_sub_completed(self):

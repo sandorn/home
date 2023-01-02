@@ -52,6 +52,7 @@ class CustomThread(Thread, item_get_Mixin):
 
     def __init__(self, target, *args, **kwargs):
         super().__init__(target=target, args=args, kwargs=kwargs)
+        self.index = len(self.all_Thread)
         self._target = target
         self._args = args
         self._kwargs = kwargs
