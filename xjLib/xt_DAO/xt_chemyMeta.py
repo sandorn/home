@@ -99,6 +99,15 @@ Base_Model = declarative_base(cls=Model_Method_Mixin)  # #生成SQLORM基类,混
 '''metadata = Base.metadata'''
 '''定义table  引用方式: from xt_DAO.xt_chemyMeta import Base_Model'''
 
+# 若有多个类指向同一张表，那么在后边的类需要把 extend_existing设为True，表示在已有列基础上进行扩展
+# 或者换句话说，sqlalchemy 允许类是表的字集，如下：
+# __table_args__ = {'extend_existing': True}
+# 若表在同一个数据库服务（datebase）的不同数据库中（schema），可使用schema参数进一步指定数据库
+# __table_args__ = {'schema': 'AiTestOps_database'}
+
+# sqlalchemy 强制要求必须要有主键字段不然会报错，sqlalchemy在接收到查询结果后还会自己根据主键进行一次去重，因此不要随便设置非主键字段设为primary_key
+# 各变量名一定要与表的各字段名一样，因为相同的名字是他们之间的唯一关联关系，指定 person_id 映射到 person_id 字段; person_id 字段为整型，为主键，自动增长（其实整型主键默认就自动增长）
+
 
 class parent_model_Mixin:
     '''定义所有数据库表对应的父类,用于混入继承,与Base_Model协同'''
@@ -112,6 +121,7 @@ def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict=None):
     table_model_cls 例子:
     class table_model(Base_Model):
         __tablename__ = _BOOKNAME
+        extend_existing = True
 
         ID = Column(INTEGER(10), primary_key=True)
         BOOKNAME = Column(VARCHAR(255), nullable=False)
@@ -133,7 +143,7 @@ def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict=None):
             {
                 '__table_args__': {
                     "extend_existing": True,  # 允许表已存在
-                    # '__abstract__': True,  # 父类模式
+                    # "__abstract__": True,  # 父类模式
                 },
                 '__tablename__': target_table_name,
             })

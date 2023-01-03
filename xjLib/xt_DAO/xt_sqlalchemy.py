@@ -76,9 +76,10 @@ class SqlConnection(Orm_Meta):
         self.session.close()
         return not exc_type
 
-    def drop_db(self):
+    def drop_db(self, dbmodel=None):
         """删除init传入的self.dbmodel"""
-        drop_sql = f"DROP TABLE if exists {self.dbmodel.__tablename__}"
+        dbmodel = dbmodel if dbmodel is not None else self.dbmodel
+        drop_sql = f"DROP TABLE if exists {dbmodel.__tablename__}"
         self.session.execute(drop_sql)
         # self.dbmodel.__table__.drop(self.engine)# 未生效
         # self.dbmodel.metadata.drop_all(self.engine) # 未生效

@@ -26,10 +26,10 @@ class DbEngine(object):
     可选驱动:[mysql.connector 出错禁用]、[pymysql]、[MySQLdb]
     """
 
-    def __init__(self, key='default', odbc='pymysql'):
-        self.db_name = key
+    def __init__(self, db_name='default', odbc='pymysql'):
+        self.db_name = db_name
         self.odbc = odbc
-        if key not in DB_CONFIG: raise ValueError(f'错误提示:检查数据库配置:{key}')
+        if db_name not in DB_CONFIG: raise ValueError(f'错误提示:检查数据库配置:{db_name}')
         self.conf = deepcopy(DB_CONFIG[self.db_name])
         self.conf.pop('type', None)
 
@@ -89,9 +89,7 @@ class DbEngine(object):
             self.conn.commit()
             return True
         except Exception as error:
-            self.conn.rollback()
-            print(f'self.odbc error |  [{error}] \n sql:{sql}', sep='')
-            return False
+            return self._extracted_from_insertMany_8('self.odbc error |  [', error, sql)
 
     def insertMany(self, datas, tb_name, keys=None):
         if not isinstance(datas, (list, tuple)): raise TypeError("must send list|tuple object for me")
@@ -107,9 +105,13 @@ class DbEngine(object):
             self.conn.commit()
             return True
         except Exception as error:
-            self.conn.rollback()
-            print(f'self.odbc error | [{error}] \n sql:{res_sql}', sep='')
-            return False
+            return self._extracted_from_insertMany_8('self.odbc error | [', error, res_sql)
+
+    # TODO Rename this here and in `execute` and `insertMany`
+    def _extracted_from_insertMany_8(self, arg0, error, arg2):
+        self.conn.rollback()
+        print(f'{arg0}{error}] \n sql:{arg2}', sep='')
+        return False
 
     def insert(self, data, tb_name):
         if not isinstance(data, dict): raise ValueError("must send dict object for me")
@@ -158,3 +160,10 @@ class DbEngine(object):
         self.cursorDict.execute(sql)
         dic = self.cursorDict.fetchall()
         return dic or False
+
+
+if __name__ == "__main__":
+    # DB = DbEngine('TXbx', 'MySQLdb')
+    DB = DbEngine('TXbx')
+    t = DB.query("select * from users2")
+    print(t)

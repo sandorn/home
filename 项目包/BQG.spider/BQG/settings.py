@@ -58,7 +58,7 @@ class ExcelExporter(BaseItemExporter):
         self.wbook = xlwt.Workbook(encoding='utf-8')
         self.wsheet = self.wbook.add_sheet('scrapy')
         self._headers_not_written = True
-        self.fields_to_export = list()
+        self.fields_to_export = []
         self.row = 0
 
     def finish_exporting(self):
@@ -71,7 +71,7 @@ class ExcelExporter(BaseItemExporter):
 
         fields = self._get_serialized_fields(item)
         for col, v in enumerate(x for _, x in fields):
-            print(self.row, col, str(v))
+            print(self.row, col, v)
             self.wsheet.write(self.row, col, str(v))
         self.row += 1
 
@@ -89,10 +89,13 @@ class ExcelExporter(BaseItemExporter):
     FEED_EXPORTERS = {'excel': 'example.excel_exporter.ExcelExporter'}
 
 
+# RETRY_ENABLED = False
 ROBOTSTXT_OBEY = False
-DOWNLOAD_DELAY = 0.1
+DOWNLOAD_DELAY = 0.01
 # 并发线程数量
 CONCURRENT_REQUESTS = 100
+CONCURRENT_REQUESTS_PER_DOMAIN = 100
+CONCURRENT_REQUESTS_PER_IP = 100
 # 超时时间为10s
 DOWNLOAD_TIMEOUT = 10
 # 禁用cookies
@@ -103,6 +106,10 @@ DOWNLOADER_MIDDLEWARES = {
     #将middlewares中定义RandomUserAgentMiddlware添加到这里;
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     #需要将scrapy默认的置为None不调用
+    # 'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
+    # 'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': None,
+    # 'middlewares.IPProxyMiddleware': 100,
+    # 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 101,
 }
 ITEM_PIPELINES: {
     'BQG.pipelines.PipelineToAiomysql': 20,
@@ -117,7 +124,6 @@ ITEM_PIPELINES: {
     'BQG.pipelines.Pipeline2Csv': 400,
     'BQG.pipelines.PipelineMysql2Txt': 500,
 }
-##########################################################
 '''
 # PROXIES = [{'ip_port': '111.11.228.75:80', 'user_pass': ''}]
 

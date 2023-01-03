@@ -6,8 +6,8 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2022-11-14 21:48:46
-LastEditTime : 2022-12-12 16:55:23
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2023-01-03 14:06:48
 FilePath     : /项目包/BQG.spider/BQG/spiders/xiashu.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -33,7 +33,7 @@ class XiashuSpider(scrapy.Spider):
     custom_settings = {
         # 设置管道下载
         'ITEM_PIPELINES': {
-            'BQG.pipelines.Pipeline2Csv': 40
+            'BQG.pipelines.Pipeline2Csv': 40,
             # 'BQG.pipelines.PipelineToTxt': 100,
             # 'BQG.pipelines.PipelineToJson': 200,
             # 'BQG.pipelines.PipelineToJsonExp': 250,
@@ -53,7 +53,7 @@ class XiashuSpider(scrapy.Spider):
         全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
         # titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
 
-        baseurl = '/'.join(response.url.split('/')[0:-2])
+        baseurl = '/'.join(response.url.split('/')[:-2])
         urls = [baseurl + item for item in 全部章节链接]  ## 章节链接
 
         for index in range(len(urls)):

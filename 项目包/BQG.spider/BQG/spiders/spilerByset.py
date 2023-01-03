@@ -19,7 +19,6 @@ import sys
 
 _p = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(_p)
-
 import scrapy
 from items import BqgItem
 from sqlalchemy import Column
@@ -35,6 +34,7 @@ def make_model(_BOOKNAME):
     class table_model(Base_Model):
         # Base_Model 继承自from xt_DAO.xt_chemyMeta.Model_Method_Mixin
         __tablename__ = _BOOKNAME
+        __table_args__ = {'extend_existing': True}
 
         ID = Column(INTEGER(10), primary_key=True)
         BOOKNAME = Column(VARCHAR(255), nullable=False)
@@ -52,10 +52,10 @@ class Spider(scrapy.Spider):
     custom_settings = {
         #$ 使用数据库,判断重复入库
         'ITEM_PIPELINES': {
-            # 'BQG.pipelines.PipelineToAiomysql': 20,
-            'BQG.pipelines.PipelineToSqlalchemy': 20,
-            # 'BQG.pipelines.PipelineToSqlTwisted': 30,
-            # 'BQG.pipelines.PipelineToMysql': 40,
+            # 'BQG.pipelines.PipelineToSqlTwisted': 20,  # 10s
+            # 'BQG.pipelines.PipelineToAiomysql': 30,  # 13s
+            # 'BQG.pipelines.PipelineToSqlalchemy': 40,  # 35s
+            # 'BQG.pipelines.PipelineToMysql': 50,  # 70s
         },
     }
 
@@ -68,7 +68,7 @@ class Spider(scrapy.Spider):
     # 编写爬取方法
     def start_requests(self):
         # 循环生成需要爬取的地址
-        self.connect = mysql('TXbook')
+        self.connect = mysql('TXbook', 'MySQLdb')
         self.db = set()
         for url in self.start_urls:
             yield scrapy.Request(url=url, callback=self.parse)  # dont_filter=True 表示不过滤
@@ -78,7 +78,7 @@ class Spider(scrapy.Spider):
         _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
         if _BOOKNAME not in self.db:
             # 避免重复创建数据库
-            Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
+            Csql = f'Create Table If Not Exists {_BOOKNAME}(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)'
             self.connect.execute(Csql)
             self.db.add(_BOOKNAME)
 
@@ -87,19 +87,14 @@ class Spider(scrapy.Spider):
 
         全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
         # titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
-        baseurl = '/'.join(response.url.split('/')[0:-2])
+        baseurl = '/'.join(response.url.split('/')[:-2])
         urls = [baseurl + item for item in 全部章节链接]  ## 章节链接
 
         for index in range(len(urls)):
             if urls[index] not in ZJHERF_list:
-                # @meta={}传递参数,给callback
-                request = scrapy.Request(urls[index], meta={'index': index}, callback=self.parse_content)
-                yield request
+                yield scrapy.Request(urls[index], meta={'index': index}, callback=self.parse_content)
             else:
-                # request = scrapy.Request(urls[index], meta={'index': index}, callback=self.parse_content)
-                # yield request
                 print(f'spilerByset-->《{align( _BOOKNAME, 16)}》\t{align(index, 6)}\t | 记录重复，剔除！！')
-                pass
 
     def parse_content(self, response):
         item = BqgItem()

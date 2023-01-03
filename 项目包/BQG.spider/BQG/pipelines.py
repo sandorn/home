@@ -37,6 +37,7 @@ def make_model(_BOOKNAME):
     class table_model(Base_Model):
         # Base_Model 继承自from xt_DAO.xt_chemyMeta.Model_Method_Mixin
         __tablename__ = _BOOKNAME
+        __table_args__ = {'extend_existing': True}
 
         ID = Column(INTEGER(10), primary_key=True)
         BOOKNAME = Column(VARCHAR(255), nullable=False)
@@ -58,11 +59,16 @@ class PipelineToAiomysql(object):
         return item
 
     def Create_Sql(self, item):
-        # 根据item构建sql语句
-        insert_sql = """
+        return """
         Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
-        """ % (item['BOOKNAME'], item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT'], item['ZJHERF'])
-        return insert_sql
+        """ % (
+            item['BOOKNAME'],
+            item['BOOKNAME'],
+            item['INDEX'],
+            item['ZJNAME'],
+            item['ZJTEXT'],
+            item['ZJHERF'],
+        )
 
     def close_spider(self, spider):
         loop = asyncio.get_event_loop()
@@ -73,24 +79,16 @@ class PipelineToAiomysql(object):
 class PipelineToSqlalchemy(object):
 
     def __init__(self):
-        self.sqlconn = ''
-        self.DBtable = ''
         self.db = set()
 
     def process_item(self, item, spider):
         _BOOKNAME = item['BOOKNAME']
         if _BOOKNAME not in self.db:
-            # @连接数据库，无表则创建
-            self.DBtable = make_model(_BOOKNAME)
-            self.sqlconn = SqlConnection(self.DBtable, 'TXbook')
             self.db.add(_BOOKNAME)
+            DBtable = make_model(_BOOKNAME)
+            self.sqlconn = SqlConnection(DBtable, 'TXbook')
 
-        ZJHERF_list = self.sqlconn.pd_get_list(_BOOKNAME, 'ZJHERF') or []
-
-        if item['ZJHERF'] in ZJHERF_list:
-            self.sqlconn.update({'ZJHERF': item['ZJHERF']}, dict(item))
-        else:
-            self.sqlconn.insert(dict(item))
+        self.sqlconn.insert(dict(item))
         return item
 
     def close_spider(self, spider):
@@ -105,7 +103,7 @@ class PipelineToSqlTwisted(object):
         # #用于获取settings配置文件中的信息
         config = deepcopy(DB_CONFIG['TXbook'])
         if 'type' in config: config.pop('type')
-        dbpool = adbapi.connionPool("MySQLdb", **config)
+        dbpool = adbapi.ConnectionPool("MySQLdb", **config)
         return cls(dbpool)
 
     def __init__(self, dbpool):
@@ -139,12 +137,13 @@ class PipelineToMysql(object):
         _BOOKNAME = item['BOOKNAME']
         if _BOOKNAME not in self.db:
             # 避免重复创建数据库
-            Csql = 'Create Table If Not Exists %s(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)' % _BOOKNAME
+            Csql = f'Create Table If Not Exists {_BOOKNAME}(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)'
             self.conn.execute(Csql)
             self.db.add(_BOOKNAME)
 
         _result = self.conn.get_all_from_db(_BOOKNAME)
         ZJHERF_list = [res[5] for res in _result]
+
         if item['ZJHERF'] in ZJHERF_list:
             self.conn.update(dict(item), {'ZJHERF': item['ZJHERF']}, _BOOKNAME)
         else:
@@ -164,7 +163,7 @@ class PipelineToTxt:
 
     def process_item(self, item, spider):
         bookname = item['BOOKNAME']
-        self.file[bookname] = open(bookname + '.txt', 'w', encoding='utf-8')
+        self.file[bookname] = open(f'{bookname}.txt', 'w', encoding='utf-8')
         self.file[bookname].write(f"-----------------------{bookname}-----------------------\n")
         self.content_list.append(item)
         return item
@@ -206,7 +205,6 @@ class PipelineToJsonExp:
         # 初始化 exporter 实例，执行输出的文件和编码
         self.exporter = JsonItemExporter(self.file, encoding='utf-8', ensure_ascii=False)
         self.exporter.start_exporting()  # 开启倒数
-        pass
 
     # 将 Item 实例导出到 json 文件
     def process_item(self, item, spider):
