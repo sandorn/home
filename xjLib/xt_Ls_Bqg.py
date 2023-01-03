@@ -164,7 +164,7 @@ def ahttp_get_contents(args):
         '//h1/text()',
         '//*[@id="content"]/text()',
     )
-    _title, _showtext = html_xpath(resp, _xpath)
+    _title, _showtext = resp.xpath(_xpath)
     title = Str_Replace(_title, [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
     content = clean_Content(_showtext)
     return [index, title, content]

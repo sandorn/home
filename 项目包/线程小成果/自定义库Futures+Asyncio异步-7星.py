@@ -7,11 +7,12 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2023-01-01 17:52:08
-FilePath     : /项目包/线程小成果/自定义库Futures+Asyncio异步l爬虫.py
+LastEditTime : 2023-01-03 14:00:24
+FilePath     : /项目包/线程小成果/自定义库Futures+Asyncio异步-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import os
 
 from xt_Ahttp import Async_run, get
@@ -64,8 +65,5 @@ def multpool():
 if __name__ == "__main__":
 
     # Aio_run_Task(bookname, urls)
-    # Aio_run_Task_Back(bookname, urls)
-    # Aio_ahttpGetAll(bookname, urls)
-    # Aio_multi_req(bookname, urls)
 
-    multpool()
+    multpool()  # 40s

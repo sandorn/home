@@ -64,7 +64,7 @@ class AsyncTask:
             return self._make_params
 
     def __repr__(self):
-        return f"<AsyncTask id:[{id(self.session)}]\tmethod:[{self.method}]\turl:[{self.url}]>"
+        return f"<AsyncTask id:[{id(self.session)}] | Method:[{self.method}] | Url:[{self.url}]>"
 
     def _make_params(self, *args, **kwargs):
         self.url = args[0]
@@ -98,7 +98,7 @@ async def Async_run(self):
     try:
         await _fetch_run()
     except Exception as err:
-        print(f'RetryErr Async_run:{self}; RetryErr:{err!r}')
+        print(f'Async_run:{self} | RetryErr:{err!r}')
         return None
     else:
         # #返回结果,不管是否正确
@@ -143,7 +143,7 @@ async def Async_Fetch(task, result_list, session):
     try:
         await _fetch_run()
     except Exception as err:
-        print(f'RetryErr Async_Fetch:{task}; RetryErr:{err!r}')
+        print(f'Async_Fetch:{task} | RetryErr:{err!r}')
         task.response = task.content = task.result = None
         result_list.append(None)
         return None

@@ -102,8 +102,8 @@ if __name__ == "__main__":
     Aio_ahttpGetAll(bookname, urls)
     Aio_multi_req(bookname, urls)
 '''
-<Aio_run_Task>        total run: 2.02 seconds
-<Aio_run_Task_Back>        total run: 2.31 seconds
-<Aio_ahttpGetAll>   total run: 3.15 seconds
-<Aio_multi_req>       total run: 1.70 seconds
+<Aio_run_Task>        total run: 3.8 seconds
+<Aio_run_Task_Back>        total run: 3.9 seconds
+<Aio_ahttpGetAll>   total run: 3.8 seconds
+<Aio_multi_req>       total run: 3.6 seconds
 '''

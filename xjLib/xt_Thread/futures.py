@@ -15,10 +15,6 @@ Github       : https://github.com/sandorn/home
 
 from concurrent.futures import (ProcessPoolExecutor, ThreadPoolExecutor, as_completed)
 
-# #futuresMap, futuresSub, futuresPool
-# #T_Map, T_Sub, T_Pool,P_Map,P_Sub,P_Pool
-# #使用类工厂,动态生成基于线程或进程的类
-
 
 def futuresMap(_cls):
 
@@ -138,6 +134,8 @@ def futuresPool(_cls):
     FuturesPool_Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
     return FuturesPool_Class_Wrapper
 
+
+# #使用类工厂,动态生成基于线程或进程的类
 
 T_Map = futuresMap(ThreadPoolExecutor)
 P_Map = futuresMap(ProcessPoolExecutor)

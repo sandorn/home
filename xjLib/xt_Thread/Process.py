@@ -14,9 +14,9 @@ Github       : https://github.com/sandorn/home
 '''
 
 import os
-from multiprocessing import Manager, Pool, Process
+from multiprocessing import Manager, Process
 
-from xt_Thread import Singleton_Mixin
+# from xt_Thread import Singleton_Mixin
 
 
 class MyProcess(Process):
@@ -52,7 +52,7 @@ class MyProcess(Process):
         cls.stop_all(cls)
 
 
-class SingletonProcess(Process, Singleton_Mixin):
+class SingletonProcess(Process):
     """单例多进程,继承自multiprocessing.Process
     ,可取运行结果"""
 
@@ -70,7 +70,7 @@ class SingletonProcess(Process, Singleton_Mixin):
         self.all_Process.append(self)
 
     def run(self):
-        print(f'Parent Pid:{os.getppid()} | Pid: {os.getpid()} | ProcessName: {self.name}')
+        # print(f'Parent Pid:{os.getppid()} | Pid: {os.getpid()} | ProcessName: {self.name}')
         self.Result = self._target(*self._args, **self._kwargs)
         self.result_list.append(self.Result)
 
@@ -100,9 +100,9 @@ class CustomProcess(Process):
         self.all_Process.append(self)
 
     def run(self):
-        print(f'Parent Pid:{os.getppid()} | Pid: {self.pid} | ProcessName: {self.name}')
+        # print(f'Parent Pid:{os.getppid()} | Pid: {self.pid} | ProcessName: {self.name}')
         self.Result = self.target(*self.args, **self.kwargs)
-        self.return_dict[self.index] = self.Result
+        self.return_dict[self.pid] = self.Result
 
     @classmethod
     def wait_completed(cls):
@@ -121,31 +121,36 @@ def Do_CustomProcess(func, *args, **kwargs):
 
 
 if __name__ == '__main__':
+    from multiprocessing import Pool
 
-    def main_1():
-        from xt_Ls_Bqg import get_biqugse_download_url, get_contents
+    from xt_File import savefile
+    from xt_Ls_Bqg import get_biqugse_download_url, get_contents
+
+    def Custom():
         url = 'http://www.biqugse.com/96703/'
-        rbookname, urls, titles = Do_CustomProcess(get_biqugse_download_url, [url])[0]
-        # print(rbookname, urls, titles)
+        bookname, urls, titles = Do_CustomProcess(get_biqugse_download_url, [url])[0]
         res_list = Do_CustomProcess(get_contents, list(range(len(urls))), urls)
-        print(res_list)
+        res_list.sort(key=lambda x: x[0])  # #排序
+        files = os.path.split(__file__)[-1].split(".")[0]
+        savefile(f'{files}&{bookname}&Do_CustomProcess.txt', res_list, br='\n')
 
-    main_1()
+    # Custom()  # 用时: 70s
 
-    def main():
-        from xt_Ls_Bqg import get_biqugse_download_url, get_contents
+    def Singleton():
         url = 'http://www.biqugse.com/96703/'
         r = SingletonProcess(get_biqugse_download_url, url)
         bookname, urls, _ = r.wait_completed()[0]
         prc_list = [SingletonProcess(get_contents, index, urls[index]) for index in range(len(urls))]
-        print(SingletonProcess.wait_completed())
+        res_list = SingletonProcess.wait_completed()
+        res_list.sort(key=lambda x: x[0])  # #排序
+        files = os.path.split(__file__)[-1].split(".")[0]
+        savefile(f'{files}&{bookname}&Do_CustomProcess.txt', res_list, br='\n')
 
-    # main()
+    # Singleton()  # 用时: 102s
 
-    def main_2():
-        from xt_Ls_Bqg import get_biqugse_download_url, get_contents
+    def Poolapply_async():
         url = 'http://www.biqugse.com/96703/'
-        rbookname, urls, titles = Do_CustomProcess(get_biqugse_download_url, [url])[0]
+        bookname, urls, titles = Do_CustomProcess(get_biqugse_download_url, [url])[0]
 
         p = Pool(24)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
         res_l = []
@@ -154,7 +159,10 @@ if __name__ == '__main__':
             res_l.append(res)
         p.close()
         p.join()
-        texts = [res.get() for res in res_l]
-        print(texts)
+        res_list = [res.get() for res in res_l]
+        res_list.sort(key=lambda x: x[0])  # #排序
+        # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
+        files = os.path.split(__file__)[-1].split(".")[0]
+        savefile(f'{files}&{bookname}&Poolapply_async.txt', res_list, br='\n')
 
-    # main_2()  # 用时: 19s
+    # Poolapply_async()  # 用时: 19s

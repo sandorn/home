@@ -7,11 +7,12 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-01-01 17:57:31
+LastEditTime : 2023-01-03 13:59:04
 FilePath     : /项目包/线程小成果/自定义库futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import os
 
 from xt_Ahttp import ahttpGetAll

@@ -58,11 +58,11 @@ def _request_parse(method, url, *args, **kwargs):
         except requests.Timeout as err:
             attempts -= 1
             func_exc = True
-            print(f'parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Timeout:{err!r}')
+            # print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Timeout:{err!r}')
         except Exception as err:
             attempts -= 1
             func_exc = True
-            print(f'parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Err:{err!r}')
+            # print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Err:{err!r}')
         else:
             # #返回正确结果
             new_res = ReqResult(response)
@@ -107,7 +107,7 @@ def _request_tretry(method, url, *args, **kwargs):
     try:
         _fetch_run()
     except Exception as err:
-        print(f'requests.{method}:<{url}>; Err:{err!r}')
+        # print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
         return None
     else:
         # #返回正确结果
@@ -182,12 +182,6 @@ class SessionClient:
         self.headers.update(header_dict)
 
 
-def html_xpath(resp, args):
-    assert isinstance(resp, ReqResult)
-    element = resp.element if resp.element is not None else resp.html
-    return [element.xpath(arg) for arg in args]
-
-
 if __name__ == '__main__':
     urls = ['http://www.baidu.com', 'http://www.163.com', 'http://dangdang.com', 'https://www.biqukan8.cc/38_38163/']
     for url in urls:
@@ -215,8 +209,6 @@ if __name__ == '__main__':
     urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
     titles = [i.text() for i in pr.items()]
     print(len(urls), len(titles))
-'''
-'''
     # @不能用于协程,且不保留最后错误
     # from retrying import retry as Retry
     # RETRY = Retry(
