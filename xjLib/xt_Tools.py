@@ -24,6 +24,9 @@ from copy import deepcopy
 from functools import reduce, wraps
 from types import FunctionType
 
+from memory_profiler import profile  # 内存分析
+from snoop import snoop  # 调试
+
 
 class ExceptContext(object):
     """

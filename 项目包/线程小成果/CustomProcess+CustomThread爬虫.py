@@ -119,6 +119,8 @@ def get_contents(index, target):
 
 
 if __name__ == '__main__':
+    # from memory_profiler import profile
+    # from snoop import snoop
     url_list = [
         'http://www.biqugse.com/96703/',
         'http://www.biqugse.com/96704/',
@@ -128,6 +130,7 @@ if __name__ == '__main__':
         'http://www.biqugse.com/96708/',
     ]
 
+    # @profile
     def main():
         for url in url_list:
             Do_CustomProcess(get_biqugse_download_url, [url])
@@ -135,6 +138,7 @@ if __name__ == '__main__':
 
     # main()
 
+    # @snoop()
     def Pool_main():
         p = Pool(6)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
         res_l = []
@@ -148,4 +152,4 @@ if __name__ == '__main__':
         # print(res_list)
         # 38s
 
-    Pool_main()
+    # Pool_main()
