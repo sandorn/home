@@ -14,6 +14,11 @@ Github       : https://github.com/sandorn/home
 '''
 import random
 
+from fake_useragent import UserAgent
+
+# from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
+# from scrapy.utils.project import get_project_settings
+
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36",
     "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML like Gecko) Chrome/44.0.2403.155 Safari/537.36",
@@ -273,7 +278,7 @@ def get_user_agent():
 
 
 MYHEAD = {
-    'User-Agent': get_user_agent(),
+    'User-Agent': UserAgent().random or get_user_agent(),
     'Accept': '*/*,application/*,application/json,text/*,text/html',
     'Accept-Encoding': 'gzip, deflate',
     'Content-Encoding': 'gzip,deflate,compress',

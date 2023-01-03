@@ -113,7 +113,7 @@ class SetOnce_Mixin:
     def __setitem__(self, key, value):
         if key not in self:
             return super().__setitem__(key, value)
-        raise Exception(str(key) + ' already set')
+        raise Exception(f'{str(key)} already set')
 
 
 class SetOnceDict(SetOnce_Mixin, dict):
