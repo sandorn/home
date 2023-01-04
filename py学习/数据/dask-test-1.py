@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-24 00:37:07
-LastEditTime : 2022-12-24 00:37:18
+LastEditTime : 2023-01-04 15:43:39
 FilePath     : /py学习/数据/dask-test-1.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -39,3 +39,4 @@ for x in data:
 
 total = dask.delayed(sum)(output)
 print(total.compute())
+print(total.visualize())
