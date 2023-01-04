@@ -17,10 +17,11 @@ requests 简化调用
 from functools import partial
 
 import requests
+from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from tenacity import retry as Tretry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random
-from xt_Head import MYHEAD
+from xt_Head import Headers
 from xt_Response import ReqResult
 from xt_Tools import try_except_wraps
 
@@ -35,7 +36,7 @@ TRETRY = Tretry(
 
 
 def _setKw(kwargs):
-    kwargs.setdefault('headers', MYHEAD)
+    kwargs.setdefault('headers', Headers().useragents())
     kwargs.setdefault('cookies', {})
     kwargs.setdefault('timeout', TIMEOUT)  # @超时
     return kwargs

@@ -18,7 +18,7 @@ from threading import Semaphore, Thread
 import nls
 from PyQt5.QtCore import QThread
 from xt_Alispeech.cfg import Constant, SpeechArgs
-from xt_Alispeech.on_state import on_state_cls
+from xt_Alispeech.state import on_state_cls
 from xt_Alispeech.util import get_voice_data, merge_sound_file, save_sound_file
 from xt_String import str2list
 from xt_Time import get_10_timestamp

@@ -16,7 +16,7 @@ import asyncio
 from functools import partial
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_Head import MYHEAD
+from xt_Head import Headers
 from xt_Requests import TRETRY
 from xt_Response import ReqResult
 
@@ -70,7 +70,7 @@ class AsyncTask:
         self.url = args[0]
         self.args = args[1:]
 
-        kwargs.setdefault('headers', MYHEAD)
+        kwargs.setdefault('headers', Headers().random())
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
         kwargs.setdefault('verify_ssl', False)
         self.cookies = kwargs.pop("cookies", {})
