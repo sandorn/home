@@ -22,18 +22,35 @@ from xt_Response import ReqResult
 
 TIMEOUT = 20  # (30, 9, 9, 9)
 
-__all__ = ('ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
+__all__ = ('get', 'post', 'head', 'put', 'delete', 'options', 'trace', 'connect', 'patch', 'ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
 
-def create_session(method, *args, **kw):
+def _unil_session_method(method, *args, **kwargs):
     session = SessionMeta()
-    _dict = {"get": session.get, "post": session.post}
-    return _dict[method](*args, **kw)
+    method_dict = {
+        "get": session.get,
+        "post": session.post,
+        'head': session.head,
+        'options': session.options,
+        'put': session.put,
+        'delete': session.delete,
+        'trace': session.trace,
+        'connect': session.connect,
+        'patch': session.patch,
+    }
+    return method_dict[method](*args, **kwargs)
 
 
-# #使用偏函数 Partial，快速构建多个函数
-get = partial(create_session, "get")
-post = partial(create_session, "post")
+# #使用偏函数 Partial,快速构建多个函数
+get = partial(_unil_session_method, "get")
+post = partial(_unil_session_method, "post")
+head = partial(_unil_session_method, "head")
+options = partial(_unil_session_method, "options")
+put = partial(_unil_session_method, "put")
+delete = partial(_unil_session_method, "delete")
+trace = partial(_unil_session_method, "trace")
+connect = partial(_unil_session_method, "connect")
+patch = partial(_unil_session_method, "patch")
 
 
 class SessionMeta:
@@ -42,10 +59,9 @@ class SessionMeta:
         ...
 
     def __getattr__(self, name):
-        if name in ['get', 'post']:
+        if name in ['get', 'post', 'head', 'optins', 'put', 'delete', 'trace', 'connect', 'patch']:
             new_AsyncTask = AsyncTask()
-            new_AsyncTask.__getattr__(name)
-            return new_AsyncTask._make_params
+            return new_AsyncTask.__getattr__(name)  # @ 设置方法
 
 
 class AsyncTask:
@@ -59,9 +75,9 @@ class AsyncTask:
         yield from self.__dict__.iteritems()
 
     def __getattr__(self, name):
-        if name in ['get', 'post']:
-            self.method = name
-            return self._make_params
+        if name in ['get', 'post', 'head', 'optins', 'put', 'delete', 'trace', 'connect', 'patch']:
+            self.method = name  # @ 设置方法
+            return self._make_params  # @ 设置参数
 
     def __repr__(self):
         return f"<AsyncTask id:[{id(self.session)}] | Method:[{self.method}] | Url:[{self.url}]>"
@@ -76,7 +92,6 @@ class AsyncTask:
         self.cookies = kwargs.pop("cookies", {})
         self.callback = kwargs.pop("callback", None)
         self.kwargs = kwargs
-
         return self
 
     def run(self):
@@ -170,7 +185,6 @@ def ahttp_parse_list(method, urls, pool=200, *args, **kwargs):
 
 ahttpGet = partial(ahttp_parse, "get")
 ahttpPost = partial(ahttp_parse, "post")
-
 ahttpGetAll = partial(ahttp_parse_list, "get")
 ahttpPostAll = partial(ahttp_parse_list, "post")
 
@@ -181,9 +195,21 @@ if __name__ == "__main__":
     url_post = "https://httpbin.org/post"  # 返回head及ip等信息
     url_g = "http://g.cn"  # 返回head及ip等信息
 
-    res = ahttpGet(url_g)
+    res = ahttpGet(url_get)
     print(res)
-    res = ahttpPost(url_post)
-    print(res)
-    res = ahttpGetAll([url_g, url_get])
-    print(res)
+    # res = ahttpPost(url_post)
+    # print(res)
+    # res = ahttpGetAll([url_g, url_get])
+    # print(res)
+    #######################################################################################################
+    # print(get('http://httpbin.org/get').run())
+    # print(head('http://httpbin.org/').run())  #有命令，服务器未响应
+    #ypeError: Expected object of type bytes or bytearray, got: <class 'aiohttp.streams.EmptyStreamReader'>
+    # print(put('http://httpbin.org/put', data=b'data').run())
+    # print(delete('http://httpbin.org/delete').run())
+    # print(options('http://httpbin.org/get').run())  # 'NoneType' object is not callable??
+    # print(trace('http://httpbin.org/get').run())  #有命令，服务器未响应
+    #ypeError: Expected object of type bytes or bytearray, got: <class 'aiohttp.streams.EmptyStreamReader'>
+    # print(connect('http://httpbin.org/connect').run())  #有命令，服务器未响应
+    #ypeError: Expected object of type bytes or bytearray, got: <class 'aiohttp.streams.EmptyStreamReader'>
+    # print(patch('http://httpbin.org/patch', data=b'data').run())

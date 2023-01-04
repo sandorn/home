@@ -86,6 +86,8 @@ class iter_Mixin(dict_mothed_Mixin):
     '''
 
     def __iter__(self):
+        # yield from self.__dict__.iteritems()
+
         # for attr, value in self.__dict__.items():
         #     yield attr, value
         return iter(self.get_dict().items())
@@ -113,7 +115,7 @@ class SetOnce_Mixin:
     def __setitem__(self, key, value):
         if key not in self:
             return super().__setitem__(key, value)
-        raise Exception(f'{str(key)} already set')
+        raise ValueError(f'{str(key)} already set')
 
 
 class SetOnceDict(SetOnce_Mixin, dict):

@@ -278,6 +278,10 @@ MYHEAD = {
     'Accept-Charset': 'UTF-8,GB2312,GBK,GB18030,ISO-8859-1,ISO-8859-5;q=0.7,*;q=0.7',
     'Connection': 'close',  # 'keep-alive',
     'Content-Type': 'text/html,application/x-www-form-unlencoded; charset=UTF-8',
+    # 'X-Requested-With': 'XMLHttpRequest',
+    # 'Cache-Control': 'no-cache',
+    # 'Pragma': 'no-cache',
+    # 'Upgrade-Insecure-Requests': '1',
 }
 
 
