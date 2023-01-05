@@ -33,7 +33,8 @@ class ReqResult(item_Mixin):
             self._content: bytes = content or response.content
             self.index: int = index or id(self)
             self.encoding = response.encoding if hasattr(response, 'encoding') else 'utf-8'
-            self.code_type = detect(self._content)['encoding'] or 'utf-8'  # response.apparent_encoding
+            if isinstance(self._content, bytes): self.code_type = detect(self._content)['encoding'] or 'utf-8'
+            # response.apparent_encoding
 
     @property
     def content(self):

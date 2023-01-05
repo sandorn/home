@@ -44,12 +44,12 @@ def _unil_session_method(method, *args, **kwargs):
 # #使用偏函数 Partial,快速构建多个函数
 get = partial(_unil_session_method, "get")
 post = partial(_unil_session_method, "post")
-head = partial(_unil_session_method, "head")
-options = partial(_unil_session_method, "options")
+head = partial(_unil_session_method, "head")  # 结果正常，无法使用ReqResult
+options = partial(_unil_session_method, "options")  # 'NoneType' object is not callable??
 put = partial(_unil_session_method, "put")
 delete = partial(_unil_session_method, "delete")
-trace = partial(_unil_session_method, "trace")
-connect = partial(_unil_session_method, "connect")
+trace = partial(_unil_session_method, "trace")  # 有命令，服务器未响应
+connect = partial(_unil_session_method, "connect")  # 有命令，服务器未响应
 patch = partial(_unil_session_method, "patch")
 
 
@@ -190,25 +190,22 @@ ahttpPostAll = partial(ahttp_parse_list, "post")
 
 if __name__ == "__main__":
 
-    url = "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async"  # 400
-    url_get = "https://httpbin.org/get"  # 返回head及ip等信息
-    url_post = "https://httpbin.org/post"  # 返回head及ip等信息
-    url_g = "http://g.cn"  # 返回head及ip等信息
+    url_get = "https://httpbin.org/get"
+    url_post = "https://httpbin.org/post"
+    url_headers = "https://httpbin.org/headers"
 
     res = ahttpGet(url_get)
     print(res)
     # res = ahttpPost(url_post)
     # print(res)
-    # res = ahttpGetAll([url_g, url_get])
+    # res = ahttpGetAll([url_headers, url_get])
     # print(res)
     #######################################################################################################
-    # print(get('http://httpbin.org/get').run())
-    # print(head('http://httpbin.org/').run())  #有命令，服务器未响应
-    #ypeError: Expected object of type bytes or bytearray, got: <class 'aiohttp.streams.EmptyStreamReader'>
+    print(head(url_headers).run().headers)
     # print(put('http://httpbin.org/put', data=b'data').run())
     # print(delete('http://httpbin.org/delete').run())
     # print(options('http://httpbin.org/get').run())  # 'NoneType' object is not callable??
-    # print(trace('http://httpbin.org/get').run())  #有命令，服务器未响应
+    # print(trace('http://httpbin.org').run())  #有命令，服务器未响应
     #ypeError: Expected object of type bytes or bytearray, got: <class 'aiohttp.streams.EmptyStreamReader'>
     # print(connect('http://httpbin.org/connect').run())  #有命令，服务器未响应
     #ypeError: Expected object of type bytes or bytearray, got: <class 'aiohttp.streams.EmptyStreamReader'>

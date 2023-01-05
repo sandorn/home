@@ -99,14 +99,15 @@ def QThread_wrap(func=None, *args, **kwargs):
 
         def inner(*args, **kwargs):
             _mythr = QThread()
-            _mythr.daemon = kwargs.pop('daemon', False)
+            _mythr.daemon = kwargs.pop('daemon', True)
             _mythr.callback = kwargs.pop('callback', None)
             _mythr.setObjectName(fun.__name__)
             _mythr.join = _mythr.wait
             _mythr.run = fun
             print(f"{_mythr} | {fun.__name__} start with QThread_wrap...")
             _mythr.Result = _mythr.run(*args, **kwargs)
-
+            _mythr.Result = _mythr.callback(_mythr.Result) if callable(_mythr.callback) else _mythr.Result
+            # _mythr.join()  # 自动阻塞，等待结果
             return _mythr
 
         return inner
@@ -150,17 +151,22 @@ class Thread_wrap_class:
         return res
 
 
+class Thread_wrap_simple:
+    # 简单的线程装饰器,无括号(),返回线程实例,不返回结果
+    def __init__(self, func):  # 接受函数
+        self.func = func
+
+    def __call__(self, *args, **kwargs):  # 接受任意参数
+        print('函数调用CALL')
+        _thr = Thread(target=self.func, args=args, kwargs=kwargs)
+        _thr.start()
+        _thr.join()
+        return _thr
+
+
 def create_mixin_class(name, cls, meta, **kwargs):
     '''type动态混入继承,实质是调整 bases'''
     return type(name, (cls, meta), kwargs)
-    # sample.__bases__ += (Singleton_Base, )
-
-
-def mixin_class_bases(cls, bases, name=None):
-    '''混入类的继承，不会覆盖原有继承'''
-    cls.__bases__ += (bases, )
-    if name: cls.__name__ = name
-    return cls
 
 
 thread_print = thread_safe(print)
@@ -168,19 +174,29 @@ print_lock = thread_safe(print)
 
 if __name__ == "__main__":
 
-    @Thread_wrap
+    @Thread_wrap_simple
     def a(i):
+        print('Thread_wrap_simple in func a : ', i, i * 2)
         return i * 2
 
-    @QThread_wrap
+    @Thread_wrap
     def b(i):
-        return i * 10
+        print('Thread_wrap in func b : ', i, i * 5)
+        return i * 5
 
-    res = a(2)
-    print(res.Result)
-    cc = b(5)
-    print(cc.Result)
-    print(cc.callback)
-    print(cc.daemon)
-    print(cc.objectName())
-    print(thread_print.__name__)
+    import time
+
+    @QThread_wrap
+    def c(i):
+        time.sleep(2)
+        print('QThread_wrap in func c : ', i, i * 11)
+        return i * 11
+
+    aa = a(8)
+    bb = b(40)
+    cc = c(3, callback=lambda x: x * 100)
+    print('Result:', cc.Result)
+    print('callback:', cc.callback)
+    print('daemon:', cc.daemon)
+    print('objectName:', cc.objectName())
+    # print(thread_print.__name__)

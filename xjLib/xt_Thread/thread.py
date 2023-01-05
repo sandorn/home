@@ -16,7 +16,7 @@ LastEditTime : 2020-11-27 18:34:42
 import ctypes
 import inspect
 from queue import Empty, Queue
-from threading import Event, Thread, enumerate
+from threading import Condition, Event, Thread, enumerate
 from time import time
 
 from xt_Class import item_get_Mixin
@@ -234,41 +234,78 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
         return res
 
 
-def make_singleton_thread_class(name):
+def _create_singleton_thread_class(parent_cls, new_class_name):
     # #使用类装饰器 singleton_wrap_return_class 转换为单例类
-    _cls = singleton_wrap_return_class(CustomThread)
-    _cls.__name__ = name  # @单例线程运行结束判断依据
+    _cls = singleton_wrap_return_class(parent_cls)
+    _cls.__name__ = new_class_name  # @单例线程运行结束判断依据
     _cls.result_list = []  # @单独配置结果字典
     _cls.wait_completed, _cls.getAllResult = _cls.getAllResult, _cls.wait_completed
     return _cls
 
 
-def make_queue_singleton_thread_class(name):
-    # #使用类装饰器 singleton_wrap_return_class 转换为单例类
-    _cls = singleton_wrap_return_class(CustomThread_Queue)
-    _cls.__name__ = name  # @单例线程运行结束判断依据
-    _cls.result_list = []  # @单独配置结果字典
-    return _cls
+SigThread = _create_singleton_thread_class(CustomThread, 'SigThread')
+SigThreadQ = _create_singleton_thread_class(CustomThread_Queue, 'SigThreadQ')
 
 
-SigThread = make_singleton_thread_class('SigThread')
+class CustomThread_Pool:
+    """线程池,继承自threading.Thread,Copilot自编"""
 
-SigThreadQ = make_queue_singleton_thread_class('SigThreadQ')
+    def __init__(self, max_workers=10, target=None, *args, **kwargs):
+        self.max_workers = max_workers
+        self.all_Thread = []  # 线程列表,用于jion。类属性或类变量,实例公用
+        self.result_list = []  # 结果列表
+        self.task_queue = Queue()  # 任务队列
+        self.task_queue.all_tasks_done = Condition()  # 任务队列锁
+        self.finished = Event()
+        self._target = target
+        self._args = args
+        self._kwargs = kwargs
+        self._create_thread_pool()
 
+    def _create_thread_pool(self):
+        for _ in range(self.max_workers):
+            thread = Thread(target=self._target, args=self._args, kwargs=self._kwargs)
+            thread.daemon = True
+            thread.start()
+            self.all_Thread.append(thread)
 
-class CustomThread_Singleton(CustomThread, Singleton_Mixin):
-    # #混入继承Singleton_Mixin,转换为单例类
-    pass
+    def _get_result(self):
+        """获取结果"""
+        self.result_list.append(self._target(*self._args, **self._kwargs))
 
+    def add_task(self, target, *args, **kwargs):
+        """添加任务"""
+        self.task_queue.put((target, args, kwargs))
 
-class CustomThread_Queue_Singleton(CustomThread_Queue, Singleton_Mixin):
-    # #混入继承Singleton_Mixin,转换为单例类
-    pass
+    def run(self):
+        """运行任务"""
+        while True:
+            target, args, kwargs = self.task_queue.get()
+            self._target = target
+            self._args = args
+            self._kwargs = kwargs
+            self._get_result()
+            self.task_queue.task_done()
+            self.task_queue.all_tasks_done.acquire()
+            self.task_queue.all_tasks_done.notify_all()
+            self.task_queue.all_tasks_done.release()
 
+    def join_with_timeout(self, timeout=10):
+        """等待线程,超时结束,返回结果"""
+        self.task_queue.all_tasks_done.acquire()
+        try:
+            endtime = time() + timeout
+            while self.task_queue.unfinished_tasks:
+                remaining = endtime - time()
+                if remaining <= 0.0:
+                    print('unfinished_tasks in task_queue : ', self.task_queue.unfinished_tasks)
+                    break
+                self.task_queue.all_tasks_done.wait(0.1)
+        finally:
+            self.task_queue.all_tasks_done.release()
 
-'''
-类转为单例模式：
-    1.照写 from xt_Singleon import Singleton_Model
-    2.使用类装饰器 from xt_Singleon import singleton_wrap_return_class
-    3.混入继承 from xt_Singleon import Singleton_MiXin
-'''
+    def stop_all(self):
+        """停止线程池, 所有线程停止工"""
+        for _ in range(len(self.all_Thread)):
+            thread = self.all_Thread.pop()
+            thread.join()  # @单例无效

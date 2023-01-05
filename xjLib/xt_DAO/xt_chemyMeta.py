@@ -97,7 +97,7 @@ class Model_Method_Mixin(item_Mixin):
 
 Base_Model = declarative_base(cls=Model_Method_Mixin)  # #生成SQLORM基类,混入继承Model_Method_Mixin
 '''metadata = Base.metadata'''
-'''定义table  引用方式: from xt_DAO.xt_chemyMeta import Base_Model'''
+'''定义table的基类，所有的表都要继承这个类,这个类的作用是将表映射到数据库中'''
 
 # 若有多个类指向同一张表，那么在后边的类需要把 extend_existing设为True，表示在已有列基础上进行扩展
 # 或者换句话说，sqlalchemy 允许类是表的字集，如下：
@@ -110,7 +110,7 @@ Base_Model = declarative_base(cls=Model_Method_Mixin)  # #生成SQLORM基类,混
 
 
 class parent_model_Mixin:
-    '''定义所有数据库表对应的父类,用于混入继承,与Base_Model协同'''
+    # 关键语句,定义所有数据库表对应的父类,用于混入继承,与Base_Model协同
     __abstract__ = True
 
 
@@ -121,7 +121,8 @@ def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict=None):
     table_model_cls 例子:
     class table_model(Base_Model):
         __tablename__ = _BOOKNAME
-        extend_existing = True
+        __table_args__ = {"extend_existing": True}  # 允许表已存在
+        # __extend_existing__ = True
 
         ID = Column(INTEGER(10), primary_key=True)
         BOOKNAME = Column(VARCHAR(255), nullable=False)

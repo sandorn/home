@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-24 23:51:15
+LastEditTime : 2023-01-05 15:00:03
 FilePath     : /xjLib/xt_Thread/qThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -16,20 +16,11 @@ Github       : https://github.com/sandorn/home
 from threading import Lock
 
 from PyQt5.QtCore import QThread
-from xt_Class import repr_Mixin
+from xt_Thread import (Singleton_Mixin, create_mixin_class, singleton_wrap_class, singleton_wrap_return_class)
 
 
-class CustomQThread(QThread, repr_Mixin):
-    """单例多线程,继承自threading.Thread"""
-
-    __instance_lock = Lock()
-
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, "_instance"):
-            with cls.__instance_lock:
-                if not hasattr(cls, "_instance"):
-                    cls._instance = super().__new__(cls)
-        return cls._instance
+class CustomQThread(QThread):
+    """多线程,继承自QThread"""
 
     def __init__(self, func, *args, **kwargs):
         super().__init__()
@@ -64,6 +55,17 @@ class CustomQThread(QThread, repr_Mixin):
         self.wait()
 
 
+@singleton_wrap_class
+class QThread_wrap_class(CustomQThread):
+    ...
+
+
+class QThread_Singleton_Mixin(Singleton_Mixin, CustomQThread):
+    ...
+
+
+SingletonQThread = create_mixin_class('SingletonQThread', Singleton_Mixin, CustomQThread)
+
 if __name__ == "__main__":
 
     def f(*args):
@@ -74,12 +76,9 @@ if __name__ == "__main__":
     from PyQt5 import QtWidgets
     app = QtWidgets.QApplication(sys.argv)
 
-    a = CustomQThread(f, 4)
+    a = SingletonQThread(f, 4)
     print(111111111111, a)
-    b = CustomQThread(f, 6)
+    b = SingletonQThread(f, 6)
     print(a is b, id(a), id(b), a, b)
 
-    nowthread = QThread()
-    nowthread.run = f
-    nowthread.run(7, 8, 9)
     sys.exit(app.exec_())
