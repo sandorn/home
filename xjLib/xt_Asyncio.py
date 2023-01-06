@@ -20,14 +20,16 @@ from functools import wraps
 from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_Head import MYHEAD
+from xt_Ahttp import ahttpGetAll
+from xt_Head import MYHEAD, Headers
+from xt_Requests import TRETRY
 from xt_Response import ReqResult
 
 # 默认超时时间
 TIMEOUT = 20
 
 
-def make_future(func):
+def future_wrap(func):
     '''协程装饰器'''
 
     @wraps(func)
@@ -55,54 +57,75 @@ class AioCrawl:
         self.result_list = []
         self.concurrent = 0  # 记录并发数
 
+    def __del__(self):
+        self.close_loop()
+
     def start_loop(self):
         asyncio.set_event_loop(self.event_loop)
         self.event_loop.run_forever()
-        # self.event_loop.stop()
 
-    async def fetch(self, url, method='GET', headers=None, timeout=TIMEOUT, cookies=None, data=None, proxy=None):
-        """采集纤程
-        :param url: str
-        :param method: 'GET' or 'POST'
-        :param headers: dict()
-        :param timeout: int
-        :param cookies:
-        :param data: dict()
-        :param proxy: str
-        :return: ReqResult(response, content)
-        """
+    def close_loop(self):
+        self.event_loop.stop()
+        self.event_loop.close()
 
-        method = 'POST' if method.upper() == 'POST' else 'GET'
-        headers = headers or MYHEAD
-        timeout = ClientTimeout(total=timeout)
-        cookies = cookies or None
-        data = data if data and isinstance(data, dict) else {}
+    def close(self):
+        self.close_loop()
 
-        tcp_connector = TCPConnector(ssl=False)  # 禁用证书验证
-        async with ClientSession(headers=headers, timeout=timeout, cookies=cookies, connector=tcp_connector) as session:
-            try:
-                if method == 'GET':
-                    async with session.get(url, proxy=proxy) as response:
-                        content = await response.read()
-                        return ReqResult(response, content)
-                else:
-                    async with session.post(url, data=data, proxy=proxy) as response:
-                        content = await response.read()
-                        return ReqResult(response, content)
-            except Exception as e:
-                raise e
+    def stop(self):
+        self.close_loop()
 
-    def add_fetch_tasks(self, url_list, callback=None):
+    async def _fetch(self, url, method='GET', *args, **kwargs):
+
+        @TRETRY
+        async def _fetch_run():
+            async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=cookies, connector=Tconn) as session, session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
+                content = await response.read()
+                return response, content
+
+        try:
+            kwargs.setdefault('headers', Headers().random())
+            kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
+            kwargs.setdefault('verify_ssl', False)
+            cookies = kwargs.pop("cookies", {})
+            callback = kwargs.pop("callback", None)
+            response, content = await _fetch_run()
+        except Exception as err:
+            print(f'AioCrawl_fetch:{url} | RetryErr:{err!r}')
+            return None
+        else:
+            # #返回结果,不管是否正确
+            result = ReqResult(response, content)
+            if callback: result = callback(result)
+            return result
+
+    def add_fetch_tasks(self, url_list, *args, **kwargs):
         """添加任务
         :param url_list: list <class url>
         :return: future
         """
+        callback = kwargs.pop("future_callback", None)
+        method = kwargs.pop("method", 'GET')
+
         for url in url_list:
-            # asyncio.run_coroutine_threadsafe  # #接收一个协程对象和，事件循环对象
-            future = asyncio.run_coroutine_threadsafe(self.fetch(url), self.event_loop)
+            # asyncio.run_coroutine_threadsafe:接收协程对象、事件循环对象
+            if not isinstance(url, str): continue
+            future = asyncio.run_coroutine_threadsafe(self._fetch(url, method=method, *args, **kwargs), self.event_loop)
             self.future_list.append(future)
             if callback: future.add_done_callback(callback)  # 给future对象添加回调函数
             self.concurrent += 1  # 并发数加 1
+
+    def add_ahttp_tasks(self, url_list, *args, **kwargs):
+        """添加纤程任务"""
+        if not isinstance(url_list, (list, tuple)): raise TypeError('传入非list或tuple')
+
+        coroutine_func = future_wrap(ahttpGetAll)
+        callback = kwargs.pop("callback", None)
+
+        future = asyncio.ensure_future(coroutine_func(url_list, *args, **kwargs))
+
+        self.future_list.append(future)
+        if callback: future.add_done_callback(callback)  # 给future对象添加回调函数
+        self.concurrent += len(url_list)  # 并发数加 1
 
     def add_tasks(self, tasks, callback=None):
         """添加纤程任务"""
@@ -113,6 +136,7 @@ class AioCrawl:
             future = asyncio.run_coroutine_threadsafe(task, self.event_loop)
             self.future_list.append(future)
             if callback: future.add_done_callback(callback)  # 给future对象添加回调函数
+            self.concurrent += 1  # 并发数加 1
 
     def getAllResult(self):
         for _ in range(len(self.future_list)):
@@ -134,62 +158,53 @@ class AioCrawl:
 
 
 if __name__ == '__main__':
+    #########################################################################
+    # b = AioCrawl()
+    # b.add_ahttp_tasks(["https://httpbin.org/get"] * 5)
+    # res = b.getAllResult()[0]
+    # for item in res:
+    #     print(item)
+    #########################################################################
+    a = AioCrawl()
+    for _ in range(5):
+        a.add_fetch_tasks(["https://httpbin.org/get"])  # 模拟动态添加任务
+    print(222222222222222, a.getAllResult())
+    #########################################################################
+    # from xt_Ahttp import Async_run, get  # $配合ahttp使用
 
-    from xt_Requests import get
+    # b = AioCrawl()
+    # asynctasks = []
+    # for _ in range(2):
+    #     task = get('https://httpbin.org/get')
+    #     asynctasks.append(task)
+    # tasks = [Async_run(task) for task in asynctasks]
 
-    b = AioCrawl()
+    # b.add_tasks(tasks)  # 模拟动态添加任务
 
-    async def test():
-        return get('https://www.baidu.com')
+    # res = b.getAllResult()
+    # for item in res:
+    #     print(item)
+    #########################################################################
+    # from xt_Requests import get
 
-    b.add_tasks([test() for _ in range(2)])  # 模拟动态添加任务
+    # b = AioCrawl()
 
-    res = b.getAllResult()
-    for item in res:
-        print(item)
+    # async def test():
+    #     return get('https://httpbin.org/get')
 
-#########################################################################
-# a = AioCrawl()
+    # b.add_tasks([test() for _ in range(2)])  # 模拟动态添加任务
 
-# for _ in range(5):
-#     a.add_fetch_tasks(['https://www.sina.com.cn' for _ in range(2)])  # 模拟动态添加任务
+    # res = b.getAllResult()
+    # for item in res:
+    #     print(item)
 
-# print(222222222222222, a.getAllResult())
-#########################################################################
-# from xt_Ahttp import Async_run, get  # $配合ahttp使用
+    #########################################################################
+    # from xt_Requests import get
 
-# b = AioCrawl()
-# asynctasks = []
-# for _ in range(2):
-#     task = get('https://www.baidu.com')
-#     asynctasks.append(task)
-# tasks = [Async_run(task) for task in asynctasks]
+    # @make_future
+    # def gethtml(url):
+    #     return get(url)
 
-# b.add_tasks(tasks)  # 模拟动态添加任务
-
-# res = b.getAllResult()
-# for item in res:
-#     print(item)
-#########################################################################
-# from xt_Requests import get
-
-# b = AioCrawl()
-
-# async def test():
-#     return get('https://www.baidu.com')
-
-# b.add_tasks([test() for _ in range(2)])  # 模拟动态添加任务
-
-# res = b.getAllResult()
-# for item in res:
-#     print(item)
-
-#########################################################################
-# from xt_Requests import get
-
-# @make_future
-# def gethtml(url):
-#     return get(url)
-
-# res = gethtml('https://www.baidu.com')
-# print(res.result())
+    # res = gethtml('https://httpbin.org/get')
+    # print(res.result())
+    #########################################################################

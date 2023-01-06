@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2023-01-03 14:00:24
+LastEditTime : 2023-01-06 10:52:35
 FilePath     : /项目包/线程小成果/自定义库Futures+Asyncio异步-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -15,7 +15,6 @@ Github       : https://github.com/sandorn/home
 
 import os
 
-from xt_Ahttp import Async_run, get
 from xt_Asyncio import AioCrawl
 from xt_File import savefile
 from xt_Ls_Bqg import get_biqugse_download_url, 结果处理
@@ -24,21 +23,14 @@ from xt_Time import fn_timer
 
 
 @fn_timer
-def Aio_run_Task(bookname, urls):
-    asynctasks = []
-    for index, url in enumerate(urls):
-        task = get(url)
-        task.index = index
-        asynctasks.append(task)
-    tasks = [Async_run(task) for task in asynctasks]
-
+def Aio_ahttp(bookname, urls):
     myaio = AioCrawl()
-    myaio.add_tasks(tasks)
-    resps = myaio.getAllResult()  # #callback=handle_resp处理以后的结果
+    myaio.add_ahttp_tasks(urls)
+    resps = myaio.getAllResult()[0]
     texts = 结果处理(resps)
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(f'{files}&{bookname}Aio_run_Task.txt', texts, br='\n')
+    savefile(f'{files}&{bookname}Aio_ahttp.txt', texts, br='\n')
 
 
 def multpool():
@@ -58,7 +50,7 @@ def multpool():
     for url in url_list:
         bookname, urls, titles = get_biqugse_download_url(url)
         booknames = [bookname] * len(urls)
-        mypool.add_sub(Aio_run_Task, [bookname, urls])
+        mypool.add_sub(Aio_ahttp, [bookname, urls])
     mypool.get_sub_result()
 
 

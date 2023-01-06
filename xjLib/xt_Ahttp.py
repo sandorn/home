@@ -94,16 +94,16 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
-    def run(self):
-        future = asyncio.ensure_future(Async_run(self))
+    def start(self):
+        future = asyncio.ensure_future(asynctask_run(self))
         loop = asyncio.get_event_loop()
         loop.run_until_complete(future)
         # return future.result()
         return self.result
 
 
-async def Async_run(self):
-    # #单个任务,从  AsyncTask.run  调用
+async def asynctask_run(self):
+    # 单个任务,从  AsyncTask.start  调用
     @TRETRY
     async def _fetch_run():
         async with TCPConnector(ssl=False, limit=self.pool) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as session, session.request(self.method, self.url, *self.args, raise_for_status=True, **self.kwargs) as self.response:
@@ -120,31 +120,6 @@ async def Async_run(self):
         self.result = ReqResult(self.response, self.content, index=self.index)
         if self.callback: self.result = self.callback(self.result)
         return self.result
-
-
-def run(tasks, pool):
-    assert isinstance(tasks, (list, tuple)), "tasks must be list or tuple"
-
-    result_list = []  # #存放返回结果集合
-    future = asyncio.ensure_future(multi_req(tasks, pool, result_list))
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(future)
-    # 返回结果集合
-    return result_list
-
-
-async def multi_req(tasks, pool, result_list):
-    '''多个task使用同一sessionn model == 0'''
-    async with TCPConnector(ssl=False, limit=pool) as Tconn, ClientSession(connector=Tconn) as session:
-        new_tasks = []
-        for index, task in enumerate(tasks):
-            task.index = index + 1
-            new_tasks.append(asyncio.ensure_future(Async_Fetch(task, result_list, session)))
-
-        # #等待纤程结束
-        await asyncio.wait(new_tasks)
-
-    return result_list
 
 
 async def Async_Fetch(task, result_list, session):
@@ -172,15 +147,39 @@ async def Async_Fetch(task, result_list, session):
         return new_res
 
 
+async def multi_req(tasks, pool, result_list):
+    '''多个task使用同一sessionn model == 0'''
+    async with TCPConnector(ssl=False, limit=pool) as Tconn, ClientSession(connector=Tconn) as session:
+        new_tasks = []
+        for index, task in enumerate(tasks):
+            task.index = index + 1
+            new_tasks.append(asyncio.ensure_future(Async_Fetch(task, result_list, session)))
+
+        # #等待纤程结束
+        await asyncio.wait(new_tasks)
+
+    return result_list
+
+
+def util_tasks(tasks, pool):
+    assert isinstance(tasks, (list, tuple)), "tasks must be list or tuple"
+    result_list = []  # #存放返回结果集合
+    future = asyncio.ensure_future(multi_req(tasks, pool, result_list))
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(future)
+    # 返回结果集合
+    return result_list
+
+
 def ahttp_parse(method, url, *args, **kwargs):
     task = eval(method)(url, *args, **kwargs)
-    return task.run()
+    return task.start()
 
 
 def ahttp_parse_list(method, urls, pool=200, *args, **kwargs):
     tasks = [eval(method)(url, *args, **kwargs) for url in urls]
     if len(tasks) < pool: pool = len(tasks)
-    return run(tasks, pool)
+    return util_tasks(tasks, pool)
 
 
 ahttpGet = partial(ahttp_parse, "get")
@@ -201,7 +200,7 @@ if __name__ == "__main__":
     # res = ahttpGetAll([url_headers, url_get])
     # print(res)
     #######################################################################################################
-    print(head(url_headers).run().headers)
+    print(head(url_headers).start().headers)
     # print(put('http://httpbin.org/put', data=b'data').run())
     # print(delete('http://httpbin.org/delete').run())
     # print(options('http://httpbin.org/get').run())  # 'NoneType' object is not callable??
