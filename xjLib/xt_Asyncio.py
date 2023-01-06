@@ -21,7 +21,7 @@ from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_Ahttp import ahttpGetAll
-from xt_Head import MYHEAD, Headers
+from xt_Head import Headers
 from xt_Requests import TRETRY
 from xt_Response import ReqResult
 
@@ -33,13 +33,13 @@ def future_wrap(func):
     '''协程装饰器'''
 
     @wraps(func)
-    def _make_future(*args, **kwargs):
+    def __future(*args, **kwargs):
         future = asyncio.Future()
         result = func(*args, **kwargs)
         future.set_result(result)
         return future
 
-    return _make_future
+    return __future
 
 
 class AioCrawl:
@@ -165,10 +165,10 @@ if __name__ == '__main__':
     # for item in res:
     #     print(item)
     #########################################################################
-    a = AioCrawl()
-    for _ in range(5):
-        a.add_fetch_tasks(["https://httpbin.org/get"])  # 模拟动态添加任务
-    print(222222222222222, a.getAllResult())
+    # a = AioCrawl()
+    # for _ in range(5):
+    #     a.add_fetch_tasks(["https://httpbin.org/get"])  # 模拟动态添加任务
+    # print(222222222222222, a.getAllResult())
     #########################################################################
     # from xt_Ahttp import Async_run, get  # $配合ahttp使用
 
@@ -199,12 +199,11 @@ if __name__ == '__main__':
     #     print(item)
 
     #########################################################################
-    # from xt_Requests import get
+    from xt_Requests import get
 
-    # @make_future
-    # def gethtml(url):
-    #     return get(url)
+    @future_wrap
+    def gethtml(url):
+        return get(url)
 
-    # res = gethtml('https://httpbin.org/get')
-    # print(res.result())
-    #########################################################################
+    res = gethtml('https://httpbin.org/get')
+    print(res.result())

@@ -7,15 +7,15 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2023-01-06 10:52:35
-FilePath     : /项目包/线程小成果/自定义库Futures+Asyncio异步-7星.py
+LastEditTime : 2023-01-06 17:56:15
+FilePath     : /项目包/线程小成果/自定义库Futures+aiohttp异步-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
 import os
 
-from xt_Asyncio import AioCrawl
+from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
 from xt_Ls_Bqg import get_biqugse_download_url, 结果处理
 from xt_Thread import ProcessPool, ThreadPool
@@ -24,9 +24,7 @@ from xt_Time import fn_timer
 
 @fn_timer
 def Aio_ahttp(bookname, urls):
-    myaio = AioCrawl()
-    myaio.add_ahttp_tasks(urls)
-    resps = myaio.getAllResult()[0]
+    resps = ahttpGetAll(urls)
     texts = 结果处理(resps)
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
@@ -51,7 +49,7 @@ def multpool():
         bookname, urls, titles = get_biqugse_download_url(url)
         booknames = [bookname] * len(urls)
         mypool.add_sub(Aio_ahttp, [bookname, urls])
-    mypool.get_sub_result()
+    mypool.wait_completed()
 
 
 if __name__ == "__main__":
