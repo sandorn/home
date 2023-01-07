@@ -1,6 +1,20 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-07 15:03:20
+FilePath     : /py学习/爬虫/中保协--互联网保险信息--爬虫.py
+Github       : https://github.com/sandorn/home
+==============================================================
+'''
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
 #==============================================================
 #Descripttion : None
 #Develop      : VSCode
@@ -13,11 +27,11 @@
 #==============================================================
 '''
 
-from xt_Thread import ThreadPoolSub
-from xt_Requests import SessionClient
-from xt_Response import ReqResult
-from xt_File import savefile
 import os
+
+from xt_File import savefile
+from xt_Requests import SessionClient
+from xt_Thread import ThreadPoolSub
 
 s = SessionClient()
 head = {

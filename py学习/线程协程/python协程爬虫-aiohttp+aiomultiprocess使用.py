@@ -16,14 +16,14 @@ import asyncio
 
 from aiohttp import request
 from aiomultiprocess import Pool, Worker
-from xt_Requests import ReqResult
+from xt_Requests import htmlResponse
 
 
 async def get(url):
     async with request("GET", url) as response:
         content = await response.read()
         print(111111111, content)
-        return ReqResult(response, content)
+        return htmlResponse(response, content)
 
 
 async def main():

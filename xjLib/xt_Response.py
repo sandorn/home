@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-06 11:23:14
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-07 15:02:23
 FilePath     : /xjLib/xt_Response.py
-LastEditTime : 2020-08-14 11:08:33
-#Github       : https://github.com/sandorn/home
-#==============================================================
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import json
@@ -23,7 +23,7 @@ from requests_html import HTML
 from xt_Class import item_Mixin
 
 
-class ReqResult(item_Mixin):
+class htmlResponse(item_Mixin):
     '''封装网页抓取结果,使之标准化'''
     __slots__ = ('raw', 'clientResponse', '_content', 'index', 'encoding', 'code_type')
 
@@ -119,31 +119,25 @@ class ReqResult(item_Mixin):
         return PyQuery(self.html)  # , parser='xml')
 
     @dispatch()
+    def xpath(self, selectors=None):
+        return [self.element]
+
+    @dispatch()
     def xpath(self, selectors: str):
-        # print(1111111111111, 'selectors: str')
-        element = self.element if self.element is not None else self.html
-        return [*element.xpath(selectors)]
+        element = self.element
+        return [*element.xpath(selectors)] if selectors.strip() != "" else [element]
 
     @dispatch()
     def xpath(self, selectors: (list, tuple)):
-        # print(2222222222222, 'selectors: (list, tuple)')
-        element = self.element if self.element is not None else self.html
+        element = self.element
         return [element.xpath(selector) for selector in selectors]
 
     @dispatch()
-    def xpath(self, selectors=None):
-        # print(33333333333333, 'selectors=None')
-        element = self.element if self.element is not None else self.html
-        return [element]
-
-    @dispatch()
-    def xpath(self, selectors: (dict, int, float, bool, type(None))):
-        # print(444444444444444, 'selectors: (dict, int, float, bool, type(None))')
-        element = self.element if self.element is not None else self.html
-        return [element]
+    def xpath(self, selectors: (dict, int, float, bool)):
+        return [self.element]
 
     def __repr__(self):
-        return f"<ReqResult status:[{self.status}]; ID:[{self.index}], url:[{self.url}] >"
+        return f"<htmlResponse | ID:[{self.index}] | STATUS:[{self.status}] | URL:[{self.url}]>"
 
     def __str__(self):
         return self.__repr__()

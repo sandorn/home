@@ -20,17 +20,16 @@ from functools import wraps
 from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_Ahttp import ahttpGetAll
 from xt_Head import Headers
 from xt_Requests import TRETRY
-from xt_Response import ReqResult
+from xt_Response import htmlResponse
 
 # 默认超时时间
 TIMEOUT = 20
 
 
-def future_wrap(func):
-    '''协程装饰器'''
+def future_wrapper(func):
+    '''future装饰器'''
 
     @wraps(func)
     def __future(*args, **kwargs):
@@ -40,6 +39,23 @@ def future_wrap(func):
         return future
 
     return __future
+
+
+def asyncio_wrapper(func):
+    '''异步装饰器,可装饰async函数和普通函数,,但是不能装饰协程'''
+
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+
+        async def __wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            if iscoroutine(result):
+                result = await asyncio.create_task(func(*args, **kwargs))
+            return result
+
+        return asyncio.run(__wrapper(*args, **kwargs))
+
+    return _wrapper
 
 
 class AioCrawl:
@@ -83,9 +99,8 @@ class AioCrawl:
                 return response, content
 
         try:
-            kwargs.setdefault('headers', Headers().random())
+            kwargs.setdefault('headers', Headers().randomheaders)
             kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
-            kwargs.setdefault('verify_ssl', False)
             cookies = kwargs.pop("cookies", {})
             callback = kwargs.pop("callback", None)
             response, content = await _fetch_run()
@@ -94,7 +109,7 @@ class AioCrawl:
             return None
         else:
             # #返回结果,不管是否正确
-            result = ReqResult(response, content)
+            result = htmlResponse(response, content)
             if callback: result = callback(result)
             return result
 
@@ -114,24 +129,11 @@ class AioCrawl:
             if callback: future.add_done_callback(callback)  # 给future对象添加回调函数
             self.concurrent += 1  # 并发数加 1
 
-    def add_ahttp_tasks(self, url_list, *args, **kwargs):
-        """添加纤程任务"""
-        if not isinstance(url_list, (list, tuple)): raise TypeError('传入非list或tuple')
-
-        coroutine_func = future_wrap(ahttpGetAll)
-        callback = kwargs.pop("callback", None)
-
-        future = asyncio.ensure_future(coroutine_func(url_list, *args, **kwargs))
-
-        self.future_list.append(future)
-        if callback: future.add_done_callback(callback)  # 给future对象添加回调函数
-        self.concurrent += len(url_list)  # 并发数加 1
-
     def add_tasks(self, tasks, callback=None):
         """添加纤程任务"""
         if not isinstance(tasks, (list, tuple)): raise TypeError('传入非list或tuple')
-
         for task in tasks:
+            print(11111111111, type(task))
             if not iscoroutine(task): continue
             future = asyncio.run_coroutine_threadsafe(task, self.event_loop)
             self.future_list.append(future)
@@ -159,26 +161,15 @@ class AioCrawl:
 
 if __name__ == '__main__':
     #########################################################################
-    # b = AioCrawl()
-    # b.add_ahttp_tasks(["https://httpbin.org/get"] * 5)
-    # res = b.getAllResult()[0]
-    # for item in res:
-    #     print(item)
-    #########################################################################
     # a = AioCrawl()
-    # for _ in range(5):
+    # for _ in range(3):
     #     a.add_fetch_tasks(["https://httpbin.org/get"])  # 模拟动态添加任务
     # print(222222222222222, a.getAllResult())
     #########################################################################
-    # from xt_Ahttp import Async_run, get  # $配合ahttp使用
+    # from xt_Ahttp import asynctask_run, get  # $配合ahttp使用
 
     # b = AioCrawl()
-    # asynctasks = []
-    # for _ in range(2):
-    #     task = get('https://httpbin.org/get')
-    #     asynctasks.append(task)
-    # tasks = [Async_run(task) for task in asynctasks]
-
+    # tasks = [asynctask_run(get('https://httpbin.org/get')) for _ in range(2)]
     # b.add_tasks(tasks)  # 模拟动态添加任务
 
     # res = b.getAllResult()
@@ -189,10 +180,10 @@ if __name__ == '__main__':
 
     # b = AioCrawl()
 
-    # async def test():
-    #     return get('https://httpbin.org/get')
+    # async def test(url):
+    #     return get(url)
 
-    # b.add_tasks([test() for _ in range(2)])  # 模拟动态添加任务
+    # b.add_tasks([test('https://httpbin.org/get') for _ in range(2)])  # 模拟动态添加任务
 
     # res = b.getAllResult()
     # for item in res:
@@ -201,9 +192,18 @@ if __name__ == '__main__':
     #########################################################################
     from xt_Requests import get
 
-    @future_wrap
-    def gethtml(url):
+    @asyncio_wrapper
+    def get_html(url):
         return get(url)
 
-    res = gethtml('https://httpbin.org/get')
-    print(res.result())
+    res = get_html('https://httpbin.org/get')
+    print(res)
+
+    @asyncio_wrapper
+    async def get_message():
+        async with ClientSession() as session:
+            async with session.get('http://httpbin.org/headers') as response:
+                return await response.text()
+
+    res = get_message()
+    print(res)

@@ -17,7 +17,7 @@ from multiprocessing import Pool
 
 from xt_File import savefile
 from xt_Requests import get
-from xt_Response import ReqResult
+from xt_Response import htmlResponse
 from xt_String import Re_Sub, Str_Clean, Str_Replace, UNprintable_Chars
 from xt_Thread import CustomThread, Do_CustomProcess
 
@@ -85,7 +85,7 @@ def clean_Content(in_str):
 def get_biqugse_download_url(target):
     # print(f'get_biqugse_download_url | Parent Pid:{os.getppid()} | Pid: {os.getpid()}')
     resp = get(target)
-    assert isinstance(resp, ReqResult)
+    assert isinstance(resp, htmlResponse)
     _xpath = (
         '//meta[@property="og:title"]//@content',
         '//dt[2]/following-sibling::dd/a/@href',
@@ -107,7 +107,7 @@ def get_biqugse_download_url(target):
 def get_contents(index, target):
     # print(f'get_contents | Parent Pid:{os.getppid()} | Pid: {os.getpid()}')
     resp = get(target)
-    assert isinstance(resp, ReqResult)
+    assert isinstance(resp, htmlResponse)
     _xpath = (
         '//h1/text()',
         '//*[@id="content"]/text()',

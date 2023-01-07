@@ -17,12 +17,11 @@ requests 简化调用
 from functools import partial
 
 import requests
-from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from tenacity import retry as Tretry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random
 from xt_Head import Headers
-from xt_Response import ReqResult
+from xt_Response import htmlResponse
 from xt_Tools import try_except_wraps
 
 TIMEOUT = 20  # (30, 9, 9)
@@ -36,7 +35,7 @@ TRETRY = Tretry(
 
 
 def _setKw(kwargs):
-    kwargs.setdefault('headers', Headers().useragents())
+    kwargs.setdefault('headers', Headers().randomheaders)
     kwargs.setdefault('cookies', {})
     kwargs.setdefault('timeout', TIMEOUT)  # @超时
     return kwargs
@@ -66,7 +65,7 @@ def _request_parse(method, url, *args, **kwargs):
             # print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Err:{err!r}')
         else:
             # #返回正确结果
-            new_res = ReqResult(response)
+            new_res = htmlResponse(response)
             if callback: new_res = callback(new_res)
             return new_res
     # #错误返回None
@@ -88,7 +87,7 @@ def _request_wraps(method, url, *args, **kwargs):
     # #错误返回None
     if response is None: return None
     # #返回正确结果
-    new_res = ReqResult(response)
+    new_res = htmlResponse(response)
     if callback: new_res = callback(new_res)
     return new_res
 
@@ -112,7 +111,7 @@ def _request_tretry(method, url, *args, **kwargs):
         return None
     else:
         # #返回正确结果
-        new_res = ReqResult(response)
+        new_res = htmlResponse(response)
         if callback: new_res = callback(new_res)
         return new_res
 
@@ -148,7 +147,7 @@ class SessionClient:
         else:
             # #返回正确结果
             self.update_cookies(self.response.cookies)
-            new_res = ReqResult(self.response)
+            new_res = htmlResponse(self.response)
             if self.callback: new_res = self.callback(new_res)
             return new_res
 
@@ -184,7 +183,12 @@ class SessionClient:
 
 
 if __name__ == '__main__':
-    urls = ['http://www.baidu.com', 'http://www.163.com', 'http://dangdang.com', 'https://www.biqukan8.cc/38_38163/']
+    urls = [
+        'http://www.baidu.com',
+        'http://www.163.com',
+        'http://dangdang.com',
+        "https://httpbin.org/get",
+    ]
     for url in urls:
         ...
         res = get_wraps(url)

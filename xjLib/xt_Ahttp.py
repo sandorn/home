@@ -11,14 +11,16 @@ LastEditTime : 2022-12-10 21:23:42
 FilePath     : /xjLib/xt_Ahttp.py
 Github       : https://github.com/sandorn/home
 ==============================================================
+https://github.com/web-trump/ahttp/blob/master/ahttp.py
 '''
 import asyncio
+import threading  # #
 from functools import partial
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_Head import Headers
 from xt_Requests import TRETRY
-from xt_Response import ReqResult
+from xt_Response import htmlResponse
 
 TIMEOUT = 20  # (30, 9, 9, 9)
 
@@ -59,7 +61,7 @@ class SessionMeta:
         ...
 
     def __getattr__(self, name):
-        if name in ['get', 'post', 'head', 'optins', 'put', 'delete', 'trace', 'connect', 'patch']:
+        if name in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
             new_AsyncTask = AsyncTask()
             return new_AsyncTask.__getattr__(name)  # @ 设置方法
 
@@ -69,42 +71,34 @@ class AsyncTask:
     def __init__(self, *args, **kwargs):
         self.id = id(self)
         self.index = id(self)
-        self.pool = 1
+        self.pool = 60  # @连接池
 
     def __iter__(self):
         yield from self.__dict__.iteritems()
 
     def __getattr__(self, name):
-        if name in ['get', 'post', 'head', 'optins', 'put', 'delete', 'trace', 'connect', 'patch']:
+        if name in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
             self.method = name  # @ 设置方法
             return self._make_params  # @ 设置参数
 
     def __repr__(self):
-        return f"<AsyncTask id:[{id(self.session)}] | Method:[{self.method}] | Url:[{self.url}]>"
+        return f"<AsyncTask | ID:[{id(self.session)}] | METHOD:[{self.method}] | URL:[{self.url}]>"
 
     def _make_params(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
 
-        kwargs.setdefault('headers', Headers().random())
+        kwargs.setdefault('headers', Headers().randomheaders)
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
-        kwargs.setdefault('verify_ssl', False)
         self.cookies = kwargs.pop("cookies", {})
         self.callback = kwargs.pop("callback", None)
         self.kwargs = kwargs
         return self
 
-    def start(self):
-        future = asyncio.ensure_future(asynctask_run(self))
-
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(future)
-        # return future.result()
-        return self.result
-
 
 async def asynctask_run(self):
-    # 单个任务,从  AsyncTask.start  调用
+    '''单个任务,从 AsyncTask 调用'''
+
     @TRETRY
     async def _fetch_run():
         async with TCPConnector(ssl=False, limit=self.pool) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as session, session.request(self.method, self.url, *self.args, raise_for_status=True, **self.kwargs) as self.response:
@@ -112,18 +106,20 @@ async def asynctask_run(self):
             return self.response, self.content, self.index
 
     try:
+        # print('asynctask_run', threading.current_thread(), ' | ', self)
         await _fetch_run()
     except Exception as err:
         print(f'Async_run:{self} | RetryErr:{err!r}')
         return None
     else:
         # #返回结果,不管是否正确
-        self.result = ReqResult(self.response, self.content, index=self.index)
+        self.result = htmlResponse(self.response, self.content, index=self.index)
         if self.callback: self.result = self.callback(self.result)
         return self.result
 
 
-async def Async_Fetch(task, result_list, session):
+async def _async_fetch(task, session):
+    '''多个任务,从 ahttpGetAll 初始调用'''
 
     @TRETRY
     async def _fetch_run():
@@ -132,55 +128,65 @@ async def Async_Fetch(task, result_list, session):
             return task.response, task.content, task.index
 
     try:
+        # print('_async_fetch', threading.current_thread(), ' | ', task)
         await _fetch_run()
     except Exception as err:
         print(f'Async_Fetch:{task} | RetryErr:{err!r}')
         task.response = task.content = task.result = None
-        result_list.append(None)
         return None
     else:
         # #返回正确结果
-        new_res = ReqResult(task.response, task.content, task.index)
+        new_res = htmlResponse(task.response, task.content, task.index)
         if task.callback:
             new_res = task.callback(new_res)  # 有回调则调用
         task.result = new_res
-        result_list.append(new_res)
         return new_res
 
 
-async def multi_req(tasks, pool, result_list):
-    '''多个task使用同一sessionn model == 0'''
+async def gather_async_fetch(tasks, pool):
+    '''异步单线程,调用 _async_fetch'''
     async with TCPConnector(ssl=False, limit=pool) as Tconn, ClientSession(connector=Tconn) as session:
         new_tasks = []
         for index, task in enumerate(tasks):
             task.index = index + 1
-            new_tasks.append(asyncio.ensure_future(Async_Fetch(task, result_list, session)))
-
+            task.pool = pool
+            new_tasks.append(_async_fetch(task, session))
         # #等待纤程结束
-        await asyncio.wait(new_tasks)
-
-    return result_list
+        return await asyncio.gather(*new_tasks)
 
 
-def util_tasks(tasks, pool):
-    assert isinstance(tasks, (list, tuple)), "tasks must be list or tuple"
-    result_list = []  # #存放返回结果集合
-    future = asyncio.ensure_future(multi_req(tasks, pool, result_list))
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(future)
-    # 返回结果集合
-    return result_list
+async def threads_asynctask_run(tasks, pool):
+    '''异步多线程,调用 asynctask_run'''
+    advocate_loop = asyncio.new_event_loop()
+    threading.Thread(target=advocate_loop.run_forever, daemon=True).start()
+
+    new_tasks = []
+    for index, task in enumerate(tasks):
+        task.index = index + 1
+        task.pool = pool
+        new_tasks.append(asyncio.run_coroutine_threadsafe(asynctask_run(task), advocate_loop))
+
+    return [task.result() for task in new_tasks]
 
 
 def ahttp_parse(method, url, *args, **kwargs):
     task = eval(method)(url, *args, **kwargs)
-    return task.start()
+    ## 原有方式
+    # loop = asyncio.get_event_loop()
+    # return loop.run_until_complete(asynctask_run(task))
+    # # 3.7+方式
+    return asyncio.run(asynctask_run(task))
 
 
-def ahttp_parse_list(method, urls, pool=200, *args, **kwargs):
+def ahttp_parse_list(method, urls, pool=60, threadsafe=True, *args, **kwargs):
     tasks = [eval(method)(url, *args, **kwargs) for url in urls]
     if len(tasks) < pool: pool = len(tasks)
-    return util_tasks(tasks, pool)
+    # #原有方式,单线程,不用明示返回值
+    # advocate_loop = asyncio.get_event_loop()
+    # return advocate_loop.run_until_complete(multi_req(tasks, pool))
+    # # 3.7+ 方式 , threadsafe:单线程或者多线程
+    _coroutine = threads_asynctask_run(tasks, pool) if threadsafe else gather_async_fetch(tasks, pool)
+    return asyncio.run(_coroutine)
 
 
 ahttpGet = partial(ahttp_parse, "get")
@@ -193,20 +199,18 @@ if __name__ == "__main__":
     url_get = "https://httpbin.org/get"
     url_post = "https://httpbin.org/post"
     url_headers = "https://httpbin.org/headers"
-
     res = ahttpGet(url_get)
     print(res)
-    # res = ahttpPost(url_post)
+    # res = ahttpPost(url_post, data=b'data')
     # print(res)
-    # res = ahttpGetAll([url_headers, url_get])
-    # print(res)
+    res = ahttpGetAll([url_headers, url_get] * 2)
+    print(res)
     #######################################################################################################
-    print(head(url_headers).start().headers)
-    # print(put('http://httpbin.org/put', data=b'data').run())
-    # print(delete('http://httpbin.org/delete').run())
-    # print(options('http://httpbin.org/get').run())  # 'NoneType' object is not callable??
-    # print(trace('http://httpbin.org').run())  #有命令，服务器未响应
-    #ypeError: Expected object of type bytes or bytearray, got: <class 'aiohttp.streams.EmptyStreamReader'>
-    # print(connect('http://httpbin.org/connect').run())  #有命令，服务器未响应
-    #ypeError: Expected object of type bytes or bytearray, got: <class 'aiohttp.streams.EmptyStreamReader'>
-    # print(patch('http://httpbin.org/patch', data=b'data').run())
+    # print(head(url_headers).start().headers)
+    # print(put('http://httpbin.org/put', data=b'data').start())
+    # print(delete('http://httpbin.org/delete').start())
+    # print(options('http://httpbin.org/get').start().headers)
+    # #'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    # print(trace('http://www.baidu.com').start().headers)
+    # print(connect('http://www.baidu.com').start())
+    # print(patch('http://httpbin.org/patch', data=b'data').start())

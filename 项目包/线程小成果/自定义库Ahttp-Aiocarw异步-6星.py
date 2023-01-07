@@ -19,7 +19,7 @@ from xt_Ahttp import ahttpGetAll, asynctask_run, get
 from xt_Asyncio import AioCrawl
 from xt_File import savefile
 from xt_Ls_Bqg import clean_Content, get_biqugse_download_url, 结果处理
-from xt_Response import ReqResult
+from xt_Response import htmlResponse
 from xt_Time import fn_timer
 
 
@@ -72,7 +72,7 @@ def Aio_run_Task(bookname, urls):
 
 
 def handle_back_ait(resp):
-    if not isinstance(resp, ReqResult) and resp is not None:
+    if not isinstance(resp, htmlResponse) and resp is not None:
         return [resp.text]
 
     index = resp.index
@@ -104,15 +104,16 @@ def Aio_run_Task_Back(bookname, urls):
 
 if __name__ == "__main__":
 
-    bookname, urls, titles = get_biqugse_download_url('http://www.biqugse.com/96703/')
+    bookname, urls, titles = get_biqugse_download_url('http://www.biqugse.com/69761/')
     # Aio_ahttp(bookname, urls)
     # Aio_feach_run(bookname, urls)
     # ahttp_run(bookname, urls)
-    # Aio_run_Task(bookname, urls)
-    # Aio_run_Task_Back(bookname, urls)
+    Aio_run_Task(bookname, urls)
+    Aio_run_Task_Back(bookname, urls)
 '''
-Aio_run_Task(bookname, urls)                4.12s
-Aio_ahttp(bookname, urls)                   4.36s
-ahttp_run(bookname, urls)                   4.70s
-Aio_run_Task_Back(bookname, urls)           4.86s
+Aio_ahttp(bookname, urls)           68.30 seconds
+Aio_feach_run(bookname, urls)       75.70 seconds
+ahttp_run(bookname, urls)           75.25 seconds
+Aio_run_Task(bookname, urls)        71.92 seconds
+Aio_run_Task_Back(bookname, urls)   77.05 seconds
 '''

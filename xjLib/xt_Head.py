@@ -287,7 +287,11 @@ MYHEAD = {
 
 class Headers:
 
-    def random(self):
+    @property
+    def randomheaders(self):
+        return self.random_fake()
+
+    def random_fake(self):
         MYHEAD['User-Agent'] = UserAgent().random  # 随机生成一个User-Agent
         return MYHEAD
 

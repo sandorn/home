@@ -14,15 +14,13 @@ LastEditTime : 2021-03-15 16:03:11
 '''
 
 import asyncio  # @协程，异步操作
-import time
 import os
 
 import aiohttp
-
-from xt_String import Ex_Re_Sub
 from xt_File import savefile
-from xt_Ls_Bqg import arrangeContent
-from xt_Response import ReqResult
+from xt_Ls_Bqg import clean_Content
+from xt_Response import htmlResponse
+from xt_String import Str_Replace
 
 
 # TIMESOUT = 20  # (20, 9, 9, 9)
@@ -30,7 +28,7 @@ async def fetch(url):
     async with aiohttp.ClientSession() as sess:
         async with sess.get(url) as response:
             content = await response.read()
-    return ReqResult(response, content)
+    return htmlResponse(response, content)
 
 
 async def get_download_url(url):
@@ -57,20 +55,20 @@ async def get_contents(*args):
     _title = "".join(html.xpath('//h1/text()'))
     title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     _showtext = html.xpath('//*[@id="content"]/text()')
-    content = arrangeContent(_showtext)
+    content = clean_Content(_showtext)
 
     texts.append([index, title, content])
 
 
 async def callback(future):
     index, _name, _showtext = await future.result()  # 回调函数取得返回值
-    name = Ex_Re_Sub(_name, {
+    name = Str_Replace(_name, {
         '\'': '',
         ' ': ' ',
         '\xa0': ' ',
     })
 
-    text = arrangeContent(_showtext)
+    text = clean_Content(_showtext)
     texts.append([index, name, text])
 
 

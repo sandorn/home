@@ -7,30 +7,17 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-01 18:47:23
+LastEditTime : 2023-01-07 15:04:21
 FilePath     : /项目包/线程小成果/进程+多线程爬虫.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
-==============================================================
-Description  :
-Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-30 11:00:25
-FilePath     : /py学习/线程协程/使用Python爬取小说(多进程版).py
-Github       : https://github.com/sandorn/home
-==============================================================
-'''
+
 from multiprocessing import Process
 
 from xt_File import savefile
 from xt_Ls_Bqg import Str_Replace, clean_Content
-from xt_Requests import MYHEAD, ReqResult, get
+from xt_Requests import Headers, get, htmlResponse
 from xt_Thread import CustomThread
 
 
@@ -54,8 +41,8 @@ class ScrapyOne():
 
     # 爬取章节链接
     def scrapyLink(self):
-        resp = get(self.rootLink, headers=MYHEAD)
-        assert isinstance(resp, ReqResult)
+        resp = get(self.rootLink, headers=Headers().randomheaders)
+        assert isinstance(resp, htmlResponse)
         _xpath = [
             '//meta[@property="og:title"]//@content',
             '//dt[2]/following-sibling::dd/a/@href',
@@ -71,7 +58,7 @@ class ScrapyOne():
     # 爬取内容
     def scrapyText(self, index, url):
         resp = get(url)
-        assert isinstance(resp, ReqResult)
+        assert isinstance(resp, htmlResponse)
         _xpath = (
             '//h1/text()',
             '//*[@id="content"]/text()',

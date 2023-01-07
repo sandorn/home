@@ -2,16 +2,15 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Descripttion : None
+Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2020-08-14 10:54:00
-FilePath     : /xjLib/test/笔趣阁-grequests.py
-LastEditTime : 2020-08-14 12:59:23
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-07 14:59:55
+FilePath     : /py学习/test/笔趣阁-grequests.py
 Github       : https://github.com/sandorn/home
-#==============================================================
-
+==============================================================
 grequests.map()参数说明：
 def grequests.map(requests, stream=False, size=None, exception_handler=None, gtimeout=None)
 
@@ -27,13 +26,13 @@ grequests的底层是request，所以它也支持回调函数：
 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 '''
 
-import grequests
 import os
 
-from xt_Ls_Bqg import get_download_url, arrangeContent
+import grequests
 from xt_File import savefile
+from xt_Ls_Bqg import clean_Content, get_download_url
+from xt_Response import htmlResponse
 from xt_Time import fn_timer
-from xt_Response import ReqResult
 
 texts = []
 
@@ -47,11 +46,11 @@ def main(url):
         print(11111, rets[index])
         if rets[index] is None:
             continue
-        response = ReqResult(rets[index], None, index).element
+        response = htmlResponse(rets[index], None, index).element
         _title = "".join(response.xpath('//h1/text()'))
         title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
         _showtext = response.xpath('//*[@id="content"]/text()')
-        content = arrangeContent(_showtext)
+        content = clean_Content(_showtext)
         texts.append([index, title, content])
 
     texts.sort(key=lambda x: x[0])  # #排序

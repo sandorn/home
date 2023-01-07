@@ -15,7 +15,7 @@ LastEditTime : 2021-04-14 19:36:16
 
 from xt_Ahttp import ahttpGet
 from xt_Requests import get
-from xt_Response import ReqResult
+from xt_Response import htmlResponse
 from xt_String import Re_Sub, Str_Clean, Str_Replace, UNprintable_Chars
 
 
@@ -99,7 +99,7 @@ def 结果处理(resps):
 
 def get_download_url(target):
     resp = get(target)
-    assert isinstance(resp, ReqResult)
+    assert isinstance(resp, htmlResponse)
     # #pyquery
     # pr = resp.pyquery('.listmain dl dd:gt(11)').children() # 从第二个dt开始，获取后面所有的兄弟节点
     # pr = res.pyquery('dt').eq(1).nextAll()  # 从第二个dt开始，获取后面所有的兄弟节点
@@ -122,7 +122,7 @@ def get_download_url(target):
 
 def get_biqugse_download_url(target):
     resp = get(target)
-    assert isinstance(resp, ReqResult)
+    assert isinstance(resp, htmlResponse)
     _xpath = (
         '//meta[@property="og:title"]//@content',
         '//dt[2]/following-sibling::dd/a/@href',
@@ -139,7 +139,7 @@ def get_biqugse_download_url(target):
 
 def get_contents(index, target):
     resp = get(target)
-    assert isinstance(resp, ReqResult)
+    assert isinstance(resp, htmlResponse)
 
     # #pyquery
     # _title = resp.pyquery('h1').text()
@@ -159,7 +159,7 @@ def get_contents(index, target):
 def ahttp_get_contents(args):
     index, target = args
     resp = ahttpGet(target)
-    assert isinstance(resp, ReqResult)
+    assert isinstance(resp, htmlResponse)
     _xpath = (
         '//h1/text()',
         '//*[@id="content"]/text()',

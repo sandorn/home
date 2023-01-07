@@ -34,11 +34,11 @@ def Aio_ahttp(bookname, urls):
 def multpool():
     url_list = [
         'http://www.biqugse.com/96703/',
-        'http://www.biqugse.com/96704/',
-        'http://www.biqugse.com/96705/',
-        'http://www.biqugse.com/96706/',
-        'http://www.biqugse.com/96707/',
-        'http://www.biqugse.com/96708/',
+        'http://www.biqugse.com/96717/',
+        'http://www.biqugse.com/76169/',
+        'http://www.biqugse.com/82744/',
+        'http://www.biqugse.com/96095/',
+        'http://www.biqugse.com/92385/',
     ]
 
     mypool = ProcessPool()

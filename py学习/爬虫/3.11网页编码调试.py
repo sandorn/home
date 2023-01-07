@@ -6,17 +6,18 @@ Description  :
 Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
-Date         : 2021-04-14 16:26:25
-LastEditTime : 2022-12-21 11:22:37
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-07 15:02:34
 FilePath     : /py学习/爬虫/3.11网页编码调试.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import requests
 from chardet import detect
 from xt_Ahttp import ahttpGet
 from xt_Head import MYHEAD
-from xt_Response import ReqResult
+from xt_Response import htmlResponse
 
 kwargs = {}
 kwargs.setdefault('headers', MYHEAD)
@@ -25,7 +26,7 @@ kwargs.setdefault('timeout', 20)
 
 url = 'https://www.biqukan8.cc/38_38163/'
 res = ahttpGet(url, **kwargs)
-# res = ReqResult(res)
+# res = htmlResponse(res)
 
 # print(1111111111111, cont)
 print(2222222222222, res.content)
