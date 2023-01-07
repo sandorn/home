@@ -96,6 +96,7 @@ class AsyncTask:
 
     def start(self):
         future = asyncio.ensure_future(asynctask_run(self))
+
         loop = asyncio.get_event_loop()
         loop.run_until_complete(future)
         # return future.result()
