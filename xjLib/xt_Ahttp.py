@@ -100,13 +100,13 @@ async def _async_fetch(self):
 
     @TRETRY
     async def _fetch_run():
-        async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as session, session.request(self.method, self.url, raise_for_status=True, *self.args, **self.kwargs) as self.response:
+        async with TCPConnector(ssl=False, limit=100) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as self.session, self.session.request(self.method, self.url, raise_for_status=True, *self.args, **self.kwargs) as self.response:
             self.content = await self.response.read()
             return self.response, self.content, self.index
 
     try:
         # import threading
-        # print(f'Count:{threading.active_count()} | {threading.current_thread()}')
+        # print(f'Count:{threading.active_count()} | {threading.current_thread()}|{id(self.session)}')
         await _fetch_run()
     except Exception as err:
         print(f'Async_fetch:{self} | RetryErr:{err!r}')
