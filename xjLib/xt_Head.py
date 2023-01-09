@@ -289,14 +289,22 @@ class Headers:
 
     @property
     def randomheaders(self):
-        return self.random_fake()
+        return self.__random_fake()
 
-    def random_fake(self):
+    def __random_fake(self):
         MYHEAD['User-Agent'] = UserAgent().random  # 随机生成一个User-Agent
         return MYHEAD
 
-    def useragents(self):
-        MYHEAD['User-Agent'] = random.choice(USER_AGENTS)  # 随机生成一个User-Agent
+    @property
+    def ua(self):
+        return UserAgent().random
+
+    @property
+    def uac(self):
+        return random.choice(USER_AGENTS)  # 随机生成一个User-Agent
+
+    def myhead(self):
+        MYHEAD['User-Agent'] = self.__uac
         return MYHEAD
 
 

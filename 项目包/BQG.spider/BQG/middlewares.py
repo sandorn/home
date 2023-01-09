@@ -5,8 +5,8 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-from xt_Head import get_user_agent
 from scrapy import signals
+from xt_Head import Headers
 
 
 class RandomUserAgentMiddlware(object):
@@ -14,14 +14,14 @@ class RandomUserAgentMiddlware(object):
 
     def __init__(self, crawler):
         super(RandomUserAgentMiddlware, self).__init__()
-        self.ua = get_user_agent()
+        self.ua = Headers().ua
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(crawler)
 
     def process_request(self, request, spider):
-        request.headers.setdefault('User-Agent', get_user_agent())
+        request.headers.setdefault('User-Agent', Headers().ua)
 
 
 class BqgSpiderMiddleware(object):
