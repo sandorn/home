@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-01-03 11:58:17
+LastEditTime : 2023-01-08 23:02:58
 FilePath     : /项目包/线程小成果/自定义库CustomThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -24,7 +24,6 @@ from xt_Time import fn_timer
 @fn_timer
 def main_thread(target):
     bookname, urls, _ = get_biqugse_download_url(target)
-    print(f'CustomThread,开始下载:《{bookname}》', flush=True)
     _ = [CustomThread(get_contents, index, urls[index]) for index in range(len(urls))]
     text_list = CustomThread.getAllResult()
     text_list.sort(key=lambda x: x[0])  # #排序

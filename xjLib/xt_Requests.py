@@ -94,18 +94,17 @@ def _request_wraps(method, url, *args, **kwargs):
 
 def _request_tretry(method, url, *args, **kwargs):
     '''利用TRETRY三方库实现重试'''
-    response = None
     kwargs = _setKw(kwargs)
     callback = kwargs.pop("callback", None)
 
     @TRETRY
     def _fetch_run():
-        nonlocal response
         response = requests.request(method, url, *args, **kwargs)
         response.raise_for_status()
+        return response
 
     try:
-        _fetch_run()
+        response = _fetch_run()
     except Exception as err:
         # print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
         return None

@@ -7,8 +7,8 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-07 14:59:55
-FilePath     : /py学习/test/笔趣阁-grequests.py
+LastEditTime : 2023-01-09 00:22:55
+FilePath     : /py学习/线程协程/笔趣阁-grequests.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 grequests.map()参数说明：
@@ -39,7 +39,7 @@ texts = []
 
 @fn_timer
 def main(url):
-    bookname, urls = get_download_url(url)
+    bookname, urls, _ = get_download_url(url)
     print(bookname)
     rets = grequests.map([grequests.get(_url) for _url in urls])
     for index in range(len(rets)):

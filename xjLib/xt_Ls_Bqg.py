@@ -94,6 +94,7 @@ def 结果处理(resps):
         content = clean_Content(_showtext)
         _texts.append([resp.index, title, content])
 
+    _texts.sort(key=lambda x: x[0])
     return _texts
 
 
@@ -121,6 +122,7 @@ def get_download_url(target):
 
 
 def get_biqugse_download_url(target):
+
     resp = get(target)
     assert isinstance(resp, htmlResponse)
     _xpath = (

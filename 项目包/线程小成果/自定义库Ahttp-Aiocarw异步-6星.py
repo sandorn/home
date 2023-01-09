@@ -15,60 +15,23 @@
 
 import os
 
-from xt_Ahttp import ahttpGetAll, asynctask_run, get
+from xt_Ahttp import ahttpGetAll
 from xt_Asyncio import AioCrawl
 from xt_File import savefile
-from xt_Ls_Bqg import clean_Content, get_biqugse_download_url, 结果处理
+from xt_Ls_Bqg import (clean_Content, get_biqugse_download_url, get_contents, 结果处理)
 from xt_Response import htmlResponse
 from xt_Time import fn_timer
 
 
 @fn_timer
-def Aio_ahttp(bookname, urls):
-    myaio = AioCrawl()
-    myaio.add_ahttp_tasks(urls)
-    resps = myaio.getAllResult()[0]
-    texts = 结果处理(resps)
-    texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split(".")[0]
-    savefile(f'{files}&{bookname}Aio_ahttp.txt', texts, br='\n')
-
-
-@fn_timer
 def Aio_feach_run(bookname, urls):
     myaio = AioCrawl()
-    myaio.add_fetch_tasks(urls, callback=handle_back_ait)
-    texts = myaio.getAllResult()
+    myaio.add_tasks(urls)
+    resps = myaio.wait_completed()
+    texts = 结果处理(resps)
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
     savefile(f'{files}&{bookname}Aio_feach_run.txt', texts, br='\n')
-
-
-@fn_timer
-def ahttp_run(bookname, urls):
-    texts = ahttpGetAll(urls, callback=handle_back_ait)
-    # #callback=handle_resp处理以后的结果
-    texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split(".")[0]
-    savefile(f'{files}&{bookname}ahttp_run.txt', texts, br='\n')
-
-
-@fn_timer
-def Aio_run_Task(bookname, urls):
-    asynctasks = []
-    for index, url in enumerate(urls, 1):
-        task = get(url)
-        task.index = index
-        asynctasks.append(task)
-    tasks = [asynctask_run(task) for task in asynctasks]
-
-    myaio = AioCrawl()
-    myaio.add_tasks(tasks)
-    resps = myaio.getAllResult()
-    texts = 结果处理(resps)
-    texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split(".")[0]
-    savefile(f'{files}&{bookname}Aio_run_Task.txt', texts, br='\n')
 
 
 def handle_back_ait(resp):
@@ -86,34 +49,33 @@ def handle_back_ait(resp):
 
 
 @fn_timer
-def Aio_run_Task_Back(bookname, urls):
-    asynctasks = []
-    for index, url in enumerate(urls, 1):
-        task = get(url, callback=handle_back_ait)
-        task.index = index
-        asynctasks.append(task)
-    tasks = [asynctask_run(task) for task in asynctasks]
-
+def Aio_feach_run_back(bookname, urls):
     myaio = AioCrawl()
-    myaio.add_tasks(tasks)
-    texts = myaio.getAllResult()  # #callback=handle_resp处理以后的结果
+    myaio.add_tasks(urls, callback=handle_back_ait)
+    texts = myaio.wait_completed()
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(f'{files}&{bookname}Aio_run_Task_Back.txt', texts, br='\n')
+    savefile(f'{files}&{bookname}Aio_feach_run_back.txt', texts, br='\n')
+
+
+@fn_timer
+def ahttp_run(bookname, urls):
+    texts = ahttpGetAll(urls, callback=handle_back_ait)
+    # #callback=handle_resp处理以后的结果
+    texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(f'{files}&{bookname}ahttp_run.txt', texts, br='\n')
 
 
 if __name__ == "__main__":
 
-    bookname, urls, titles = get_biqugse_download_url('http://www.biqugse.com/69761/')
-    # Aio_ahttp(bookname, urls)
-    # Aio_feach_run(bookname, urls)
-    # ahttp_run(bookname, urls)
-    Aio_run_Task(bookname, urls)
-    Aio_run_Task_Back(bookname, urls)
+    bookname, urls, _ = get_biqugse_download_url("http://www.biqugse.com/96703/")
+    # 'http://www.biqugse.com/69761/'
+    Aio_feach_run(bookname, urls)
+    Aio_feach_run_back(bookname, urls)
+    ahttp_run(bookname, urls)
 '''
 Aio_ahttp(bookname, urls)           68.30 seconds
 Aio_feach_run(bookname, urls)       75.70 seconds
 ahttp_run(bookname, urls)           75.25 seconds
-Aio_run_Task(bookname, urls)        71.92 seconds
-Aio_run_Task_Back(bookname, urls)   77.05 seconds
 '''

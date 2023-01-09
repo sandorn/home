@@ -15,7 +15,7 @@ aiohttp笔记 - happy_codes - 博客园
 https://www.cnblogs.com/haoabcd2010/p/10615364.html
 '''
 import asyncio
-from asyncio.coroutines import iscoroutine
+from asyncio.coroutines import iscoroutine, iscoroutinefunction
 from functools import wraps
 from threading import Thread
 
@@ -41,17 +41,29 @@ def future_wrapper(func):
     return __future
 
 
-def asyncio_wrapper(func):
-    '''异步装饰器,可装饰async函数和普通函数,,但是不能装饰协程'''
+def async_wrapper(func):
+    '''异步装饰器,装饰普通函数,返回coroutine'''
+
+    @wraps(func)
+    async def _wrapper(*args, **kwargs):
+        await asyncio.sleep(0.01)
+        return func(*args, **kwargs)
+
+    return func if iscoroutinefunction(func) else _wrapper
+
+
+def fun_runin_async(func):
+    '''异步装饰器,装饰函数和async函数,直接运行,返回结果'''
 
     @wraps(func)
     def _wrapper(*args, **kwargs):
 
+        @wraps(func)
         async def __wrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-            if iscoroutine(result):
-                result = await asyncio.create_task(func(*args, **kwargs))
-            return result
+            if iscoroutinefunction(func):
+                return await asyncio.create_task(func(*args, **kwargs))
+            else:
+                return await asyncio.create_task(async_wrapper(func)(*args, **kwargs))
 
         return asyncio.run(__wrapper(*args, **kwargs))
 
@@ -61,39 +73,31 @@ def asyncio_wrapper(func):
 class AioCrawl:
 
     def __init__(self):
-        # 启动事件循环
-        self.event_loop = asyncio.new_event_loop()
-        self.thr = Thread(
-            target=self.start_loop,
-            daemon=True,
-        )
-        self.thr.start()
-
         self.future_list = []
         self.result_list = []
         self.concurrent = 0  # 记录并发数
 
-    def __del__(self):
-        self.close_loop()
+    #     self.event_loop = asyncio.new_event_loop()
+    #     Thread(target=self.star_loop, name='AioCrawl.__init__', daemon=True).start()
 
-    def start_loop(self):
-        asyncio.set_event_loop(self.event_loop)
-        self.event_loop.run_forever()
+    # def star_loop(self):
+    #     self.event_loop.run_forever()
 
-    def close_loop(self):
-        self.event_loop.stop()
-        self.event_loop.close()
+    # def close_loop(self):
+    #     self.event_loop.stop()
+    #     self.event_loop.close()
 
-    def close(self):
-        self.close_loop()
+    # def close(self):
+    #     self.close_loop()
 
-    def stop(self):
-        self.close_loop()
+    # def __del__(self):
+    #     self.close_loop()
 
-    async def _fetch(self, url, method='GET', *args, **kwargs):
+    async def _task_run(self, url, method='GET', index=None, *args, **kwargs):
+        '''运行任务'''
 
         @TRETRY
-        async def _fetch_run():
+        async def __fetch():
             async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=cookies, connector=Tconn) as session, session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
                 content = await response.read()
                 return response, content
@@ -103,44 +107,36 @@ class AioCrawl:
             kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
             cookies = kwargs.pop("cookies", {})
             callback = kwargs.pop("callback", None)
-            response, content = await _fetch_run()
+            # import threading
+            # print(f'Count:{threading.active_count()} | {threading.current_thread()}')
+            response, content = await __fetch()
         except Exception as err:
-            print(f'AioCrawl_fetch:{url} | RetryErr:{err!r}')
+            print(f'_task_run:{self} | RetryErr:{err!r}')
             return None
         else:
-            # #返回结果,不管是否正确
-            result = htmlResponse(response, content)
+            index = index or id(url)
+            result = htmlResponse(response, content, index)
             if callback: result = callback(result)
             return result
 
-    def add_fetch_tasks(self, url_list, *args, **kwargs):
-        """添加任务
-        :param url_list: list <class url>
-        :return: future
-        """
-        callback = kwargs.pop("future_callback", None)
-        method = kwargs.pop("method", 'GET')
+    async def _issue_tasks(self, url_list, method='GET', *args, **kwargs):
+        """分发任务"""
+        callback = kwargs.pop("fu_callback", None)
 
-        for url in url_list:
-            # asyncio.run_coroutine_threadsafe:接收协程对象、事件循环对象
+        for index, url in enumerate(url_list, 1):
             if not isinstance(url, str): continue
-            future = asyncio.run_coroutine_threadsafe(self._fetch(url, method=method, *args, **kwargs), self.event_loop)
-            self.future_list.append(future)
-            if callback: future.add_done_callback(callback)  # 给future对象添加回调函数
+            task = asyncio.create_task(self._task_run(url, method=method, index=index, *args, **kwargs))
+            if callback: task.add_done_callback(callback)
+            self.future_list.append(task)
             self.concurrent += 1  # 并发数加 1
 
-    def add_tasks(self, tasks, callback=None):
-        """添加纤程任务"""
-        if not isinstance(tasks, (list, tuple)): raise TypeError('传入非list或tuple')
-        for task in tasks:
-            print(11111111111, type(task))
-            if not iscoroutine(task): continue
-            future = asyncio.run_coroutine_threadsafe(task, self.event_loop)
-            self.future_list.append(future)
-            if callback: future.add_done_callback(callback)  # 给future对象添加回调函数
-            self.concurrent += 1  # 并发数加 1
+        return await asyncio.gather(*self.future_list)
 
-    def getAllResult(self):
+    def add_tasks(self, url_list, method='GET', *args, **kwargs):
+        _coroutine = self._issue_tasks(url_list, method=method, *args, **kwargs)
+        return asyncio.run(_coroutine)
+
+    def _get_result(self):
         for _ in range(len(self.future_list)):
             future = self.future_list.pop()
             res = future.result()
@@ -156,54 +152,38 @@ class AioCrawl:
             if 'PENDING' in tmp: continue
             else: break
 
-        return self.getAllResult()
+        return self._get_result()
 
 
 if __name__ == '__main__':
-    #########################################################################
-    # a = AioCrawl()
-    # for _ in range(3):
-    #     a.add_fetch_tasks(["https://httpbin.org/get"])  # 模拟动态添加任务
-    # print(222222222222222, a.getAllResult())
-    #########################################################################
-    # from xt_Ahttp import asynctask_run, get  # $配合ahttp使用
+    ...
+    #$add_tasks#######################################################################
+    a = AioCrawl()
+    a.add_tasks(["https://httpbin.org/get"] * 3)
+    print(a.wait_completed())
+    a.add_tasks(["https://httpbin.org/post"] * 3, method='post')
+    print(a.wait_completed())
+    #$装饰器#######################################################################
+    # from xt_Requests import get_wraps
 
-    # b = AioCrawl()
-    # tasks = [asynctask_run(get('https://httpbin.org/get')) for _ in range(2)]
-    # b.add_tasks(tasks)  # 模拟动态添加任务
+    # @fun_runin_async
+    # def get_html(url):
+    #     return get_wraps(url)
 
-    # res = b.getAllResult()
-    # for item in res:
-    #     print(item)
-    #########################################################################
-    # from xt_Requests import get
+    # res = get_html('https://httpbin.org/get')
+    # print(res)
 
-    # b = AioCrawl()
+    # @fun_runin_async
+    # async def get_a_html(url):
+    #     return get_wraps(url)
 
-    # async def test(url):
-    #     return get(url)
+    # res = get_a_html('https://httpbin.org/get')
+    # print(res)
 
-    # b.add_tasks([test('https://httpbin.org/get') for _ in range(2)])  # 模拟动态添加任务
+    # @fun_runin_async
+    # async def get_message():
+    #     async with ClientSession() as session, session.get('http://httpbin.org/headers') as response:
+    #         return await response.text()
 
-    # res = b.getAllResult()
-    # for item in res:
-    #     print(item)
-
-    #########################################################################
-    from xt_Requests import get
-
-    @asyncio_wrapper
-    def get_html(url):
-        return get(url)
-
-    res = get_html('https://httpbin.org/get')
-    print(res)
-
-    @asyncio_wrapper
-    async def get_message():
-        async with ClientSession() as session:
-            async with session.get('http://httpbin.org/headers') as response:
-                return await response.text()
-
-    res = get_message()
-    print(res)
+    # res = get_message()
+    # print(res)

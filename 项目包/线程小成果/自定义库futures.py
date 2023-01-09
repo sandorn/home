@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-01-03 13:59:04
+LastEditTime : 2023-01-08 01:31:12
 FilePath     : /项目包/线程小成果/自定义库futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -32,8 +32,7 @@ def ahttp_All(url):
     savefile(f'{files}&{bookname}ahttp_All.txt', text_list, br='\n')
 
 
-def thrPool_ahttp(urls):
-    # # 无效
+def thrPool_ahttp(urls):  # # 无效
     mypool = ThreadPool()
     mypool.add_map(ahttp_All, urls)
     mypool.wait_completed()
@@ -73,19 +72,18 @@ def thrPool_thrsub(urls):
 
 
 if __name__ == '__main__':
-    url = 'http://www.biqugse.com/96703/'
-    # ahttp_All(url)
-    # thr_sub(url)
-
     urls = [
         'http://www.biqugse.com/96703/',
-        'http://www.biqugse.com/96717/',
-        'http://www.biqugse.com/76169/',
-        'http://www.biqugse.com/82744/',
-        'http://www.biqugse.com/96095/',
-        'http://www.biqugse.com/92385/',
+        # 'http://www.biqugse.com/96717/',
+        # 'http://www.biqugse.com/76169/',
+        # 'http://www.biqugse.com/82744/',
+        # 'http://www.biqugse.com/96095/',
+        # 'http://www.biqugse.com/92385/',
     ]
-    # thrPool_ahttp(urls)  # 无效
-    multpool_ahttp(urls)  # 68sec
+
+    ahttp_All(urls[0])
+    # thr_sub(urls[0])
+    # thrPool_ahttp(urls)   # # 无效
+    # multpool_ahttp(urls)  # 68sec
     # thrPool_thrsub(urls)  # 148sec
-    # multpool_thrsub(urls)  # 110sec
+    # multpool_thrsub(urls) # 110sec

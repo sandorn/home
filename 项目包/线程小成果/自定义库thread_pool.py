@@ -13,27 +13,42 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
+import os
+
+from xt_File import savefile
+from xt_Ls_Bqg import clean_Content, get_biqugse_download_url
 from xt_Requests import get as get
-from xt_Thread import thread_pool, thread_print
+from xt_Response import htmlResponse
+from xt_String import Str_Replace
+from xt_Thread import thread_pool
+from xt_Time import fn_timer
 
 pool = thread_pool(200)
 
 
 @pool
 def get_contents(index, target):
-    response = get(target)
-    thread_print(f"正在获取第{index}页")
-    return index, response
+    resp = get(target)
 
+    assert isinstance(resp, htmlResponse)
+    _title = resp.pyquery('h1').text()
+    _showtext = resp.pyquery('#content').text()
 
-def main():
-    for index in range(100):
-        get_contents(index, "https://httpbin.org/get")
+    title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
+    content = clean_Content(_showtext)
+    return [index, title, content]
+
+@fn_timer
+def main(target):
+    bookname, urls, _ = get_biqugse_download_url(target)
+    for index, url in enumerate(urls):
+        get_contents(index, url)
     text_list = pool.wait_completed()
-    for item in text_list:
-        print(item)
+    text_list.sort(key=lambda x: x[0])  # #排序
+    files = os.path.split(__file__)[-1].split(".")[0]
+    savefile(f'{files}&{bookname}&thread_pool.txt', text_list, br='\n')
 
 
 if __name__ == "__main__":
 
-    main()
+    main('http://www.biqugse.com/96703/')

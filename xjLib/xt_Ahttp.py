@@ -14,8 +14,8 @@ Github       : https://github.com/sandorn/home
 https://github.com/web-trump/ahttp/blob/master/ahttp.py
 '''
 import asyncio
-import threading  # #
 from functools import partial
+from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_Head import Headers
@@ -46,8 +46,8 @@ def _unil_session_method(method, *args, **kwargs):
 # #使用偏函数 Partial,快速构建多个函数
 get = partial(_unil_session_method, "get")
 post = partial(_unil_session_method, "post")
-head = partial(_unil_session_method, "head")  # 结果正常，无法使用ReqResult
-options = partial(_unil_session_method, "options")  # 'NoneType' object is not callable??
+head = partial(_unil_session_method, "head")  # 结果正常，无ReqResult
+options = partial(_unil_session_method, "options")
 put = partial(_unil_session_method, "put")
 delete = partial(_unil_session_method, "delete")
 trace = partial(_unil_session_method, "trace")  # 有命令，服务器未响应
@@ -69,12 +69,7 @@ class SessionMeta:
 class AsyncTask:
 
     def __init__(self, *args, **kwargs):
-        self.id = id(self)
         self.index = id(self)
-        self.pool = 60  # @连接池
-
-    def __iter__(self):
-        yield from self.__dict__.iteritems()
 
     def __getattr__(self, name):
         if name in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
@@ -82,7 +77,7 @@ class AsyncTask:
             return self._make_params  # @ 设置参数
 
     def __repr__(self):
-        return f"<AsyncTask | ID:[{id(self.session)}] | METHOD:[{self.method}] | URL:[{self.url}]>"
+        return f"<AsyncTask | Method:[{self.method}] | Index:[{self.index}] | Session:{id(self.session)}] | Url:[{self.url}]>"
 
     def _make_params(self, *args, **kwargs):
         self.url = args[0]
@@ -95,21 +90,27 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
+    async def run(self):
+        '''主线程'''
+        return await _async_fetch(self)
 
-async def asynctask_run(self):
-    '''单个任务,从 AsyncTask 调用'''
+
+async def _async_fetch(self):
+    '''单任务和多任务均调用此方法'''
 
     @TRETRY
     async def _fetch_run():
-        async with TCPConnector(ssl=False, limit=self.pool) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as session, session.request(self.method, self.url, *self.args, raise_for_status=True, **self.kwargs) as self.response:
+        async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as session, session.request(self.method, self.url, raise_for_status=True, *self.args, **self.kwargs) as self.response:
             self.content = await self.response.read()
             return self.response, self.content, self.index
 
     try:
-        # print('asynctask_run', threading.current_thread(), ' | ', self)
+        # import threading
+        # print(f'Count:{threading.active_count()} | {threading.current_thread()}')
         await _fetch_run()
     except Exception as err:
-        print(f'Async_run:{self} | RetryErr:{err!r}')
+        print(f'Async_fetch:{self} | RetryErr:{err!r}')
+        self.response = self.content = self.result = None
         return None
     else:
         # #返回结果,不管是否正确
@@ -118,92 +119,59 @@ async def asynctask_run(self):
         return self.result
 
 
-async def _async_fetch(task, session):
-    '''多个任务,从 ahttpGetAll 初始调用'''
-
-    @TRETRY
-    async def _fetch_run():
-        async with session.request(task.method, task.url, *task.args, cookies=task.cookies, raise_for_status=True, **task.kwargs) as task.response:
-            task.content = await task.response.read()
-            return task.response, task.content, task.index
-
-    try:
-        # print('_async_fetch', threading.current_thread(), ' | ', task)
-        await _fetch_run()
-    except Exception as err:
-        print(f'Async_Fetch:{task} | RetryErr:{err!r}')
-        task.response = task.content = task.result = None
-        return None
-    else:
-        # #返回正确结果
-        new_res = htmlResponse(task.response, task.content, task.index)
-        if task.callback:
-            new_res = task.callback(new_res)  # 有回调则调用
-        task.result = new_res
-        return new_res
-
-
-async def gather_async_fetch(tasks, pool):
-    '''异步单线程,调用 _async_fetch'''
-    async with TCPConnector(ssl=False, limit=pool) as Tconn, ClientSession(connector=Tconn) as session:
-        new_tasks = []
-        for index, task in enumerate(tasks):
-            task.index = index + 1
-            task.pool = pool
-            new_tasks.append(_async_fetch(task, session))
-        # #等待纤程结束
-        return await asyncio.gather(*new_tasks)
-
-
-async def threads_asynctask_run(tasks, pool):
-    '''异步多线程,调用 asynctask_run'''
-    advocate_loop = asyncio.new_event_loop()
-    threading.Thread(target=advocate_loop.run_forever, daemon=True).start()
-
+async def _gather_async_fetch(tasks):
+    '''异步单线程,使用同一个session'''
     new_tasks = []
-    for index, task in enumerate(tasks):
-        task.index = index + 1
-        task.pool = pool
-        new_tasks.append(asyncio.run_coroutine_threadsafe(asynctask_run(task), advocate_loop))
+    for index, task in enumerate(tasks, 1):
+        task.index = index
+        _coroutine = task.run()
+        new_tasks.append(_coroutine)
+    return await asyncio.gather(*new_tasks)
 
-    return [task.result() for task in new_tasks]
+
+async def _threads_async_fetch(coroes):
+    '''异步多线程,使用不同session'''
+    threadsafe_loop = asyncio.new_event_loop()
+    Thread(target=threadsafe_loop.run_forever, name='ThreadSafe', daemon=True).start()
+
+    tasks = []
+    for index, coro in enumerate(coroes, 1):
+        coro.index = index
+        _coroutine = coro.run()
+        tasks.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
+    return [task.result() for task in tasks]
 
 
-def ahttp_parse(method, url, *args, **kwargs):
+def aiohttp_parse(method, url, *args, **kwargs):
     task = eval(method)(url, *args, **kwargs)
-    ## 原有方式
-    # loop = asyncio.get_event_loop()
-    # return loop.run_until_complete(asynctask_run(task))
-    # # 3.7+方式
-    return asyncio.run(asynctask_run(task))
+    _coroutine = task.run()
+    # even_loop = asyncio.new_event_loop()
+    # return even_loop.run_until_complete(_coroutine)
+    return asyncio.run(_coroutine)  # 3.7+ 方式 , threadsafe:单线程或者多线程
 
 
-def ahttp_parse_list(method, urls, pool=60, threadsafe=True, *args, **kwargs):
-    tasks = [eval(method)(url, *args, **kwargs) for url in urls]
-    if len(tasks) < pool: pool = len(tasks)
-    # #原有方式,单线程,不用明示返回值
-    # advocate_loop = asyncio.get_event_loop()
-    # return advocate_loop.run_until_complete(multi_req(tasks, pool))
-    # # 3.7+ 方式 , threadsafe:单线程或者多线程
-    _coroutine = threads_asynctask_run(tasks, pool) if threadsafe else gather_async_fetch(tasks, pool)
-    return asyncio.run(_coroutine)
+def aiohttp_parse_urls(method, urls, *args, **kwargs):
+    coroes = [eval(method)(url, *args, **kwargs) for url in urls]
+    _coroutine = _threads_async_fetch(coroes) if kwargs.pop('threadsafe', True) else _gather_async_fetch(coroes)
+    # even_loop = asyncio.new_event_loop() # 原方式
+    # return even_loop.run_until_complete(_coroutine)
+    return asyncio.run(_coroutine)  # 3.7+方式 , threadsafe:单线程或者多线程
 
 
-ahttpGet = partial(ahttp_parse, "get")
-ahttpPost = partial(ahttp_parse, "post")
-ahttpGetAll = partial(ahttp_parse_list, "get")
-ahttpPostAll = partial(ahttp_parse_list, "post")
+ahttpGet = partial(aiohttp_parse, "get")
+ahttpPost = partial(aiohttp_parse, "post")
+ahttpGetAll = partial(aiohttp_parse_urls, "get")
+ahttpPostAll = partial(aiohttp_parse_urls, "post")
 
 if __name__ == "__main__":
 
     url_get = "https://httpbin.org/get"
     url_post = "https://httpbin.org/post"
     url_headers = "https://httpbin.org/headers"
+    # res = ahttpPost(url_post, data=b'data')
     res = ahttpGet(url_get)
     print(res)
-    # res = ahttpPost(url_post, data=b'data')
-    # print(res)
-    res = ahttpGetAll([url_headers, url_get] * 2)
+    res = ahttpGetAll([url_headers, url_get])
     print(res)
     #######################################################################################################
     # print(head(url_headers).start().headers)

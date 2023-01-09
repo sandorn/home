@@ -145,8 +145,8 @@ class htmlResponse(item_Mixin):
     def __bool__(self):
         return self.status == 200
 
-    def __eq__(self, other):
-        return self.index == other.index
+    def __len__(self):
+        return len(self.text)
 
 
 '''

@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2023-01-06 17:56:15
+LastEditTime : 2023-01-08 01:12:00
 FilePath     : /项目包/线程小成果/自定义库Futures+aiohttp异步-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -26,7 +26,6 @@ from xt_Time import fn_timer
 def Aio_ahttp(bookname, urls):
     resps = ahttpGetAll(urls)
     texts = 结果处理(resps)
-    texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
     savefile(f'{files}&{bookname}Aio_ahttp.txt', texts, br='\n')
 
@@ -52,8 +51,13 @@ def multpool():
     mypool.wait_completed()
 
 
+def Aio():
+    target = 'http://www.biqugse.com/96703/'
+    bookname, urls, _ = get_biqugse_download_url(target)
+    Aio_ahttp(bookname, urls)
+
+
 if __name__ == "__main__":
 
-    # Aio_run_Task(bookname, urls)
-
-    multpool()  # 40s
+    Aio()
+    # multpool()  # 40s

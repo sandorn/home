@@ -149,7 +149,7 @@ class Work(Thread):
 
 
 class thread_pool:
-    '''仿写vthread,  thread_pool(200)'''
+    '''仿写vthread,线程装饰器,thread_pool(200)'''
 
     def __init__(self, pool_num=10):
         self._pool_queue = Queue()  # #任务存储,组内queue
