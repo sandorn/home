@@ -100,7 +100,7 @@ async def _async_fetch(self):
 
     @TRETRY
     async def _fetch_run():
-        async with TCPConnector(ssl=False, limit=100) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as self.session, self.session.request(self.method, self.url, raise_for_status=True, *self.args, **self.kwargs) as self.response:
+        async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as self.session, self.session.request(self.method, self.url, raise_for_status=True, *self.args, **self.kwargs) as self.response:
             self.content = await self.response.read()
             return self.response, self.content, self.index
 
@@ -126,7 +126,7 @@ async def _gather_async_fetch(tasks):
         task.index = index
         _coroutine = task.run()
         new_tasks.append(_coroutine)
-    return await asyncio.gather(*new_tasks)
+    return await asyncio.gather(*new_tasks, return_exceptions=True)
 
 
 async def _threads_async_fetch(coroes):
@@ -134,28 +134,28 @@ async def _threads_async_fetch(coroes):
     threadsafe_loop = asyncio.new_event_loop()
     Thread(target=threadsafe_loop.run_forever, name='ThreadSafe', daemon=True).start()
 
-    tasks = []
+    new_tasks = []
     for index, coro in enumerate(coroes, 1):
         coro.index = index
         _coroutine = coro.run()
-        tasks.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
-    return [task.result() for task in tasks]
+        new_tasks.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
+
+    return [task.result() for task in new_tasks]
 
 
 def aiohttp_parse(method, url, *args, **kwargs):
     task = eval(method)(url, *args, **kwargs)
     _coroutine = task.run()
-    # even_loop = asyncio.new_event_loop()
-    # return even_loop.run_until_complete(_coroutine)
-    return asyncio.run(_coroutine)  # 3.7+ 方式 , threadsafe:单线程或者多线程
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(_coroutine)
 
 
 def aiohttp_parse_urls(method, urls, *args, **kwargs):
     coroes = [eval(method)(url, *args, **kwargs) for url in urls]
     _coroutine = _threads_async_fetch(coroes) if kwargs.pop('threadsafe', True) else _gather_async_fetch(coroes)
-    # even_loop = asyncio.new_event_loop() # 原方式
-    # return even_loop.run_until_complete(_coroutine)
-    return asyncio.run(_coroutine)  # 3.7+方式 , threadsafe:单线程或者多线程
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(_coroutine)
+    # return asyncio.run(_coroutine)  # 3.7+ 方式 , threadsafe:单线程或者多线程
 
 
 ahttpGet = partial(aiohttp_parse, "get")

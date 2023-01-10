@@ -67,6 +67,17 @@ def ahttp_run(bookname, urls):
     savefile(f'{files}&{bookname}ahttp_run.txt', texts, br='\n')
 
 
+@fn_timer
+def run_in_pool(bookname, urls):
+    myaio = AioCrawl()
+    indexes = list(range(len(urls)))
+    myaio.add_func(get_contents, indexes, urls)
+    texts = myaio.wait_completed()
+    texts.sort(key=lambda x: x[0])
+    files = os.path.basename(__file__).split(".")[0]
+    savefile(f'{files}&{bookname}run_in_pool.txt', texts, br='\n')
+
+
 if __name__ == "__main__":
 
     bookname, urls, _ = get_biqugse_download_url("http://www.biqugse.com/96703/")
@@ -74,6 +85,7 @@ if __name__ == "__main__":
     Aio_feach_run(bookname, urls)
     Aio_feach_run_back(bookname, urls)
     ahttp_run(bookname, urls)
+    run_in_pool(bookname, urls)
 '''
 Aio_ahttp(bookname, urls)           68.30 seconds
 Aio_feach_run(bookname, urls)       75.70 seconds

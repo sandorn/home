@@ -143,3 +143,28 @@ T_Sub = futuresSub(ThreadPoolExecutor)
 P_Sub = futuresSub(ProcessPoolExecutor)
 ThreadPool = futuresPool(ThreadPoolExecutor)
 ProcessPool = futuresPool(ProcessPoolExecutor)
+
+if __name__ == '__main__':
+    import asyncio
+
+    from xt_Requests import get_tretry
+
+    class FuncRunInPool:
+
+        async def _run(self, loop, func, *args, **kwargs):
+            executor = ThreadPoolExecutor()
+            future_list = []
+            for _ in range(3):
+                task = loop.run_in_executor(executor, func, *args, **kwargs)
+                future_list.append(task)
+            await asyncio.gather(*future_list)
+            for fu in future_list:
+                print(fu.result())
+
+        def start(self, func, *args, **kwargs):
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self._run(loop, func, *args, **kwargs))
+            # loop.close()
+
+    ag = FuncRunInPool()
+    ag.start(get_tretry, "http://httpbin.org/get")
