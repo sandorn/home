@@ -144,6 +144,7 @@ class SessionClient:
             return None
         else:
             # #返回正确结果
+            assert isinstance(self.response, requests.Response)
             self.update_cookies(self.response.cookies)
             result = htmlResponse(self.response)
             if callable(self.callback): result = self.callback(result)
@@ -181,10 +182,8 @@ class SessionClient:
 
 if __name__ == '__main__':
     s = SessionClient()
-    print(s.get('https://www.google.com'))
+    print(get_tretry('https://www.google.com'))
     print(s.get('https://cn.bing.com'))
-    print(s.get('https://www.baidu.com'))
-    print(s.get('https://www.wuzhuiso.com/'))
     # s = SessionClient()
     # print(s.head('http://httpbin.org/headers').headers)
     # print(s.put('http://httpbin.org/put', data=b'data'))
