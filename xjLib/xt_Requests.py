@@ -185,7 +185,7 @@ if __name__ == '__main__':
         'http://www.baidu.com',
         'http://www.163.com',
         'http://dangdang.com',
-        "https://httpbin.org/get",
+        "https://httpbin.org",
     ]
     for url in urls:
         ...

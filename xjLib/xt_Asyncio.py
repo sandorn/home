@@ -95,7 +95,7 @@ class AioCrawl:
             # print(f'Count:{threading.active_count()} | {threading.current_thread()}')
             response, content = await __fetch()
         except Exception as err:
-            print(f'_task_run:{self} | RetryErr:{err!r}')
+            print(f'AioCrawl_task_run:{self} | RetryErr:{err!r}')
             return None
         else:
             index = index or id(url)

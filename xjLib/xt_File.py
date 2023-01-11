@@ -24,12 +24,12 @@ class filesize:
         self.MB = self.KB / 1024
 
     def __str__(self):
-        if self.MB > 10:
+        if self.MB > 1:
             return f'{self.MB:.2f} MB'
-        elif self.KB > 10:
+        elif self.KB > 1:
             return f'{self.KB:.2f} KB'
         else:
-            return f'{self.Bytes} Bytes'
+            return f'{self.Bytes} B'
 
 
 class qsstools:

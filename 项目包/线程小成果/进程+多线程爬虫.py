@@ -7,12 +7,13 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-07 15:04:21
+LastEditTime : 2023-01-11 15:08:31
 FilePath     : /项目包/线程小成果/进程+多线程爬虫.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
+import os
 from multiprocessing import Process
 
 from xt_File import savefile
@@ -32,12 +33,12 @@ class ScrapyOne():
 
     # 主函数
     def start(self):
-        r = CustomThread(target=self.scrapyLink)
-        r.wait_completed()
+        self.scrapyLink()
         [CustomThread(self.scrapyText, index, url) for index, url in enumerate(self.urls)]
         CustomThread.wait_completed()
         self.texts.sort(key=lambda x: x[0])
-        savefile(f'{self.bookname}ScrapyProcess.txt', self.texts, br='\n')
+        files = os.path.basename(__file__).split(".")[0]
+        savefile(f'{files}&{self.bookname}ScrapyProcess.txt', self.texts, br='\n')
 
     # 爬取章节链接
     def scrapyLink(self):
@@ -73,14 +74,23 @@ class ScrapyOne():
 
 class ScrapyProcess(Process):
 
-    def __init__(self, typeLink):
+    def __init__(self, link_list):
         super(ScrapyProcess, self).__init__()
-        self.typeLink = typeLink
+        self.link_list = link_list
         self.start()
 
     def run(self):
-        one = ScrapyOne(self.typeLink)
+        for link in self.link_list:
+            ScrapyOne(link)
 
 
 if __name__ == "__main__":
-    ScrapyProcess('http://www.biqugse.com/96703/')
+    url_list = [
+        'http://www.biqugse.com/96703/',
+        # 'http://www.biqugse.com/96717/',
+        # 'http://www.biqugse.com/76169/',
+        # 'http://www.biqugse.com/82744/',
+        # 'http://www.biqugse.com/96095/',
+        # 'http://www.biqugse.com/92385/',
+    ]
+    ScrapyProcess(url_list)

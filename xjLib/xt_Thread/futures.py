@@ -164,7 +164,6 @@ if __name__ == '__main__':
         def start(self, func, *args, **kwargs):
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self._run(loop, func, *args, **kwargs))
-            # loop.close()
 
     ag = FuncRunInPool()
     ag.start(get_tretry, "http://httpbin.org/get")
