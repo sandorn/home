@@ -20,7 +20,7 @@ import requests
 from tenacity import retry as Tretry
 from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_random
-from xt_Head import Headers
+from xt_Head import MYHEAD, Headers
 from xt_Response import htmlResponse
 from xt_Tools import try_except_wraps
 
@@ -36,8 +36,8 @@ TRETRY = Tretry(
 
 def _setKw(kwargs):
     kwargs.setdefault('headers', Headers().randomheaders)
-    kwargs.setdefault('cookies', {})
     kwargs.setdefault('timeout', TIMEOUT)  # @超时
+    # kwargs.setdefault('cookies', {})
     return kwargs
 
 
@@ -125,7 +125,7 @@ post_tretry = partial(_request_tretry, "post")
 
 class SessionClient:
     '''封装session,保存cookies,利用TRETRY三方库实现重试'''
-    __slots__ = ('sson', 'headers', 'cookies', 'response', 'url', 'method', 'args', 'kwargs', 'callback')
+    __slots__ = ('sson', 'method', 'url', 'args', 'kwargs', 'response', 'callback')
 
     def __init__(self):
         self.sson = requests.session()
@@ -146,17 +146,18 @@ class SessionClient:
         else:
             # #返回正确结果
             self.update_cookies(self.response.cookies)
-            new_res = htmlResponse(self.response)
-            if self.callback: new_res = self.callback(new_res)
-            return new_res
+            result = htmlResponse(self.response)
+            if self.callback: result = self.callback(result)
+            return result
 
     def __create_params(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
 
-        kwargs = _setKw(kwargs)
-        self.cookies = kwargs.pop("cookies")
+        self.update_headers(kwargs.pop("headers", MYHEAD))
+        self.update_cookies(kwargs.pop("cookies", {}))
         self.callback = kwargs.pop("callback", None)
+        kwargs.setdefault('timeout', TIMEOUT)  # @超时
         self.kwargs = kwargs
         return self._fetch_run()
 
@@ -174,11 +175,9 @@ class SessionClient:
 
     def update_cookies(self, cookie_dict):
         self.sson.cookies.update(cookie_dict)
-        self.cookies.update(cookie_dict)
 
     def update_headers(self, header_dict):
         self.sson.headers.update(header_dict)
-        self.headers.update(header_dict)
 
 
 if __name__ == '__main__':
@@ -213,16 +212,7 @@ if __name__ == '__main__':
     urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
     titles = [i.text() for i in pr.items()]
     print(len(urls), len(titles))
-    # @不能用于协程,且不保留最后错误
-    # from retrying import retry as Retry
-    # RETRY = Retry(
-    #     wait_random_min=0,
-    #     wait_random_max=1000,
-    #     stop_max_attempt_number=RETRY_TIME,
-    #     wrap_exception=True,
-    #     retry_on_exception=lambda x: True,
-    #     retry_on_result=lambda ret: not ret,
-    # )
+    ###############################################################
     # #s.session.auth = ('user', 'pass')
 
     self.cookies = requests.cookies.RequestsCookieJar()
@@ -233,6 +223,10 @@ if __name__ == '__main__':
 
     # 将字典转为CookieJar：
     cookies = requests.utils.cookiejar_from_dict(cookie_dict, cookiejar=None, overwrite=True)
+    #其中cookie_dict是要转换字典转换完之后就可以把它赋给cookies 并传入到session中了：
+    s=requests.Session()
+    s.cookies=cookies
+
     可以把headers这个请求头直接转成cookiejar类型放入cookies里面
     cookies = requests.utils.cookiejar_from_dict(headers, cookiejar=None, overwrite=True)
 

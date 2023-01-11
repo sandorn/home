@@ -304,7 +304,7 @@ class Headers:
         return random.choice(USER_AGENTS)  # 随机生成一个User-Agent
 
     def myhead(self):
-        MYHEAD['User-Agent'] = self.__uac
+        MYHEAD['User-Agent'] = self.uac
         return MYHEAD
 
 

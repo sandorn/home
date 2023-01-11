@@ -54,10 +54,13 @@ Session = SessionClient()
 
 def get_download_url(connect, stop=None):
     # #登录,并保存cookies
-    _ = Session.post('http://oa.jklife.com/seeyon/main.do?method=login', data={
-        'login_username': 'liuxinjun',
-        'login_password': 'sand@2808',
-    })
+    Session.post(
+        'http://oa.jklife.com/seeyon/main.do?method=login',
+        data={
+            'login_username': 'liuxinjun',
+            'login_password': 'sand@2808',
+        },
+    )
 
     # #获取公文列表
     getlistdata = {"managerMethod": "findBulDatas", "method": "ajaxAction", "managerName": "bulDataManager", "rnd": random_char(5), "arguments": json.dumps([{"pageSize": "9999", "pageNo": 1}])}
