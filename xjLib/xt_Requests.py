@@ -184,6 +184,7 @@ if __name__ == '__main__':
     print(s.get('https://www.google.com'))
     print(s.get('https://cn.bing.com'))
     print(s.get('https://www.baidu.com'))
+    print(s.get('https://www.wuzhuiso.com/'))
     # s = SessionClient()
     # print(s.head('http://httpbin.org/headers').headers)
     # print(s.put('http://httpbin.org/put', data=b'data'))
