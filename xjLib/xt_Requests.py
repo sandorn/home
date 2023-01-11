@@ -140,6 +140,7 @@ class SessionClient:
             self._request()
         except Exception as err:
             print(f'SessionClient request:<{self.url}>; Err:{err!r}')
+            # print(self._request.retry.statistics)
             return None
         else:
             # #返回正确结果
