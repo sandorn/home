@@ -17,17 +17,15 @@ requests 简化调用
 from functools import partial
 
 import requests
-from tenacity import retry as Tretry
-from tenacity.stop import stop_after_attempt
-from tenacity.wait import wait_random
+from tenacity import retry, stop_after_attempt, wait_random
 from xt_Head import MYHEAD, Headers
 from xt_Response import htmlResponse
 from xt_Tools import try_except_wraps
 
-TIMEOUT = 20  # (30, 9, 9)
+TIMEOUT = 9  # 超时
 RETRY_TIME = 6  # 最大重试次数
 
-TRETRY = Tretry(
+TRETRY = retry(
     reraise=True,  # 保留最后一次错误
     stop=stop_after_attempt(RETRY_TIME),
     wait=wait_random(min=0, max=1),
@@ -37,7 +35,6 @@ TRETRY = Tretry(
 def _setKw(kwargs):
     kwargs.setdefault('headers', Headers().randomheaders)
     kwargs.setdefault('timeout', TIMEOUT)  # @超时
-    # kwargs.setdefault('cookies', {})
     return kwargs
 
 
@@ -65,9 +62,9 @@ def _request_parse(method, url, *args, **kwargs):
             # print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Err:{err!r}')
         else:
             # #返回正确结果
-            new_res = htmlResponse(response)
-            if callback: new_res = callback(new_res)
-            return new_res
+            result = htmlResponse(response)
+            if callable(callback): result = callback(result)
+            return result
     # #错误返回None
     if func_exc: return None
 
@@ -87,9 +84,9 @@ def _request_wraps(method, url, *args, **kwargs):
     # #错误返回None
     if response is None: return None
     # #返回正确结果
-    new_res = htmlResponse(response)
-    if callback: new_res = callback(new_res)
-    return new_res
+    result = htmlResponse(response)
+    if callable(callback): result = callback(result)
+    return result
 
 
 def _request_tretry(method, url, *args, **kwargs):
@@ -106,13 +103,14 @@ def _request_tretry(method, url, *args, **kwargs):
     try:
         response = _fetch_run()
     except Exception as err:
-        # print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
+        print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
+        # print(_fetch_run.retry.statistics)
         return None
     else:
         # #返回正确结果
-        new_res = htmlResponse(response)
-        if callback: new_res = callback(new_res)
-        return new_res
+        result = htmlResponse(response)
+        if callable(callback): result = callback(result)
+        return result
 
 
 get = partial(_request_parse, "get")
@@ -136,7 +134,7 @@ class SessionClient:
         self.response.raise_for_status()
         return self.response
 
-    def _fetch_run(self):
+    def start_fetch_run(self):
         try:
             self.response = None
             self._request()
@@ -147,7 +145,7 @@ class SessionClient:
             # #返回正确结果
             self.update_cookies(self.response.cookies)
             result = htmlResponse(self.response)
-            if self.callback: result = self.callback(result)
+            if callable(self.callback): result = self.callback(result)
             return result
 
     def __create_params(self, *args, **kwargs):
@@ -159,10 +157,10 @@ class SessionClient:
         self.callback = kwargs.pop("callback", None)
         kwargs.setdefault('timeout', TIMEOUT)  # @超时
         self.kwargs = kwargs
-        return self._fetch_run()
+        return self.start_fetch_run()
 
     def __getattr__(self, method):
-        if method in ['get', 'post']:
+        if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
             self.method = method
             # @不带括号,传递*args, **kwargs参数
             return self.__create_params
@@ -181,6 +179,20 @@ class SessionClient:
 
 
 if __name__ == '__main__':
+    s = SessionClient()
+    print(s.get('https://www.google.com'))
+    print(s.get('https://cn.bing.com'))
+    # s = SessionClient()
+    # print(s.head('http://httpbin.org/headers').headers)
+    # print(s.put('http://httpbin.org/put', data=b'data'))
+    # print(s.delete('http://httpbin.org/delete'))
+    # print(s.options('http://httpbin.org/get').headers)
+    #'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    # print(s.options('https://cn.bing.com'))
+    # print(s.trace('https://cn.bing.com'))
+    # print(s.connect('https://www.wuzhuiso.com/'))
+    # print(s.patch('http://httpbin.org/patch', data=b'data'))
+    '''
     urls = [
         'http://www.baidu.com',
         'http://www.163.com',
@@ -197,7 +209,8 @@ if __name__ == '__main__':
         # print(res.html.xpath('//title/text()'))
         # print(res.element.xpath('//title/text()'))
         # print(res.pyquery('title').text())
-'''
+    ###############################################################
+    # allow_redirects=False #取消重定向
     res = get_wraps('https://www.biqukan8.cc/38_38163/')
     pr = res.pyquery('.listmain dl dd:gt(11)').children()
     bookname = res.pyquery('h2').text()

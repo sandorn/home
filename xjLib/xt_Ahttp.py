@@ -90,6 +90,9 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
+    def start(self):
+        return asyncio.run(_async_fetch(self))
+
     async def run(self):
         '''主线程'''
         return await _async_fetch(self)
@@ -174,7 +177,7 @@ if __name__ == "__main__":
     res = ahttpGetAll([url_headers, url_get])
     print(res)
     #######################################################################################################
-    # print(head(url_headers).start().headers)
+    print(get('http://httpbin.org/headers').start().headers)
     # print(put('http://httpbin.org/put', data=b'data').start())
     # print(delete('http://httpbin.org/delete').start())
     # print(options('http://httpbin.org/get').start().headers)

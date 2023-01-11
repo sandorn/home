@@ -137,7 +137,7 @@ class htmlResponse(item_Mixin):
         return [self.element]
 
     def __repr__(self):
-        return f"<htmlResponse | ID:[{self.index}] | STATUS:[{self.status}] | URL:[{self.url}]>"
+        return f"<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>"
 
     def __str__(self):
         return self.__repr__()
@@ -149,6 +149,8 @@ class htmlResponse(item_Mixin):
         return len(self.text)
 
 
+if __name__ == '__main__':
+    print(htmlResponse(None))
 '''
 jxdm = response.xpath('//h3/a')
 for each in jxdm:

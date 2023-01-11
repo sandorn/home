@@ -42,16 +42,15 @@ Session = SessionClient()
 def get_download_url(connect, stop=None):
     # #登录,并保存cookies
     res = Session['post'](
-        'http://oa.jklife.com/seeyon/main.do?method=login',
+        'https://oa.jklife.com/seeyon/main.do?method=login',
+        allow_redirects=False,
         data={
             'login_username': 'liuxinjun',
             'login_password': 'U2FsdGVkX1+FSC7gcXU2/WpBDDXBWtbz5xfyK3PmX1w=',
         },
     )
-    print(res, "||||||||||||||||||", Session.sson.cookies)
-    Session.get('https://oa.jklife.com/seeyon/main.do?method=main')
-    print(res, "||||||||||||||||||", Session.sson.cookies)
-    # Session.update_headers({'CSRFTOKEN': 'RBOJ-GFZV-HT0M-PHSV-RFSB-950L-SSED-W3L6'})
+    print(res, res.headers, "||||||||||||||||||", Session.sson.cookies)
+
     data = {
         "method": "bulIndex",
         'typeId': 1,
