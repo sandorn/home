@@ -55,6 +55,7 @@ def get_download_url(connect, stop=None):
         'typeId': 1,
         "CSRFTOKEN": 'RBOJ-GFZV-HT0M-PHSV-RFSB-950L-SSED-W3L6',
     }
+    print(data)
     res = Session.post("https://oa.jklife.com/seeyon/bulData.do", data=data)
     print(res, res.text, "||||||||||||||||||", Session.sson.cookies)
     return
