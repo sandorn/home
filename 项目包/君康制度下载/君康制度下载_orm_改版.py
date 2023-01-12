@@ -49,13 +49,11 @@ def get_download_url(connect, stop=None):
         },
     )
     print(res, res.headers, "||||||||||||||||||", Session.sson.cookies)
-
     data = {
         "method": "bulIndex",
         'typeId': 1,
         "CSRFTOKEN": 'RBOJ-GFZV-HT0M-PHSV-RFSB-950L-SSED-W3L6',
     }
-    print(data)
     res = Session.post("https://oa.jklife.com/seeyon/bulData.do", data=data)
     print(res, res.text, "||||||||||||||||||", Session.sson.cookies)
     return
@@ -137,9 +135,9 @@ def main():
     mywork = WorkManager()
     connect = SqlConnection(Jkdoc, 'Jkdoc')
     urls = get_download_url(connect)
-    print(f'需要下载的公文数量为：{len(urls)}')
-    mywork.add_work_queue([down_content, connect, item[0], item[1]] for item in urls)
-    mywork.getAllResult()
+    # print(f'需要下载的公文数量为：{len(urls)}')
+    # mywork.add_work_queue([down_content, connect, item[0], item[1]] for item in urls)
+    # mywork.getAllResult()
 
 
 if __name__ == '__main__':

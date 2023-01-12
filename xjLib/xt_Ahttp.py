@@ -22,7 +22,7 @@ from xt_Head import Headers
 from xt_Requests import TRETRY
 from xt_Response import htmlResponse
 
-TIMEOUT = 20  # (30, 9, 9, 9)
+TIMEOUT = 9  # (30, 9, 9, 9)
 
 __all__ = ('get', 'post', 'head', 'put', 'delete', 'options', 'trace', 'connect', 'patch', 'ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
