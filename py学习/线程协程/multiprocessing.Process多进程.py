@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释配置模板
 Develop      : VSCode
-Author       : Even.Sand
+Author       : sandorn sandorn@live.cn
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-31 11:52:27
-FilePath     : /py学习/线程协程/multiprocessing.Process多进程.py
+LastEditTime : 2023-01-13 21:03:04
+FilePath     : /CODE/py学习/线程协程/multiprocessing.Process多进程.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 Python爬虫进阶六之多进程的用法 - 周小董 - CSDN博客
@@ -66,5 +66,5 @@ def main_daemon():
 
 
 if __name__ == '__main__':
-    # main()
-    main_daemon()
+    main()
+    # main_daemon()

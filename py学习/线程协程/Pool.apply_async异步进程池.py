@@ -7,11 +7,10 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-02 23:44:02
+LastEditTime : 2023-01-13 20:30:56
 FilePath     : /py学习/线程协程/Pool.apply_async异步进程池.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-@Descripttion:
 进程池和multiprocess.Pool模块 - 笨笨侠 - 博客园
 https://www.cnblogs.com/huangjm263/p/8418200.html
 '''
@@ -24,15 +23,17 @@ def work(n):
     import random
     import time
 
-    print(f'Parent Pid:{os.getppid()} | Pid: {os.getpid()} ')
-    _time = time.time()
+    print(f'{n} | Parent Pid:{os.getppid()} | Pid: {os.getpid()} ')
     time.sleep(random.randint(0, 6))
-    print(n, time.time() - _time, flush=True)
-    return n
+
+    def f(x):
+        return x * x
+
+    return f(n)
 
 
 if __name__ == '__main__':
-    p = Pool(3)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
+    p = Pool(8)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
     res_l = []
     for i in range(30):
         res = p.apply_async(work, args=(i, ))  # 异步运行，根据进程池中有的进程数，每次最多3个子进程在异步执行

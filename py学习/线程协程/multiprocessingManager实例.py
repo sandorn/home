@@ -2,32 +2,26 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2023-01-02 13:43:33
-LastEditTime : 2023-01-02 13:43:34
-FilePath     : /py学习/线程协程/multiprocessingManager实例.py
+LastEditTime : 2023-01-13 21:19:22
+FilePath     : /CODE/py学习/线程协程/multiprocessingManager实例.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
-import logging
 import multiprocessing
-# coding=utf-8
-import time
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [*] %(processName)s %(message)s")
 
 
 def func(ns, x, y):
-    logging.info(f"func 处理前： {ns}")
+    print(f"func 处理前： {ns}")
     x.append(1)
     y.append("a")
     ns.x = x  # 将可变对象也作为参数传入
     ns.y = y
-    logging.info(f"func 处理后： {ns}")
+    print(f"func 处理后： {ns}")
 
 
 def main(ctx):
@@ -36,11 +30,11 @@ def main(ctx):
     ns.x = []  # manager 内部包括可变对象
     ns.y = []
 
-    logging.info(f"main 处理前： {ns}")
+    print(f"main 处理前： {ns}")
     p = ctx.Process(target=func, args=(ns, ns.x, ns.y))
     p.start()
     p.join()
-    logging.info(f"main 处理后：{ns}")
+    print(f"main 处理后：{ns}")
 
 
 if __name__ == '__main__':
@@ -49,3 +43,4 @@ if __name__ == '__main__':
     # 获取上下文
     ctx = multiprocessing.get_context('spawn')
     main(ctx)
+    print()

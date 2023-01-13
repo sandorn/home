@@ -23,15 +23,15 @@ nowsec = lambda: time.time()
 now = lambda: datetime.datetime.now()
 
 
-def fn_timer(function):
+def fn_timer(func):
     '''装饰器:测量函数执行时长'''
 
-    @wraps(function)
+    @wraps(func)
     def func_timer(*args, **kwargs):
         start_time = nowsec()
-        result = function(*args, **kwargs)
+        result = func(*args, **kwargs)
         se = nowsec() - start_time
-        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> run time:{se: .2f} seconds")
+        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; func:<{func.__name__}> run time:{se: .2f} seconds")
         return result
 
     stack = traceback.extract_stack()

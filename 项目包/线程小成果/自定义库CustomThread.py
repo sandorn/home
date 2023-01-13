@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-01-13 18:17:49
-FilePath     : /项目包/线程小成果/自定义库CustomThread.py
+LastEditTime : 2023-01-14 00:37:46
+FilePath     : /CODE/项目包/线程小成果/自定义库CustomThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -33,5 +32,5 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
-    main_thread('http://www.biqugse.com/28542/')  # 143sec
-    # main_thread('http://www.biqugse.com/96703/')
+    # main_thread('http://www.biqugse.com/28542/')  # 143sec
+    main_thread('http://www.biqugse.com/96703/')

@@ -2,16 +2,14 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:55
-LastEditTime : 2022-12-09 10:46:42
-FilePath     : /项目包/线程小成果/笔趣阁-multiprocessing.Pool.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2023-01-13 22:37:59
+FilePath     : /CODE/py学习/线程协程/multiprocessing.Pool.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-multiprocessing 自写线程池
 '''
 
 import os

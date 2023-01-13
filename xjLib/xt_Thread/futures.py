@@ -13,10 +13,12 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
+import asyncio
 from concurrent.futures import (ProcessPoolExecutor, ThreadPoolExecutor, as_completed)
 
 
 def futuresMap(_cls):
+    '''停用'''
 
     class FuturesMap_Class_Wrapper(_cls):
 
@@ -37,6 +39,7 @@ def futuresMap(_cls):
 
 
 def futuresSub(_cls):
+    '''停用'''
 
     class FuturesSub_Class_Wrapper(_cls):
 
@@ -137,33 +140,39 @@ def futuresPool(_cls):
 
 # #使用类工厂,动态生成基于线程或进程的类
 
-T_Map = futuresMap(ThreadPoolExecutor)
-P_Map = futuresMap(ProcessPoolExecutor)
-T_Sub = futuresSub(ThreadPoolExecutor)
-P_Sub = futuresSub(ProcessPoolExecutor)
+T_Map = futuresMap(ThreadPoolExecutor)  # 停用
+P_Map = futuresMap(ProcessPoolExecutor)  # 停用
+T_Sub = futuresSub(ThreadPoolExecutor)  # 停用
+P_Sub = futuresSub(ProcessPoolExecutor)  # 停用
 ThreadPool = futuresPool(ThreadPoolExecutor)
 ProcessPool = futuresPool(ProcessPoolExecutor)
 
+
+class FuncRunThreadPool:
+    '''将程序放到ThreadPoolExecutor中异步运行,返回结果'''
+
+    async def _run(self, loop, func, *args, **kwargs):
+        self.future_list = []
+        self.executor = ThreadPoolExecutor(64)
+        args = list(zip(*args))
+        for arg in args:
+            task = loop.run_in_executor(self.executor, func, *arg, **kwargs)
+            self.future_list.append(task)
+        await asyncio.gather(*self.future_list)
+
+        self.result = [fu.result() for fu in self.future_list]
+        return self.result
+
+    def start(self, func, *args, **kwargs):
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(self._run(loop, func, *args, **kwargs))
+
+
 if __name__ == '__main__':
-    import asyncio
 
     from xt_Requests import get_tretry
 
-    class FuncRunInPool:
-
-        async def _run(self, loop, func, *args, **kwargs):
-            executor = ThreadPoolExecutor()
-            future_list = []
-            for _ in range(3):
-                task = loop.run_in_executor(executor, func, *args, **kwargs)
-                future_list.append(task)
-            await asyncio.gather(*future_list)
-            for fu in future_list:
-                print(fu.result())
-
-        def start(self, func, *args, **kwargs):
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(self._run(loop, func, *args, **kwargs))
-
-    ag = FuncRunInPool()
-    ag.start(get_tretry, "http://httpbin.org/get")
+    ag = FuncRunThreadPool()
+    res = ag.start(get_tretry, ["http://httpbin.org/get"] * 3)
+    print(ag.result)
+    print(FuncRunThreadPool().start(get_tretry, ["http://httpbin.org/get"] * 3))

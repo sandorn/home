@@ -19,14 +19,14 @@ from threading import Lock, Thread
 from PyQt5.QtCore import QThread
 
 
-def thread_safe(func=None, lock=Lock()):
+def thread_safe(func=None):
     '''函数的线程安全化,需要lock'''
 
     def decorate(func):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            with lock:
+            with Lock() as lock:
                 return func(*args, **kwargs)
 
         return wrapper

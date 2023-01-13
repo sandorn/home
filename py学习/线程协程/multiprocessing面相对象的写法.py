@@ -2,32 +2,30 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2023-01-02 00:48:57
-LastEditTime : 2023-01-02 00:48:59
-FilePath     : /py学习/线程协程/multiprocessing面相对象的写法.py
+LastEditTime : 2023-01-13 21:47:12
+FilePath     : /CODE/py学习/线程协程/multiprocessing面相对象的写法.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 import multiprocessing
+import os
+import random
 import time
 
 
-def worker(delay, count):
-    for num in range(count):
-        print(f"{num}, 进程ID:{multiprocessing.current_process().pid}, 进程名称:{multiprocessing.current_process().name}")
-        # 延迟运行
-        time.sleep(delay)
-    return f'{delay * 20}worker done!'
+def worker(que, delay):
+    print(f'Parent Pid:{os.getppid()} | Pid: {os.getpid()} | {multiprocessing.current_process()}')
+    time.sleep(random.randint(0, 4))
+    que.put(f'{delay * 100}worker done!')
 
 
 class MyProcess(multiprocessing.Process):
 
     all_Process = []  # 类属性或类变量,实例公用
-    result_list = []  # 类属性或类变量,实例公用
 
     def __init__(self, func, *args, **kwargs):
         super(MyProcess, self).__init__()
@@ -40,16 +38,14 @@ class MyProcess(multiprocessing.Process):
 
     def run(self) -> None:
         self.Result = self.target(*self.args, **self.kwargs)
-        print(f"子进程:{self.name}执行完毕，返回结果:{self.Result}")
-        self.result_list.append(self.Result)
         return self.Result
 
 
 if __name__ == '__main__':
-    for i in range(5):
-        process = MyProcess(worker, delay=i // 2, count=3)
-    print(1111111111111111111111111111111111, MyProcess.all_Process)
+    que = multiprocessing.Queue()
+    for i in range(1, 9):
+        process = MyProcess(worker, que, delay=i)
 
     for process in MyProcess.all_Process:
         process.join()
-        print(process.Result)
+    print([que.get() for _ in MyProcess.all_Process])
