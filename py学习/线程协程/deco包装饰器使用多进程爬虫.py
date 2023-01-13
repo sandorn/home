@@ -7,8 +7,8 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-29 23:19:42
-LastEditTime : 2022-12-29 23:19:43
-FilePath     : /py学习/线程协程/实际使用多进程完整模板deco--3.py
+LastEditTime : 2023-01-12 16:29:18
+FilePath     : /py学习/线程协程/deco包装饰器使用多进程爬虫.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -19,6 +19,7 @@ from deco import concurrent, synchronized
 from xt_File import savefile
 from xt_Ls_Bqg import clean_Content
 from xt_Requests import get
+from xt_Response import htmlResponse
 from xt_String import Str_Replace
 
 
@@ -30,6 +31,7 @@ def test_concurrent(index, target):
         '//h1/text()',
         '//*[@id="content"]/text()',
     )
+    assert isinstance(resp, htmlResponse)
     _title, _showtext = resp.xpath(_xpath)
     title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
     content = clean_Content(_showtext)
@@ -38,13 +40,14 @@ def test_concurrent(index, target):
 
 @synchronized
 def test_synchronized(target):
-    # sourcery skip: inline-immediately-returned-variable, list-comprehension
+    # sourcery skip: for-append-to-extend, inline-immediately-returned-variable, list-comprehension
     resp = get(target)
     _xpath = (
         '//meta[@property="og:title"]//@content',
         '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href',
         '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()',
     )
+    assert isinstance(resp, htmlResponse)
     bookname, temp_urls, titles = resp.xpath(_xpath)
 
     bookname = bookname[0]

@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2023-01-08 01:12:00
+LastEditTime : 2023-01-13 14:21:07
 FilePath     : /项目包/线程小成果/自定义库Futures+aiohttp异步-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -53,12 +53,13 @@ def pool(url_list, func):
 
 if __name__ == "__main__":
     url_list = [
-        'http://www.biqugse.com/96703/',
-        'http://www.biqugse.com/96717/',
-        'http://www.biqugse.com/76169/',
-        'http://www.biqugse.com/82744/',
-        'http://www.biqugse.com/96095/',
-        'http://www.biqugse.com/92385/',
+        # 'http://www.biqugse.com/96703/',
+        'http://www.biqugse.com/28542/',  # 超大 182s
+        # 'http://www.biqugse.com/96717/',
+        # 'http://www.biqugse.com/76169/',
+        # 'http://www.biqugse.com/82744/',
+        # 'http://www.biqugse.com/96095/',
+        # 'http://www.biqugse.com/92385/',
     ]
-    pool(url_list, Aio_ahttp)  # ahttpGetAll 96s
-    # pool(url_list, Aio_feach_run)  # AioCrawl 97s
+    # pool(url_list, Aio_ahttp)  # ahttpGetAll 96s
+    pool(url_list, Aio_feach_run)  # AioCrawl 97s

@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-08 23:21:42
+LastEditTime : 2023-01-13 14:05:41
 FilePath     : /xjLib/xt_Time.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -18,23 +18,27 @@ import time
 import traceback
 from functools import wraps
 
-nowse = lambda: time.process_time()
+nowpro = lambda: time.process_time()
+nowsec = lambda: time.time()
 now = lambda: datetime.datetime.now()
 
 
 def fn_timer(function):
-    '''装饰器:测量函数执行时长,不包含sleep'''
+    '''装饰器:测量函数执行时长'''
 
     @wraps(function)
     def func_timer(*args, **kwargs):
-        start_time = nowse()
+        start_time = nowsec()
         result = function(*args, **kwargs)
-        se = nowse() - start_time
-        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> total run:{se: .2f} seconds")
+        se = nowsec() - start_time
+        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; function:<{function.__name__}> run time:{se: .2f} seconds")
         return result
 
     stack = traceback.extract_stack()
     return func_timer
+
+
+timeit = timer = fn_timer
 
 
 def get_time():

@@ -7,12 +7,11 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2023-01-07 20:55:15
-LastEditTime : 2023-01-07 20:55:29
+LastEditTime : 2023-01-13 20:26:05
 FilePath     : /py学习/线程协程/生成协程的装饰器.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
 import asyncio
 from asyncio.coroutines import iscoroutine
 from asyncio.proactor_events import _ProactorBasePipeTransport
@@ -35,16 +34,6 @@ def silence_event_loop_closed(func):
 
 
 _ProactorBasePipeTransport.__del__ = silence_event_loop_closed(_ProactorBasePipeTransport.__del__)
-
-
-def asyncio_wrapper(func):
-
-    @wraps(func)
-    async def __wrapper(*args, **kwargs):
-        result = await asyncio.create_task(func(*args, **kwargs))  # 执行传入的函数
-        return result
-
-    return __wrapper
 
 
 def asyncio_wrapper(func):

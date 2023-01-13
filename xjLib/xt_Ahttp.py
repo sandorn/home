@@ -18,11 +18,9 @@ from functools import partial
 from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_Head import Headers
+from xt_Head import TIMEOUT, Head
 from xt_Requests import TRETRY
 from xt_Response import htmlResponse
-
-TIMEOUT = 9  # (30, 9, 9, 9)
 
 __all__ = ('get', 'post', 'head', 'put', 'delete', 'options', 'trace', 'connect', 'patch', 'ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
 
@@ -83,7 +81,7 @@ class AsyncTask:
         self.url = args[0]
         self.args = args[1:]
 
-        kwargs.setdefault('headers', Headers().randomheaders)
+        kwargs.setdefault('headers', Head().random)
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
         self.cookies = kwargs.pop("cookies", {})
         self.callback = kwargs.pop("callback", None)

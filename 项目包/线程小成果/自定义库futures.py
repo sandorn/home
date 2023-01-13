@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-01-08 01:31:12
+LastEditTime : 2023-01-13 14:20:11
 FilePath     : /项目包/线程小成果/自定义库futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -73,7 +73,8 @@ def thrPool_thrsub(urls):
 
 if __name__ == '__main__':
     urls = [
-        'http://www.biqugse.com/96703/',
+        # 'http://www.biqugse.com/96703/',
+        'http://www.biqugse.com/28542/',  # 超大 ahttp_All  155sec
         # 'http://www.biqugse.com/96717/',
         # 'http://www.biqugse.com/76169/',
         # 'http://www.biqugse.com/82744/',

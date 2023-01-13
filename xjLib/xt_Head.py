@@ -16,6 +16,9 @@ import random
 
 from fake_useragent import UserAgent
 
+TIMEOUT = 9
+RETRY_TIME = 6
+
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36",
     "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML like Gecko) Chrome/44.0.2403.155 Safari/537.36",
@@ -276,8 +279,10 @@ MYHEAD = {
     'Content-Encoding': 'gzip,deflate,compress',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
     'Accept-Charset': 'UTF-8,GB2312,GBK,GB18030,ISO-8859-1,ISO-8859-5;q=0.7,*;q=0.7',
-    'Connection': 'close',  # 'keep-alive',
+    # 'Connection': 'close',  # 'keep-alive',
     'Content-Type': 'text/html,application/x-www-form-unlencoded; charset=UTF-8',
+    'Upgrade': 'HTTP/1.1',  # 强制降级到'HTTP/1.1',
+    'Connection': 'Upgrade'
     # 'X-Requested-With': 'XMLHttpRequest',
     # 'Cache-Control': 'no-cache',
     # 'Pragma': 'no-cache',
@@ -285,14 +290,16 @@ MYHEAD = {
 }
 
 
-class Headers:
+class Head:
 
     @property
-    def randomheaders(self):
-        return self.__random_fake()
+    def random(self):
+        MYHEAD['User-Agent'] = self.ua  # 随机生成一个User-Agent
+        return MYHEAD
 
-    def __random_fake(self):
-        MYHEAD['User-Agent'] = UserAgent().random  # 随机生成一个User-Agent
+    @property
+    def myhead(self):
+        MYHEAD['User-Agent'] = self.uac
         return MYHEAD
 
     @property
@@ -302,10 +309,6 @@ class Headers:
     @property
     def uac(self):
         return random.choice(USER_AGENTS)  # 随机生成一个User-Agent
-
-    def myhead(self):
-        MYHEAD['User-Agent'] = self.uac
-        return MYHEAD
 
 
 ###########################################################################################

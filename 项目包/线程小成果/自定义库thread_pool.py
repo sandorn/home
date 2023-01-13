@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2022-12-29 13:45:25
+LastEditTime : 2023-01-13 18:42:56
 FilePath     : /项目包/线程小成果/自定义库thread_pool.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -38,6 +38,7 @@ def get_contents(index, target):
     content = clean_Content(_showtext)
     return [index, title, content]
 
+
 @fn_timer
 def main(target):
     bookname, urls, _ = get_biqugse_download_url(target)
@@ -51,4 +52,5 @@ def main(target):
 
 if __name__ == "__main__":
 
-    main('http://www.biqugse.com/96703/')
+    # main('http://www.biqugse.com/96703/')
+    main('http://www.biqugse.com/28542/')  # 143sec

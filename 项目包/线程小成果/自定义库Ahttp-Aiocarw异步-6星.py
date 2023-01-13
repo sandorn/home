@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-06-30 12:50:40
-#FilePath     : /xjLib/test/ayncio-aiocarwl测试.py
-#LastEditTime : 2020-07-10 18:19:14
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  :
+Develop      : VSCode
+Author       : Even.Sand
+Contact      : sandorn@163.com
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2023-01-13 16:43:36
+FilePath     : /项目包/线程小成果/自定义库Ahttp-Aiocarw异步-6星.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import os
@@ -79,15 +79,17 @@ def run_in_pool(bookname, urls):
 
 
 if __name__ == "__main__":
-
-    bookname, urls, _ = get_biqugse_download_url("http://www.biqugse.com/96703/")
-    # 'http://www.biqugse.com/69761/'
-    Aio_feach_run(bookname, urls)
-    Aio_feach_run_back(bookname, urls)
-    ahttp_run(bookname, urls)
-    run_in_pool(bookname, urls)
+    url = 'http://www.biqugse.com/28542/'
+    # url = "http://www.biqugse.com/96703/"
+    bookname, urls, _ = get_biqugse_download_url(url)
+    # 'http://www.biqugse.com/28542/'
+    # Aio_feach_run(bookname, urls)
+    # Aio_feach_run_back(bookname, urls)
+    # ahttp_run(bookname, urls)
+    # run_in_pool(bookname, urls)
 '''
-Aio_ahttp(bookname, urls)           68.30 seconds
-Aio_feach_run(bookname, urls)       75.70 seconds
-ahttp_run(bookname, urls)           75.25 seconds
+Aio_feach_run(bookname, urls)       151sec
+Aio_feach_run_back(bookname, urls)  166sec
+ahttp_run(bookname, urls)           154sec
+run_in_pool(bookname, urls)         335sec
 '''

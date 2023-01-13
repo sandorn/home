@@ -16,8 +16,6 @@ Github       : https://github.com/sandorn/home
 import os
 from multiprocessing import Manager, Process
 
-# from xt_Thread import Singleton_Mixin
-
 
 class MyProcess(Process):
     '''多进程,继承自multiprocessing.Process,无结果返回'''
@@ -84,7 +82,7 @@ class SingletonProcess(Process):
 
 
 class CustomProcess(Process):
-    """多进程,继承自multiprocessing.Process,用Manager.Queue()返回结果"""
+    """多进程,继承自multiprocessing.Process,用Manager返回结果"""
 
     all_Process = []  # 类属性或类变量,实例公用
 
@@ -165,4 +163,4 @@ if __name__ == '__main__':
         files = os.path.split(__file__)[-1].split(".")[0]
         savefile(f'{files}&{bookname}&Poolapply_async.txt', res_list, br='\n')
 
-    # Poolapply_async()  # 用时: 19s
+    Poolapply_async()  # 用时: 19s

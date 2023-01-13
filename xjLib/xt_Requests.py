@@ -18,12 +18,9 @@ from functools import partial
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_random
-from xt_Head import MYHEAD, Headers
+from xt_Head import MYHEAD, RETRY_TIME, TIMEOUT, Head
 from xt_Response import htmlResponse
 from xt_Tools import try_except_wraps
-
-TIMEOUT = 9  # 超时
-RETRY_TIME = 6  # 最大重试次数
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
@@ -33,7 +30,7 @@ TRETRY = retry(
 
 
 def _setKw(kwargs):
-    kwargs.setdefault('headers', Headers().randomheaders)
+    kwargs.setdefault('headers', Head().random)
     kwargs.setdefault('timeout', TIMEOUT)  # @超时
     return kwargs
 
@@ -181,11 +178,11 @@ class SessionClient:
 
 
 if __name__ == '__main__':
+    print(get('https://cn.bing.com'))
     s = SessionClient()
-    print(get_tretry('https://www.google.com'))
+    # print(get_tretry('https://www.google.com'))
     print(s.get('https://cn.bing.com'))
-    # s = SessionClient()
-    # print(s.head('http://httpbin.org/headers').headers)
+    print(s.head('http://httpbin.org/headers').headers)
     # print(s.put('http://httpbin.org/put', data=b'data'))
     # print(s.delete('http://httpbin.org/delete'))
     # print(s.options('http://httpbin.org/get').headers)

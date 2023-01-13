@@ -7,7 +7,7 @@ Develop      : VSCode
 Author       : Even.Sand
 Contact      : sandorn@163.com
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-01-08 23:02:58
+LastEditTime : 2023-01-13 18:17:49
 FilePath     : /项目包/线程小成果/自定义库CustomThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -33,6 +33,5 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
-    main_thread('http://www.biqugse.com/96703/')
-    # 'https://www.biqukan8.cc/38_38163/'    7秒
-    # "2_2714"   #《武炼巅峰》1724万字,47839kb, #!72秒。无线程限制
+    main_thread('http://www.biqugse.com/28542/')  # 143sec
+    # main_thread('http://www.biqugse.com/96703/')

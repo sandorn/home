@@ -16,16 +16,31 @@ https://www.cnblogs.com/haoabcd2010/p/10615364.html
 '''
 import asyncio
 from asyncio.coroutines import iscoroutinefunction
+from asyncio.proactor_events import _ProactorBasePipeTransport
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_Head import Headers
+from xt_Head import TIMEOUT, Head
 from xt_Requests import TRETRY
 from xt_Response import htmlResponse
 
-# 默认超时时间
-TIMEOUT = 20
+
+def silence_event_loop_closed(func):
+    '''解决event loop is closed问题'''
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except RuntimeError as e:
+            if str(e) != 'Event loop is closed':
+                raise
+
+    return wrapper
+
+
+_ProactorBasePipeTransport.__del__ = silence_event_loop_closed(_ProactorBasePipeTransport.__del__)
 
 
 def future_wrapper(func):
@@ -52,7 +67,7 @@ def async_wrapper(func):
     return func if iscoroutinefunction(func) else _wrapper
 
 
-def fun_runin_async(func):
+def func_runin_async(func):
     '''异步装饰器,装饰函数和async函数,直接运行,返回结果'''
 
     @wraps(func)
@@ -87,7 +102,7 @@ class AioCrawl:
                 return response, content
 
         try:
-            kwargs.setdefault('headers', Headers().randomheaders)
+            kwargs.setdefault('headers', Head().random)
             kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
             cookies = kwargs.pop("cookies", {})
             callback = kwargs.pop("callback", None)

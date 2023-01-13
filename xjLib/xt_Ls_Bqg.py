@@ -14,7 +14,7 @@ LastEditTime : 2021-04-14 19:36:16
 '''
 
 from xt_Ahttp import ahttpGet
-from xt_Requests import get
+from xt_Requests import get_tretry
 from xt_Response import htmlResponse
 from xt_String import Re_Sub, Str_Clean, Str_Replace, UNprintable_Chars
 
@@ -99,7 +99,7 @@ def 结果处理(resps):
 
 
 def get_download_url(target):
-    resp = get(target)
+    resp = get_tretry(target)
     assert isinstance(resp, htmlResponse)
     # #pyquery
     # pr = resp.pyquery('.listmain dl dd:gt(11)').children() # 从第二个dt开始，获取后面所有的兄弟节点
@@ -123,7 +123,7 @@ def get_download_url(target):
 
 def get_biqugse_download_url(target):
 
-    resp = get(target)
+    resp = get_tretry(target)
     assert isinstance(resp, htmlResponse)
     _xpath = (
         '//meta[@property="og:title"]//@content',
@@ -140,7 +140,7 @@ def get_biqugse_download_url(target):
 
 
 def get_contents(index, target):
-    resp = get(target)
+    resp = get_tretry(target)
     assert isinstance(resp, htmlResponse)
 
     # #pyquery
