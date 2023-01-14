@@ -39,7 +39,7 @@ def _request_parse(method, url, *args, **kwargs):
     '''自实现重试'''
     attempts = RETRY_TIME
     response = None
-    func_exc = False
+    func_exc = ret_err = False
     kwargs = _setKw(kwargs)
     callback = kwargs.pop("callback", None)
 
@@ -52,18 +52,20 @@ def _request_parse(method, url, *args, **kwargs):
         except requests.Timeout as err:
             attempts -= 1
             func_exc = True
-            # print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Timeout:{err!r}')
+            ret_err = err
+            print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Timeout:{ret_err!r}')
         except Exception as err:
             attempts -= 1
             func_exc = True
-            # print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME-attempts}; Err:{err!r}')
+            ret_err = err
+            print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}')
         else:
             # #返回正确结果
             result = htmlResponse(response)
             if callable(callback): result = callback(result)
             return result
     # #错误返回None
-    if func_exc: return None
+    if func_exc: return ret_err
 
 
 def _request_wraps(method, url, *args, **kwargs):
@@ -101,8 +103,7 @@ def _request_tretry(method, url, *args, **kwargs):
         response = _fetch_run()
     except Exception as err:
         print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
-        # print(_fetch_run.retry.statistics)
-        return None
+        return err
     else:
         # #返回正确结果
         result = htmlResponse(response)

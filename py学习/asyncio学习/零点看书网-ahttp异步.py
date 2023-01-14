@@ -14,26 +14,21 @@ Github       : https://github.com/sandorn/home
 '''
 
 import os
-import time
 
 from xt_Ahttp import ahttpGet, ahttpGetAll
 from xt_File import savefile
 from xt_Ls_Bqg import clean_Content
+from xt_Response import htmlResponse
 
 
 def get_download_url(target):
-    urls = []  # 存放章节链接
     resp = ahttpGet(target)
-    # response = resp.html
-    # 指定解析器
     response = resp.html
 
     _bookname = response.xpath('//h1/text()', first=True)[0]
     全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href')
 
-    for item in 全部章节节点:
-        _ZJHERF = 'https://www.lingdianksw.com' + item
-        urls.append(_ZJHERF)
+    urls = [f'https://www.lingdianksw.com{item}' for item in 全部章节节点]
     return _bookname, urls
 
 
@@ -41,6 +36,10 @@ texts = []
 
 
 def callback(resp):
+    if not isinstance(resp, htmlResponse):
+        texts.append([resp.index, resp.result])
+        print(1111111111111111111, resp.index, resp.result)
+        return
 
     index = resp.index
     response = resp.element
@@ -54,21 +53,21 @@ def callback(resp):
 
 def main(url):
     bookname, urls = get_download_url(url)
-    print('AHTTP,开始下载：《' + bookname + '》', flush=True)
+    print(f'AHTTP,开始下载：《{bookname}》', flush=True)
 
-    resps = ahttpGetAll(urls, pool=200, callback=callback)
+    resps = ahttpGetAll(urls, callback=callback)
 
     texts.sort(key=lambda x: x[0])  # #排序
-    # texts = [[row[i] for i in range(1, 3)] for row in texts]
     # @重新梳理数据，剔除序号
     files = os.path.basename(__file__).split(".")[0]
-    savefile(files + '＆' + bookname + 'mainbycall.txt', texts, br='\n')
+    savefile(f'{files}＆{bookname}mainbycall.txt', texts, br='\n')
 
 
 if __name__ == '__main__':
     url = 'https://www.lingdianksw.com/0/405/'
     main(url)
 '''
+#'https://www.lingdianksw8.com/0/368/'  size: 1.01 MB   15 seconds
 #'https://www.lingdianksw.com/48/48443/'  size: 30.84 MB   42 seconds
 #'https://www.lingdianksw.com/0/404/'  size: 14.78 MB   27 seconds
 #'https://www.lingdianksw.com/0/405/' size: 3267.95 KB  10 seconds

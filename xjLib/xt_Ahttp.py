@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:49
-LastEditTime : 2022-12-10 21:23:42
-FilePath     : /xjLib/xt_Ahttp.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-14 23:33:17
+FilePath     : /CODE/xjLib/xt_Ahttp.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 https://github.com/web-trump/ahttp/blob/master/ahttp.py
@@ -111,8 +110,9 @@ async def _async_fetch(self):
         await _fetch_run()
     except Exception as err:
         print(f'Async_fetch:{self} | RetryErr:{err!r}')
-        self.response = self.content = self.result = None
-        return None
+        self.response = self.content = None
+        self.result = err
+        return self
     else:
         # #返回结果,不管是否正确
         self.result = htmlResponse(self.response, self.content, index=self.index)

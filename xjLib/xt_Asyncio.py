@@ -111,7 +111,7 @@ class AioCrawl:
             response, content = await __fetch()
         except Exception as err:
             print(f'AioCrawl_task_run:{self} | RetryErr:{err!r}')
-            return None
+            return err
         else:
             index = index or id(url)
             result = htmlResponse(response, content, index)
