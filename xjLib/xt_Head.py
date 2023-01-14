@@ -16,8 +16,8 @@ import random
 
 from fake_useragent import UserAgent
 
-TIMEOUT = 9
-RETRY_TIME = 6
+TIMEOUT = 20
+RETRY_TIME = 9
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36",
