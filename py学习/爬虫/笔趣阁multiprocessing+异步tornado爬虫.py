@@ -120,4 +120,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    import requests
+    from xt_Requests import get_tretry
+
+    url = 'https://www.sina.com.cn/'
+    response = get_tretry(url)
+    print(response.text)
