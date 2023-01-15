@@ -6,8 +6,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-15 11:36:33
-FilePath     : /CODE/py学习/asyncio学习/asyncio--在threading多线程中启用多个事件循环.py
+LastEditTime : 2023-01-15 16:20:01
+FilePath     : /CODE/py学习/asyncio--在threading多线程中启用多个事件循环.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -21,21 +21,21 @@ def thread_loop_task(loop):
     # 为子线程设置自己的事件循环
     asyncio.set_event_loop(loop)
 
-    async def work_4():
+    async def work_1():
         i = 0
         while i < 4:
+            print(f'work_1 on loop:{id(loop)}')
+            i += 1
+            await asyncio.sleep(0.2)
+
+    async def work_2():
+        i = 0
+        while i < 6:
             print(f'work_2 on loop:{id(loop)}')
             i += 1
             await asyncio.sleep(0.2)
 
-    async def work_6():
-        i = 0
-        while i < 6:
-            print(f'work_4 on loop:{id(loop)}')
-            i += 1
-            await asyncio.sleep(0.2)
-
-    future = asyncio.gather(work_4(), work_6())
+    future = asyncio.gather(work_1(), work_2())
     loop.run_until_complete(future)
 
 

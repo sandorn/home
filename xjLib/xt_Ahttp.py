@@ -87,10 +87,10 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
-    def start(self):
+    def run(self):
         return asyncio.run(_async_fetch(self))
 
-    async def run(self):
+    async def start(self):
         '''主线程'''
         return await _async_fetch(self)
 
@@ -125,7 +125,7 @@ async def create_gather_task(tasks):
     new_tasks = []
     for index, task in enumerate(tasks, 1):
         task.index = index
-        _coroutine = task.run()
+        _coroutine = task.start()
         new_tasks.append(_coroutine)
     return await asyncio.gather(*new_tasks, return_exceptions=True)
 
@@ -138,7 +138,7 @@ async def create_threads_task(coroes):
     new_tasks = []
     for index, coro in enumerate(coroes, 1):
         coro.index = index
-        _coroutine = coro.run()
+        _coroutine = coro.start()
         new_tasks.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
 
     return [task.result() for task in new_tasks]
@@ -146,7 +146,7 @@ async def create_threads_task(coroes):
 
 def aiohttp_parse(method, url, *args, **kwargs):
     task = eval(method)(url, *args, **kwargs)
-    _coroutine = task.run()
+    _coroutine = task.start()
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(_coroutine)
 
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     res = ahttpGetAll([url_headers, url_get])
     print(res)
     #######################################################################################################
-    print(get('http://httpbin.org/headers').start().headers)
+    print(get('http://httpbin.org/headers').run().headers)
     # print(put('http://httpbin.org/put', data=b'data').start())
     # print(delete('http://httpbin.org/delete').start())
     # print(options('http://httpbin.org/get').start().headers)

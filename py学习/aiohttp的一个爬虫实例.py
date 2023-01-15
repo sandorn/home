@@ -6,8 +6,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-15 10:54:35
-FilePath     : /CODE/py学习/asyncio学习/aiohttp的一个爬虫实例.py
+LastEditTime : 2023-01-15 16:15:39
+FilePath     : /CODE/py学习/aiohttp的一个爬虫实例.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -52,7 +52,7 @@ class AsnycGrab(object):
         while not work_queue.empty():
             current_url = await work_queue.get()
             try:
-                task_status = await self.get_results(current_url)
+                self.task_status = await self.get_results(current_url)
             except Exception as e:
                 logging.exception(f'Error for {current_url}', exc_info=True)
 
@@ -72,6 +72,7 @@ if __name__ == '__main__':
     async_example = AsnycGrab(['http://www.baidu.com', 'https://www.sina.com.cn', 'https://www.163.com/', 'https://www.zhihu.com/'], 5)
     async_example.start_loop()
     print(async_example.results)
+    print(async_example.task_status)  #'Completed'
 '''
 ————————————————
 版权声明：本文为CSDN博主「天痕坤」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
