@@ -70,5 +70,5 @@ def func3():
 
 
 if __name__ == "__main__":
-    # func()
-    func3()
+    func()
+    # func3()

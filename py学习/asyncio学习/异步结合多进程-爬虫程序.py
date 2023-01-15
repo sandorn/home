@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:36:04
-LastEditTime : 2022-12-14 23:40:54
-FilePath     : /py学习/asyncio学习/异步结合多进程-爬虫程序.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-15 09:30:53
+FilePath     : /CODE/py学习/asyncio学习/异步结合多进程-爬虫程序.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import asyncio
 import time
 from multiprocessing import Pool

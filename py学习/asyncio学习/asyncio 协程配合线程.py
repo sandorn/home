@@ -1,20 +1,20 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-01 16:53:55
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-02 16:33:12
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-15 11:30:17
+FilePath     : /CODE/py学习/asyncio学习/asyncio 协程配合线程.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
-import inspect
-import ctypes
-import time
 import asyncio
+import ctypes
+import inspect
+import time
 from threading import Thread
 
 
@@ -58,7 +58,7 @@ start = time.time()
 # 主线程中创建一个 new_loop
 new_loop = asyncio.get_event_loop()
 # 创建子线程 在其中开启无限事件循环
-t = Thread(target=start_loop, args=(new_loop,))
+t = Thread(target=start_loop, args=(new_loop, ))
 t.start()
 print(f'TIME: {time.time() - start}')
 
@@ -67,6 +67,7 @@ print(f'TIME: {time.time() - start}')
 # 一共执行的时间大概在 6 s 左右
 asyncio.run_coroutine_threadsafe(do_some_work(6), new_loop)
 asyncio.run_coroutine_threadsafe(do_some_work(4), new_loop)
+new_loop.stop()
 time.sleep(7)
-stop_thread(t)
+# stop_thread(t)
 # @不会停止，典型另开巡视协程

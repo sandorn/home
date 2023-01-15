@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:36:04
-LastEditTime : 2022-12-14 23:45:26
-FilePath     : /py学习/asyncio学习/主副线程动态添加协程任务.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-15 10:14:22
+FilePath     : /CODE/py学习/asyncio学习/主副线程动态添加协程任务.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -24,13 +23,13 @@ async def create_task(event_loop, maxi=10):
         # 每秒产生一个任务, 提交到线程里的循环中, event_loop作为参数
         print(f"[create_task] 第{i}个任务")
         asyncio.run_coroutine_threadsafe(production(i), event_loop)
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.01)
         i += 1
 
 
 async def production(i):
     print(f"[production] 第{i}个coroutine任务")
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.01)
 
 
 def start_loop(loop):

@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:36:04
-LastEditTime : 2022-12-14 23:35:46
-FilePath     : /py学习/asyncio学习/使用ThreadPoolExecutor和asyncio完成阻塞IO请求.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-15 08:38:37
+FilePath     : /CODE/py学习/asyncio学习/使用ThreadPoolExecutor和asyncio完成阻塞IO请求.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -45,19 +44,18 @@ def get_url_socket(url):
             break
 
     data = data.decode("utf8")
-    html_data = data.split("\r\n\r\n")[1]
-    print(html_data)
+    # html_data = data.split("\r\n\r\n")[1]
+    print(data)
     client.close()
 
 
 # 如果在协程中要用到阻塞IO，就把他放到线程池里面去运行，在运行的时候，本质还是线程池，同步的
 if __name__ == "__main__":
-    import time
     loop = asyncio.get_event_loop()
     pool = ThreadPoolExecutor(3)
     tasks = []
-    for index in range(20):
-        url = "https://www.baidu.com/"
+    url = "https://www.lingdianksw.com/0/405"
+    for _ in range(2):
         task = loop.run_in_executor(pool, get_url_socket, url)
         tasks.append(task)
     loop.run_until_complete(asyncio.wait(tasks))

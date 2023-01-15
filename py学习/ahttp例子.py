@@ -13,26 +13,20 @@
 https://www.cnblogs.com/c-x-a/p/9507153.html
 '''
 
-
 import asyncio
 import os
 from functools import partial, wraps
 from random import random
 
+import aiohttp
 from cchardet import detect
-
-try:
-    import aiohttp
-except ImportError:
-    raise RuntimeError('您没有安装aiohttp，请执行安装命令 pip install aiohttp  ')
-
 
 result, all_tasks, connector, sessiondict = [], [], [], {}
 
 
 class AhttpRequest():
-    def __init__(self, method, url, timeout=None, session=False, headers=None, cookies=None, unsafe=None,
-                 mark='***mark***', **kwargs):
+
+    def __init__(self, method, url, timeout=None, session=False, headers=None, cookies=None, unsafe=None, mark='***mark***', **kwargs):
         self.method, self.session, self.url, self.mark, self.timeout = method, session, url, mark, timeout
         callback = kwargs.pop('callback', None)
         self.callback = callback
@@ -46,6 +40,7 @@ class AhttpRequest():
 
 
 class WithSession():
+
     def __init__(self, mark, session=True):
         self.get = partial(AhttpRequest, 'GET', session=session, mark=mark)
         self.options = partial(AhttpRequest, 'OPTIONS', session=session, mark=mark)
@@ -66,6 +61,7 @@ delete = partial(AhttpRequest, 'DELETE')
 
 
 class ClientSession(aiohttp.ClientSession):
+
     def close(self):
         """
         对ClientSession类的close方法进行重写
@@ -79,7 +75,7 @@ class ClientSession(aiohttp.ClientSession):
 
 
 def Session(cookies=None, headers=None, unsafe=None):
-    mark = str(round(random() * 10 ** 10))
+    mark = str(round(random() * 10**10))
     sessiondict[mark] = (cookies, headers, aiohttp.CookieJar(unsafe=True) if unsafe else None)
     return WithSession(mark=mark)
 
@@ -95,6 +91,7 @@ def run(tasks, pool=2, exception_handle=None):
 
 
 class AhttpResponse():
+
     def __init__(self, content, clientResponse):
         self.content = content
         self.clientResponse = clientResponse
@@ -145,8 +142,7 @@ async def go(tasks, pool, exception_handle, loop):
     except BaseException:
         pass
     for i in classify:
-        async with ClientSession(cookies=sessiondict[i][0], headers=sessiondict[i][1], cookie_jar=sessiondict[i][2],
-                                 connector_owner=False, connector=conn) as locals()['session{}'.format(i)]:
+        async with ClientSession(cookies=sessiondict[i][0], headers=sessiondict[i][1], cookie_jar=sessiondict[i][2], connector_owner=False, connector=conn) as locals()['session{}'.format(i)]:
             for j in classify[i]:
                 all_tasks.append(control_sem(sem, j, exception_handle, session=locals()['session{}'.format(i)]))
 
@@ -164,8 +160,7 @@ async def fetch(session, i, exception_handle):
                 content = await resp.read()
                 myAhttp = AhttpResponse(content, resp)
         else:
-            async with aiohttp.ClientSession(cookies=i.sessiondict[0], headers=i.sessiondict[1],
-                                             cookie_jar=i.sessiondict[2]) as session2:
+            async with aiohttp.ClientSession(cookies=i.sessiondict[0], headers=i.sessiondict[1], cookie_jar=i.sessiondict[2]) as session2:
                 async with session2.request(i.method, i.url, timeout=i.timeout, **(i.kwargs)) as resp:
                     content = await resp.read()
                     myAhttp = AhttpResponse(content, resp)
@@ -188,10 +183,10 @@ async def control_sem(sem, i, exception_handle, session):
     async with sem:
         await fetch(session, i, exception_handle)
 
+
 # __all__ = (
 #     'Session', 'get', 'options', 'head', 'post', 'put', 'patch', 'delete'
 # )
 
 if __name__ == '__main__':
-    urls = ["http://www.runoob.com/python/att-time-mktime.html",
-            "https://blog.csdn.net/getcomputerstyle/article/details/71515331"]
+    urls = ["http://www.httpbin.org/get", "http://www.httpbin.org/ip"]

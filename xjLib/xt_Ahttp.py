@@ -120,7 +120,7 @@ async def _async_fetch(self):
         return self.result
 
 
-async def _gather_async_fetch(tasks):
+async def create_gather_task(tasks):
     '''异步单线程,使用同一个session'''
     new_tasks = []
     for index, task in enumerate(tasks, 1):
@@ -130,7 +130,7 @@ async def _gather_async_fetch(tasks):
     return await asyncio.gather(*new_tasks, return_exceptions=True)
 
 
-async def _threads_async_fetch(coroes):
+async def create_threads_task(coroes):
     '''异步多线程,使用不同session'''
     threadsafe_loop = asyncio.new_event_loop()
     Thread(target=threadsafe_loop.run_forever, name='ThreadSafe', daemon=True).start()
@@ -151,18 +151,18 @@ def aiohttp_parse(method, url, *args, **kwargs):
     return loop.run_until_complete(_coroutine)
 
 
-def aiohttp_parse_urls(method, urls, *args, **kwargs):
+def aiohttp__issue(method, urls, *args, **kwargs):
     coroes = [eval(method)(url, *args, **kwargs) for url in urls]
-    _coroutine = _threads_async_fetch(coroes) if kwargs.pop('threadsafe', True) else _gather_async_fetch(coroes)
+    _coroutine = create_threads_task(coroes) if kwargs.pop('threadsafe', True) else create_gather_task(coroes)
+    # return asyncio.run(_coroutine)  # 3.7+ 方式 , threadsafe:单线程或者多线程
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(_coroutine)
-    # return asyncio.run(_coroutine)  # 3.7+ 方式 , threadsafe:单线程或者多线程
 
 
 ahttpGet = partial(aiohttp_parse, "get")
 ahttpPost = partial(aiohttp_parse, "post")
-ahttpGetAll = partial(aiohttp_parse_urls, "get")
-ahttpPostAll = partial(aiohttp_parse_urls, "post")
+ahttpGetAll = partial(aiohttp__issue, "get")
+ahttpPostAll = partial(aiohttp__issue, "post")
 
 if __name__ == "__main__":
 
