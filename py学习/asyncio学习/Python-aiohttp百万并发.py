@@ -1,3 +1,16 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-15 14:40:30
+FilePath     : /CODE/py学习/asyncio学习/Python-aiohttp百万并发.py
+Github       : https://github.com/sandorn/home
+==============================================================
+'''
 # modified fetch function with semaphore
 import asyncio
 import random
@@ -9,7 +22,7 @@ async def fetch(url, session):
     async with session.get(url) as response:
         delay = response.headers.get("DELAY")
         date = response.headers.get("DATE")
-        print("{}:{} with delay {}".format(date, response.url, delay))
+        print(f"{date}:{response.url} with delay {delay}")
         return await response.read()
 
 
@@ -36,12 +49,12 @@ async def run(r):
         responses = asyncio.gather(*tasks)
         await responses
 
+
 number = 10000
 loop = asyncio.get_event_loop()
 
 future = asyncio.ensure_future(run(number))
 loop.run_until_complete(future)
-
 '''
 Making 1 million requests with python-aiohttp
 https://pawelmhm.github.io/asyncio/python/aiohttp/2016/04/22/asyncio-aiohttp.html

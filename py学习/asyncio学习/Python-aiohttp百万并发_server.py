@@ -1,17 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-10 19:15:57
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-10 19:16:21
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-15 14:38:58
+FilePath     : /CODE/py学习/asyncio学习/Python-aiohttp百万并发_server.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
-#!/usr/local/bin/python3.5
 import asyncio
 import random
 from datetime import datetime
@@ -34,9 +33,9 @@ async def hello(request):
     # https://docs.python.org/3/library/asyncio-eventloop.html#executor
     # https://pymotw.com/3/asyncio/executors.html
     with open("frank.html", "rb") as html_body:
-        print("{}: {} delay: {}".format(n, request.path, delay))
-        response = web.Response(body=html_body.read(), headers=headers)
-        return response
+        print(f"{n}: {request.path} delay: {delay}")
+        return web.Response(body=html_body.read(), headers=headers)
+
 
 app = web.Application()
 app.router.add_route("GET", "/{name}", hello)

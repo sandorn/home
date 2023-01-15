@@ -23,8 +23,7 @@ import aiohttp
 import aiomysql
 from lxml import etree
 from pyquery import PyQuery
-
-from xt_DAO.dbconf import db_conf
+from xt_DAO.cfg import DB_CONFIG
 
 pool = ''
 # sem = asyncio.Semaphore(4)  用来控制并发数，不指定会全速运行
@@ -94,18 +93,18 @@ async def save_to_database(information, pool):
     ROWstr = ''  # 行字段
     ColumnStyle = ' VARCHAR(255)'
     for key in information.keys():
-        COLstr = COLstr + ' ' + key + ColumnStyle + ','
-        ROWstr = (ROWstr + '"%s"' + ',') % (information[key])
+        COLstr = f'{COLstr} {key}{ColumnStyle},'
+        ROWstr = f'{ROWstr}"%s",' % information[key]
     # 异步IO方式插入数据库
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
             try:
-                await cur.execute("SELECT * FROM  %s" % (TABLE_NAME))
-                await cur.execute("INSERT INTO %s VALUES (%s)" % (TABLE_NAME, ROWstr[:-1]))
+                await cur.execute(f"SELECT * FROM  {TABLE_NAME}")
+                await cur.execute(f"INSERT INTO {TABLE_NAME} VALUES ({ROWstr[:-1]})")
                 print('插入数据成功')
             except aiomysql.Error:
-                await cur.execute("CREATE TABLE %s (%s)" % (TABLE_NAME, COLstr[:-1]))
-                await cur.execute("INSERT INTO %s VALUES (%s)" % (TABLE_NAME, ROWstr[:-1]))
+                await cur.execute(f"CREATE TABLE {TABLE_NAME} ({COLstr[:-1]})")
+                await cur.execute(f"INSERT INTO {TABLE_NAME} VALUES ({ROWstr[:-1]})")
             except aiomysql.Error as e:
                 print('mysql error %d: %s' % (e.args[0], e.args[1]))
 
@@ -114,7 +113,7 @@ async def handle_elements(link, session):
     '''
     获取详情页的内容并解析
     '''
-    print('开始获取: {}'.format(link))
+    print(f'开始获取: {link}')
     source = await fetch(link, session)
     # 添加到已爬取的集合中
     crawled_links_detail.add(link)
@@ -145,11 +144,11 @@ async def consumer():
 
 async def main(loop):
     global pool
-    pool = await aiomysql.create_pool(host=db_conf['TXbook']['host'], port=db_conf['TXbook']['port'], user=db_conf['TXbook']['user'], password=db_conf['TXbook']['passwd'], db=db_conf['TXbook']['db'], loop=loop, charset=db_conf['TXbook']['charset'], autocommit=True)
+    pool = await aiomysql.create_pool(host=DB_CONFIG['TXbook']['host'], port=DB_CONFIG['TXbook']['port'], user=DB_CONFIG['TXbook']['user'], password=DB_CONFIG['TXbook']['passwd'], db=DB_CONFIG['TXbook']['db'], loop=loop, charset=DB_CONFIG['TXbook']['charset'], autocommit=True)
 
     for i in range(1, MAX_PAGE):
         urls.append(url.format(city, str(i)))
-    print('爬取总页数：{} 任务开始...'.format(str(MAX_PAGE)))
+    print(f'爬取总页数：{str(MAX_PAGE)} 任务开始...')
     asyncio.ensure_future(consumer())
 
 

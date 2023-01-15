@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2022-12-20 20:23:25
-LastEditTime : 2022-12-20 20:23:25
-FilePath     : /xjLib/xt_DAO/__init__.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-15 13:21:30
+FilePath     : /CODE/xjLib/xt_DAO/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
