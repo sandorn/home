@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-01-14 00:37:46
+LastEditTime : 2023-01-17 00:10:22
 FilePath     : /CODE/项目包/线程小成果/自定义库CustomThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================

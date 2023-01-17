@@ -14,7 +14,8 @@ Github       : https://github.com/sandorn/home
 '''
 
 import asyncio
-from concurrent.futures import (ProcessPoolExecutor, ThreadPoolExecutor, as_completed)
+from concurrent.futures import (ProcessPoolExecutor, ThreadPoolExecutor,
+                                as_completed)
 
 
 def futuresMap(_cls):
@@ -148,31 +149,33 @@ ThreadPool = futuresPool(ThreadPoolExecutor)
 ProcessPool = futuresPool(ProcessPoolExecutor)
 
 
-class FuncRunThreadPool:
+class FuncInThreadPool:
     '''将程序放到ThreadPoolExecutor中异步运行,返回结果'''
 
-    async def _run(self, loop, func, *args, **kwargs):
-        self.future_list = []
-        self.executor = ThreadPoolExecutor(64)
-        args = list(zip(*args))
-        for arg in args:
-            task = loop.run_in_executor(self.executor, func, *arg, **kwargs)
+    def __init__(self, func, *args, **kwargs):
+        self.future_list = self.result = []
+        self.executor = ThreadPoolExecutor(32)
+        self.func, self.args, self.kwargs = func, args, kwargs
+        self.start()
+
+    async def _working(self):
+        __args = list(zip(*self.args))
+        for arg in __args:
+            task = self.loop.run_in_executor(self.executor, self.func, *arg, **self.kwargs)
             self.future_list.append(task)
         await asyncio.gather(*self.future_list)
 
         self.result = [fu.result() for fu in self.future_list]
         return self.result
 
-    def start(self, func, *args, **kwargs):
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self._run(loop, func, *args, **kwargs))
+    def start(self):
+        self.loop = asyncio.get_event_loop()
+        return self.loop.run_until_complete(self._working())
 
 
 if __name__ == '__main__':
 
     from xt_Requests import get_tretry
 
-    ag = FuncRunThreadPool()
-    res = ag.start(get_tretry, ["http://httpbin.org/get"] * 3)
-    print(ag.result)
-    print(FuncRunThreadPool().start(get_tretry, ["http://httpbin.org/get"] * 3))
+    res = FuncInThreadPool(get_tretry, ["http://httpbin.org/get"] * 3)
+    print(res.result)

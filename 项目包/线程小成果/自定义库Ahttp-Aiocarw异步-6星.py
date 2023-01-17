@@ -19,7 +19,7 @@ from xt_Asyncio import AioCrawl
 from xt_File import savefile
 from xt_Ls_Bqg import (clean_Content, get_biqugse_download_url, get_contents, 结果处理)
 from xt_Response import htmlResponse
-from xt_Thread import FuncRunThreadPool
+from xt_Thread import FuncInThreadPool
 from xt_Time import fn_timer
 
 
@@ -41,10 +41,13 @@ def handle_back_ait(resp):
     index = resp.index
     element = resp.element
 
-    _title = "".join(element.xpath('//h1/text()'))
+    _title = resp.pyquery('h1').text()
+    # _title = "".join(element.xpath('//h1/text()'))
     title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
-    _showtext = element.xpath('//*[@id="content"]/text()')
+    # _showtext = element.xpath('//*[@id="content"]/text()')
+    _showtext = resp.pyquery('#content').text()
     content = clean_Content(_showtext)
+    # if len(content) < 10: print(resp, '||||||||||||||||||||||||||', content, '||||||||||||||||||||||||||', resp.text)
     return [index, title, content]
 
 
@@ -81,7 +84,7 @@ def Aio_add_func(bookname, urls):
 @fn_timer
 def func_ThreadPool(bookname, urls):
     indexes = list(range(len(urls)))
-    texts = FuncRunThreadPool().start(get_contents, indexes, urls)
+    texts = FuncInThreadPool(get_contents, indexes, urls).result
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
     savefile(f'{files}&{bookname}func_ThreadPool.txt', texts, br='\n')
@@ -91,16 +94,26 @@ if __name__ == "__main__":
     # url = 'http://www.biqugse.com/28542/'
     url = "http://www.biqugse.com/96703/"
     bookname, urls, _ = get_biqugse_download_url(url)
-    # 'http://www.biqugse.com/28542/'
-    Aio_feach_run(bookname, urls)
+    # Aio_feach_run(bookname, urls)
     # Aio_feach_back(bookname, urls)
     # ahttp_run(bookname, urls)
     # Aio_add_func(bookname, urls)
-    # func_ThreadPool(bookname, urls)
+    func_ThreadPool(bookname, urls)
 '''
-Aio_feach_run(bookname, urls)        151sec
-Aio_feach_run_back(bookname, urls)   166sec
-ahttp_run(bookname, urls)            154sec
-Aio_add_func(bookname, urls)         #@335sec
-func_ThreadPool(bookname, urls)      152sec
+Aio_feach_run(bookname, urls)        179sec
+Aio_feach_run_back(bookname, urls)   187sec
+ahttp_run(bookname, urls)            205sec
+Aio_add_func(bookname, urls)         244sec
+func_ThreadPool(bookname, urls)      178sec
+[自定义库Ahttp-Aiocarw异步-6星&没有人比我更从心Aio_feach_run.txt]保存完成,	file size: 941.81 KB。
+d:\CODE\项目包\线程小成果\自定义库Ahttp-Aiocarw异步-6星.py ,line:<28>; func:<Aio_feach_run> run time: 5.59 seconds
+[自定义库Ahttp-Aiocarw异步-6星&没有人比我更从心Aio_feach_back.txt]保存完成,	file size: 941.43 KB。
+d:\CODE\项目包\线程小成果\自定义库Ahttp-Aiocarw异步-6星.py ,line:<56>; func:<Aio_feach_back> run time: 6.10 seconds
+[自定义库Ahttp-Aiocarw异步-6星&没有人比我更从心ahttp_run.txt]保存完成,	file size: 941.42 KB。
+d:\CODE\项目包\线程小成果\自定义库Ahttp-Aiocarw异步-6星.py ,line:<66>; func:<ahttp_run> run time: 5.23 seconds
+[自定义库Ahttp-Aiocarw异步-6星&没有人比我更从心Aio_add_func.txt]保存完成,	file size: 941.43 KB。
+d:\CODE\项目包\线程小成果\自定义库Ahttp-Aiocarw异步-6星.py ,line:<75>; func:<Aio_add_func> run time: 5.75 seconds
+[自定义库Ahttp-Aiocarw异步-6星&没有人比我更从心func_ThreadPool.txt]保存完成,	file size: 941.43 KB。
+d:\CODE\项目包\线程小成果\自定义库Ahttp-Aiocarw异步-6星.py ,line:<86>; func:<func_ThreadPool> run time: 5.90 seconds
+
 '''

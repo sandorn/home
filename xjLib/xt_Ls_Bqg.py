@@ -92,6 +92,7 @@ def 结果处理(resps):
         _title, _showtext = resp.xpath(_xpath)
         title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
         content = clean_Content(_showtext)
+        # if len(content) < 10: print(resp, '||||||||||||||||||||||||||', resp.text)
         _texts.append([resp.index, title, content])
 
     _texts.sort(key=lambda x: x[0])
@@ -144,14 +145,11 @@ def get_contents(index, target):
     assert isinstance(resp, htmlResponse)
 
     # #pyquery
-    # _title = resp.pyquery('h1').text()
-    # _showtext = resp.pyquery('#content').text()
+    _title = resp.pyquery('h1').text()
+    _showtext = resp.pyquery('#content').text()
 
-    _xpath = (
-        '//h1/text()',
-        '//*[@id="content"]/text()',
-    )
-    _title, _showtext = resp.xpath(_xpath)
+    # _xpath = ('//h1/text()', '//*[@id="content"]/text()')
+    # _title, _showtext = resp.xpath(_xpath)
 
     title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
     content = clean_Content(_showtext)
@@ -181,4 +179,4 @@ if __name__ == "__main__":
     for _ in range(len(urls)):
         ...
     res = get_contents(1, urls[1])
-    # print(res)
+    print(res)

@@ -11,7 +11,7 @@ FilePath     : /CODE/xjLib/xt_Thread/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-from .futures import FuncRunThreadPool, ProcessPool, ThreadPool
+from .futures import FuncInThreadPool, ProcessPool, ThreadPool
 from .manage import WorkManager, thread_pool
 from .Process import CustomProcess, Do_CustomProcess, MyProcess
 from .Singleon import (Singleton_Meta, Singleton_Mixin, singleton_wrap, singleton_wrap_class, singleton_wrap_return_class)

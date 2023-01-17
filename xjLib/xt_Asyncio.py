@@ -90,22 +90,21 @@ class AioCrawl:
     def __init__(self):
         self.future_list = []
         self.result_list = []
-        self.concurrent = 0  # 记录并发数
 
     async def _task_run(self, url, method='GET', index=None, *args, **kwargs):
         '''运行任务'''
+        kwargs.setdefault('headers', Head().random)
+        kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
+        cookies = kwargs.pop("cookies", {})
+        callback = kwargs.pop("callback", None)
 
         @TRETRY
         async def __fetch():
-            async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=cookies, connector=Tconn) as session, session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
+            async with ClientSession(cookies=cookies, connector=TCPConnector(ssl=False)) as session, session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
                 content = await response.read()
                 return response, content
 
         try:
-            kwargs.setdefault('headers', Head().random)
-            kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
-            cookies = kwargs.pop("cookies", {})
-            callback = kwargs.pop("callback", None)
             # import threading
             # print(f'Count:{threading.active_count()} | {threading.current_thread()}')
             response, content = await __fetch()
@@ -127,7 +126,6 @@ class AioCrawl:
             task = asyncio.create_task(self._task_run(url, method=method, index=index, *args, **kwargs))
             if callback: task.add_done_callback(callback)
             self.future_list.append(task)
-            self.concurrent += 1  # 并发数加 1
 
         return await asyncio.gather(*self.future_list, return_exceptions=True)
 
@@ -139,7 +137,7 @@ class AioCrawl:
         return loop.run_until_complete(_coroutine)
 
     async def _func_run(self, loop, func, *args, **kwargs):
-        executor = ThreadPoolExecutor()
+        executor = ThreadPoolExecutor(32)
         args = list(zip(*args))
         for arg in args:
             task = loop.run_in_executor(executor, func, *arg, **kwargs)
@@ -156,7 +154,6 @@ class AioCrawl:
             future = self.future_list.pop()
             res = future.result()
             self.result_list.append(res)
-            self.concurrent -= 1  # 并发数-1
 
         res, self.result_list = self.result_list, []
         return res

@@ -1,22 +1,21 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-07-24 13:31:44
-FilePath     : /xjLib/xt_Thread/Custom.py
-LastEditTime : 2020-11-27 18:34:42
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-16 23:43:22
+FilePath     : /CODE/xjLib/xt_Thread/thread.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 import ctypes
 import inspect
 from queue import Empty, Queue
-from threading import Condition, Event, Thread, enumerate
+from threading import Event, Thread, enumerate
 from time import time
 
 from xt_Class import item_get_Mixin

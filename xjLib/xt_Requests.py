@@ -74,12 +74,12 @@ def _request_wraps(method, url, *args, **kwargs):
     callback = kwargs.pop("callback", None)
 
     @try_except_wraps
-    def _fetch_run():
+    def __fetch_run():
         response = requests.request(method, url, *args, **kwargs)
         response.raise_for_status()
         return response
 
-    response = _fetch_run()
+    response = __fetch_run()
     # #错误返回None
     if response is None: return None
     # #返回正确结果
@@ -94,13 +94,13 @@ def _request_tretry(method, url, *args, **kwargs):
     callback = kwargs.pop("callback", None)
 
     @TRETRY
-    def _fetch_run():
+    def __fetch_run():
         response = requests.request(method, url, *args, **kwargs)
         response.raise_for_status()
         return response
 
     try:
-        response = _fetch_run()
+        response = __fetch_run()
     except Exception as err:
         print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
         return err
@@ -179,7 +179,7 @@ class SessionClient:
 
 
 if __name__ == '__main__':
-    print(get('https://cn.bing.com'))
+    print(get_wraps('https://cn.bing.com'))
     s = SessionClient()
     # print(get_tretry('https://www.google.com'))
     print(s.get('https://cn.bing.com'))

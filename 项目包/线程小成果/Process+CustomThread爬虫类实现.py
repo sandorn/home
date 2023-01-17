@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-11 15:08:31
-FilePath     : /项目包/线程小成果/进程+多线程爬虫.py
+LastEditTime : 2023-01-16 14:20:05
+FilePath     : /CODE/项目包/线程小成果/进程+多线程爬虫.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -18,7 +17,7 @@ from multiprocessing import Process
 
 from xt_File import savefile
 from xt_Ls_Bqg import Str_Replace, clean_Content
-from xt_Requests import Headers, get, htmlResponse
+from xt_Requests import Head, get, htmlResponse
 from xt_Thread import CustomThread
 
 
@@ -42,7 +41,7 @@ class ScrapyOne():
 
     # 爬取章节链接
     def scrapyLink(self):
-        resp = get(self.rootLink, headers=Headers().randomheaders)
+        resp = get(self.rootLink, headers=Head().random)
         assert isinstance(resp, htmlResponse)
         _xpath = [
             '//meta[@property="og:title"]//@content',
@@ -86,7 +85,7 @@ class ScrapyProcess(Process):
 
 if __name__ == "__main__":
     url_list = [
-        'http://www.biqugse.com/96703/',
+        'http://www.biqugse.com/96703/',  # 18s
         # 'http://www.biqugse.com/96717/',
         # 'http://www.biqugse.com/76169/',
         # 'http://www.biqugse.com/82744/',
