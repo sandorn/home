@@ -2,21 +2,18 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-05 15:00:03
-FilePath     : /xjLib/xt_Thread/qThread.py
+LastEditTime : 2023-01-17 23:59:15
+FilePath     : /CODE/xjLib/xt_Thread/qThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
-from threading import Lock
-
 from PyQt5.QtCore import QThread
-from xt_Thread import (Singleton_Mixin, create_mixin_class, singleton_wrap_class, singleton_wrap_return_class)
+from xt_Thread import Singleton_Mixin, create_mixin_class, singleton_wrap_class
 
 
 class CustomQThread(QThread):
