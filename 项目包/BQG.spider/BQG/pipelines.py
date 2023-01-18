@@ -142,6 +142,7 @@ class PipelineToMysql(object):
             self.db.add(_BOOKNAME)
 
         _result = self.conn.get_all_from_db(_BOOKNAME)
+        assert isinstance(_result, (list,tuple))
         ZJHERF_list = [res[5] for res in _result]
 
         if item['ZJHERF'] in ZJHERF_list:

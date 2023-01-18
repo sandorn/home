@@ -6,7 +6,7 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-from xt_Head import Headers
+from xt_Head import Head
 
 
 class RandomUserAgentMiddlware(object):
@@ -14,14 +14,14 @@ class RandomUserAgentMiddlware(object):
 
     def __init__(self, crawler):
         super(RandomUserAgentMiddlware, self).__init__()
-        self.ua = Headers().ua
+        self.ua = Head().ua
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(crawler)
 
     def process_request(self, request, spider):
-        request.headers.setdefault('User-Agent', Headers().ua)
+        request.headers.setdefault('User-Agent', Head().ua)
 
 
 class BqgSpiderMiddleware(object):
@@ -48,8 +48,7 @@ class BqgSpiderMiddleware(object):
         # it has processed the response.
 
         # Must return an iterable of Request, dict or Item objects.
-        for i in result:
-            yield i
+        yield from result
 
     def process_spider_exception(self, response, exception, spider):
         # Called when a spider or process_spider_input() method
@@ -65,11 +64,10 @@ class BqgSpiderMiddleware(object):
         # that it doesn’t have a response associated.
 
         # Must return only requests (not items).
-        for r in start_requests:
-            yield r
+        yield from start_requests
 
     def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+        spider.logger.info(f'Spider opened: {spider.name}')
 
 
 class BqgDownloaderMiddleware(object):
@@ -116,4 +114,4 @@ class BqgDownloaderMiddleware(object):
         pass
 
     def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+        spider.logger.info(f'Spider opened: {spider.name}')

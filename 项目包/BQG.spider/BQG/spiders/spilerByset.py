@@ -21,29 +21,9 @@ _p = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(_p)
 import scrapy
 from items import BqgItem
-from sqlalchemy import Column
-from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
-from xt_DAO.xt_chemyMeta import Base_Model
 from xt_DAO.xt_mysql import DbEngine as mysql
 from xt_Ls_Bqg import clean_Content
 from xt_String import Str_Replace, align
-
-
-def make_model(_BOOKNAME):
-    # # 类工厂函数
-    class table_model(Base_Model):
-        # Base_Model 继承自from xt_DAO.xt_chemyMeta.Model_Method_Mixin
-        __tablename__ = _BOOKNAME
-        __table_args__ = {'extend_existing': True}
-
-        ID = Column(INTEGER(10), primary_key=True)
-        BOOKNAME = Column(VARCHAR(255), nullable=False)
-        INDEX = Column(INTEGER(10), nullable=False)
-        ZJNAME = Column(VARCHAR(255), nullable=False)
-        ZJTEXT = Column(TEXT, nullable=False)
-        ZJHERF = Column(VARCHAR(255), nullable=False)
-
-    return table_model
 
 
 class Spider(scrapy.Spider):
@@ -83,6 +63,7 @@ class Spider(scrapy.Spider):
             self.db.add(_BOOKNAME)
 
         _result = self.connect.get_all_from_db(_BOOKNAME)
+        assert isinstance(_result, (list, tuple))
         ZJHERF_list = [res[5] for res in _result]
 
         全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()

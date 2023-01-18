@@ -20,7 +20,7 @@ from copy import deepcopy
 
 import aiomysql
 from xt_Class import item_Mixin
-from xt_DAO.cfg import DB_CONFIG  # type: ignore
+from xt_DAO.cfg import DB_CONFIG
 
 
 class AioMysql(item_Mixin):
