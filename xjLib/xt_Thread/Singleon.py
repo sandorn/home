@@ -11,7 +11,7 @@ FilePath     : /xjLib/xt_Singleon.py
 LastEditTime : 2020-12-08 12:30:49
 #Github       : https://github.com/sandorn/home
 #==============================================================
-单例，与多线程无关
+单例，与线程无关
 '''
 
 from functools import wraps

@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-15 09:30:53
+LastEditTime : 2023-01-18 15:04:03
 FilePath     : /CODE/py学习/asyncio学习/异步结合多进程-爬虫程序.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -35,7 +35,7 @@ async def get_html(url):
         async with session.request('GET', url) as resp:  # 提出请求
             html = await resp.read()  # 直接获取到bytes
             htmls.append(html)
-            print('异步获取%s下的html.' % url)
+            print(f'异步获取{url}下的html.')
 
 
 def loop_get_html():
@@ -43,7 +43,7 @@ def loop_get_html():
     loop = asyncio.get_event_loop()  # 获取事件循环
     tasks = [get_html(url) for url in urls]  # 把所有任务放到一个列表中
     loop.run_until_complete(asyncio.wait(tasks))  # 激活协程
-    loop.close()  # 关闭事件循环
+    # loop.close()  # 关闭事件循环
 
 
 def multi_parse_html(html, cnt):

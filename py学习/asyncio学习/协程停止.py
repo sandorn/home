@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:36:04
-LastEditTime : 2022-12-14 23:20:56
-FilePath     : /py学习/asyncio学习/协程停止.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-18 15:02:49
+FilePath     : /CODE/py学习/asyncio学习/协程停止.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import asyncio
 
 
@@ -70,5 +70,5 @@ def func3():
 
 
 if __name__ == "__main__":
-    func()
-    # func3()
+    # func()
+    func3()
