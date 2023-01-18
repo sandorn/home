@@ -6,8 +6,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-14 00:14:26
-FilePath     : /CODE/py学习/asyncio学习/笔趣阁-asyncio.py
+LastEditTime : 2023-01-18 13:07:41
+FilePath     : /CODE/项目包/线程小成果/笔趣阁-asyncio.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 顺讯，单独，速度慢
@@ -21,6 +21,7 @@ from xt_File import savefile
 from xt_Ls_Bqg import clean_Content
 from xt_Response import htmlResponse
 from xt_String import Str_Replace
+from xt_Time import timeit
 
 
 async def fetch(url):
@@ -76,6 +77,7 @@ async def callback(future):
     texts.append([index, name, text])
 
 
+@timeit
 def main_thread(url):
 
     bookname, urls, _ = asyncio.run(get_biqugse_download_url(url))
@@ -92,10 +94,5 @@ def main_thread(url):
 
 
 if __name__ == '__main__':
-    url = 'http://www.biqugse.com/96703/'
-
-    main_thread(url)
-
-    # 'http://www.biqugse.com/96703/'   3秒
-    # '38_38836'  #3670.75KB，测试用  6秒
-    # "2_2714"   #48.04 MB, 用时:64秒
+    # main_thread('http://www.biqugse.com/96703/')  # 4.5秒
+    main_thread('http://www.biqugse.com/28542/')  # 110卡住
