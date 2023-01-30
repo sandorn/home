@@ -9,10 +9,8 @@ LastEditTime : 2022-12-20 20:23:27
 FilePath     : /xjLib/xt_DAO/cfg.PY
 Github       : https://github.com/sandorn/home
 ==============================================================
-Navicat
-sandorn@163.com
-Sand@2808
 '''
+from copy import deepcopy
 
 DB_CONFIG = {
     'TXbook': {
@@ -73,24 +71,25 @@ DB_CONFIG = {
 DB_CONFIG['default'] = DB_CONFIG['TXbook']
 
 
-def make_connect_string(key, odbc=None):
-    if key in DB_CONFIG:
-        types = DB_CONFIG[key]['type']
-    else:
-        raise ValueError(f'错误提示：检查数据库配置：{key}')
+def connect_str(key, odbc=None):
+    if key not in DB_CONFIG: raise ValueError(f'错误提示：检查数据库配置：{key}')
+    config = deepcopy(DB_CONFIG[key])
+    types = config['type']
 
     if types == 'mysql':
         if odbc == 'OurSQL':
-            drver = 'mysql+oursql'
+            drver = f'{types}+oursql'
+        elif odbc == 'aiomysql':
+            drver = f'{types}+aiomysql'
         elif odbc == 'connector':
-            drver = 'mysql+mysqlconnector'
+            drver = f'{types}+mysqlconnector'
         elif odbc == 'mysqlclient':
-            drver = 'mysql+mysqldb'
+            drver = f'{types}+mysqldb'
         elif odbc == 'pymysql':
-            drver = 'mysql+pymysql'
+            drver = f'{types}+pymysql'
         else:
             drver = 'mysql'
-        return f"{drver}://{DB_CONFIG[key]['user']}:{DB_CONFIG[key]['password']}@{DB_CONFIG[key]['host']}:{DB_CONFIG[key]['port']}/{DB_CONFIG[key]['db']}?charset={DB_CONFIG[key]['charset']}"
+        return f"{drver}://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
 
     if types == 'PostgreSQL':
         if odbc == 'pg8000':
@@ -99,26 +98,26 @@ def make_connect_string(key, odbc=None):
             drver = 'postgresql+psycopg2'
         else:
             drver = 'postgresql'
-        return f"{drver}://{DB_CONFIG[key]['user']}:{DB_CONFIG[key]['password']}@{DB_CONFIG[key]['host']}:{DB_CONFIG[key]['port']}/{DB_CONFIG[key]['db']}?charset={DB_CONFIG[key]['charset']}"
+        return f"{drver}://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
 
     if types == 'Oracle':
         drver = 'oracle+cx_oracle' if odbc == 'cx_oracle' else 'oracle'
-        return f"{drver}//{DB_CONFIG[key]['user']}:{DB_CONFIG[key]['password']}@{DB_CONFIG[key]['host']}:{DB_CONFIG[key]['port']}/{DB_CONFIG[key]['db']}?charset={DB_CONFIG[key]['charset']}"
+        return f"{drver}//{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
         # cx_oracle:'oracle+cx_oracle://scott:tiger@tnsname'
 
     if types == 'SQLServer':
         drver = 'mssql+pyodbc' if odbc == 'pyodbc' else 'mssql+pymssql'
-        return f"{drver}://{DB_CONFIG[key]['user']}:{DB_CONFIG[key]['password']}@{DB_CONFIG[key]['host']}:{DB_CONFIG[key]['port']}/{DB_CONFIG[key]['db']}?charset={DB_CONFIG[key]['charset']}"
+        return f"{drver}://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
         # pyodbc:'mssql+pyodbc://scott:tiger@mydsn'
 
     if types == 'SQLite':
         drver = 'sqlite'
-        return f"{drver}:///{DB_CONFIG[key]['host']}"
+        return f"{drver}:///{config['host']}"
 
     if types == 'access':
         drver = 'access+pyodbc'
-        return f"{drver}://{DB_CONFIG[key]['host']}"
+        return f"{drver}://{config['host']}"
 
     if types == 'monetdb':
         drver = 'monetdb+lite' if odbc == 'lite' else 'monetdb'
-        return f"{drver}:///{DB_CONFIG[key]['host']}"
+        return f"{drver}:///{config['host']}"

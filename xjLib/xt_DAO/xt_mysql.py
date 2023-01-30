@@ -89,7 +89,23 @@ class DbEngine(object):
             self.conn.commit()
             return True
         except Exception as error:
-            return self._extracted_from_insertMany_8('self.odbc error |  [', error, sql)
+            return self._handler_err('self.odbc error |  [', error, sql)
+
+    @staticmethod
+    def get_update_sql(item, condition, table_name):
+        #@ sql语句表名、字段名均需用``表示
+        item_kv = ", ".join([f"`{k}`='{item[k]}'" for k in item])
+        cond_kv = ", ".join([f"`{k}`='{condition[k]}'" for k in condition])
+        sql = f"UPDATE `{table_name}` SET {item_kv} WHERE {cond_kv}"
+        return sql.replace('%', '%%')
+
+    @staticmethod
+    def get_insert_sql(item, table_name):
+        #@ sql语句表名、字段名均需用``表示
+        cols = ", ".join(f"`{k}`" for k in item.keys())
+        vals = ", ".join(f"'{v}'" for v in item.values())
+        sql = f"insert into `{table_name}`({cols}) values({vals})"
+        return sql.replace('%', '%%')
 
     def insertMany(self, datas, tb_name, keys=None):
         if not isinstance(datas, (list, tuple)): raise TypeError("must send list|tuple object for me")
@@ -105,26 +121,23 @@ class DbEngine(object):
             self.conn.commit()
             return True
         except Exception as error:
-            return self._extracted_from_insertMany_8('self.odbc error | [', error, res_sql)
+            return self._handler_err('self.odbc error | [', error, res_sql)
 
     # TODO Rename this here and in `execute` and `insertMany`
-    def _extracted_from_insertMany_8(self, arg0, error, arg2):
+    def _handler_err(self, arg0, error, arg2):
         self.conn.rollback()
         print(f'{arg0}{error}] \n sql:{arg2}', sep='')
         return False
 
     def insert(self, data, tb_name):
         if not isinstance(data, dict): raise ValueError("must send dict object for me")
-        cols = ", ".join(f"`{k}`" for k in data.keys())
-        val_cols = ", ".join(f"'{v}'" for v in data.values())
-        res_sql = f"insert into `{tb_name}`({cols}) values({val_cols})"
-        self.execute(res_sql.replace('%', '%%'))
+        res_sql = self.get_insert_sql(data, tb_name)
+        self.execute(res_sql)
 
     def update(self, new_data, condition, tb_name):
-        #@ sql语句表名、字段名均需用``表示
         if not isinstance(new_data, dict): raise ValueError("must send dict object for me")
-        sql = (f"UPDATE `{tb_name}` SET " + ",".join([f"`{k}`='{new_data[k]}'" for k in new_data]) + " WHERE " + " AND ".join([f"`{k}`='{condition[k]}'" for k in condition]))
-        self.execute(sql.replace('%', '%%'))
+        sql = self.get_update_sql(new_data, condition, tb_name)
+        self.execute(sql)
 
     def ver(self):
         sql = "SELECT VERSION()"

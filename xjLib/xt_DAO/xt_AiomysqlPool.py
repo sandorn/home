@@ -19,7 +19,6 @@ import traceback
 from copy import deepcopy
 
 import aiomysql
-import aiomysql.sa as aio_sa
 from xt_Class import item_Mixin
 from xt_DAO.cfg import DB_CONFIG
 
@@ -27,37 +26,40 @@ from xt_DAO.cfg import DB_CONFIG
 class AioMysql(item_Mixin):
 
     def __init__(self):
-        self.engine = None
+        # self.coon = None
+        self.pool = None
 
     async def initpool(self, key='default', autocommit=True):
         if key not in DB_CONFIG: raise ValueError(f'错误提示:检查数据库配置:{key}')
         conf = deepcopy(DB_CONFIG[key])
         conf.pop('type', None)
+        self.autocommit = autocommit
         try:
-            self.engine = await aio_sa.create_engine(
-                # minsize=1,
-                # maxsize=10,
-                # loop=None,
-                # pool_recycle=-1,
-                # compiled_cache=None,
-                **conf, )
-        except Exception as err:
-            print('connect error:', err)
+            self.pool = await aiomysql.create_pool(
+                # minsize=5,  # 连接池最小值
+                # maxsize=10,  # 连接池最大值
+                # echo: bool = False,
+                # pool_recycle: int = -1,
+                # loop: Unknown | None = None,
+                autocommit=self.autocommit,  # 自动提交模式
+                **conf,
+            )
+            return self.pool
+        except Exception:
+            print('connect error:', Exception)
+
+    async def getCurosr(self):
+        conn = await self.pool.acquire()
+        cur = await conn.cursor()
+        return conn, cur
+
+    async def closeCurosr(self, conn, cur):
+        if not self.autocommit: await conn.commit()
+        await cur.close()
+        # 释放掉conn,将连接放回到连接池中
+        await self.pool.release(conn)
 
     async def query(self, sql, args=None):
-        """
-        :param   sql: sql语句
-        :param args: 参数
-        :return:
-        """
-        try:
-            async with self.engine.acquire() as conn:
-                result = await conn.execute(sql)
-                return await result.fetchall()
-        except Exception:
-            print(traceback.format_exc())
-
-    async def execute(self, sql, args=None):
         """
         :param   sql: sql语句
         :param args: 参数
@@ -66,14 +68,28 @@ class AioMysql(item_Mixin):
         conn, cur = await self.getCurosr()
         try:
             await cur.execute(sql, args)
+            res = await cur.fetchall()
+        except Exception:
+            print(traceback.format_exc())
+        finally:
+            await self.closeCurosr(conn, cur)
+            return res
+
+    async def execute(self, sql, args=None):
+        """
+        :param   sql: sql语句
+        :param args: 参数
+        :return:
+        """
+        conn, cur = await self.getCurosr()
+        affetced = 0
+        try:
+            await cur.execute(sql, args)
             affetced = cur.rowcount
         except Exception:
             print(traceback.format_exc())
         finally:
-            # await conn.commit()
-            if cur: await cur.close()
-            # 释放掉conn,将连接放回到连接池中
-            await self.pool.release(conn)
+            await self.closeCurosr(conn, cur)
             return affetced
 
     async def executemany(self, sql, data):
@@ -91,10 +107,7 @@ class AioMysql(item_Mixin):
         except Exception:
             print(traceback.format_exc())
         finally:
-            # await conn.commit()
-            if cur: await cur.close()
-            # 释放掉conn,将连接放回到连接池中
-            await self.pool.release(conn)
+            await self.closeCurosr(conn, cur)
             return affetced
 
 
@@ -125,14 +138,14 @@ if __name__ == '__main__':
         "select * from users2",
         "select * from users2 where id = 1",
     ]
-    # execute_sql = "update users2 set username='刘新军1' where ID = 2",
-    # executemany_sql = "update users2 set username=%s where ID = %s"
-    # executemany_data = [('刘澈', 1), ('刘新军', 2)]
+    execute_sql = "update users2 set username='刘新军1' where ID = 2",
+    executemany_sql = "update users2 set username=%s where ID = %s"
+    executemany_data = [('刘澈', 1), ('刘新军', 2)]
     loop = asyncio.get_event_loop()
-    # execute_sql_res = loop.run_until_complete(execute_aiomysql('TXbx', execute_sql))
-    # print(execute_sql_res)
-    # executemany_sql_res = loop.run_until_complete(executemany_aiomysql('TXbx', executemany_sql, executemany_data))
-    # print(executemany_sql_res)
+    execute_sql_res = loop.run_until_complete(execute_aiomysql('TXbx', execute_sql))
+    print(execute_sql_res)
+    executemany_sql_res = loop.run_until_complete(executemany_aiomysql('TXbx', executemany_sql, executemany_data))
+    print(executemany_sql_res)
     query_list_res = loop.run_until_complete(query_aiomysql('TXbx', query_list))
     print(query_list_res)
 '''

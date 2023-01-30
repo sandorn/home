@@ -1,15 +1,15 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-03 21:50:30
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-09 16:44:02
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-20 21:13:31
+FilePath     : /CODE/py学习/asyncio学习/python asyncio aiohttp 异步下载 完整例子.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 import asyncio
 import os
@@ -23,9 +23,9 @@ FLAGS = ('CN IN US ID BR PK NG BD RU JP '
          'MX PH VN ET EG DE IR TR CD FR').split()
 BASE_URL = 'http://flupy.org/data/flags'  # 下载url
 DEST_DIR = 'downloads/'  # 保存目录
+
+
 # 获取链接,下载文件
-
-
 async def fetch(session: aiohttp.ClientSession, url: str, path: str, flag: str):
     print(flag, ' 开始下载')
     async with session.get(url) as resp:
@@ -49,7 +49,7 @@ async def download(sem: asyncio.Semaphore):
     async with aiohttp.ClientSession() as session:
         for flag in FLAGS:
             # 创建路径以及url
-            path = os.path.join(DEST_DIR, flag.lower() + '.gif')
+            path = os.path.join(DEST_DIR, f'{flag.lower()}.gif')
             url = '{}/{cc}/{cc}.gif'.format(BASE_URL, cc=flag.lower())
             # 构造一个协程列表
             tasks.append(asyncio.ensure_future(begin_download(sem, session, url, path, flag)))
@@ -61,6 +61,7 @@ async def download(sem: asyncio.Semaphore):
             # 获取结果
             res = await coroutine
             print(res, '下载完成')
+
 
 # 创建目录
 os.makedirs(DEST_DIR, exist_ok=True)

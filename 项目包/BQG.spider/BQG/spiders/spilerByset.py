@@ -32,7 +32,7 @@ class Spider(scrapy.Spider):
     custom_settings = {
         #$ 使用数据库,判断重复入库
         'ITEM_PIPELINES': {
-            # 'BQG.pipelines.PipelineToSqlTwisted': 20,  # 10s
+            'BQG.pipelines.PipelineToSqlTwisted': 20,  # 10s
             # 'BQG.pipelines.PipelineToAiomysql': 30,  # 13s
             # 'BQG.pipelines.PipelineToSqlalchemy': 40,  # 35s
             # 'BQG.pipelines.PipelineToMysql': 50,  # 70s

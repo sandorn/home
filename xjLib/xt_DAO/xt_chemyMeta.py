@@ -15,7 +15,7 @@ LastEditTime : 2021-03-25 10:03:29
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 # DeclarativeMeta  类;declarative_base类工厂
 from xt_Class import item_Mixin
-from xt_DAO.cfg import make_connect_string  # type: ignore
+from xt_DAO.cfg import connect_str
 
 
 class Orm_Meta:
@@ -67,27 +67,94 @@ class Model_Method_Mixin(item_Mixin):
         return cls._c
 
     @classmethod
-    def _fields(cls):
-        '''获取字段名列表, # 弃用'''
-        return [attr for attr in dir(cls) if not callable(getattr(cls, attr)) and not attr.startswith("__") and attr not in [
-            '_sa_class_manager',
-            '_decl_class_registry',
-            '_sa_instance_state',
-            'metadata',
-        ]]
+    def keys(cls):
+        '''获取字段名列表'''
+        cls._c = cls.__table__.columns.keys()
+        return cls._c
 
     @classmethod
     def make_dict(cls, result):
         '''基于数据库模型转换记录为字典,使用: dbmode.make_dict(records)'''
         if isinstance(result, cls):
             return {key: getattr(result, key) for key in cls.columns()}
-
         elif isinstance(result, (list, tuple)) and isinstance(result[0], cls):
             return [{key: getattr(item, key) for key in cls.columns()} for item in result]
+        return result
 
     def to_dict(self):
         '''单一记录record转字典,使用:record.to_dict()'''
         return self.make_dict(self)
+
+    def to_json(self):
+        dict_ = self.__dict__
+        dict_.pop("_sa_instance_state", None)
+        return dict_
+
+    @classmethod
+    def db_tuple_to_dict(cls, resultproxy_list):
+        d, res_list = {}, []
+        for rowproxy in resultproxy_list:
+            for column, value in rowproxy.items():
+                d = {**d, **{column: value}}
+            res_list.append(d)
+        return res_list
+
+    @classmethod
+    def model_to_dict(cls):
+        dic = {}
+        dic_columns = cls.__table__.columns
+        # 保证都是字符串和数字
+        types = [str, int, float, bool]
+        # 注意，obj.__dict__会在commit后被作为过期对象清空dict，所以保险的办法还是用columns
+        for k, tmp in dic_columns.items():
+            # k=nick,tmp=usergroup.nick
+            v = getattr(cls, k, None)
+            if v is not None:
+                dic[k] = str(v) if v and type(v) not in types else v
+        return dic
+
+    @classmethod
+    def res_copy_model_to_dest(cls, dest):
+        dic_columns = cls.__table__.columns
+        # 保证都是字符串和数字
+        types = [str, int, float, bool, bytes]
+        for k, _ in dic_columns.items():
+            v = getattr(cls, k, None)
+            value = str(v) if v and type(v) not in types else v
+            # print("key:", k, "  v:", value)
+            if v is not None:
+                setattr(dest, k, value)
+
+    @classmethod
+    def dic2class(cls, py_data, obj):
+        for name in [name for name in dir(obj) if not name.startswith('_')]:
+            if name not in py_data:
+                setattr(obj, name, None)
+            else:
+                value = getattr(obj, name)
+                setattr(obj, name, cls.set_value(value, py_data[name]))
+
+    @classmethod
+    def set_value(cls, value, py_data):
+        if str(type(value)).__contains__('.'):
+            # value 为自定义类
+            cls.dic2class(py_data, value)
+        elif str(type(value)) == "<class 'list'>":
+            # value为列表
+            if value.__len__() == 0:
+                # value列表中没有元素，无法确认类型
+                value = py_data
+            else:
+                # value列表中有元素，以第一个元素类型为准
+                child_value_type = type(value[0])
+                value.clear()
+                for child_py_data in py_data:
+                    child_value = child_value_type()
+                    child_value = cls.set_value(child_value, child_py_data)
+                    value.append(child_value)
+        else:
+            value = py_data
+        return value
 
     def __repr__(self):
         return self.__class__.__name__ + str({attr: getattr(self, attr) for attr in self.columns()})
@@ -97,7 +164,7 @@ class Model_Method_Mixin(item_Mixin):
 
 Base_Model = declarative_base(cls=Model_Method_Mixin)  # #生成SQLORM基类,混入继承Model_Method_Mixin
 '''metadata = Base.metadata'''
-'''定义table的基类，所有的表都要继承这个类,这个类的作用是将表映射到数据库中'''
+'''定义table的基类,所有的表都要继承这个类,这个类的作用是将表映射到数据库中'''
 
 # 若有多个类指向同一张表，那么在后边的类需要把 extend_existing设为True，表示在已有列基础上进行扩展
 # 或者换句话说，sqlalchemy 允许类是表的字集，如下：
@@ -207,18 +274,6 @@ def Data_Model_2_py(tablename, filename=None, key='default'):
 
     if filename is None:
         filename = tablename
-    com_list = f'sqlacodegen --tables {tablename} --outfile {filename}_db.py {make_connect_string(key)}'
+    com_list = f'sqlacodegen --tables {tablename} --outfile {filename}_db.py {connect_str(key)}'
 
     subprocess.call(com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-
-if __name__ == "__main__":
-    # Data_Model_2_py('uuu', 'd:/1.py', 'TXbook')  # 待测试
-    from xt_DAO.xt_sqlalchemy import SqlConnection, get_engine
-    engine, session = get_engine('TXbx')
-    t = getModel('users2', engine)  # , 'users99')
-    print(t)
-    print(t.columns())
-    sqlhelper = SqlConnection(t, 'TXbx')
-    res = sqlhelper.select()
-    print(res)

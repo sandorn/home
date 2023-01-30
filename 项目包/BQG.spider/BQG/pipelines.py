@@ -26,7 +26,7 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from twisted.enterprise import adbapi
 from xt_DAO.cfg import DB_CONFIG
-from xt_DAO.xt_Aiomysql import execute_aiomysql
+from xt_DAO.xt_AiomysqlPool import execute_aiomysql
 from xt_DAO.xt_chemyMeta import Base_Model
 from xt_DAO.xt_mysql import DbEngine as mysql
 from xt_DAO.xt_sqlalchemy import SqlConnection
@@ -34,6 +34,7 @@ from xt_DAO.xt_sqlalchemy import SqlConnection
 
 def make_model(_BOOKNAME):
     # # 类工厂函数
+
     class table_model(Base_Model):
         # Base_Model 继承自from xt_DAO.xt_chemyMeta.Model_Method_Mixin
         __tablename__ = _BOOKNAME
@@ -45,6 +46,9 @@ def make_model(_BOOKNAME):
         ZJNAME = Column(VARCHAR(255), nullable=False)
         ZJTEXT = Column(TEXT, nullable=False)
         ZJHERF = Column(VARCHAR(255), nullable=False)
+
+        def __repr__(self):
+            return f"({self.ID},{self.BOOKNAME},{self.INDEX},{self.ZJNAME},{self.ZJHERF})"
 
     return table_model
 
@@ -142,7 +146,7 @@ class PipelineToMysql(object):
             self.db.add(_BOOKNAME)
 
         _result = self.conn.get_all_from_db(_BOOKNAME)
-        assert isinstance(_result, (list,tuple))
+        assert isinstance(_result, (list, tuple))
         ZJHERF_list = [res[5] for res in _result]
 
         if item['ZJHERF'] in ZJHERF_list:

@@ -1,15 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2020, NewSea
-@Date: 2020-03-02 16:06:41
-@LastEditors: Even.Sand
-@LastEditTime: 2020-03-02 18:53:05
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-01-20 21:11:55
+FilePath     : /CODE/py学习/asyncio学习/asyncio实现异步爬虫.py
+Github       : https://github.com/sandorn/home
+==============================================================
+https://www.yuanrenxue.com/crawler/news-crawler-urlpool.html
 '''
 import asyncio
 import lzma
@@ -18,7 +19,6 @@ import traceback
 import urllib.parse as urlparse
 
 import aiohttp
-
 import config
 import farmhash
 import functions as fn
@@ -30,24 +30,19 @@ asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
 class NewsCrawlerAsync:
+
     def __init__(self, name):
         self._workers = 0
         self._workers_max = 30
-        self.logger = fn.init_file_logger(name + '.log')
+        self.logger = fn.init_file_logger(f'{name}.log')
 
         self.urlpool = UrlPool(name)
 
         self.loop = asyncio.get_event_loop()
         self.session = aiohttp.ClientSession(loop=self.loop)
-        self.db = sanicdb.SanicDB(
-            config.db_host,
-            config.db_db,
-            config.db_user,
-            config.db_password,
-            loop=self.loop
-        )
+        self.db = sanicdb.SanicDB(config.db_host, config.db_db, config.db_user, config.db_password, loop=self.loop)
 
-    async def load_hubs(self,):
+    async def load_hubs(self, ):
         sql = 'select url from crawler_hub'
         data = await self.db.query(sql)
         self.hub_hosts = set()
@@ -64,7 +59,7 @@ class NewsCrawlerAsync:
         d = await self.db.get(sql, urlhash)
         if d:
             if d['url'] != url:
-                msg = 'farmhash collision: %s <=> %s' % (url, d['url'])
+                msg = f"farmhash collision: {url} <=> {d['url']}"
                 self.logger.error(msg)
             return True
         if isinstance(html, str):
@@ -80,7 +75,6 @@ class NewsCrawlerAsync:
             if e.args[0] == 1062:
                 # Duplicate entry
                 good = True
-                pass
             else:
                 traceback.print_exc()
                 raise e
@@ -105,13 +99,13 @@ class NewsCrawlerAsync:
         if ishub:
             newlinks = fn.extract_links_re(redirected_url, html)
             goodlinks = self.filter_good(newlinks)
-            print("%s/%s, goodlinks/newlinks" % (len(goodlinks), len(newlinks)))
+            print(f"{len(goodlinks)}/{len(newlinks)}, goodlinks/newlinks")
             self.urlpool.addmany(goodlinks)
         else:
             await self.save_to_db(redirected_url, html)
         self._workers -= 1
 
-    async def loop_crawl(self,):
+    async def loop_crawl(self, ):
         await self.load_hubs()
         last_rating_time = time.time()
         counter = 0
@@ -143,7 +137,6 @@ class NewsCrawlerAsync:
         except KeyboardInterrupt:
             print('stopped by yourself!')
             del self.urlpool
-            pass
 
 
 if __name__ == '__main__':
