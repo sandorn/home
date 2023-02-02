@@ -32,15 +32,17 @@ class Spider(scrapy.Spider):
     custom_settings = {
         #$ 使用数据库,判断重复入库
         'ITEM_PIPELINES': {
-            'BQG.pipelines.PipelineToSqlTwisted': 20,  # 10s
-            # 'BQG.pipelines.PipelineToAiomysql': 30,  # 13s
-            # 'BQG.pipelines.PipelineToSqlalchemy': 40,  # 35s
-            # 'BQG.pipelines.PipelineToMysql': 50,  # 70s
+            'BQG.pipelines.PipelineToSqlTwisted': 10,  # 32s
+            # 'BQG.pipelines.PipelineToAiomysqlpool': 20,  # 41s
+            # 'BQG.pipelines.PipelineToAiomysql': 30,  # 46s
+            # 'BQG.pipelines.PipelineToSqlalchemy': 40,  # 135s
+            # 'BQG.pipelines.PipelineToMysql': 50,  # 170s
         },
     }
 
     start_urls = [
-        'http://www.biqugse.com/96703/',
+        'https://www.biqukan8.cc/38_38836/',
+        # 'http://www.biqugse.com/96703/',
         # 'http://www.biqugse.com/96717/',
         # 'http://www.biqugse.com/2367/',
     ]
@@ -55,7 +57,8 @@ class Spider(scrapy.Spider):
 
     def parse(self, response):
         # #获取书籍名称
-        _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
+        # _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
+        _BOOKNAME = response.xpath('//h2/text()').extract_first()
         if _BOOKNAME not in self.db:
             # 避免重复创建数据库
             Csql = f'Create Table If Not Exists {_BOOKNAME}(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)'
@@ -66,20 +69,22 @@ class Spider(scrapy.Spider):
         assert isinstance(_result, (list, tuple))
         ZJHERF_list = [res[5] for res in _result]
 
-        全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
+        # 全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
         # titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
+        全部章节链接 = response.xpath(('//dt[2]/following-sibling::dd/a/@href')).extract()
+        # https://www.biqukan8.cc
         baseurl = '/'.join(response.url.split('/')[:-2])
         urls = [baseurl + item for item in 全部章节链接]  ## 章节链接
-
         for index in range(len(urls)):
             if urls[index] not in ZJHERF_list:
-                yield scrapy.Request(urls[index], meta={'index': index}, callback=self.parse_content)
+                yield scrapy.Request(urls[index], meta={'index': index, 'name': _BOOKNAME}, callback=self.parse_content)
             else:
                 print(f'spilerByset-->《{align( _BOOKNAME, 16)}》\t{align(index, 6)}\t | 记录重复，剔除！！')
 
     def parse_content(self, response):
         item = BqgItem()
-        item['BOOKNAME'] = response.xpath('//div[@class="con_top"]/a[2]/text()').extract_first()
+        # item['BOOKNAME'] = response.xpath('//div[@class="con_top"]/a[2]/text()').extract_first()
+        item['BOOKNAME'] = response.meta['name']  # @接收meta={}传递的参数
         item['INDEX'] = response.meta['index']  # @接收meta={}传递的参数
         item['ZJNAME'] = response.xpath('//h1/text()').extract_first()
         item['ZJNAME'] = Str_Replace(item['ZJNAME'].strip('\r\n'), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])

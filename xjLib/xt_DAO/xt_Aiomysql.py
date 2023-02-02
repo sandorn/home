@@ -18,143 +18,160 @@ import asyncio
 import traceback
 from copy import deepcopy
 
-import aiomysql
 import aiomysql.sa as aio_sa
+# from sqlalchemy import text  # , MetaData, Table, create_engine
 from xt_Class import item_Mixin
-from xt_DAO.cfg import DB_CONFIG
+from xt_DAO.cfg import DB_CONFIG  # , connect_str
 
 
 class AioMysql(item_Mixin):
 
-    def __init__(self):
-        self.engine = None
+    def __init__(self, key='default', table_name=None):
+        self.coro_list = []
+        self.key = key
+        if table_name: self.init_orm(table_name)
+        self.loop = asyncio.get_event_loop()
+        self.run_in_loop([self.create_engine(key=self.key, autocommit=True)])
 
-    async def initpool(self, key='default', autocommit=True):
+    def __del__(self):
+        # self.loop.close()
+        ...
+
+    async def create_engine(self, key='default', autocommit=True):
         if key not in DB_CONFIG: raise ValueError(f'错误提示:检查数据库配置:{key}')
         conf = deepcopy(DB_CONFIG[key])
         conf.pop('type', None)
         try:
             self.engine = await aio_sa.create_engine(
-                # minsize=1,
-                # maxsize=10,
-                # loop=None,
-                # pool_recycle=-1,
-                # compiled_cache=None,
-                **conf, )
+                autocommit=autocommit,
+                **conf,
+            )
         except Exception as err:
             print('connect error:', err)
 
-    async def query(self, sql, args=None):
-        """
-        :param   sql: sql语句
-        :param args: 参数
-        :return:
-        """
+    def run_in_loop(self, coro_list=None):
+        coro_list = coro_list or self.coro_list
+        return self.loop.run_until_complete(asyncio.gather(*coro_list))
+
+    def init_orm(self, table_name):
+        # self.s_engine = create_engine(connect_str(self.key))
+        # self.tbl = Table(self.table_name, MetaData(bind=self.s_engine), autoload=True)
+        # insert_sql = tbl.insert().values({'name': 'test', 'age': 18})
+        # update_sql = tbl.update().where(tbl.c.id == 1).values({'name': 'test', 'age': 18})
+        self.table_name = table_name
+
+    def querymany(self, sql_list, autorun=True):
+        _coro = [self.__query(sql) for sql in sql_list]
+        if autorun: return self.run_in_loop(_coro)
+        else: self.coro_list.extend(_coro)
+
+    def query(self, sql, autorun=True):
+        _coro = [self.__query(sql)]
+        if autorun: return self.run_in_loop(_coro)
+        else: self.coro_list.extend(_coro)
+
+    async def __query(self, sql):
+
         try:
             async with self.engine.acquire() as conn:
                 result = await conn.execute(sql)
-                return await result.fetchall()
+                return await result.fetchall() if result._metadata != None else 1
         except Exception:
             print(traceback.format_exc())
 
-    async def execute(self, sql, args=None):
-        """
-        :param   sql: sql语句
-        :param args: 参数
-        :return:
-        """
-        conn, cur = await self.getCurosr()
-        try:
-            await cur.execute(sql, args)
-            affetced = cur.rowcount
-        except Exception:
-            print(traceback.format_exc())
-        finally:
-            # await conn.commit()
-            if cur: await cur.close()
-            # 释放掉conn,将连接放回到连接池中
-            await self.pool.release(conn)
-            return affetced
+    @staticmethod
+    def get_insert_sql(item, table_name):
+        cols = ", ".join(f"`{k}`" for k in item.keys())
+        vals = ", ".join(f"'{v}'" for v in item.values())
+        sql = f"INSERT INTO `{table_name}`({cols}) VALUES({vals})"
+        return sql.replace('%', '%%')  # text() 用于防止sql注入
 
-    async def executemany(self, sql, data):
-        """
-        增删改 操作
-        :param  sql: sql语句框架
-        :param data: sql语句内容
-        :return:
-        """
-        conn, cur = await self.getCurosr()
-        affetced = 0
-        try:
-            await cur.executemany(sql, data)
-            affetced = cur.rowcount
-        except Exception:
-            print(traceback.format_exc())
-        finally:
-            # await conn.commit()
-            if cur: await cur.close()
-            # 释放掉conn,将连接放回到连接池中
-            await self.pool.release(conn)
-            return affetced
+    @staticmethod
+    def get_update_sql(item, condition, table_name):
+        item_kv = ", ".join([f"`{k}`='{item[k]}'" for k in item])
+        cond_k = ", ".join([f"`{k}`" for k in condition.keys()])
+        cond_v = ", ".join([f"'{v}'" for v in condition.values()])
+        sql = f"UPDATE `{table_name}` SET {item_kv} WHERE ({cond_k})=({cond_v})"
+        return sql.replace('%', '%%')  # text() 用于防止sql注入
 
+    def insert(self, data_dict_list, table_name=None, autorun=True):
+        table_name = table_name or self.table_name
+        if isinstance(data_dict_list, dict): data_dict_list = [data_dict_list]
+        _coro = [self.__insert(data_dict, table_name) for data_dict in data_dict_list]
+        if autorun: return self.run_in_loop(_coro)
+        else: self.coro_list.extend(_coro)
 
-async def create_xt_aiomysql(db_name='default'):
-    Aiomysql = AioMysql()
-    await Aiomysql.initpool(db_name)
-    return Aiomysql
+    async def __insert(self, data_dict_list, table_name):
+        insert_sql = self.get_insert_sql(data_dict_list, table_name)
+        async with self.engine.acquire() as conn:
+            # 注意: 执行的执行必须开启一个事务, 否则数据是不会进入到数据库中的
+            async with conn.begin():
+                try:
+                    result = await conn.execute(insert_sql)
+                    return result.rowcount  # 影响的行数
+                except Exception:
+                    print(traceback.format_exc())
 
+    def update(self, data_dict_list, whrere_dict_list, table_name=None, autorun=True):
+        table_name = table_name or self.table_name
+        if isinstance(data_dict_list, dict): data_dict_list = [data_dict_list]
+        _coro = [self.__update(data_dict, whrere_dict, table_name) for data_dict, whrere_dict in zip(data_dict_list, whrere_dict_list)]
+        if autorun: return self.run_in_loop(_coro)
+        else: self.coro_list.extend(_coro)
 
-async def query_aiomysql(db_name, sql_list):
-    Aiomysql = await create_xt_aiomysql(db_name)
-    return await asyncio.gather(*[Aiomysql.query(sql) for sql in sql_list])
-
-
-async def execute_aiomysql(db_name, sql_list):
-    Aiomysql = await create_xt_aiomysql(db_name)
-    return await asyncio.gather(*[Aiomysql.execute(sql) for sql in sql_list])
-
-
-async def executemany_aiomysql(db_name, sql_mode, data):
-    Aiomysql = await create_xt_aiomysql(db_name)
-    return await asyncio.gather(Aiomysql.executemany(sql_mode, data))
+    async def __update(self, data_dict_list, whrere_dict, table_name):
+        update_sql = self.get_update_sql(data_dict_list, whrere_dict, table_name)
+        async with self.engine.acquire() as conn:
+            async with conn.begin():
+                try:
+                    result = await conn.execute(update_sql)
+                    return result.rowcount  # 影响的行数
+                except Exception:
+                    print(traceback.format_exc())
 
 
 if __name__ == '__main__':
 
     query_list = [
-        "select * from users2",
         "select * from users2 where id = 1",
+        "select * from users2",
     ]
-    # execute_sql = "update users2 set username='刘新军1' where ID = 2",
-    # executemany_sql = "update users2 set username=%s where ID = %s"
-    # executemany_data = [('刘澈', 1), ('刘新军', 2)]
-    loop = asyncio.get_event_loop()
-    # execute_sql_res = loop.run_until_complete(execute_aiomysql('TXbx', execute_sql))
-    # print(execute_sql_res)
-    # executemany_sql_res = loop.run_until_complete(executemany_aiomysql('TXbx', executemany_sql, executemany_data))
-    # print(executemany_sql_res)
-    query_list_res = loop.run_until_complete(query_aiomysql('TXbx', query_list))
-    print(query_list_res)
-'''
-python并发编程之asyncio协程(三) - 天宇之游 - 博客园
-https://www.cnblogs.com/cwp-bg/p/9590700.html
-https://cloud.tencent.com/developer/article/1625730?from=15425
 
-asyncio.get_event_loop():创建一个事件循环，所有的异步函数都需要在事件循环中运行；
-asyncio.ensure_future()：创建一个任务
-asyncio.gather(*fs):添加并行任务
-asyncio.wait(fs):添加并行任务，可以是列表
-loop.run_until_complete(func):添加协程函数同时启动阻塞直到结束
-loop.run_forever()：运行事件无限循环，直到stop被调用
-loop.create_task()：创建一个任务并添加到循环
-loop.close():关闭循环
-loop.time():循环开始后到当下的时间
-loop.stop():停止循环
-loop.is_closed() # 判断循环是否关闭
-loop.create_future():创建一个future对象，推荐使用这个函数而不要直接创建future实例
-loop.call_soon() # 设置回调函数，不能接受返回的参数，需要用到future对象，立即回调
-loop.call_soon_threadsafe() # 线程安全的对象
-loop.call_later() # 异步返回后开始算起，延迟回调
-loop.call_at() # 循环开始多少s回调
-loop.call_exception_handler() # 错误处理
-'''
+    item1 = {'username': '刘新军', 'password': '234567', '手机': '13910118122', '代理人编码': '10005393', '会员级别': 'SSS', '会员到期日': '9999-12-31 00:00:00'}
+    executemany_sql = "update users2 set username=%s where ID = %s"
+    executemany_data = [('刘澈', 1), ('刘新军', 2)]
+
+    aio = AioMysql('TXbx', table_name='users2')
+    # res = aio.insert([item1, item1])
+    # print(res)
+    # res = aio.insert([item1, item1], autorun=False)
+    # res = aio.run_in_loop()
+    # print(res)
+    # res = aio.insert([item1, item1], 'users')
+    # print(res)
+    # res = aio.querymany(query_list)
+    # print(res)
+    # res = aio.query(query_list[0])
+    # print(res)
+    # update_sql = [
+    #     "UPDATE users2 set username='刘新军1' WHERE ID = '1'",
+    #     "UPDATE users2 set username='刘新军2' WHERE ID = '2'",
+    # ]
+    # res = aio.querymany(update_sql)
+    # print(res)
+    # res = aio.update(
+    #     [{
+    #         'username': '刘澈3'
+    #     }, {
+    #         'username': '刘新军4'
+    #     }],
+    #     [
+    #         {
+    #             'ID': '1',
+    #         },
+    #         {
+    #             'ID': '2',
+    #             # 'username': '刘新军',
+    #         }
+    #     ])
+    # print(res)

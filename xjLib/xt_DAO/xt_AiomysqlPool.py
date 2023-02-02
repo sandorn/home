@@ -17,6 +17,7 @@ https://blog.csdn.net/ydyang1126/article/details/78226701/
 import asyncio
 import traceback
 from copy import deepcopy
+from functools import partial
 
 import aiomysql
 from xt_Class import item_Mixin
@@ -26,10 +27,9 @@ from xt_DAO.cfg import DB_CONFIG
 class AioMysql(item_Mixin):
 
     def __init__(self):
-        # self.coon = None
         self.pool = None
 
-    async def initpool(self, key='default', autocommit=True):
+    async def create_pool(self, key='default', autocommit=True):
         if key not in DB_CONFIG: raise ValueError(f'错误提示:检查数据库配置:{key}')
         conf = deepcopy(DB_CONFIG[key])
         conf.pop('type', None)
@@ -66,6 +66,7 @@ class AioMysql(item_Mixin):
         :return:
         """
         conn, cur = await self.getCurosr()
+        res = ''
         try:
             await cur.execute(sql, args)
             res = await cur.fetchall()
@@ -84,8 +85,8 @@ class AioMysql(item_Mixin):
         conn, cur = await self.getCurosr()
         affetced = 0
         try:
-            await cur.execute(sql, args)
-            affetced = cur.rowcount
+            affetced = await cur.execute(sql, args)
+            # affetced = cur.rowcount
         except Exception:
             print(traceback.format_exc())
         finally:
@@ -102,8 +103,7 @@ class AioMysql(item_Mixin):
         conn, cur = await self.getCurosr()
         affetced = 0
         try:
-            await cur.executemany(sql, data)
-            affetced = cur.rowcount
+            affetced = await cur.executemany(sql, data)
         except Exception:
             print(traceback.format_exc())
         finally:
@@ -111,43 +111,52 @@ class AioMysql(item_Mixin):
             return affetced
 
 
-async def create_xt_aiomysql(db_name='default'):
+async def create_xt_aiomysql(key='default'):
     Aiomysql = AioMysql()
-    await Aiomysql.initpool(db_name)
+    await Aiomysql.create_pool(key)
     return Aiomysql
 
 
-async def query_aiomysql(db_name, sql_list):
-    Aiomysql = await create_xt_aiomysql(db_name)
+async def _query_aiomysql(key, sql_list):
+    Aiomysql = await create_xt_aiomysql(key)
     return await asyncio.gather(*[Aiomysql.query(sql) for sql in sql_list])
 
 
-async def execute_aiomysql(db_name, sql_list):
-    Aiomysql = await create_xt_aiomysql(db_name)
+async def _execute_aiomysql(key, sql_list):
+    Aiomysql = await create_xt_aiomysql(key)
     return await asyncio.gather(*[Aiomysql.execute(sql) for sql in sql_list])
 
 
-async def executemany_aiomysql(db_name, sql_mode, data):
-    Aiomysql = await create_xt_aiomysql(db_name)
-    return await asyncio.gather(Aiomysql.executemany(sql_mode, data))
+async def _executemany_aiomysql(key, sql, data):
+    Aiomysql = await create_xt_aiomysql(key)
+    return await asyncio.gather(Aiomysql.executemany(sql, data))
 
+
+def _run_aiomysql(func, *args, **kwargs):
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(func(*args, **kwargs))
+
+
+query_aiomysql = partial(_run_aiomysql, _query_aiomysql)
+execute_aiomysql = partial(_run_aiomysql, _execute_aiomysql)
+executemany_aiomysql = partial(_run_aiomysql, _executemany_aiomysql)
 
 if __name__ == '__main__':
 
     query_list = [
         "select * from users2",
         "select * from users2 where id = 1",
+        "update users2 set username='刘新军1' where ID = 2",
     ]
-    execute_sql = "update users2 set username='刘新军1' where ID = 2",
-    executemany_sql = "update users2 set username=%s where ID = %s"
-    executemany_data = [('刘澈', 1), ('刘新军', 2)]
-    loop = asyncio.get_event_loop()
-    execute_sql_res = loop.run_until_complete(execute_aiomysql('TXbx', execute_sql))
-    print(execute_sql_res)
-    executemany_sql_res = loop.run_until_complete(executemany_aiomysql('TXbx', executemany_sql, executemany_data))
-    print(executemany_sql_res)
-    query_list_res = loop.run_until_complete(query_aiomysql('TXbx', query_list))
-    print(query_list_res)
+    up_sql = "update users2 set username='刘新军1' where ID = 2",
+    ups_sql = "update users2 set username=%s where ID = %s"
+    ups_data = [('刘澈', 1), ('刘新军', 2)]
+    # res = execute_aiomysql('TXbx', up_sql)
+    # print(res)
+    # res = executemany_aiomysql('TXbx', ups_sql, ups_data)
+    # print(res)
+    res = query_aiomysql('TXbx', query_list)
+    print(res)
 '''
 python并发编程之asyncio协程(三) - 天宇之游 - 博客园
 https://www.cnblogs.com/cwp-bg/p/9590700.html

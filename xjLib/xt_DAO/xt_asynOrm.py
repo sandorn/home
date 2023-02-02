@@ -79,7 +79,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-#参数 echo：打印执行日志，future：使用2.0新特性，也可以使用async_engine_from_config创建,engine直到第一次请求数据库才会真正连接到数据库，称为延迟初始化
+#参数 echo:打印执行日志,future:使用2.0新特性,也可以使用async_engine_from_config创建,engine直到第一次请求数据库才会真正连接到数据库,称为延迟初始化
 engine = create_async_engine(connect_str('default','aiomysql'),
                                 echo=True, future=True)
 Session = sessionmaker(class_=AsyncSession,autocommit=False,

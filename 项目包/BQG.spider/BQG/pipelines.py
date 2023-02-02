@@ -15,7 +15,6 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 '''
-import asyncio
 import codecs
 import csv
 import json
@@ -26,6 +25,7 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from twisted.enterprise import adbapi
 from xt_DAO.cfg import DB_CONFIG
+from xt_DAO.xt_Aiomysql import AioMysql
 from xt_DAO.xt_AiomysqlPool import execute_aiomysql
 from xt_DAO.xt_chemyMeta import Base_Model
 from xt_DAO.xt_mysql import DbEngine as mysql
@@ -57,6 +57,21 @@ class PipelineToAiomysql(object):
 
     def __init__(self):
         self.sql_list = []
+        self.AioMysql = None
+
+    def process_item(self, item, spider):
+        if self.AioMysql is None: self.AioMysql = AioMysql('TXbook', item['BOOKNAME'])
+        self.AioMysql.insert(dict(item), autorun=False)
+        return item
+
+    def close_spider(self, spider):
+        self.AioMysql.run_in_loop()
+
+
+class PipelineToAiomysqlpool(object):
+
+    def __init__(self):
+        self.sql_list = []
 
     def process_item(self, item, spider):
         self.sql_list.append(self.Create_Sql(item))
@@ -75,9 +90,7 @@ class PipelineToAiomysql(object):
         )
 
     def close_spider(self, spider):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(execute_aiomysql('TXbook', self.sql_list))
-        loop.close()
+        execute_aiomysql('TXbook', self.sql_list)
 
 
 class PipelineToSqlalchemy(object):

@@ -53,8 +53,8 @@ def pool(url_list, func):
 
 if __name__ == "__main__":
     url_list = [
-        # 'http://www.biqugse.com/96703/',
-        'http://www.biqugse.com/28542/',  # 超大 182s
+        'http://www.biqugse.com/96703/',
+        # 'http://www.biqugse.com/28542/',  # 超大 182s
         # 'http://www.biqugse.com/96717/',
         # 'http://www.biqugse.com/76169/',
         # 'http://www.biqugse.com/82744/',

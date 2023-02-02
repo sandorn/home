@@ -48,8 +48,6 @@ class DbEngine(object):
             self.cur = self.conn.cursor()
             print(f'{self.odbc}  connect<{self.db_name}> Ok!')
 
-    '''对with的处理:所求值的对象必须有一个__enter__()方法,一个__exit__()方法。'''
-
     def __enter__(self):
         print(f"{ self.odbc}\t{self.db_name}\tIn __enter__()")
         return self
@@ -61,7 +59,6 @@ class DbEngine(object):
 
     def __del__(self):
         print(f"{ self.odbc}\t{self.db_name}\tIn __del__()")
-        '''hasattr(self, 'conn')'''
         if self.odbc != 'connector': self.cur.close()
         self.conn.close()
 
@@ -92,23 +89,22 @@ class DbEngine(object):
             return self._handler_err('self.odbc error |  [', error, sql)
 
     @staticmethod
-    def get_update_sql(item, condition, table_name):
-        #@ sql语句表名、字段名均需用``表示
-        item_kv = ", ".join([f"`{k}`='{item[k]}'" for k in item])
-        cond_kv = ", ".join([f"`{k}`='{condition[k]}'" for k in condition])
-        sql = f"UPDATE `{table_name}` SET {item_kv} WHERE {cond_kv}"
+    def get_insert_sql(item, table_name):
+        cols = ", ".join(f"`{k}`" for k in item.keys())
+        vals = ", ".join(f"'{v}'" for v in item.values())
+        sql = f"INSERT INTO `{table_name}`({cols}) VALUES({vals})"
         return sql.replace('%', '%%')
 
     @staticmethod
-    def get_insert_sql(item, table_name):
-        #@ sql语句表名、字段名均需用``表示
-        cols = ", ".join(f"`{k}`" for k in item.keys())
-        vals = ", ".join(f"'{v}'" for v in item.values())
-        sql = f"insert into `{table_name}`({cols}) values({vals})"
+    def get_update_sql(item, condition, table_name):
+        item_kv = ", ".join([f"`{k}`='{item[k]}'" for k in item])
+        cond_k = ", ".join([f"`{k}`" for k in condition.keys()])
+        cond_v = ", ".join([f"'{v}'" for v in condition.values()])
+        sql = f"UPDATE `{table_name}` SET {item_kv} WHERE ({cond_k})=({cond_v})"
         return sql.replace('%', '%%')
 
     def insertMany(self, datas, tb_name, keys=None):
-        if not isinstance(datas, (list, tuple)): raise TypeError("must send list|tuple object for me")
+        if not isinstance(datas, (list, tuple)): raise TypeError("must list|tuple type")
 
         if keys is None:
             keys = list(datas[0].keys())
@@ -130,12 +126,12 @@ class DbEngine(object):
         return False
 
     def insert(self, data, tb_name):
-        if not isinstance(data, dict): raise ValueError("must send dict object for me")
+        if not isinstance(data, dict): raise ValueError("must dict type")
         res_sql = self.get_insert_sql(data, tb_name)
         self.execute(res_sql)
 
     def update(self, new_data, condition, tb_name):
-        if not isinstance(new_data, dict): raise ValueError("must send dict object for me")
+        if not isinstance(new_data, dict): raise ValueError("must dict type")
         sql = self.get_update_sql(new_data, condition, tb_name)
         self.execute(sql)
 

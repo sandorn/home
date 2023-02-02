@@ -94,14 +94,14 @@ class SqlConnection(Orm_Meta):
             return self.session.commit()
         except BaseException as e:
             self.session.rollback()
+            return 0
 
     def insert_all(self, dict_list):
         """传入字段与值对应的字典所构成的list"""
         item = [self.Base(**dict1) for dict1 in dict_list]
-        inserNum = self.session.add_all(item)
+        self.session.add_all(item)
         try:
-            self.session.commit()
-            return inserNum
+            return self.session.commit()
         except BaseException as e:
             self.session.rollback()
             return 0
