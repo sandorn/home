@@ -75,49 +75,48 @@ def connect_str(key, odbc=None):
     if key not in DB_CONFIG: raise ValueError(f'错误提示：检查数据库配置：{key}')
     config = deepcopy(DB_CONFIG[key])
     types = config['type']
+    netdbstr = f"{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
 
     if types == 'mysql':
         if odbc == 'OurSQL':
-            drver = f'{types}+oursql'
+            driver = f'{types}+oursql'
         elif odbc == 'aiomysql':
-            drver = f'{types}+aiomysql'
+            driver = f'{types}+aiomysql'
         elif odbc == 'connector':
-            drver = f'{types}+mysqlconnector'
+            driver = f'{types}+mysqlconnector'
         elif odbc == 'mysqlclient':
-            drver = f'{types}+mysqldb'
+            driver = f'{types}+mysqldb'
         elif odbc == 'pymysql':
-            drver = f'{types}+pymysql'
+            driver = f'{types}+pymysql'
         else:
-            drver = 'mysql'
-        return f"{drver}://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
+            driver = 'mysql'
+        return f"{driver}://{netdbstr}"
 
     if types == 'PostgreSQL':
-        if odbc == 'pg8000':
-            drver = 'postgresql+pg8000'
-        elif odbc == 'psycopg2':
-            drver = 'postgresql+psycopg2'
+        if odbc in ['pg8000', 'psycopg2']:
+            driver = f'postgresql+{odbc}'
         else:
-            drver = 'postgresql'
-        return f"{drver}://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
+            driver = 'postgresql'
+        return f"{driver}://{netdbstr}"
 
     if types == 'Oracle':
-        drver = 'oracle+cx_oracle' if odbc == 'cx_oracle' else 'oracle'
-        return f"{drver}//{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
-        # cx_oracle:'oracle+cx_oracle://scott:tiger@tnsname'
+        driver = 'oracle+cx_oracle' if odbc == 'cx_oracle' else 'oracle'
+        return f"{driver}//{netdbstr}"
 
     if types == 'SQLServer':
-        drver = 'mssql+pyodbc' if odbc == 'pyodbc' else 'mssql+pymssql'
-        return f"{drver}://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
-        # pyodbc:'mssql+pyodbc://scott:tiger@mydsn'
+        driver = 'mssql+pyodbc' if odbc == 'pyodbc' else 'mssql+pymssql'
+        return f"{driver}://{netdbstr}"
 
     if types == 'SQLite':
-        drver = 'sqlite'
-        return f"{drver}:///{config['host']}"
+        driver = 'sqlite'
+        return f"{driver}:///{config['host']}"
 
     if types == 'access':
-        drver = 'access+pyodbc'
-        return f"{drver}://{config['host']}"
+        driver = 'access+pyodbc'
+        return f"{driver}://{config['host']}"
 
     if types == 'monetdb':
-        drver = 'monetdb+lite' if odbc == 'lite' else 'monetdb'
-        return f"{drver}:///{config['host']}"
+        driver = 'monetdb+lite' if odbc == 'lite' else 'monetdb'
+        return f"{driver}:///{config['host']}"
+    
+    return ''

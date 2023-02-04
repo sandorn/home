@@ -45,8 +45,6 @@ class SqlTwisted(object):
 
     def handle_back(self, result, item):
         print(f'SqlTwisted 异步回调 | {result} | item:{item}')
-        # reactor.callWhenRunning(lambda: reactor.stop())  # 终止reactor
-        # reactor.calllater(0.1, reactor.stop())  # 终止reactor
         reactor.stop()  # 终止reactor
         return result
 
@@ -82,3 +80,9 @@ if __name__ == "__main__":
     # print(ress)
     ress = engine.update(item, {'ID': 2}, 'users2')
     print(ress)
+    '''
+    # reactor.callWhenRunning(lambda: reactor.stop())
+    # reactor.calllater(0.1, reactor.stop())  # 终止reactor
+    # reactor.callInThread(self, _callable, *args, **kwargs)
+    # reactor.suggestThreadPoolSize(15)
+    '''

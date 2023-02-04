@@ -19,17 +19,17 @@ import traceback
 from copy import deepcopy
 
 import aiomysql.sa as aio_sa
-# from sqlalchemy import text  # , MetaData, Table, create_engine
 from xt_Class import item_Mixin
-from xt_DAO.cfg import DB_CONFIG  # , connect_str
+from xt_DAO.cfg import DB_CONFIG
+from xt_DAO.untilsql import get_insert_sql, get_update_sql
 
 
 class AioMysql(item_Mixin):
 
-    def __init__(self, key='default', table_name=None):
+    def __init__(self, key='default', tablename=None):
         self.coro_list = []
         self.key = key
-        if table_name: self.init_orm(table_name)
+        if tablename: self.init_orm(tablename)
         self.loop = asyncio.get_event_loop()
         self.run_in_loop([self.create_engine(key=self.key, autocommit=True)])
 
@@ -53,12 +53,8 @@ class AioMysql(item_Mixin):
         coro_list = coro_list or self.coro_list
         return self.loop.run_until_complete(asyncio.gather(*coro_list))
 
-    def init_orm(self, table_name):
-        # self.s_engine = create_engine(connect_str(self.key))
-        # self.tbl = Table(self.table_name, MetaData(bind=self.s_engine), autoload=True)
-        # insert_sql = tbl.insert().values({'name': 'test', 'age': 18})
-        # update_sql = tbl.update().where(tbl.c.id == 1).values({'name': 'test', 'age': 18})
-        self.table_name = table_name
+    def init_orm(self, tablename):
+        self.tablename = tablename
 
     def querymany(self, sql_list, autorun=True):
         _coro = [self.__query(sql) for sql in sql_list]
@@ -79,30 +75,15 @@ class AioMysql(item_Mixin):
         except Exception:
             print(traceback.format_exc())
 
-    @staticmethod
-    def get_insert_sql(item, table_name):
-        cols = ", ".join(f"`{k}`" for k in item.keys())
-        vals = ", ".join(f"'{v}'" for v in item.values())
-        sql = f"INSERT INTO `{table_name}`({cols}) VALUES({vals})"
-        return sql.replace('%', '%%')  # text() 用于防止sql注入
-
-    @staticmethod
-    def get_update_sql(item, condition, table_name):
-        item_kv = ", ".join([f"`{k}`='{item[k]}'" for k in item])
-        cond_k = ", ".join([f"`{k}`" for k in condition.keys()])
-        cond_v = ", ".join([f"'{v}'" for v in condition.values()])
-        sql = f"UPDATE `{table_name}` SET {item_kv} WHERE ({cond_k})=({cond_v})"
-        return sql.replace('%', '%%')  # text() 用于防止sql注入
-
-    def insert(self, data_dict_list, table_name=None, autorun=True):
-        table_name = table_name or self.table_name
+    def insert(self, data_dict_list, tablename=None, autorun=True):
+        tablename = tablename or self.tablename
         if isinstance(data_dict_list, dict): data_dict_list = [data_dict_list]
-        _coro = [self.__insert(data_dict, table_name) for data_dict in data_dict_list]
+        _coro = [self.__insert(data_dict, tablename) for data_dict in data_dict_list]
         if autorun: return self.run_in_loop(_coro)
         else: self.coro_list.extend(_coro)
 
-    async def __insert(self, data_dict_list, table_name):
-        insert_sql = self.get_insert_sql(data_dict_list, table_name)
+    async def __insert(self, data_dict_list, tablename):
+        insert_sql = get_insert_sql(data_dict_list, tablename)
         async with self.engine.acquire() as conn:
             # 注意: 执行的执行必须开启一个事务, 否则数据是不会进入到数据库中的
             async with conn.begin():
@@ -112,15 +93,15 @@ class AioMysql(item_Mixin):
                 except Exception:
                     print(traceback.format_exc())
 
-    def update(self, data_dict_list, whrere_dict_list, table_name=None, autorun=True):
-        table_name = table_name or self.table_name
+    def update(self, data_dict_list, whrere_dict_list, tablename=None, autorun=True):
+        tablename = tablename or self.tablename
         if isinstance(data_dict_list, dict): data_dict_list = [data_dict_list]
-        _coro = [self.__update(data_dict, whrere_dict, table_name) for data_dict, whrere_dict in zip(data_dict_list, whrere_dict_list)]
+        _coro = [self.__update(data_dict, whrere_dict, tablename) for data_dict, whrere_dict in zip(data_dict_list, whrere_dict_list)]
         if autorun: return self.run_in_loop(_coro)
         else: self.coro_list.extend(_coro)
 
-    async def __update(self, data_dict_list, whrere_dict, table_name):
-        update_sql = self.get_update_sql(data_dict_list, whrere_dict, table_name)
+    async def __update(self, data_dict_list, whrere_dict, tablename):
+        update_sql = get_update_sql(data_dict_list, whrere_dict, tablename)
         async with self.engine.acquire() as conn:
             async with conn.begin():
                 try:
@@ -141,24 +122,24 @@ if __name__ == '__main__':
     executemany_sql = "update users2 set username=%s where ID = %s"
     executemany_data = [('刘澈', 1), ('刘新军', 2)]
 
-    aio = AioMysql('TXbx', table_name='users2')
+    aio = AioMysql('TXbx', tablename='users2')
     # res = aio.insert([item1, item1])
     # print(res)
     # res = aio.insert([item1, item1], autorun=False)
     # res = aio.run_in_loop()
     # print(res)
-    # res = aio.insert([item1, item1], 'users')
-    # print(res)
+    res = aio.insert([item1, item1], 'users')
+    print(res)
     # res = aio.querymany(query_list)
     # print(res)
     # res = aio.query(query_list[0])
     # print(res)
-    # update_sql = [
-    #     "UPDATE users2 set username='刘新军1' WHERE ID = '1'",
-    #     "UPDATE users2 set username='刘新军2' WHERE ID = '2'",
-    # ]
-    # res = aio.querymany(update_sql)
-    # print(res)
+    update_sql = [
+        "UPDATE users2 set username='刘新军1' WHERE ID = '1'",
+        "UPDATE users2 set username='刘新军2' WHERE ID = '2'",
+    ]
+    res = aio.querymany(update_sql)
+    print(res)
     # res = aio.update(
     #     [{
     #         'username': '刘澈3'

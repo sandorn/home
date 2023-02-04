@@ -27,6 +27,7 @@ from twisted.enterprise import adbapi
 from xt_DAO.cfg import DB_CONFIG
 from xt_DAO.xt_Aiomysql import AioMysql
 from xt_DAO.xt_AiomysqlPool import execute_aiomysql
+from xt_DAO.xt_AsynSqlOrm import AsynSqlOrm as aiorm
 from xt_DAO.xt_chemyMeta import Base_Model
 from xt_DAO.xt_mysql import DbEngine as mysql
 from xt_DAO.xt_sqlalchemy import SqlConnection
@@ -51,66 +52,6 @@ def make_model(_BOOKNAME):
             return f"({self.ID},{self.BOOKNAME},{self.INDEX},{self.ZJNAME},{self.ZJHERF})"
 
     return table_model
-
-
-class PipelineToAiomysql(object):
-
-    def __init__(self):
-        self.sql_list = []
-        self.AioMysql = None
-
-    def process_item(self, item, spider):
-        if self.AioMysql is None: self.AioMysql = AioMysql('TXbook', item['BOOKNAME'])
-        self.AioMysql.insert(dict(item), autorun=False)
-        return item
-
-    def close_spider(self, spider):
-        self.AioMysql.run_in_loop()
-
-
-class PipelineToAiomysqlpool(object):
-
-    def __init__(self):
-        self.sql_list = []
-
-    def process_item(self, item, spider):
-        self.sql_list.append(self.Create_Sql(item))
-        return item
-
-    def Create_Sql(self, item):
-        return """
-        Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
-        """ % (
-            item['BOOKNAME'],
-            item['BOOKNAME'],
-            item['INDEX'],
-            item['ZJNAME'],
-            item['ZJTEXT'],
-            item['ZJHERF'],
-        )
-
-    def close_spider(self, spider):
-        execute_aiomysql('TXbook', self.sql_list)
-
-
-class PipelineToSqlalchemy(object):
-
-    def __init__(self):
-        self.db = set()
-
-    def process_item(self, item, spider):
-        _BOOKNAME = item['BOOKNAME']
-        if _BOOKNAME not in self.db:
-            self.db.add(_BOOKNAME)
-            DBtable = make_model(_BOOKNAME)
-            self.sqlconn = SqlConnection(DBtable, 'TXbook')
-
-        self.sqlconn.insert(dict(item))
-        return item
-
-    def close_spider(self, spider):
-        del self.sqlconn
-        del self.db
 
 
 class PipelineToSqlTwisted(object):
@@ -142,6 +83,89 @@ class PipelineToSqlTwisted(object):
         Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
         """ % (item['BOOKNAME'], item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT'], item['ZJHERF'])
         cursor.execute(insert_sql)
+
+
+class PipelineToAiomysqlpool(object):
+
+    def __init__(self):
+        self.sql_list = []
+
+    def process_item(self, item, spider):
+        self.sql_list.append(self.Create_Sql(item))
+        return item
+
+    def Create_Sql(self, item):
+        return """
+        Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
+        """ % (
+            item['BOOKNAME'],
+            item['BOOKNAME'],
+            item['INDEX'],
+            item['ZJNAME'],
+            item['ZJTEXT'],
+            item['ZJHERF'],
+        )
+
+    def close_spider(self, spider):
+        execute_aiomysql('TXbook', self.sql_list)
+
+
+class PipelineToAsynorm(object):
+
+    def __init__(self):
+        self.db = set()
+        self.sqlconn = None
+
+    def process_item(self, item, spider):
+        self._BOOKNAME = item['BOOKNAME']
+        if self._BOOKNAME not in self.db:
+            self.db.add(self._BOOKNAME)
+            self.DBtable = make_model(self._BOOKNAME)
+        if self.sqlconn is None:
+            self.sqlconn = aiorm(self.DBtable, 'TXbook', self._BOOKNAME)
+
+        self.sqlconn.insert(dict(item), autorun=False)
+
+        return item
+
+    def close_spider(self, spider):
+        self.sqlconn.run_in_loop()
+        del self.db
+
+
+class PipelineToAiomysql(object):
+
+    def __init__(self):
+        self.sql_list = []
+        self.AioMysql = None
+
+    def process_item(self, item, spider):
+        if self.AioMysql is None: self.AioMysql = AioMysql('TXbook', item['BOOKNAME'])
+        self.AioMysql.insert(dict(item), autorun=False)
+        return item
+
+    def close_spider(self, spider):
+        self.AioMysql.run_in_loop()
+
+
+class PipelineToSqlalchemy(object):
+
+    def __init__(self):
+        self.db = set()
+
+    def process_item(self, item, spider):
+        _BOOKNAME = item['BOOKNAME']
+        if _BOOKNAME not in self.db:
+            self.db.add(_BOOKNAME)
+            DBtable = make_model(_BOOKNAME)
+            self.sqlconn = SqlConnection(DBtable, 'TXbook')
+
+        self.sqlconn.insert(dict(item))
+        return item
+
+    def close_spider(self, spider):
+        del self.sqlconn
+        del self.db
 
 
 class PipelineToMysql(object):

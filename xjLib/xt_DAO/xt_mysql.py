@@ -17,7 +17,9 @@ from copy import deepcopy
 
 import MySQLdb
 import pymysql
-from xt_DAO.cfg import DB_CONFIG  # type: ignore
+from sqlalchemy import text
+from xt_DAO.cfg import DB_CONFIG
+from xt_DAO.untilsql import get_insert_sql, get_update_sql
 
 
 class DbEngine(object):
@@ -88,21 +90,6 @@ class DbEngine(object):
         except Exception as error:
             return self._handler_err('self.odbc error |  [', error, sql)
 
-    @staticmethod
-    def get_insert_sql(item, table_name):
-        cols = ", ".join(f"`{k}`" for k in item.keys())
-        vals = ", ".join(f"'{v}'" for v in item.values())
-        sql = f"INSERT INTO `{table_name}`({cols}) VALUES({vals})"
-        return sql.replace('%', '%%')
-
-    @staticmethod
-    def get_update_sql(item, condition, table_name):
-        item_kv = ", ".join([f"`{k}`='{item[k]}'" for k in item])
-        cond_k = ", ".join([f"`{k}`" for k in condition.keys()])
-        cond_v = ", ".join([f"'{v}'" for v in condition.values()])
-        sql = f"UPDATE `{table_name}` SET {item_kv} WHERE ({cond_k})=({cond_v})"
-        return sql.replace('%', '%%')
-
     def insertMany(self, datas, tb_name, keys=None):
         if not isinstance(datas, (list, tuple)): raise TypeError("must list|tuple type")
 
@@ -110,7 +97,7 @@ class DbEngine(object):
             keys = list(datas[0].keys())
         cols = ", ".join(f"`{k}`" for k in keys)
         val_cols = ", ".join(f"%({k})s" for k in keys)
-        res_sql = f"insert into `{tb_name}`({cols}) values({val_cols})"
+        res_sql = text(f"insert into `{tb_name}`({cols}) values({val_cols})")
 
         try:
             self.cur.executemany(res_sql, datas)
@@ -127,12 +114,12 @@ class DbEngine(object):
 
     def insert(self, data, tb_name):
         if not isinstance(data, dict): raise ValueError("must dict type")
-        res_sql = self.get_insert_sql(data, tb_name)
+        res_sql = get_insert_sql(data, tb_name)
         self.execute(res_sql)
 
     def update(self, new_data, condition, tb_name):
         if not isinstance(new_data, dict): raise ValueError("must dict type")
-        sql = self.get_update_sql(new_data, condition, tb_name)
+        sql = get_update_sql(new_data, condition, tb_name)
         self.execute(sql)
 
     def ver(self):

@@ -12,8 +12,9 @@ LastEditTime : 2021-03-25 10:03:29
 #Github       : https://github.com/sandorn/home
 #==============================================================
 '''
+
+from sqlalchemy import Table
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-# DeclarativeMeta  类;declarative_base类工厂
 from xt_Class import item_Mixin
 from xt_DAO.cfg import connect_str
 
@@ -57,7 +58,7 @@ class Orm_Meta:
         raise NotImplementedError
 
 
-class Model_Method_Mixin(item_Mixin):
+class ModelExt(item_Mixin):
     '''解决下标取值赋值、打印显示、生成字段列表'''
 
     @classmethod
@@ -86,44 +87,48 @@ class Model_Method_Mixin(item_Mixin):
         return self.make_dict(self)
 
     def to_json(self):
-        dict_ = self.__dict__
-        dict_.pop("_sa_instance_state", None)
-        return dict_
+        fields = self.__dict__
+        fields.pop("_sa_instance_state", None)
+        return fields
 
     def __repr__(self):
-        return self.__class__.__name__ + str({attr: getattr(self, attr) for attr in self.columns()})
+        fields = self.__dict__
+        if "_sa_instance_state" in fields: del fields["_sa_instance_state"]
+        return self.__class__.__name__ + str(dict(fields.items()))
+        # return self.__class__.__name__ + str({attr: getattr(self, attr) for attr in self.columns()})
 
     __str__ = __repr__
 
 
-Base_Model = declarative_base(cls=Model_Method_Mixin)  # #生成SQLORM基类,混入继承Model_Method_Mixin
-'''metadata = Base.metadata'''
-'''定义table的基类,所有的表都要继承这个类,这个类的作用是将表映射到数据库中'''
-
-# 若有多个类指向同一张表，那么在后边的类需要把 extend_existing设为True，表示在已有列基础上进行扩展
-# 或者换句话说，sqlalchemy 允许类是表的字集，如下：
-# __table_args__ = {'extend_existing': True}
-# 若表在同一个数据库服务（datebase）的不同数据库中（schema），可使用schema参数进一步指定数据库
-# __table_args__ = {'schema': 'AiTestOps_database'}
-
-# sqlalchemy 强制要求必须要有主键字段不然会报错，sqlalchemy在接收到查询结果后还会自己根据主键进行一次去重，因此不要随便设置非主键字段设为primary_key
-# 各变量名一定要与表的各字段名一样，因为相同的名字是他们之间的唯一关联关系，指定 person_id 映射到 person_id 字段; person_id 字段为整型，为主键，自动增长（其实整型主键默认就自动增长）
+Base_Model = declarative_base(cls=ModelExt)  # #生成SQLORM基类,混入继承ModelExt
+'''
+metadata = Base.metadata
+定义table的基类,所有的表都要继承这个类,这个类的作用是将表映射到数据库中
+sqlalchemy 强制要求必须要有主键字段不然会报错,sqlalchemy在接收到查询结果后还会自己根据主键进行一次去重,因此不要随便设置非主键字段设为primary_key
+一般情况下,我们不需要自己定义主键,sqlalchemy会自动为我们创建一个主键,但是如果我们需要自己定义主键,那么就需要在定义表的时候指定主键,如下所示:id = Column(Integer, primary_key=True)
+'''
 
 
 class parent_model_Mixin:
-    # 关键语句,定义所有数据库表对应的父类,用于混入继承,与Base_Model协同
+    '''定义所有数据库表对应的父类,用于混入继承,与Base_Model协同'''
     __abstract__ = True
 
 
 def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict=None):
-    """从指定table_model_cls类继承,重新定义表名；
+    """
+    从指定table_model_cls类继承,重新定义表名；
     target_table_name:目标表名,用于数据库和返回的类名；
     table_model_cls:包含字段信息的表model类,必须有__abstract__ = True,或混入继承
     table_model_cls 例子:
     class table_model(Base_Model):
         __tablename__ = _BOOKNAME
-        __table_args__ = {"extend_existing": True}  # 允许表已存在
-        # __extend_existing__ = True
+        __table_args__ = {
+            "extend_existing": True,  # 允许表已存在
+            "abstract": True,  # 父类模式
+            'schema': 'AiTestOps_database',  # 表在同一个数据库服务(datebase)的不同数据库中(schema),可指定数据库
+        }
+        # __extend_existing__ = True  # 允许表已存在
+        # __abstract__ = True,  # 父类模式
 
         ID = Column(INTEGER(10), primary_key=True)
         BOOKNAME = Column(VARCHAR(255), nullable=False)
@@ -134,9 +139,7 @@ def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict=None):
     """
     if cid_class_dict is None: cid_class_dict = {}
     if not isinstance(table_model_cls, DeclarativeMeta):
-        raise TypeError('table_model_cls must be a DeclarativeMeta class')
-    if not hasattr(table_model_cls, '__abstract__'):
-        raise ValueError('table_model_cls must has __abstract__')
+        raise TypeError('table_model_cls must be DeclarativeMeta object')
 
     if target_table_name not in cid_class_dict:
         cls = type(
@@ -145,9 +148,9 @@ def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict=None):
             {
                 '__table_args__': {
                     "extend_existing": True,  # 允许表已存在
-                    # "__abstract__": True,  # 父类模式
                 },
                 '__tablename__': target_table_name,
+                '__abstract__': True,  # 父类模式
             })
         cid_class_dict[target_table_name] = cls
 
@@ -177,37 +180,35 @@ def dictToObj(results, to_class):
             return None
 
 
-def getModel(source_table_name, engine, target_table_name=None):
-    """读取源表的model类,或copy源表结构,创建新表
-    根据engine连接数据库,读取表source_table_name,返回model类
-    source_table_name:读取表名
-    target_table_name:另存为表名,如为None则返回source_table_name
-    engine:create_engine 对象,指定要操作的数据库连接
-    """
-    Base_Model.metadata.reflect(engine)
-    source_table = Base_Model.metadata.tables[source_table_name]
+def getModel(table_name, engine, new_table_name=None):
+    """读取数据库表;,或copy源表结构,创建新表;返回model类"""
+    # Base_Model.metadata.reflect(engine)
+    # source_table = Base_Model.metadata.tables[table_name]
+    # Base_Model.metadata.bind = engine
 
-    return_name = target_table_name or source_table_name
+    source_table = Table(
+        table_name,
+        Base_Model.metadata,
+        extend_existing=True,
+        autoload_with=engine,
+    )
+    return_name = table_name if new_table_name is None else new_table_name
+
     target_kws = {
         '__table__': source_table,
         '__tablename__': return_name,
     }
+    target_kws['__table__'].name = return_name  # 决定是否创建新表
 
-    if target_table_name is not None:
-        target_kws['__table__'].name = target_table_name
-
+    Base_Model.metadata.create_all(engine)
     return type(return_name, (Base_Model, ), target_kws)
 
 
-def Data_Model_2_py(tablename, filename=None, key='default'):
+def Data_Model_2_py(tablename, key='default'):
     '''
     根据已有数据库生成模型
     sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf
     '''
     import subprocess
-
-    if filename is None:
-        filename = tablename
-    com_list = f'sqlacodegen --tables {tablename} --outfile {filename}_db.py {connect_str(key)}'
-
+    com_list = f'sqlacodegen --tables {tablename} --outfile {tablename}_db.py {connect_str(key)}'
     subprocess.call(com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
