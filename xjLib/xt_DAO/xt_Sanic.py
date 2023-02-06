@@ -34,21 +34,3 @@ async def index(loop):
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(index(loop))
-'''
-from sanic import Sanic
-from sanicdb import SanicDB
-
-app = Sanic('test')
-# 实例化SanicDB
-db = SanicDB('cdb-lfp74hz4.bj.tencentcdb.com', 'bxflb', 'sandorn', '123456', sanic=app)
-
-
-@app.route('/sanicdbTest')
-async def sanicdbTest(request):
-    sql = 'select * from user2'
-    data = await app.db.query(sql)
-    return response.json(data)
-
-
-if __name__ == '__main__':
-    app.run()'''

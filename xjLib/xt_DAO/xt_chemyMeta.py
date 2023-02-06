@@ -185,6 +185,13 @@ def getModel(table_name, engine, new_table_name=None):
     # Base_Model.metadata.reflect(engine)
     # source_table = Base_Model.metadata.tables[table_name]
     # Base_Model.metadata.bind = engine
+    # self.insp = sqlalchemy.inspect(self.engine)
+    # sqlhelper.insp.get_schema_names()
+    # sqlhelper.insp.get_table_names(schema='bxflb')
+    # sqlhelper.insp.get_columns('users2', schema='bxflb')  # 表名，库名
+    # reflect 映射dash_base库下的表结构
+    # sqlhelper.Base.metadata.reflect(bind=sqlhelper.engine, schema='bxflb')
+    # print([i for i in sqlhelper.Base.metadata.tables.values()])
 
     source_table = Table(
         table_name,

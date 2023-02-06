@@ -88,7 +88,7 @@ class DbEngine(object):
             self.conn.commit()
             return True
         except Exception as error:
-            return self._handler_err('self.odbc error |  [', error, sql)
+            return self.__handler_err('self.odbc error |  [', error, sql)
 
     def insertMany(self, datas, tb_name, keys=None):
         if not isinstance(datas, (list, tuple)): raise TypeError("must list|tuple type")
@@ -104,10 +104,10 @@ class DbEngine(object):
             self.conn.commit()
             return True
         except Exception as error:
-            return self._handler_err('self.odbc error | [', error, res_sql)
+            return self.__handler_err('self.odbc error | [', error, res_sql)
 
     # TODO Rename this here and in `execute` and `insertMany`
-    def _handler_err(self, arg0, error, arg2):
+    def __handler_err(self, arg0, error, arg2):
         self.conn.rollback()
         print(f'{arg0}{error}] \n sql:{arg2}', sep='')
         return False

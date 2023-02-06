@@ -14,14 +14,13 @@ Github       : https://github.com/sandorn/home
 '''
 
 import asyncio
-from concurrent.futures import (ProcessPoolExecutor, ThreadPoolExecutor,
-                                as_completed)
+from concurrent.futures import (ProcessPoolExecutor, ThreadPoolExecutor, as_completed)
 
 
 def futuresMap(_cls):
     '''停用'''
 
-    class FuturesMap_Class_Wrapper(_cls):
+    class FuturesMapCls(_cls):
 
         def __init__(self, func, *args_iter):
             super().__init__()
@@ -35,14 +34,14 @@ def futuresMap(_cls):
             '''等待线程池结束,返回全部结果,有序'''
             return self.wait_completed()
 
-    FuturesMap_Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
-    return FuturesMap_Class_Wrapper
+    FuturesMapCls.__name__ = _cls.__name__  # 保留原类的名字
+    return FuturesMapCls
 
 
 def futuresSub(_cls):
     '''停用'''
 
-    class FuturesSub_Class_Wrapper(_cls):
+    class FuturesSubCls(_cls):
 
         def __init__(self, func, args_iter, callback=None, MaxSem=66):
             super().__init__()
@@ -79,13 +78,13 @@ def futuresSub(_cls):
                     print('exception :', err)
             return result_list
 
-    FuturesSub_Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
-    return FuturesSub_Class_Wrapper
+    FuturesSubCls.__name__ = _cls.__name__  # 保留原类的名字
+    return FuturesSubCls
 
 
 def futuresPool(_cls):
 
-    class FuturesPool_Class_Wrapper(_cls):
+    class FuturesPoolCls(_cls):
 
         def __init__(self):
             super().__init__()
@@ -135,8 +134,8 @@ def futuresPool(_cls):
 
             return result_list
 
-    FuturesPool_Class_Wrapper.__name__ = _cls.__name__  # 保留原类的名字
-    return FuturesPool_Class_Wrapper
+    FuturesPoolCls.__name__ = _cls.__name__  # 保留原类的名字
+    return FuturesPoolCls
 
 
 # #使用类工厂,动态生成基于线程或进程的类
@@ -158,7 +157,7 @@ class FuncInThreadPool:
         self.func, self.args, self.kwargs = func, args, kwargs
         self.start()
 
-    async def _working(self):
+    async def __work(self):
         __args = list(zip(*self.args))
         for arg in __args:
             task = self.loop.run_in_executor(self.executor, self.func, *arg, **self.kwargs)
@@ -170,7 +169,7 @@ class FuncInThreadPool:
 
     def start(self):
         self.loop = asyncio.get_event_loop()
-        return self.loop.run_until_complete(self._working())
+        return self.loop.run_until_complete(self.__work())
 
 
 if __name__ == '__main__':

@@ -13,6 +13,7 @@ Github       : https://github.com/sandorn/home
 '''
 
 import pandas
+import sqlalchemy
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import DeclarativeMeta
 # , declarative_base 类工厂
@@ -56,6 +57,8 @@ class SqlConnection(Orm_Meta):
         self.Base.metadata.create_all(self.engine)  # 创建表
         self.query = self.session.query(self.Base)
         # self.Base.query = self.session.query()
+        # 获取数据库名列表
+        self.insp = sqlalchemy.inspect(self.engine)
 
     def __enter__(self):
         return self.session
@@ -182,8 +185,8 @@ if __name__ == "__main__":
     sqlhelper = create_orm('TXbx', 'users2')  #, 'user99')
     # res = sqlhelper.filter_by({'ID': 1})
     # print(res)
-    res = sqlhelper.select()
-    print(res)
+    # res = sqlhelper.select()
+    # print(res)
     # resfrom_statement = sqlhelper.from_statement('select * from users2 where id=:id', {'id': 1})
     # print(resfrom_statement)
     # print(sqlhelper.Base.make_dict(resfrom_statement))
@@ -197,19 +200,19 @@ if __name__ == "__main__":
     # print(deleNum)
     # res = sqlhelper.select({'username': '刘新军'}, ['ID', 'username'], 2)
     # print(res)
-'''
-https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html
-http://sunnyingit.github.io/book/section_python/SQLalchemy-engine.html
-https://www.cnblogs.com/pycode/p/mysql-orm.html
-https://docs.sqlalchemy.org/en/20/orm/session_basics.html
-SQLAlchemy 中的 Session、sessionmaker、scoped_session - 长安223 - 博客园
-https://www.cnblogs.com/ChangAn223/p/11277468.htm
-# self.s_engine = create_engine(connect_str(self.key))
-# self.tbl = Table(self.table_name, MetaData(bind=self.s_engine), autoload=True)
-# insert_sql = tbl.insert().values({'name': 'test', 'age': 18})
-# update_sql = tbl.update().where(tbl.c.id == 1).values({'name': 'test', 'age': 18})
-# select_sql = tbl.select().where(tbl.c.id == 1)
-# delete_sql = tbl.delete().where(tbl.c.id == 1)
-https://www.cnblogs.com/panwenbin-logs/p/5731265.html#_label4
-==============================================================
-'''
+    '''
+    https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html
+    http://sunnyingit.github.io/book/section_python/SQLalchemy-engine.html
+    https://www.cnblogs.com/pycode/p/mysql-orm.html
+    https://docs.sqlalchemy.org/en/20/orm/session_basics.html
+    SQLAlchemy 中的 Session、sessionmaker、scoped_session - 长安223 - 博客园
+    https://www.cnblogs.com/ChangAn223/p/11277468.htm
+    # self.s_engine = create_engine(connect_str(self.key))
+    # self.tbl = Table(self.table_name, MetaData(bind=self.s_engine), autoload=True)
+    # insert_sql = tbl.insert().values({'name': 'test', 'age': 18})
+    # update_sql = tbl.update().where(tbl.c.id == 1).values({'name': 'test', 'age': 18})
+    # select_sql = tbl.select().where(tbl.c.id == 1)
+    # delete_sql = tbl.delete().where(tbl.c.id == 1)
+    https://www.cnblogs.com/panwenbin-logs/p/5731265.html#_label4
+    ==============================================================
+    '''

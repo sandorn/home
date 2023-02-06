@@ -24,8 +24,8 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 
 def rename(file_path):
-    (filepath, tempfilename) = os.path.split(file_path)
-    (filename, extension) = os.path.splitext(tempfilename)
+    filepath, tempfilename = os.path.split(file_path)
+    filename, extension = os.path.splitext(tempfilename)
     return os.path.join(filepath, f'OpenPyXl-{filename}{extension}')
 
 
