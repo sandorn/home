@@ -28,16 +28,15 @@ class AioMysql(item_Mixin):
 
     def __init__(self, key='default', tablename=None):
         self.coro_list = []
-        self.key = key
-        if tablename: self.init_orm(tablename)
+        if tablename: self.tablename = tablename
         self.loop = asyncio.get_event_loop()
-        self.run_in_loop([self.create_engine(key=self.key, autocommit=True)])
+        self.run_in_loop([self.create_engine(key=key, autocommit=True)])
 
     def __del__(self):
         # self.loop.close()
         ...
 
-    async def create_engine(self, key='default', autocommit=True):
+    async def create_engine(self, key, autocommit=True):
         if key not in DB_CONFIG: raise ValueError(f'错误提示:检查数据库配置:{key}')
         conf = deepcopy(DB_CONFIG[key])
         conf.pop('type', None)
@@ -123,20 +122,20 @@ if __name__ == '__main__':
     executemany_data = [('刘澈', 1), ('刘新军', 2)]
 
     aio = AioMysql('TXbx', tablename='users2')
-    # res = aio.insert([item1, item1])
-    # print(res)
+    res = aio.insert([item1, item1])
+    print(res)
     # res = aio.insert([item1, item1], autorun=False)
     # res = aio.run_in_loop()
     # print(res)
-    res = aio.insert([item1, item1], 'users')
-    print(res)
+    # res = aio.insert([item1, item1], 'users')
+    # print(res)
     # res = aio.querymany(query_list)
     # print(res)
     # res = aio.query(query_list[0])
     # print(res)
     update_sql = [
-        "UPDATE users2 set username='刘新军1' WHERE ID = '1'",
-        "UPDATE users2 set username='刘新军2' WHERE ID = '2'",
+        "UPDATE users2 set username='刘澈' WHERE ID = '1'",
+        "UPDATE users2 set username='刘新军' WHERE ID = '2'",
     ]
     res = aio.querymany(update_sql)
     print(res)

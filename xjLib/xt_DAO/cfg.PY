@@ -1,12 +1,13 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:50
-LastEditTime : 2022-12-20 20:23:27
-FilePath     : /xjLib/xt_DAO/cfg.PY
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-02-06 19:35:55
+FilePath     : /CODE/xjLib/xt_DAO/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -66,8 +67,6 @@ DB_CONFIG = {
     }
 }
 
-# # 有优化空间
-
 DB_CONFIG['default'] = DB_CONFIG['TXbook']
 
 
@@ -118,5 +117,5 @@ def connect_str(key, odbc=None):
     if types == 'monetdb':
         driver = 'monetdb+lite' if odbc == 'lite' else 'monetdb'
         return f"{driver}:///{config['host']}"
-    
+
     return ''
