@@ -102,16 +102,16 @@ def 尾递归优化(n):
     return fact_iter(n, 1)
 
 
-def 汉诺塔(n, a, b, c):
+def hanoi(n, x, y, z):
     if n == 1:
-        print(a, '---->', c)
+        print(x, '-->', z)
     else:
-        汉诺塔(n - 1, a, c, b)
-        汉诺塔(1, a, b, c)
-        汉诺塔(n - 1, b, a, c)
+        hanoi(n - 1, x, z, y)  #将前n-1个盘子从x移动到y上
+        print(x, '-->', z)  #将最底下的最后一个盘子从x移动到z上
+        hanoi(n - 1, y, x, z)  #将y上的n-1个盘子移动到z上
 
 
-def 递归汉诺塔_0(n):
+def 递归汉诺塔_L(n):
 
     def fact(n, aa, bb, cc):
 
@@ -120,27 +120,32 @@ def 递归汉诺塔_0(n):
             print(aa, 'a-->c', cc)
         else:
             fact(n - 1, aa, cc, bb)
-            fact(1, aa, bb, cc)
+            cc.append(aa.pop())
+            print(aa, 'a-->c', cc)
             fact(n - 1, bb, aa, cc)
         return aa, bb, cc
 
-    aL = list(range(1, n + 1))[::-1]
+    aL = list(range(1, n + 1))
+    aL.reverse()
     bL, cL = [], []
     print(fact(n, aL, bL, cL))
 
 
-def 递归汉诺塔(n):
+def 递归汉诺塔_D(n):
+    '''N>=3有问题'''
 
-    def fact(n, sort_L):
+    def fact(n, L):
+        # print(n, L)
         if n == 1:
             # print(hnDict)
-            hnDict[sort_L[2]].append(hnDict[sort_L[0]].pop())
-            print(hnDict[sort_L[0]], f'{sort_L[0]}-->{sort_L[2]}', hnDict[sort_L[2]])
+            hnDict[L[2]].append(hnDict[L[0]].pop())
+            print(hnDict[L[0]], f'{L[0]}-->{L[2]}', hnDict[L[2]])
         else:
             fact(n - 1, ['A', 'C', 'B'])
-            fact(1, ['A', 'B', 'C'])
+            hnDict[L[2]].append(hnDict[L[0]].pop())
+            print(hnDict[L[0]], f'{L[0]}-->{L[2]}', hnDict[L[2]])
             fact(n - 1, ['B', 'A', 'C'])
-        # return hnDict
+        return hnDict
 
     hnDict = {}
     hnDict['A'] = list(range(1, n + 1))[::-1]
@@ -163,6 +168,6 @@ if __name__ == '__main__':
     # 生成器()
     # print(递归(5))
     # print(尾递归优化(5))
-    # 汉诺塔(3, 'A', 'B', 'C')
-    # 递归汉诺塔_0(3)
-    递归汉诺塔(3)
+    # hanoi(3, 'X', 'Y', 'Z')
+    # 递归汉诺塔_L(3)
+    递归汉诺塔_D(3)

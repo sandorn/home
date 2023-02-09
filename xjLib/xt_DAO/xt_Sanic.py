@@ -17,7 +17,8 @@ import asyncio
 from sanicdb import SanicDB
 
 
-async def index(loop):
+async def index(loop=None):
+    loop = loop or asyncio.get_event_loop()
     db = SanicDB(
         host='cdb-lfp74hz4.bj.tencentcdb.com',
         database='bxflb',
@@ -32,5 +33,4 @@ async def index(loop):
 
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(index(loop))
+    asyncio.run(index())
