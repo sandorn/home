@@ -152,4 +152,4 @@ if __name__ == '__main__':
     # sort_func()
     # 闭包()
     # 闭包2()
-    print(gpt('py学习\廖雪峰python教程\filter序列练习.py'))
+    print(gpt('python迭代习题'))
