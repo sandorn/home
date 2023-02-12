@@ -24,15 +24,13 @@ def Ex_md5(data):
     """将string转化为MD5"""
     my_md5 = hashlib.md5()  # 获取一个MD5的加密算法对象
     my_md5.update(data.encode("utf-8", 'ignore'))  # 得到MD5消息摘要
-    my_md5_Digest = my_md5.hexdigest()  # 以16进制返回消息摘要，32位
-    return my_md5_Digest
+    return my_md5.hexdigest()
 
 
 def Ex_sha1(data):
     my_sha = hashlib.sha1()
     my_sha.update(data.encode("utf-8", 'ignore'))
-    my_sha_Digest = my_sha.hexdigest()
-    return my_sha_Digest
+    return my_sha.hexdigest()
 
 
 def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
@@ -105,7 +103,7 @@ def Str_Clean(replacement, trims):
 
 def Re_Sub(replacement, trims=None):
     """
-    # @re.sub正则替换，自写表达式
+    # @re.sub正则替换,自写表达式
     replacement:欲处理的字符串
     trims:list内包含tuple或list
     trims[0]:查找字符串,trims[1]:替换字符串
@@ -126,7 +124,7 @@ def Re_Sub(replacement, trims=None):
 
 def Re_Compile(replacement, trims_dict):
     """
-    # ! re.compile正则替换，自写表达式，字典key受限，暂留
+    # ! re.compile正则替换,自写表达式,字典key受限,暂留
     replacement:欲处理的字符串
     trims_dict:dict
     用法=Re_Compile(replacement,{'A':'aaa','B':'bbb'})
@@ -135,12 +133,8 @@ def Re_Compile(replacement, trims_dict):
     return pattern.sub(lambda m: trims_dict[m.group(0)], replacement)
 
 
-def str_split_limited_list(intext, mix=100, max=280):
-    if len(intext) < mix:
-        out_text = [intext]
-    else:
-        out_text = re.findall(r'[\s\S]{' + str(mix) + ',' + str(max) + '}。', intext)
-    return out_text
+def str_split_limited_list(intext, mixnum=100, maxnum=280):
+    return ([intext] if len(intext) < mixnum else re.findall(r'[\s\S]{' + str(mixnum) + ',' + str(maxnum) + '}。', intext))
 
 
 def str2list(intext, maxlen=300):
@@ -148,7 +142,7 @@ def str2list(intext, maxlen=300):
     _temp = ''
 
     _temp_list = re.split('。', Str_Replace(intext, [['\r', '。'], ['\n', '。'], [' ', '']]))
-    _temp_list = [item + '。' for item in _temp_list if item != '']
+    _temp_list = [f'{item}。' for item in _temp_list if item != '']
 
     for text in _temp_list:
         if len(_temp) < maxlen:
@@ -181,7 +175,7 @@ def groupby(iterobj, key):
     自实现groupby，return: 字典对象
     itertool的groupby不能合并不连续但是相同的组, 且返回值是iter
     """
-    groups = dict()
+    groups = {}
     for item in iterobj:
         groups.setdefault(key(item), []).append(item)
     return groups
@@ -1454,6 +1448,6 @@ if __name__ == '__main__':
 这几天，西安交通大学各班陆续举办学习党的二十大精神主题班会。上世纪50年代，一批交大人响应党的号召从上海迁至西安，用高昂情怀和满腔热血铸就了“胸怀大局、无私奉献、弘扬传统、艰苦创业”的“西迁精神”。如今，参观交大西迁博物馆、学习西迁精神，成为西安交大学子的必修课。“学习贯彻党的二十大精神，我们要把青年工作作为战略性工作来抓，用习近平新时代中国特色社会主义思想武装青年，用党的初心使命感召青年，做青年朋友的知心人、青年工作的热心人、青年群众的引路人。”从事班主任工作12年的西安交大机械工程学院青年教授雷亚国表示，将进一步激励交大学子当好“西迁精神”新传人，到祖国建设最需要的地方建功立业。
     '''
 
-    for c in str2list(ttt):
+    for c in str_split_limited_list(ttt):
         print(len(c), c)
     print('end')

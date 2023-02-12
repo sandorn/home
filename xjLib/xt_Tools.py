@@ -24,8 +24,18 @@ from copy import deepcopy
 from functools import reduce, wraps
 from types import FunctionType
 
-from memory_profiler import profile  # 内存分析
-from snoop import snoop  # 调试
+# from memory_profiler import profile  # 内存分析
+# from snoop import snoop  # 调试
+import openai
+
+
+def gpt(question):
+    openai.api_key = "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"
+    question = question or "介绍下你自己"
+    # n参数确定要生成的响应数量。
+    # max_tokens 参数确定生成的响应中标记（即单词或标点符号）的最大数量
+    response = openai.Completion.create(engine="text-davinci-002", prompt=question, temperature=0.5, max_tokens=1024, n=1, stop=None)
+    return response["choices"][0]["text"]
 
 
 class ExceptContext(object):

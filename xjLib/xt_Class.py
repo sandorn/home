@@ -175,6 +175,8 @@ def readonly(name):
     class类property只读属性生成器,隐藏真实属性名:name,
     #不在__dict__内,需要使用class_to_dict函数生成类__dict__
     #可配合@dataclass(init=False)
+    # from dataclasses import asdict, dataclass
+    @dataclass(frozen=True) #frozen=True,不可修改
     '''
     storage_name = name
 
