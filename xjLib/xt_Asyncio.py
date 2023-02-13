@@ -87,10 +87,13 @@ def asyn_run_wrapper(func):
 
 class AioCrawl:
 
-    def __init__(self):
+    def __init__(self, loop=None):
         self.future_list = []
         self.result_list = []
-        self.loop = asyncio.get_event_loop()
+        self.loop = loop or asyncio.get_event_loop()
+
+    def __del__(self):
+        self.loop.close()
 
     async def _task_run(self, url, method='GET', index=None, *args, **kwargs):
         '''运行任务'''

@@ -13,28 +13,26 @@ Github       : https://github.com/sandorn/home
 '''
 
 
-def _odd_iter():
-    n = 1
-    while True:
-        n = n + 2
-        yield n
-
-
-def _not_divisible(n):
-    return lambda x: x % n > 0
-
-
-def primes():
-    yield 2
-    it = _odd_iter()  # 初始序列
-    while True:
-        n = next(it)  # 返回序列的第一个数
-        yield n
-        it = filter(_not_divisible(n), it)  # 构造新序列
-
-
 def run(n):
     # 打印 n 以内的素数:
+
+    def _odd_iter():
+        n = 1
+        while True:
+            n = n + 2
+            yield n
+
+    def _not_divisible(n):
+        return lambda x: x % n > 0
+
+    def primes():
+        yield 2
+        it = _odd_iter()  # 初始序列
+        while True:
+            n = next(it)  # 返回序列的第一个数
+            yield n
+            it = filter(_not_divisible(n), it)  # 构造新序列
+
     for x in primes():
         if x < n:
             print(x)
@@ -42,14 +40,11 @@ def run(n):
             break
 
 
-def is_palindrome(n):
-    return str(n) == str(n)[::-1]
-
-
 def filter_palindrome():
     # 请利用filter()筛选出回数：
-    output = filter(is_palindrome, range(1, 1000))
-    print('1~1000:', list(output))
+    def is_palindrome(n):
+        return str(n) == str(n)[::-1]
+
     if list(filter(is_palindrome, range(1, 200))) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 22, 33, 44, 55, 66, 77, 88, 99, 101, 111, 121, 131, 141, 151, 161, 171, 181, 191]:
         print('测试成功!')
     else:
@@ -80,18 +75,18 @@ def sort_func():
     print(444, L)
 
 
-def createCounter():
-    x = 0
-
-    def counter():
-        nonlocal x  # nonlocal关键字用来在函数或其他作用域中使用外层(非全局)变量。
-        x += 1
-        return x
-
-    return counter
-
-
 def 闭包():
+
+    def createCounter():
+        x = 0
+
+        def counter():
+            nonlocal x  # nonlocal关键字用来在函数或其他作用域中使用外层(非全局)变量。
+            x += 1
+            return x
+
+        return counter
+
     counterA = createCounter()
     print(counterA(), counterA(), counterA(), counterA(), counterA())  # 1 2 3 4 5
     counterB = createCounter()
@@ -101,20 +96,20 @@ def 闭包():
         print('测试失败!')
 
 
-def create_counter(N):
-    i = 0
-
-    def counter():
-        nonlocal i
-        while True:
-            i += 1
-            if i > N: break
-            yield i
-
-    return counter
-
-
 def 闭包2():
+
+    def create_counter(N):
+        i = 0
+
+        def counter():
+            nonlocal i
+            while True:
+                i += 1
+                if i > N: break
+                yield i
+
+        return counter
+
     gc = create_counter(5)()
 
     # while True:
@@ -135,6 +130,16 @@ def 闭包2():
     #     print('测试失败!')
 
 
+def lambda_func():
+
+    def is_odd(n):
+        return n % 2 == 0
+
+    L2 = list(filter(is_odd, range(1, 20)))
+    L1 = list(filter(lambda x: x % 2 == 1, range(1, 20)))
+    print(L2, L1)
+
+
 if __name__ == '__main__':
     ...
     import unittest
@@ -146,10 +151,11 @@ if __name__ == '__main__':
         def test_run(self):
             self.assertIsNone(闭包2())
 
+    # print(gpt(tr))
     # unittest.main()
     # run(50)
     # filter_palindrome()
     # sort_func()
     # 闭包()
     # 闭包2()
-    print(gpt('python迭代习题'))
+    # lambda_func()

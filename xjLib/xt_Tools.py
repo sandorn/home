@@ -24,12 +24,13 @@ from copy import deepcopy
 from functools import reduce, wraps
 from types import FunctionType
 
-# from memory_profiler import profile  # 内存分析
-# from snoop import snoop  # 调试
 import openai
 
+# from memory_profiler import profile  # 内存分析
+# from snoop import snoop  # 调试
 
-def gpt(question):
+
+def gpt(question=None):
     openai.api_key = "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"
     question = question or "介绍下你自己"
     # n参数确定要生成的响应数量。
