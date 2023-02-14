@@ -21,7 +21,7 @@ import json
 
 
 async def fetchTest(url, jsessionId):
-    async with aiohttp.ClientSession(headers={"Cookie": "JSESSIONID={}".format(jsessionId)}) as session:
+    async with aiohttp.ClientSession(headers={"Cookie": f"JSESSIONID={jsessionId}"}) as session:
         async with session.get(url) as resp:
             return await resp.read()
 
@@ -47,7 +47,7 @@ async def run(url, jsessionId, inputfile, outputfile):
     # 会报：concurrent.futures._base.TimeoutError原因为：Once it's a big number such as 30,000 it can't be physically done within 10 seconds due to networks/ram/cpu capacity.所以需要限制携程的信号量
     sem = asyncio.Semaphore(1000)
     # 将session以参数传入fetch中，让所有请求只使用一个session，而不用每个请求都创建一个session
-    async with aiohttp.ClientSession(headers={"Cookie": "JSESSIONID={}".format(jsessionId)}) as session:
+    async with aiohttp.ClientSession(headers={"Cookie": f"JSESSIONID={jsessionId}"}) as session:
         with open(file, mode='r') as f:
             for line in f:
                 # split()默认以空格分隔
@@ -61,16 +61,15 @@ async def run(url, jsessionId, inputfile, outputfile):
 
     # 它搜集所有的Future对象，然后等待他们返回
     responses = await asyncio.gather(*tasks)
-    file = open(outputfile, 'w')
-    for j in range(len(responses)):
-        resJson = json.loads(responses[j].decode('utf-8'))
-        if resJson["reDesc"] != "[FCMG]操作成功":
-            # print('{}:{}'.format(numbers[j],responses[j].decode('utf-8')))
-            file.write('{}:{}\n'.format(numbers[j], responses[j].decode('utf-8')))
-            count += 1
-    file.close()
-    print("总计查询到包月号码:{}个".format(count))
-    print("查询结果输出到:{}".format(outputfile))
+    with open(outputfile, 'w') as file:
+        for j in range(len(responses)):
+            resJson = json.loads(responses[j].decode('utf-8'))
+            if resJson["reDesc"] != "[FCMG]操作成功":
+                # print('{}:{}'.format(numbers[j],responses[j].decode('utf-8')))
+                file.write(f"{numbers[j]}:{responses[j].decode('utf-8')}\n")
+                count += 1
+    print(f"总计查询到包月号码:{count}个")
+    print(f"查询结果输出到:{outputfile}")
 
 
 if __name__ == '__main__':
@@ -82,16 +81,16 @@ if __name__ == '__main__':
     url = "http://xxx?msisdn={}"
 
     if not os.path.isfile(inputfile):
-        print("找不到此文件:{}".format(inputfile))
+        print(f"找不到此文件:{inputfile}")
         exit(0)
     if os.path.isfile(outputfile):
-        print("文件: {} 已经存在，请保存为另一个名字".format(outputfile))
+        print(f"文件: {outputfile} 已经存在，请保存为另一个名字")
         exit(0)
     # 创建一个asyncio loop的实例， 然后将任务加入其中
     loop = asyncio.get_event_loop()
     resp = loop.run_until_complete(fetchTest(url.format('13666198249'), session)).decode('utf-8')
     if 'login.jsp' in resp:
-        print("当前session:{} 不正确或已过期，请重新传入session参数".format(session))
+        print(f"当前session:{session} 不正确或已过期，请重新传入session参数")
         loop.close()
         exit(0)
 
@@ -99,4 +98,4 @@ if __name__ == '__main__':
     loop.run_until_complete(run(url, session, inputfile, outputfile))
     loop.close()
     b = datetime.now()
-    print('Cost {} seconds'.format((b - a).seconds))
+    print(f'Cost {(b - a).seconds} seconds')

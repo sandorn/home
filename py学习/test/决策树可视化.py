@@ -301,7 +301,8 @@ def plotNode(nodeTxt, centerPt, parentPt, nodeType):
         ha="center",
         bbox=nodeType,
         arrowprops=arrow_args,
-        FontProperties=font)
+        # FontProperties=font,
+        )
 
 
 """

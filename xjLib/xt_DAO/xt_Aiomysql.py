@@ -33,8 +33,7 @@ class AioMysql(item_Mixin):
         self.run_in_loop([self.create_engine(key=key, autocommit=True)])
 
     def __del__(self):
-        # self.loop.close()
-        ...
+        self.loop.close()
 
     async def create_engine(self, key, autocommit=True):
         if key not in DB_CONFIG: raise ValueError(f'错误提示:检查数据库配置:{key}')

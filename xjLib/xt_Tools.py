@@ -232,9 +232,8 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            attempts = 0
             func_exc = exc_traceback = None
-            while attempts < max_retries:
+            for _ in range( max_retries):
                 try:
                     result = func(*args, **kwargs)
                     if callable(validate) and validate(result) is False: continue
@@ -242,19 +241,28 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
                     return callback(result) if callable(callback) else result
                 except exceptions as ex:
                     func_exc, exc_traceback = ex, traceback.format_exc()
-                    attempts += 1
-                    sleep(delay + step * attempts)
-            else:
-                # #重试次数使用完毕,结果错误,返回默认值
-                print(f'try_except_wraps: [{func.__name__}]\tError: {func_exc!r}')
-                if callable(process) and process(func_exc) is True:
-                    return default() if callable(default) else default
+                    sleep(delay + step * _)  # #延迟重试
+            # #重试次数使用完毕,结果错误,返回默认值
+            print(f'try_except_wraps: [{func.__name__}]\tError: {func_exc!r}')
+            if callable(process) and process(func_exc) is True:
+                return default() if callable(default) else default
 
         return wrapper
 
     return decorator(fn) if callable(fn) else decorator
 
 
+def retry_on_exception(func):
+    def wrapper(*args, **kwargs):
+        max_retry = 3
+        for _ in range(max_retry):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                print(e)
+                time.sleep(1)
+        return None
+    return wrapper
 if __name__ == '__main__':
 
     def trys():
@@ -325,6 +333,10 @@ if __name__ == '__main__':
             )
         print(_create_func.__dict__)
 
-    trys()
+    # trys()
     # fre()
     # fu()
+    ques = '''
+    帮我写一个python函数执行出现异常时自动重试的装饰器
+    '''
+    # print(gpt(ques))

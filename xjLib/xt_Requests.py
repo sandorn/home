@@ -181,8 +181,8 @@ class SessionClient:
 if __name__ == '__main__':
     print(get_wraps('https://cn.bing.com'))
     s = SessionClient()
-    # print(get_tretry('https://www.google.com'))
-    print(s.get('https://cn.bing.com'))
+    print(get_wraps('https://www.google.com'))
+    # print(s.get('https://cn.bing.com'))
     print(s.head('http://httpbin.org/headers').headers)
     # print(s.put('http://httpbin.org/put', data=b'data'))
     # print(s.delete('http://httpbin.org/delete'))

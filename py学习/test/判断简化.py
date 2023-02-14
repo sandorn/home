@@ -1,16 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2019-05-28 16:38:02
-@LastEditors: Even.Sand
-@LastEditTime: 2019-05-28 17:08:34
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-02-13 18:46:40
+FilePath     : /CODE/py学习/test/判断简化.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
+
 a, b, c = 1, 2, 3
 
 if a > b:
@@ -44,6 +45,5 @@ print(z)
 z2 = ['a + b:[{}][{}]'.format(a, b) for a in x for b in y]
 print(z2)
 
-
-mean_domain = '.--'.join(['127', '0', '0', '1'])
+mean_domain = '.'.join(['127', '0', '0', '1'])
 print(mean_domain)
