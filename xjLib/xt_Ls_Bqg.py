@@ -90,7 +90,7 @@ def 结果处理(resps):
             '//*[@id="content"]/text()',
         )
         _title, _showtext = resp.xpath(_xpath)
-        title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
+        title = "".join(_title).replace(u'\u3000', u' ').replace(u'\xa0', u' ').replace(u'\u00a0', u' ')
         content = clean_Content(_showtext)
         # if len(content) < 10: print(resp, '||||||||||||||||||||||||||', resp.text)
         _texts.append([resp.index, title, content])
@@ -151,7 +151,8 @@ def get_contents(index, target):
     # _xpath = ('//h1/text()', '//*[@id="content"]/text()')
     # _title, _showtext = resp.xpath(_xpath)
 
-    title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
+    # title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
+    title = "".join(_title).replace(u'\u3000', u' ').replace(u'\xa0', u' ').replace(u'\u00a0', u' ')
     content = clean_Content(_showtext)
     return [index, title, content]
 

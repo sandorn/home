@@ -20,14 +20,12 @@ class filesize:
 
     def __init__(self, filePath):
         self.Bytes = os.path.getsize(filePath)
-        self.KB = self.Bytes / 1024
-        self.MB = self.KB / 1024
 
     def __str__(self):
-        if self.MB > 1:
-            return f'{self.MB:.2f} MB'
-        elif self.KB > 1:
-            return f'{self.KB:.2f} KB'
+        if self.Bytes > 1024 * 1024:
+            return f'{self.Bytes / 1024 / 1024:.2f} MB'
+        elif self.Bytes > 1024:
+            return f'{self.Bytes / 1024:.2f} KB'
         else:
             return f'{self.Bytes} B'
 
@@ -50,60 +48,64 @@ import winreg
 
 def get_desktop():
     key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
-    if path := winreg.QueryValueEx(key, "Desktop")[0]: return path
+    return winreg.QueryValueEx(key, "Desktop")[0]
 
 
 def file_to_List(filepath):
-    res_list = []
     with open(filepath, 'r') as file_to_read:
-        while content := file_to_read.readline():
-            res_list.append(content)
-    return res_list
+        # 1:while content := file_to_read.readline():
+        #     res_list.append(content)
+        # 2:return [content for content in file_to_read]
+        return list(file_to_read)
 
 
-def savefile(_filename, _list_texts, br=''):
+def savefile(_filename, _str_list, br=''):
     """
     函数说明:将多层次的list 或 tupl写入文件,迭代多层
     br为元素结束标志,可以用'\t'  '\n'  等
     """
-    if not isinstance(_list_texts, (list, tuple)): return
+    # 类型检查
+    assert isinstance(_str_list, (list, tuple)), '参数类型错误'
 
-    with open(_filename, 'w', encoding='utf-8') as file:
-
-        def each(data):
-            for value in data:
-                if isinstance(value, (list, tuple)):
-                    each(value)
+    with open(_filename, 'w', encoding='utf-8') as _file:
+        # 内部函数
+        def _each(data):
+            for item in data:
+                if isinstance(item, (list, tuple)):
+                    _each(item)
                 else:
-                    file.write(str(value) + br)
+                    _file.write(str(item) + br)
 
-            # # 最后一个元素已处理完毕,添加换行
-            file.write('\n')
+            # 最后一个元素已处理完毕,添加换行符
+            _file.write('\n')
 
-        file.write(_filename + '\n')
-        each(_list_texts)
+        _file.write(_filename + '\n')
+        _each(_str_list)
 
     size = f"size: {filesize(_filename)}"
-
     print(f'[{_filename}]保存完成,\tfile {size}。')
 
 
-def filedialog(_dir='c:/'):
-    import win32ui
+import win32ui
 
-    _dlg = win32ui.CreateFileDialog(1)  # 1表示打开文件对话框
-    _dlg.SetOFNInitialDir(_dir)  # 设置打开文件对话框中的初始显示目录
+
+def filedialog(_dir='C:/'):
+    '''依据封装win32ui库,实现打开文件对话框,并返回文件路径名'''
+    arg = f'defaultDir={_dir or "C:/"}'
+    _dlg = win32ui.CreateFileDialog(1, arg)  # 1表示打开文件对话框
+    # _dlg.SetOFNInitialDir(_dir)  # 设置打开文件对话框中的初始显示目录
     _dlg.DoModal()
     return _dlg.GetPathName()
 
 
 if __name__ == "__main__":
-    print(get_desktop())
-    print(os.getenv('TMP'))
-    nums = [4, 9, 16, 25, 36, 49]
+    # print(get_desktop())
+    # print(os.getenv('TMP'))
+    # nums = [4, 9, 16, 25, 36, 49]
 
-    def f(x):
-        print('调用次数')
-        return x**0.5
+    # def f(x):
+    #     print('调用次数')
+    #     return x**0.5
 
-    print([n for i in nums if (n := f(i)) >= 5])
+    # print([n for i in nums if (n := f(i)) >= 5])
+    print(filedialog())

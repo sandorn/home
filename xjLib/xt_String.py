@@ -74,23 +74,23 @@ def Str_Replace(replacement, trims):
     """
     # @字符替换，不支持正则
     replacement:欲处理的字符串
-    trims:list内包含tuple或list
+    trims:list内包含tuple或list: [('a', 'A'), ('b', 'B'), ('c', 'C')]
     trims[0]:查找,trims[1]:替换
-    """
     # 第一种方法
     # for item in trims:
     #     replacement = replacement.replace(item[0], item[1])
     # return replacement
+    # 第二种方法  # replacement 为初始值,最后传入,在lambda中最先接收
+    """
 
-    # 第二种方法  # replacement 为初始值，最后传入，在lambda中最先接收
     return reduce(lambda strtmp, item: strtmp.replace(item[0], item[1]), trims, replacement)
 
 
-def Str_Clean(replacement, trims):
+def Str_Clean(replacement: str, trims: list):
     """
     # @字符清除，不支持正则
     replacement:欲处理的字符串
-    trims:list内包含tuple或list
+    trims:list内包含tuple或list,例:["#", "?"]
     """
     # 第一种方法
     # for item in trims:
@@ -103,34 +103,57 @@ def Str_Clean(replacement, trims):
 
 def Re_Sub(replacement, trims=None):
     """
-    # @re.sub正则替换,自写表达式
+    @ re.sub正则替换,自写表达式
     replacement:欲处理的字符串
     trims:list内包含tuple或list
     trims[0]:查找字符串,trims[1]:替换字符串
     """
-    # 第一种方法
     if trims is None:
         # #格式化html string, 去掉多余的字符，类，script等。
-        trims = [(r'\n', ''), (r'\t', ''), (r'\r', ''), (r'  ', ''), (r'\u2018', "'"), (r'\u2019', "'"), (r'\ufeff', ''), (r'\u2022', ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r'<\g<1>>'), (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''), (r"</?a.*?>", '')]
+        trims = [
+            ("\n", ''),
+            ("\t", ''),
+            ("\r", ''),
+            ("  ", ''),
+            ("\u2018", "'"),
+            ("\u2019", "'"),
+            ("\ufeff", ''),
+            ("\u2022", ":"),
+            (r"<([a-z][a-z0-9]*) [^>]*>", r'<\g<1>>'),
+            (r"<\s*script[^>]*>[^<]*<\s*/\s*script\s*>", ''),
+            (r"</?a.*?>", ''),
+        ]
+    # lamda表达式,参数与输入值顺序相反
+    return reduce(lambda str_tmp, item: re.sub(item[0], item[1], str_tmp), trims, replacement)
 
-    def run(trims, replacement):
-        return re.sub(replacement[0], replacement[1], trims)
 
-    return reduce(run, trims, replacement)
-
-    # 第二种写法，用lamda # replacement为初始值，最后传入，在lambda中最先接收
-    # return reduce(lambda str_tmp, replacement: re.sub(replacement[0], replacement[1], str_tmp), trims, replacement)
-
-
-def Re_Compile(replacement, trims_dict):
+def Re_Compile_D(replacement: str, trimsD: dict):
     """
-    # ! re.compile正则替换,自写表达式,字典key受限,暂留
+    ! re.compile正则替换,自写表达式,字典key受限,暂留
     replacement:欲处理的字符串
     trims_dict:dict
     用法=Re_Compile(replacement,{'A':'aaa','B':'bbb'})
     """
-    pattern = re.compile('|'.join(trims_dict.keys()))
-    return pattern.sub(lambda m: trims_dict[m.group(0)], replacement)
+    pattern = re.compile('|'.join(map(re.escape, trimsD)))
+    return pattern.sub(lambda m: trimsD[m.group(0)], replacement)
+
+
+def Re_Compile(replacement: str, trimsL: list):
+    """
+    re.compile正则替换,自写表达式
+    replacement:欲处理的字符串
+    trims:list内包含tuple或list
+    用法=Re_Compile(replacement,[('A', 'aaa'), ('B', 'bbb')])
+    """
+    # for trim in trimsL:
+    #     pattern = re.compile(trim[0])
+    #     replacement = pattern.sub(trim[1], replacement)
+    # return replacement
+    pattern = re.compile('|'.join(t[0] for t in trimsL))
+    return pattern.sub(
+        lambda x: next((t[1] for t in trimsL if t[0] == x.group()), x.group()),
+        replacement,
+    )
 
 
 def str_split_limited_list(intext, mixnum=100, maxnum=280):
@@ -1448,6 +1471,54 @@ if __name__ == '__main__':
 这几天，西安交通大学各班陆续举办学习党的二十大精神主题班会。上世纪50年代，一批交大人响应党的号召从上海迁至西安，用高昂情怀和满腔热血铸就了“胸怀大局、无私奉献、弘扬传统、艰苦创业”的“西迁精神”。如今，参观交大西迁博物馆、学习西迁精神，成为西安交大学子的必修课。“学习贯彻党的二十大精神，我们要把青年工作作为战略性工作来抓，用习近平新时代中国特色社会主义思想武装青年，用党的初心使命感召青年，做青年朋友的知心人、青年工作的热心人、青年群众的引路人。”从事班主任工作12年的西安交大机械工程学院青年教授雷亚国表示，将进一步激励交大学子当好“西迁精神”新传人，到祖国建设最需要的地方建功立业。
     '''
 
-    for c in str_split_limited_list(ttt):
-        print(len(c), c)
-    print('end')
+    # for c in str_split_limited_list(ttt):
+    #     print(len(c), c)
+    # print('end')
+    import unittest
+
+    class TestStrReplace(unittest.TestCase):
+
+        def setUp(self):
+            self.replacement = 'aaabbbccc'
+            self.trims = [('a', 'A'), ('b', 'B'), ('c', 'C')]
+
+        def test_str_replace(self):
+            self.assertEqual(Str_Replace(self.replacement, self.trims), 'AAA BBB CCC')
+
+    # unittest.main()
+    def test_str_clean():
+        test_str = "###hello?world"
+        result = Str_Clean(test_str, ["#", "?"])
+
+        assert result == "hello|world", result
+
+    # test_str_clean()
+    def test_Re_Sub():
+        replacement = "This\n is \u2018a \u2019 test\ufeff string"
+        trims = None
+        expected_result = "This is 'a ' test string!"
+        result = Re_Sub(replacement, trims)
+        assert result == expected_result, result
+
+    # test_Re_Sub()
+
+    def test_Re_Compile_D():
+        replacement = 'hello A and B'
+        trims_dict = {'A': 'aaa', 'B': 'bbb'}
+        result = Re_Compile_D(replacement, trims_dict)
+        assert result == 'hello aaa and bbb.', result
+
+        # replacement = '@A@'
+        # trims_dict = {'A': 'aaa'}
+        # result = Re_Compile(replacement, trims_dict)
+        # assert result == '@aaa.@', result
+
+    # test_Re_Compile_D()
+
+    def test_Re_Compile():
+        replacement = 'hello A and B'
+        trims_list = [('A', 'aaa'), ('B', 'bbb')]
+        result = Re_Compile(replacement, trims_list)
+        print(result)
+
+    test_Re_Compile()
