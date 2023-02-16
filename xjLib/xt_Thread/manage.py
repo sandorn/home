@@ -36,8 +36,8 @@ class task_object(iter_Mixin):
         self.callback = kwds.pop('callback', None)
         self.exc_callback = kwds.pop('exc_callback', _handle_thread_exception)
         self.func = func
-        self.args = list(*args) or []
-        self.kwds = dict(**kwds) or {}
+        self.args = args or []
+        self.kwds = kwds or {}
 
     def __str__(self):
         return f"<work_task_object id={self.requestID} target={self.func}  args={ self.args} kwargs={self.kwds} exception={self.exception}>"
@@ -151,7 +151,7 @@ class Work(Thread):
 class thread_pool:
     '''仿写vthread,线程装饰器,thread_pool(200)'''
 
-    def __init__(self, pool_num=10):
+    def __init__(self, pool_num=32):
         self._pool_queue = Queue()  # #任务存储,组内queue
         self.main_monitor()  # # 开启监视器线程
         self._pool_max_num = pool_num  # #最大线程数,字典存储
@@ -193,7 +193,9 @@ class thread_pool:
 
         # 线程的开启
         for _ in range(num):
-            Thread(target=_pools_pull).start()
+            thread = Thread(target=_pools_pull)
+            thread.start()
+            thread.daemon = True  # Set daemon status
 
     def main_monitor(self):
 

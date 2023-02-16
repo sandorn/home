@@ -17,7 +17,6 @@ import json
 
 from chardet import detect
 from lxml import etree
-from multipledispatch import dispatch
 from pyquery import PyQuery
 from requests_html import HTML
 from xt_Class import item_Mixin
@@ -33,20 +32,22 @@ class htmlResponse(item_Mixin):
             self._content: bytes = content or response.content
             self.index: int = index or id(self)
             self.encoding = response.encoding if hasattr(response, 'encoding') else 'utf-8'
-            if isinstance(self._content, bytes): self.code_type = detect(self._content)['encoding'] or 'utf-8'
+            # if isinstance(self._content, bytes): self.code_type = detect(self._content)['encoding'] or 'utf-8'
+            self.code_type = detect(self._content)['encoding'] or 'utf-8' if isinstance(self._content, bytes) else self.encoding
             # response.apparent_encoding
-
     @property
     def content(self):
         return self._content.decode(self.code_type, 'ignore')
 
     @property
     def text(self):
-        try:
-            _text = self.clientResponse.text.encode(self.encoding).decode(self.code_type, 'ignore')
-        except AttributeError:
-            _text = self.content
-        return _text
+        # try:
+        #     _text = self.clientResponse.text.encode(self.encoding).decode(self.code_type, 'ignore')
+        # except AttributeError:
+        #     _text = self.content
+        # return _text
+        _text = self.clientResponse.text.encode(self.encoding).decode(self.code_type, 'ignore')
+        return _text if hasattr(self.clientResponse, 'text') else self.content
 
     @property
     def elapsed(self):
@@ -77,10 +78,9 @@ class htmlResponse(item_Mixin):
     @property
     def json(self):
         try:
-            json_temp = json.loads(self.text)
+            return json.loads(self.text)
         except ValueError:
-            json_temp = None
-        return json_temp
+            return None
 
     @property
     def status(self):
@@ -118,23 +118,15 @@ class htmlResponse(item_Mixin):
     def pyquery(self):
         return PyQuery(self.html)  # , parser='xml')
 
-    @dispatch()
     def xpath(self, selectors=None):
-        return [self.element]
-
-    @dispatch()
-    def xpath(self, selectors: str):
         element = self.element
-        return [*element.xpath(selectors)] if selectors.strip() != "" else [element]
-
-    @dispatch()
-    def xpath(self, selectors: (list, tuple)):
-        element = self.element
-        return [element.xpath(selector) for selector in selectors]
-
-    @dispatch()
-    def xpath(self, selectors: (dict, int, float, bool)):
-        return [self.element]
+        if isinstance(selectors, str):
+            return [*element.xpath(selectors)] if selectors.strip() != '' else [element]
+        elif isinstance(selectors, (list, tuple)):
+            return [element.xpath(selector) for selector in selectors]
+            # return [ele for selector in selectors for ele in element.xpath(selector)]
+        else:
+            return [element]
 
     def __repr__(self):
         return f"<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>"

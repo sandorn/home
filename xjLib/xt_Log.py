@@ -84,7 +84,6 @@ class xt_log(object):
                 },
             },
         }
-        # #定义字典完毕
         logging.config.dictConfig(self.conf_dic)  # 导入上面定义的logging配置
         self.logger = logging.getLogger(logger)
 
@@ -99,6 +98,5 @@ class xt_log(object):
         # listargs = (list(args))
         commad = getattr(self.logger, _levelToName.get(self.level))
         [commad(item) for item in list(args)]
-
 
 mylog = xt_log()

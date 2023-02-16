@@ -48,12 +48,12 @@ def _request_parse(method, url, *args, **kwargs):
             func_exc = False
             response = requests.request(method, url, *args, **kwargs)
             response.raise_for_status()
-            # assert response.status_code in [200, 201, 302]
-        except requests.Timeout as err:
-            attempts -= 1
-            func_exc = True
-            ret_err = err
-            print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Timeout:{ret_err!r}')
+            assert response.status_code in [200, 201, 302]
+        # except requests.Timeout as err:
+        #     attempts -= 1
+        #     func_exc = True
+        #     ret_err = err
+        #     print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Timeout:{ret_err!r}')
         except Exception as err:
             attempts -= 1
             func_exc = True
@@ -73,19 +73,18 @@ def _request_wraps(method, url, *args, **kwargs):
     kwargs = _setKw(kwargs)
     callback = kwargs.pop("callback", None)
 
-    @try_except_wraps
+    @try_except_wraps()
     def __fetch_run():
         response = requests.request(method, url, *args, **kwargs)
         response.raise_for_status()
         return response
 
+    # 获取响应
     response = __fetch_run()
-    # #错误返回None
-    if response is None: return None
-    # #返回正确结果
-    result = htmlResponse(response)
-    if callable(callback): result = callback(result)
-    return result
+    result = htmlResponse(response) if response is not None else None
+    # 将响应信息传递到 `htmlResponse` 函数中
+    # 无论是否是回调都返回处理后的响应
+    return callback(result) if callable(callback) else result
 
 
 def _request_tretry(method, url, *args, **kwargs):
@@ -101,14 +100,12 @@ def _request_tretry(method, url, *args, **kwargs):
 
     try:
         response = __fetch_run()
-    except Exception as err:
-        print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
-        return err
-    else:
-        # #返回正确结果
         result = htmlResponse(response)
         if callable(callback): result = callback(result)
         return result
+    except Exception as err:
+        print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
+        return err
 
 
 get = partial(_request_parse, "get")
@@ -160,14 +157,14 @@ class SessionClient:
         return self.start_fetch_run()
 
     def __getattr__(self, method):
-        if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
+        if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'patch']:
             self.method = method
             # @不带括号,传递*args, **kwargs参数
             return self.__create_params
 
     # #下标obj[key]
     def __getitem__(self, method):
-        if method in ['get', 'post']:
+        if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'patch']:
             self.method = method
             return self.__create_params
 
@@ -179,10 +176,10 @@ class SessionClient:
 
 
 if __name__ == '__main__':
-    print(get_wraps('https://cn.bing.com'))
+    print(get_wraps('http://www.baidu.com'))
     s = SessionClient()
-    print(get_wraps('https://www.google.com'))
-    # print(s.get('https://cn.bing.com'))
+    # print(get_wraps('https://www.google.com'))
+    print(s['get']('https://cn.bing.com'))
     print(s.head('http://httpbin.org/headers').headers)
     # print(s.put('http://httpbin.org/put', data=b'data'))
     # print(s.delete('http://httpbin.org/delete'))
@@ -192,23 +189,27 @@ if __name__ == '__main__':
     # print(s.trace('https://cn.bing.com'))
     # print(s.connect('https://www.wuzhuiso.com/'))
     # print(s.patch('http://httpbin.org/patch', data=b'data'))
+    # urls = [
+    # 'http://www.baidu.com',
+    # 'http://www.163.com',
+    # 'http://dangdang.com',
+    # "https://httpbin.org",
+    # 'https://www.google.com',
+    # ]
+    # for url in urls:
+    # ...
+    # res = get_wraps(url)
+    # print(res.text)
+    # print(res.xpath('//title/text()'))
+    # print(res.xpath(['//title/text()', '//title/text()']))
+    # print(res.xpath())
+    # print(res.xpath(' '))
+    # print(res.xpath(''))
+    # print(res.dom.xpath('//title/text()'))
+    # print(res.html.xpath('//title/text()'))
+    # print(res.element.xpath('//title/text()'))
+    # print(res.pyquery('title').text())
     '''
-    urls = [
-        'http://www.baidu.com',
-        'http://www.163.com',
-        'http://dangdang.com',
-        "https://httpbin.org",
-    ]
-    for url in urls:
-        ...
-        res = get_wraps(url)
-        # print(res)
-        print(res.xpath('//title/text()'))
-        print(res.xpath())
-        # print(res.dom.xpath('//title/text()'))
-        # print(res.html.xpath('//title/text()'))
-        # print(res.element.xpath('//title/text()'))
-        # print(res.pyquery('title').text())
     ###############################################################
     # allow_redirects=False #取消重定向
     res = get_wraps('https://www.biqukan8.cc/38_38163/')

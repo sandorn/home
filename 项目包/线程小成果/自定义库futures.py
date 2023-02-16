@@ -73,8 +73,8 @@ def thrPool_thrsub(urls):
 
 if __name__ == '__main__':
     urls = [
-        # 'http://www.biqugse.com/96703/',
-        'http://www.biqugse.com/28542/',  # 超大 ahttp_All  155sec
+        'http://www.biqugse.com/96703/',
+        # 'http://www.biqugse.com/28542/',  # 超大 ahttp_All  155sec
         # 'http://www.biqugse.com/96717/',
         # 'http://www.biqugse.com/76169/',
         # 'http://www.biqugse.com/82744/',
@@ -82,9 +82,9 @@ if __name__ == '__main__':
         # 'http://www.biqugse.com/92385/',
     ]
 
-    ahttp_All(urls[0])
+    # ahttp_All(urls[0])
     # thr_sub(urls[0])
     # thrPool_ahttp(urls)   # # 无效
     # multpool_ahttp(urls)  # 68sec
-    # thrPool_thrsub(urls)  # 148sec
+    thrPool_thrsub(urls)  # 148sec
     # multpool_thrsub(urls) # 110sec

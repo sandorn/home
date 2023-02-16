@@ -126,12 +126,12 @@ def get_biqugse_download_url(target):
 
     resp = get_tretry(target)
     assert isinstance(resp, htmlResponse)
-    _xpath = (
+    _xpath = [
         '//meta[@property="og:title"]//@content',
         '//dt[2]/following-sibling::dd/a/@href',
         '//dt[2]/following-sibling::dd/a/text()',
         # '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()',
-    )
+    ]
     bookname, temp_urls, titles = resp.xpath(_xpath)
 
     bookname = bookname[0]

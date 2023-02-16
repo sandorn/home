@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-13 14:05:41
-FilePath     : /xjLib/xt_Time.py
+LastEditTime : 2023-02-15 21:02:59
+FilePath     : /CODE/xjLib/xt_Time.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -28,13 +27,15 @@ def fn_timer(func):
 
     @wraps(func)
     def func_timer(*args, **kwargs):
-        start_time = nowsec()
+        _st = traceback.extract_stack()
+        _s_time = nowsec()
+        _s_pro = nowpro()
+
         result = func(*args, **kwargs)
-        se = nowsec() - start_time
-        print(f"{stack[0][0]} ,line:<{stack[0][1]}>; func:<{func.__name__}> run time:{se: .2f} seconds")
+
+        print(f"{_st[0][0]}|{_st[0][1]}|{func.__name__}|time:{nowsec() - _s_time: .2f} sec|processtime:{nowpro() - _s_pro: .2f} sec")
         return result
 
-    stack = traceback.extract_stack()
     return func_timer
 
 

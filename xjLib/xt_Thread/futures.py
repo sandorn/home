@@ -88,20 +88,19 @@ def futuresPool(_cls):
 
         def __init__(self):
             super().__init__()
-            self.future_tasks = []
+            self._future_tasks = []
 
         def add_map(self, func, *args_iter):
             self.future_generator = self.map(func, *args_iter)
 
         def add_sub(self, func, *args_iter, callback=None):
-            for item in args_iter:
-                task = self.submit(func, *item)
-                self.future_tasks.append(task)
-                if callback: task.add_done_callback(callback)
+            self._future_tasks += [self.submit(func, *item) for item in args_iter]
+            if callback:
+                map(lambda t: t.add_done_callback(callback), self._future_tasks)
 
         def wait_completed(self):
             '''返回结果,有序'''
-            if self.future_tasks: return self._wait_sub_completed()
+            if self._future_tasks: return self._wait_sub_completed()
             else: return self._wait_map_completed()
 
         def _wait_map_completed(self):
@@ -113,7 +112,7 @@ def futuresPool(_cls):
             '''等待线程池结束,返回全部结果,有序'''
             self.shutdown(wait=True)
             result_list = []
-            for future in self.future_tasks:
+            for future in self._future_tasks:
                 try:
                     res = future.result()
                     result_list.append(res)
@@ -125,7 +124,7 @@ def futuresPool(_cls):
             '''获取结果,无序'''
             self.shutdown(wait=True)
             result_list = []
-            for future in as_completed(self.future_tasks):  # 迭代生成器,统一结束'
+            for future in as_completed(self._future_tasks):  # 迭代生成器,统一结束'
                 try:
                     resp = future.result()
                     result_list.append(resp)
@@ -152,23 +151,20 @@ class FuncInThreadPool:
     '''将程序放到ThreadPoolExecutor中异步运行,返回结果'''
 
     def __init__(self, func, *args, **kwargs):
-        self.future_list = self.result = []
-        self.executor = ThreadPoolExecutor(32)
+        self.loop = asyncio.get_event_loop()
+        self.executor = ThreadPoolExecutor(max_workers=32)
         self.func, self.args, self.kwargs = func, args, kwargs
         self.start()
 
     async def __work(self):
         __args = list(zip(*self.args))
-        for arg in __args:
-            task = self.loop.run_in_executor(self.executor, self.func, *arg, **self.kwargs)
-            self.future_list.append(task)
+        self.future_list = [self.loop.run_in_executor(self.executor, self.func, *arg, **self.kwargs) for arg in __args]
         await asyncio.gather(*self.future_list)
 
         self.result = [fu.result() for fu in self.future_list]
         return self.result
 
     def start(self):
-        self.loop = asyncio.get_event_loop()
         return self.loop.run_until_complete(self.__work())
 
 
