@@ -6,12 +6,11 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-17 23:59:15
+LastEditTime : 2023-02-17 10:21:40
 FilePath     : /CODE/xjLib/xt_Thread/qThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
 from PyQt5.QtCore import QThread
 from xt_Thread import Singleton_Mixin, create_mixin_class, singleton_wrap_class
 
@@ -22,9 +21,9 @@ class CustomQThread(QThread):
     def __init__(self, func, *args, **kwargs):
         super().__init__()
         self._target = func
+        self._isRunning = True
         self._args = args
         self._kwargs = kwargs
-        self._running = True
         self.start()
 
     def run(self):
@@ -32,11 +31,11 @@ class CustomQThread(QThread):
 
     def __del__(self):
         # 线程状态改变与线程终止
-        self._running = False
         self.wait()  # 等待线程执行完毕
+        self.stop()
 
     def stop(self):
-        self._running = False
+        self._isRunning = False
         self.terminate()  # 线程终止
 
     def getResult(self):
@@ -66,16 +65,9 @@ SingletonQThread = create_mixin_class('SingletonQThread', Singleton_Mixin, Custo
 if __name__ == "__main__":
 
     def f(*args):
-        print(*args)
+        return sum(args)
 
-    import sys
-
-    from PyQt5 import QtWidgets
-    app = QtWidgets.QApplication(sys.argv)
-
-    a = SingletonQThread(f, 4)
-    print(111111111111, a)
-    b = SingletonQThread(f, 6)
-    print(a is b, id(a), id(b), a, b)
-
-    sys.exit(app.exec_())
+    a = SingletonQThread(f, 4, 5, 6)
+    print(a.getResult())
+    b = SingletonQThread(f, 7, 8, 9)
+    print(a is b, b.getResult())

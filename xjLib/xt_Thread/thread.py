@@ -56,8 +56,8 @@ class CustomThread(Thread, item_get_Mixin):
         self._args = args
         self._kwargs = kwargs
         self.daemon = True
-        self.start()
         self.all_Thread.append(self)
+        self.start()
 
     def run(self):
         self.Result = self._target(*self._args, **self._kwargs)
@@ -70,10 +70,10 @@ class CustomThread(Thread, item_get_Mixin):
         except Exception:
             return None
 
-    def stop_all(self):
+    @classmethod
+    def stop_all(cls):
         """停止线程池, 所有线程停止工作"""
-        for _ in range(len(self.all_Thread)):
-            thread = self.all_Thread.pop()
+        for thread in cls.all_Thread:
             thread.join()  # @单例无效
 
     @classmethod
@@ -81,7 +81,7 @@ class CustomThread(Thread, item_get_Mixin):
         """等待全部线程结束,返回结果
         # @单例无效"""
         try:
-            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all()  # !向stop_all函数传入self 或cls ,三处保持一致
             res, cls.result_list = cls.result_list, []
             return res
         except Exception:
@@ -90,7 +90,7 @@ class CustomThread(Thread, item_get_Mixin):
     @classmethod
     def getAllResult(cls):
         """利用enumerate,根据类名判断线程结束,返回结果"""
-        cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
+        cls.stop_all()  # !向stop_all函数传入self 或cls ,三处保持一致
         nowlist = enumerate()  # 线程list
         while not cls.finished.is_set():
             list_tmp = [type(nowlist[index]).__name__ for index in range(len(nowlist))]
@@ -134,31 +134,33 @@ class CustomThread_Queue(Thread, item_get_Mixin):
         except Exception:
             return None
 
-    def join_with_timeout(self, timeout=15):
-        self.task_queue.all_tasks_done.acquire()
+    @classmethod
+    def join_with_timeout(cls, timeout=15):
+        cls.task_queue.all_tasks_done.acquire()
+
         try:
             endtime = time() + timeout
-            while self.task_queue.unfinished_tasks:
+            while cls.task_queue.unfinished_tasks:
                 remaining = endtime - time()
                 if remaining <= 0.0:
-                    print('unfinished_tasks in task_queue : ', self.task_queue.unfinished_tasks)
+                    print('unfinished_tasks in task_queue : ', cls.task_queue.unfinished_tasks)
                     break
-                self.task_queue.all_tasks_done.wait(0.1)
+                cls.task_queue.all_tasks_done.wait(remaining)
         finally:
-            self.task_queue.all_tasks_done.release()
+            cls.task_queue.all_tasks_done.release()
 
-    def stop_all(self):
+    @classmethod
+    def stop_all(cls):
         """停止线程池, 所有线程停止工作"""
-        for _ in range(len(self.all_Thread)):
-            thread = self.all_Thread.pop()
+        for thread in cls.all_Thread:
             thread.join()
-        self.task_queue.join()  # !queue.join
+        cls.task_queue.join()
 
     @classmethod
     def wait_completed(cls):
         """等待全部线程结束,返回结果"""
         try:
-            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all()
             res, cls.result_list = cls.result_list, []
             return res
         except Exception:
@@ -167,7 +169,7 @@ class CustomThread_Queue(Thread, item_get_Mixin):
     @classmethod
     def getAllResult(cls):
         """等待线程,超时结束,返回结果"""
-        cls.join_with_timeout(cls)  # !queue.join,使用带timeout
+        cls.join_with_timeout()  # !queue.join,使用带timeout
         res, cls.result_list = cls.result_list, []
         return res
 
@@ -185,8 +187,8 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
         self._args = args
         self._kwargs = kwargs
         self.daemon = True
-        self.start()
         self.all_Thread.append(self)
+        self.start()
 
     def run(self):
         self.Result = self._target(*self._args, **self._kwargs)
@@ -199,10 +201,11 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
         except Exception:
             return None
 
-    def stop_all(self):
+    @classmethod
+    def stop_all(cls):
         """停止线程池, 所有线程停止工作"""
-        for _ in range(len(self.all_Thread)):
-            thread = self.all_Thread.pop()
+        for _ in range(len(cls.all_Thread)):
+            thread = cls.all_Thread.pop()
             thread.join()  # @单例无效
 
     @classmethod
@@ -210,7 +213,7 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
         """等待全部线程结束,返回结果
         # @单例无效"""
         try:
-            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all()
             res, cls.result_list = cls.result_list, []
             return res
         except Exception:
@@ -219,12 +222,12 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
     @classmethod
     def getAllResult(cls):
         """利用enumerate,根据类名判断线程结束,返回结果"""
-        cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
+        cls.stop_all()
         nowlist = enumerate()  # 线程list
         while not cls.finished.is_set():
             list_tmp = [type(nowlist[index]).__name__ for index in range(len(nowlist))]
             if cls.__name__ in list_tmp:
-                cls.finished.wait(0.1)  # sleep(0.1)
+                cls.finished.wait(0.1)
             else:
                 cls.finished.set()
                 break

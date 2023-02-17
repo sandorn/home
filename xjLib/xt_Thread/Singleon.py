@@ -24,15 +24,17 @@ class Singleton_Mixin:
     可用类调用 classmethod
     # 可通过self._intialed判断,设定初始化次数
     '''
-    _lock = Lock()
-    _instance = {}
+    _lock = Lock()  # 保护实例字典的线程锁
+    _instance = {}  # 保存实例的字典
 
     def __new__(cls, *args, **kwargs):
         with cls._lock:
             if cls not in cls._instance:
-                cls._instance[cls] = super().__new__(cls)
-                # #__init__标志,可避免重复初始化
-                cls._instance[cls]._intialed = False
+                # 调用基类的__new__方法，创建实例，并将其添加到实例字典
+                instance = super().__new__(cls)
+                # 为实例添加一个标志，用于跟踪是否初始化
+                instance._intialed = False
+                cls._instance[cls] = instance
 
         return cls._instance[cls]
 
@@ -41,9 +43,11 @@ class Singleton_Mixin:
 
 
 class Singleton_Meta(type):
-    '''单例模式元类,构建类时调用
+    '''
+    单例模式元类,构建类时调用
     class cls(parent_cls,metaclass=Singleton_Meta):,
-    # @单次init,可用类调用classmethod'''
+    @ 单次init,可用类调用classmethod
+    '''
 
     _instances = {}
     _lock = Lock()
@@ -82,9 +86,9 @@ def singleton_wrap_return_class(_cls):
 
         def __new__(cls, *args, **kwargs):
             with cls._lock:
-                if cls._instance is None:
+                if not hasattr(cls, "_instance"):
                     cls._instance = super().__new__(cls)
-                    cls._instance.__class__.__qualname__ = _cls.__name__
+                    cls._instance.__qualname__ = _cls.__name__
                     cls._instance._intialed = False
             return cls._instance
 
@@ -141,28 +145,26 @@ if __name__ == "__main__":
     class singleton_wrap_f(sss):
         ...
 
-    singleton_wrap_f_line = singleton_wrap(sss)
+    # singleton_wrap_f_line = singleton_wrap(sss)
 
-    aa = singleton_wrap_return_class_f('张三')
-    bb = singleton_wrap_return_class_f('李四', 28)
-    bb.old = 99
-    # print(aa)
-    print(bb)
-    # print(bb.__name__)
-    print(aa is bb, id(aa), id(bb), aa.__dict__, bb.__dict__)
-    '''
-    cc = t()
-    cc.a = 88
-    dd = tt()
-    ee = tt()
-    ee.b = 987
-    dd.a = 4444
-    print(aa is bb, ee is dd, id(aa), id(bb), id(cc), id(dd), aa.__dict__, bb.__dict__, cc.__dict__, dd.__dict__)
+    # aa = singleton_wrap_return_class_f('张三')
+    # bb = singleton_wrap_return_class_f('李四', 28)
+    # bb.old = 99
+    # # print(aa)
+    # print(bb)
+    # # print(bb.__name__)
+    # print(aa is bb, id(aa), id(bb), aa.__dict__, bb.__dict__)
+    # cc = t()
+    # cc.a = 88
+    # dd = tt()
+    # ee = tt()
+    # ee.b = 987
+    # dd.a = 4444
+    # print(aa is bb, ee is dd, id(aa), id(bb), id(cc), id(dd), aa.__dict__, bb.__dict__, cc.__dict__, dd.__dict__)
     # print(11111, sample.__mro__)
     # print(22222, sample.__base__)
     # print(33333, sample.__bases__)
     # print(44444, sample.__mro__)
-    t1 = super_sss('习近平')
+    t1 = singleton_wrap_f('习近平')
     t2 = super_sss('胡锦涛')
-    print(t1 is t2, t1.__dict__, t2.__dict__, aa.__dict__, bb.__dict__, cc.__dict__, dd.__dict__)
-    '''
+    print(t1 is t2, t1.__dict__, t2.__dict__)

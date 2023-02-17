@@ -19,19 +19,15 @@ from threading import Lock, Thread
 from PyQt5.QtCore import QThread
 
 
-def thread_safe(func=None):
+def thread_safe(func):
     '''函数的线程安全化,需要lock'''
 
-    def decorate(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with Lock() as lock:
+            return func(*args, **kwargs)
 
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            with Lock() as lock:
-                return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorate(func) if func else decorate
+    return wrapper
 
 
 class _MyThread(Thread):
@@ -40,9 +36,10 @@ class _MyThread(Thread):
     def __init__(self, func, name, *args, **kwargs):
         super().__init__(target=func, name=name, args=args, kwargs=kwargs)
         self._running = True
+        self.callback = self._kwargs.pop('callback', None)
+        self.Result = None
 
     def run(self):
-        self.callback = self._kwargs.pop('callback', None)
         self.Result = self._target(*self._args, **self._kwargs)
         self.Result = self.callback(self.Result) if callable(self.callback) else self.Result
 
@@ -63,30 +60,25 @@ class _MyThread(Thread):
         self._running = False
 
 
-def Thread_wrap(func=None, *args, **kwargs):
+def Thread_wrap(fun):
     '''函数的线程装饰器,返回线程实例,有无括号都可以,\n
     getResult获取结果,类或实例getAllResult获取结果集合,\n
     可在调用被装饰函数添加daemon=True,callback等参数'''
 
-    # 需要再次嵌套一层装饰器,才可以供下面运行时使用
-    def wrapper(fun):
+    @wraps(fun)
+    def inner(*args, **kwargs):
+        _mythr = _MyThread(
+            fun,
+            fun.__name__,
+            *args,
+            **kwargs,
+        )
+        _mythr.daemon = kwargs.pop('daemon', False)
+        _mythr.start()
+        print(f"{_mythr} start with thread_wrap...")
+        return _mythr
 
-        def inner(*args, **kwargs):
-            _mythr = _MyThread(
-                fun,
-                fun.__name__,
-                *args,
-                **kwargs,
-            )
-            _mythr.daemon = kwargs.pop('daemon', False)
-            _mythr.start()
-            print(f"{_mythr} start with thread_wrap...")
-            return _mythr
-
-        return inner
-
-    # 如果func是可以调用的函数
-    return wrapper(func, *args, **kwargs) if callable(func) else wrapper
+    return inner
 
 
 def QThread_wrap(func=None, *args, **kwargs):
@@ -94,7 +86,6 @@ def QThread_wrap(func=None, *args, **kwargs):
     getResult获取结果,类或实例getAllResult获取结果集合,\n
     可在调用被装饰函数添加daemon=True,callback等参数'''
 
-    # 需要再次嵌套一层装饰器,才可以供下面运行时使用
     def wrapper(fun):
 
         def inner(*args, **kwargs):
@@ -157,7 +148,6 @@ class Thread_wrap_simple:
         self.func = func
 
     def __call__(self, *args, **kwargs):  # 接受任意参数
-        print('函数调用CALL')
         _thr = Thread(target=self.func, args=args, kwargs=kwargs)
         _thr.start()
         _thr.join()
@@ -169,8 +159,7 @@ def create_mixin_class(name, cls, meta, **kwargs):
     return type(name, (cls, meta), kwargs)
 
 
-thread_print = thread_safe(print)
-print_lock = thread_safe(print)
+thread_print = print_lock = thread_safe(print)
 
 if __name__ == "__main__":
 
@@ -179,7 +168,7 @@ if __name__ == "__main__":
         print('Thread_wrap_simple in func a : ', i, i * 2)
         return i * 2
 
-    @Thread_wrap
+    @thread_safe
     def b(i):
         print('Thread_wrap in func b : ', i, i * 5)
         return i * 5
@@ -192,11 +181,12 @@ if __name__ == "__main__":
         print('QThread_wrap in func c : ', i, i * 11)
         return i * 11
 
-    aa = a(8)
-    bb = b(40)
+    # aa = a(8)
+    # bb = b(40)
     cc = c(3, callback=lambda x: x * 100)
     print('Result:', cc.Result)
-    print('callback:', cc.callback)
-    print('daemon:', cc.daemon)
-    print('objectName:', cc.objectName())
+    # print('callback:', cc.callback)
+    # print('daemon:', cc.daemon)
+    # print('objectName:', cc.objectName())
     # print(thread_print.__name__)
+    print_lock('hello world')
