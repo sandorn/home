@@ -48,17 +48,18 @@ class NSS(on_state_cls):
         self.__th.start()
         self.all_Thread.append(self.__th)
 
-    def stop_all(self):
+    @classmethod
+    def stop_all(cls):
         """停止线程池， 所有线程停止工作"""
-        for _ in range(len(self.all_Thread)):
-            _thread = self.all_Thread.pop(0)
+        while cls.all_Thread:
+            _thread = cls.all_Thread.pop(0)
             _thread.join()
 
     @classmethod
     def wait_completed(cls):
         """等待全部线程结束，返回结果"""
         try:
-            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all()
             datalist, cls.data_list = cls.data_list, []
             return datalist
         except Exception:
@@ -134,25 +135,28 @@ def TODO_TTS(_in_text, renovate_args=None, readonly=False, merge=False):
     voice_file_list.sort(key=lambda x: x[0])
 
     if readonly: return get_voice_data(voice_file_list)
-    return merge_sound_file(voice_file_list, args) if merge else save_sound_file(voice_file_list)
+    elif merge: return merge_sound_file(voice_file_list, args)
+    else: return save_sound_file(voice_file_list)
 
 
 if __name__ == '__main__':
 
-    _text = '''
-立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年
-“青年强，则国家强。当代中国青年生逢其时，施展才干的舞台无比广阔，实现梦想的前景无比光明。”习近平总书记在党的二十大报告中勉励广大青年坚定不移听党话、跟党走，怀抱梦想又脚踏实地，敢想敢为又善作善成，立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年，让青春在全面建设社会主义现代化国家的火热实践中绽放绚丽之花。
-未来属于青年，希望寄予青年。认真学习贯彻党的二十大精神，广大青年纷纷表示，一定牢记习近平总书记嘱托，坚定理想信念，筑牢精神之基，厚植爱国情怀，矢志不渝跟党走，以实现中华民族伟大复兴为己任，增强做中国人的志气、骨气、底气，不负时代，不负韶华，不负党和人民的殷切期望。
-'''
+    _text = '''立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年，为实现中华民族伟大复兴的中国梦不懈奋斗'''
 
-    out_file = TODO_TTS(_text, {'aformat': 'wav'}, readonly=True)
+    def read():
+        out_file = TODO_TTS(_text, {'aformat': 'wav'}, readonly=True)
 
-    from PyQt5.QtCore import QThread
-    from xt_Alispeech.Play import Qthread_play, Thread_play
+        from PyQt5.QtCore import QThread
+        from xt_Alispeech.Play import Qthread_play, Thread_play
 
-    for oufile in out_file:
-        task = Qthread_play(oufile[1])
-        task.join()
-        task2 = Thread_play(oufile[1])
-        QThread.msleep(10000)
-        task2.stop()
+        for oufile in out_file:
+            task = Qthread_play(oufile[1])
+            task.join()
+            task2 = Thread_play(oufile[1])
+            QThread.msleep(10000)
+            task2.stop()
+
+    def save():
+        TODO_TTS(_text, {'aformat': 'wav'}, readonly=False)
+
+    save()

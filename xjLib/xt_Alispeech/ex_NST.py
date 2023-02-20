@@ -18,7 +18,7 @@ from threading import Semaphore, Thread
 from nls import NlsSpeechTranscriber
 from xt_Alispeech.cfg import Constant
 from xt_Alispeech.state import on_state_cls
-from xt_Alispeech.util import handle_ex_nsx_result
+from xt_Alispeech.util import handle_result
 
 _ACCESS_APPKEY = Constant().appKey
 _ACCESS_TOKEN = Constant().token
@@ -44,10 +44,11 @@ class NST(on_state_cls):
         self.__th.start()
         self.all_Thread.append(self.__th)
 
-    def stop_all(self):
+    @classmethod
+    def stop_all(cls):
         """停止线程池， 所有线程停止工作"""
-        for _ in range(len(self.all_Thread)):
-            _thread = self.all_Thread.pop()
+        while cls.all_Thread:
+            _thread = cls.all_Thread.pop()
             _thread.join()
 
     @classmethod
@@ -55,9 +56,9 @@ class NST(on_state_cls):
         """等待全部线程结束，返回结果"""
 
         try:
-            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all()
             res, cls.result_dict = cls.result_dict, {}
-            return handle_ex_nsx_result(res)
+            return handle_result(res)
         except Exception:
             return {}
 
@@ -100,10 +101,9 @@ class NST(on_state_cls):
                 ex={},
             )
 
-            self.__slices = zip(*(iter(self.__data), ) * 640)
-            for i in self.__slices:
-                _NST_.send_audio(bytes(i))
-                time.sleep(0.01)
+            slices = [self.__data[i:i + 640] for i in range(0, len(self.__data), 640)]
+            for __s in slices:
+                _NST_.send_audio(bytes(__s))
 
             _NST_.stop()
             print(f'{self.__id}: NST stopped.')

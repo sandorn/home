@@ -13,13 +13,12 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
-import time
 from threading import Semaphore, Thread
 
 from nls import NlsSpeechRecognizer
 from xt_Alispeech.cfg import Constant
 from xt_Alispeech.state import on_state_cls
-from xt_Alispeech.util import handle_ex_nsx_result
+from xt_Alispeech.util import handle_result
 
 _ACCESS_APPKEY = Constant().appKey
 _ACCESS_TOKEN = Constant().token
@@ -45,10 +44,11 @@ class NSR(on_state_cls):
         self.__th.start()
         self.all_Thread.append(self.__th)
 
-    def stop_all(self):
+    @classmethod
+    def stop_all(cls):
         """停止线程池， 所有线程停止工作"""
-        for _ in range(len(self.all_Thread)):
-            _thread = self.all_Thread.pop()
+        while cls.all_Thread:
+            _thread = cls.all_Thread.pop()
             _thread.join()
 
     @classmethod
@@ -56,9 +56,9 @@ class NSR(on_state_cls):
         """等待全部线程结束，返回结果"""
 
         try:
-            cls.stop_all(cls)  # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all()
             res, cls.result_dict = cls.result_dict, {}
-            return handle_ex_nsx_result(res)
+            return handle_result(res)
         except Exception:
             return {}
 
@@ -68,7 +68,6 @@ class NSR(on_state_cls):
 
     def __thread_run(self):
         with Sem:
-
             print(f'{self.__id}: thread start..')
 
             _NSR_ = NlsSpeechRecognizer(
@@ -96,11 +95,11 @@ class NSR(on_state_cls):
                 ping_timeout=None,
                 ex={},
             )
-
-            self.__slices = zip(*(iter(self.__data), ) * 640)
-            for i in self.__slices:
-                _NSR_.send_audio(bytes(i))
-                time.sleep(0.01)
+            slices = [self.__data[i:i + 640] for i in range(0, len(self.__data), 640)]
+            # slices = zip(*(iter(self.__data), ) * 640)
+            for __s in slices:
+                _NSR_.send_audio(bytes(__s))
+                # time.sleep(0.01)
 
             _NSR_.stop()
             print(f'{self.__id}: NSR stopped.')
@@ -109,12 +108,7 @@ class NSR(on_state_cls):
 if __name__ == '__main__':
 
     _in_file_list = [
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/test1.pcm',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/test1.wav',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/tts_test.wav',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/test1.pcm',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/test1.wav',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/tts_test.wav',
+        'D:/11.wav',
     ]
 
     for index, file in enumerate(_in_file_list):

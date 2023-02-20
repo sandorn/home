@@ -20,16 +20,18 @@ from xt_File import get_desktop
 from xt_Time import get_10_timestamp
 
 
-def handle_ex_nsx_result(res):
+def handle_result(res):
     '''处理 ex_NSR ex_NST 结果'''
-    dictMerged = {}
+    dict_merged = {}
     res_list = []
     for key, values in res.items():
         _dict = eval(values)
 
-        dictMerged[key] = dict(_dict['header'], **_dict['payload'])
-        res_list.append((key, dictMerged[key]['result']))
-    return (res_list, dictMerged)
+        dict_merged[key] = {**_dict['header'], **_dict['payload']}
+        # dictMerged[key] = dict(_dict['header'], **_dict['payload'])
+        res_list.append((key, dict_merged[key]['result']))
+
+    return res_list, dict_merged
 
 
 def get_voice_data(voice_file_list):

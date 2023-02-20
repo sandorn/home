@@ -13,6 +13,7 @@ Github       : https://github.com/sandorn/home
 insert update不能连续运行,因为第一个执行完reactor.stop()就停止了
 '''
 
+import asyncio
 from copy import deepcopy
 
 from twisted.enterprise import adbapi
@@ -31,17 +32,21 @@ class SqlTwisted(object):
     def close(self):
         self.dbpool.close()
 
-    def insert(self, item, table_name):
-        defer = self.dbpool.runInteraction(self._do_insert, item, table_name)
+    def _do_transaction(self, item, table_name, condition, action):
+        if action == 'insert':
+            defer = self.dbpool.runInteraction(self._do_insert, item, table_name)
+        elif action == 'update':
+            defer = self.dbpool.runInteraction(self._do_update, item, condition, table_name)
         defer.addBoth(self.handle_back, item)
         reactor.run()
+        # reactor.callLater(.0001, self.handle_back, defer, item)
         return defer.result  # 返回回调结果
 
+    def insert(self, item, table_name):
+        return self._do_transaction(item=item, table_name=table_name, condition=None, action='insert')
+
     def update(self, item, condition, table_name):
-        defer = self.dbpool.runInteraction(self._do_update, item, condition, table_name)
-        defer.addBoth(self.handle_back, item)
-        reactor.run()
-        return defer.result  # 返回回调结果
+        return self._do_transaction(item=item, table_name=table_name, condition=condition, action='update')
 
     def handle_back(self, result, item):
         print(f'SqlTwisted 异步回调 | {result} | item:{item}')
@@ -74,8 +79,8 @@ class SqlTwisted(object):
 
 if __name__ == "__main__":
     engine = SqlTwisted('TXbx')
-    item = {'username': '刘新军123'}
-    item1 = {'username': '刘新军', 'password': '234567', '手机': '13910118122', '代理人编码': '10008888', '会员级别': 'SSS', '会员到期日': '9999-12-31 00:00:00'}
+    item = {'username': '刘新军'}
+    item1 = {'username': '刘新军99', 'password': '234567', '手机': '13910118122', '代理人编码': '10008888', '会员级别': 'SSS', '会员到期日': '9999-12-31 00:00:00'}
     # ress = engine.insert(item1, 'users2')
     # print(ress)
     ress = engine.update(item, {'ID': 2}, 'users2')

@@ -180,3 +180,38 @@ if __name__ == '__main__':
     #         }
     #     ])
     # print(res)
+    '''
+    @contextmanager
+    async def query(sql):
+        async with self.async_session() as session:
+            result = await session.execute(text(sql))
+            yield result
+            await session.commit()
+
+    def __query(self, sql):
+        with query(sql) as result:
+            return result.all() if result.returns_rows else result.rowcount
+
+    def insert(self, data_dict_list, tablename=None, autorun=True):
+        tablename = tablename or self.tablename
+        if isinstance(data_dict_list, dict):
+            data_dict_list = [data_dict_list]
+        _coro = [self.__insert(data_dict, tablename) for data_dict in data_dict_list]
+        if autorun:
+            return self.run_in_loop(_coro)
+        else:
+            self.coro_list.extend(_coro)
+
+    @contextmanager
+    async def insert(data_dict_list, tablename):
+        insert_sql = get_insert_sql(data_dict_list, tablename)
+        async with self.async_session() as session:
+            result = await session.execute(insert_sql)
+            yield result
+            await session.commit()
+
+    def __insert(self, data_dict_list, tablename):
+        with insert(data_dict_list, tablename) as result:
+            return result.rowcount
+
+    '''
