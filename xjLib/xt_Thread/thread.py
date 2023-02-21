@@ -73,15 +73,16 @@ class CustomThread(Thread, item_get_Mixin):
     @classmethod
     def stop_all(cls):
         """停止线程池, 所有线程停止工作"""
-        for thread in cls.all_Thread:
-            thread.join()  # @单例无效
+        while cls.all_Thread:
+            _thread = cls.all_Thread.pop()
+            _thread.join()
 
     @classmethod
     def wait_completed(cls):
         """等待全部线程结束,返回结果
         # @单例无效"""
         try:
-            cls.stop_all()  # !向stop_all函数传入self 或cls ,三处保持一致
+            cls.stop_all()
             res, cls.result_list = cls.result_list, []
             return res
         except Exception:
@@ -90,7 +91,7 @@ class CustomThread(Thread, item_get_Mixin):
     @classmethod
     def getAllResult(cls):
         """利用enumerate,根据类名判断线程结束,返回结果"""
-        cls.stop_all()  # !向stop_all函数传入self 或cls ,三处保持一致
+        cls.stop_all()
         nowlist = enumerate()  # 线程list
         while not cls.finished.is_set():
             list_tmp = [type(nowlist[index]).__name__ for index in range(len(nowlist))]
@@ -152,8 +153,9 @@ class CustomThread_Queue(Thread, item_get_Mixin):
     @classmethod
     def stop_all(cls):
         """停止线程池, 所有线程停止工作"""
-        for thread in cls.all_Thread:
-            thread.join()
+        while cls.all_Thread:
+            __thread = cls.all_Thread.pop()
+            __thread.join()
         cls.task_queue.join()
 
     @classmethod
@@ -204,9 +206,9 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
     @classmethod
     def stop_all(cls):
         """停止线程池, 所有线程停止工作"""
-        for _ in range(len(cls.all_Thread)):
-            thread = cls.all_Thread.pop()
-            thread.join()  # @单例无效
+        while cls.all_Thread:
+            __thread = cls.all_Thread.pop()
+            __thread.join()
 
     @classmethod
     def wait_completed(cls):

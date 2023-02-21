@@ -115,11 +115,10 @@ class NSS(on_state_cls):
             print(f'thread {self.__id}: NSS stopped.')
 
 
-def TODO_TTS(_in_text, renovate_args=None, readonly=False, merge=False):
-    if renovate_args is None: renovate_args = {}
+def TODO_TTS(_in_text, readonly=False, merge=False, **kwargs):
     # $处理参数
     args = SpeechArgs().get_dict()
-    args.update(renovate_args)
+    args.update(kwargs)
 
     if isinstance(_in_text, str):  # $整段文字要合并
         _in_text = str2list(_in_text)
@@ -127,36 +126,38 @@ def TODO_TTS(_in_text, renovate_args=None, readonly=False, merge=False):
     assert isinstance(_in_text, list)
 
     # $运行主程序
-    [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
-    voice_file_list = NSS.wait_completed()
+    _ = [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
+    voice_data_list = NSS.wait_completed()
 
     # $处理结果
-    assert isinstance(voice_file_list, list)
-    voice_file_list.sort(key=lambda x: x[0])
+    voice_data_list.sort(key=lambda x: x[0])
 
-    if readonly: return get_voice_data(voice_file_list)
-    elif merge: return merge_sound_file(voice_file_list, args)
-    else: return save_sound_file(voice_file_list)
+    if readonly: return get_voice_data(voice_data_list)
+    elif merge:
+        return merge_sound_file(voice_data_list, args=args)
+    else:
+        return save_sound_file(voice_data_list)
 
 
 if __name__ == '__main__':
 
-    _text = '''立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年，为实现中华民族伟大复兴的中国梦不懈奋斗'''
+    _text = [
+        '立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年，',
+        '为实现中华民族伟大复兴的中国梦不懈奋斗',
+    ]
 
     def read():
-        out_file = TODO_TTS(_text, {'aformat': 'wav'}, readonly=True)
+        out_file = TODO_TTS(_text, readonly=True, aformat='wav')
 
         from PyQt5.QtCore import QThread
         from xt_Alispeech.Play import Qthread_play, Thread_play
-
+        print(len(out_file))
         for oufile in out_file:
             task = Qthread_play(oufile[1])
             task.join()
-            task2 = Thread_play(oufile[1])
-            QThread.msleep(10000)
-            task2.stop()
+            # task2 = Thread_play(oufile[1])
+            # QThread.msleep(10000)
+            # task2.stop()
 
-    def save():
-        TODO_TTS(_text, {'aformat': 'wav'}, readonly=False)
-
-    save()
+    read()
+    # print(TODO_TTS(_text))

@@ -24,55 +24,51 @@ def handle_result(res):
     '''处理 ex_NSR ex_NST 结果'''
     dict_merged = {}
     res_list = []
+
     for key, values in res.items():
         _dict = eval(values)
-
-        dict_merged[key] = {**_dict['header'], **_dict['payload']}
         # dictMerged[key] = dict(_dict['header'], **_dict['payload'])
+        dict_merged[key] = {**_dict['header'], **_dict['payload']}
         res_list.append((key, dict_merged[key]['result']))
 
     return res_list, dict_merged
 
 
-def get_voice_data(voice_file_list):
+def get_voice_data(voice_data_list):
     '''情形1-不保存文件,返回音频数据,用于朗读'''
-    for index, item in enumerate(voice_file_list):
-        with open(item[1], 'rb') as f:
-            __data = f.read()
-        os.remove(item[1])
-        voice_file_list[index][1] = __data
-
-    # $[[1, b'xxxx'], [2, b'xxxx'], [3, b'xxxx'],]
-    return voice_file_list
+    return [[index, open(item[1], 'rb').read()] for index, item in enumerate(voice_data_list)]
 
 
-def save_sound_file(voice_file_list, path=None):
+def save_sound_file(voice_data_list, path=None):
     '''情形2-保存音频文件指定到位置或桌面'''
-    if path is None: path = get_desktop() or ''
-    for index, item in enumerate(voice_file_list):
-        shutil.move(item[1], path)
-        voice_file_list[index][1] = path + "\\" + item[1].split("\\")[-1]
+    if path is None: path = get_desktop()
 
-        # $[[1, 'D:\\path\\1.mp3'], [2, 'D:\\path\\2.mp3'], [3, 'D:\\path\\3.mp3'],]
-    return voice_file_list
+    for index, item in enumerate(voice_data_list):
+        basename = os.path.basename(item[1])
+        dest_path = os.path.join(path, basename)
+        shutil.move(item[1], dest_path)
+        voice_data_list[index][1] = dest_path
+        # $[[1, 'D:\\path\\1.mp3'], [2, 'D:\\path\\2.mp3'],]
+
+    return voice_data_list
 
 
 def merge_sound_file(voice_file_list, args, path=None):
     '''情形3-合并音频,删除过程文件'''
-    if path is None: path = get_desktop() or ''
-    sound_list = [[item[0], AudioSegment.from_file(item[1], format=args['aformat']), os.remove(item[1])] for item in voice_file_list]
+    if path is None: path = get_desktop()
+    # 将声音列表初始化为AudioSegment格式
+    sound_list = [AudioSegment.from_file(item[1], format=args['aformat']) for item in voice_file_list]
+    # [[item[0], AudioSegment.from_file(item[1], format=format)] for item in voice_file_list]
 
-    SumSound: AudioSegment = sound_list.pop(0)[1]  # 第一个文件
-    for item in sound_list:
-        SumSound += item[1]  # 把声音文件相加
+    # 使用sum函数来快速完成声音文件相加，无需循环
+    SumSound = sum(sound_list)
 
     # $保存音频文件
     __fname = f"{path}\\{get_10_timestamp()}_{args['voice']}_tts.{args['aformat']}"
-    SumSound.export(__fname, format=args['aformat'])  # 保存文件
-    voice_file_list = [[1, __fname]]
+    SumSound.export(__fname, format=args['aformat'])  # type: ignore # 保存文件
 
     # $[[1, 'D:\\Desktop\\1.mp3'],]
-    return voice_file_list
+    return [[1, __fname]]
 
 
 VIOCE = [

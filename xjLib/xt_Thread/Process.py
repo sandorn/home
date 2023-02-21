@@ -37,16 +37,17 @@ class MyProcess(Process):
         print(f'Pid: {os.getpid()} | {multiprocessing.current_process()}')
         self.target(*self.args, **self.kwargs)
 
-    def stop_all(self):
+    @classmethod
+    def stop_all(cls):
         """停止线程池, 所有线程停止工作"""
-        for _ in range(len(self.all_Process)):
-            prc = self.all_Process.pop()
+        while cls.all_Process:
+            prc = cls.all_Process.pop()
             prc.join()
 
     @classmethod
     def wait_completed(cls):
         """等待全部线程结束,返回结果"""
-        cls.stop_all(cls)
+        cls.stop_all()
 
 
 class CustomProcess(Process):
@@ -69,14 +70,13 @@ class CustomProcess(Process):
     def run(self):
         # print(f'Pid: {os.getpid()} \t|\t {multiprocessing.current_process()}|{self.pid}|{self.name}')
         with self.sem:
-            # print(888888888888, self.sem)
             self.Result = self.target(*self.args, **self.kwargs)
             self.result_dict[self.pid] = self.Result
 
     @classmethod
     def wait_completed(cls):
         """等待全部线程结束,返回结果"""
-        for _ in range(len(cls.all_Process)):
+        while cls.all_Process:
             prc = cls.all_Process.pop()
             prc.join()
 

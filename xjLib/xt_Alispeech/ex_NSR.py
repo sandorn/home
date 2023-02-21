@@ -27,20 +27,17 @@ Sem = Semaphore(2)  # 限制线程并发数
 
 class NSR(on_state_cls):
     '''语音转文字  NlsSpeechRecognizer'''
-    all_Thread = []  # 类属性或类变量,实例公用
-    result_dict = {}  # 类属性或类变量,实例公用
+    all_Thread = []
+    result_dict = {}
 
     def __init__(self, file_name, tid=None):
         self.__th = Thread(target=self.__thread_run)
         self.__id = tid or id(self.__th)
-        self.start(file_name)
+        self.__file_name = file_name
+        self.start()
 
-    def loadfile(self, filename):
-        with open(filename, 'rb') as f:
-            self.__data = f.read()
-
-    def start(self, filename):
-        self.loadfile(filename)
+    def start(self):
+        self.__data = open(self.__file_name, "rb").read()
         self.__th.start()
         self.all_Thread.append(self.__th)
 
@@ -99,10 +96,21 @@ class NSR(on_state_cls):
             # slices = zip(*(iter(self.__data), ) * 640)
             for __s in slices:
                 _NSR_.send_audio(bytes(__s))
-                # time.sleep(0.01)
 
             _NSR_.stop()
             print(f'{self.__id}: NSR stopped.')
+
+
+def TODO_NSR(_in_file_list):
+    if isinstance(_in_file_list, str):
+        _ = [NSR(_in_file_list, 1)]
+    elif isinstance(_in_file_list, list):
+        _ = [NSR(file, index + 1) for index, file in enumerate(_in_file_list)]
+    else:
+        raise TypeError(f"TODO_NSR: {_in_file_list} is not a file | file list.")
+
+    res_list, dictMerged = NSR.wait_completed()
+    return res_list, dictMerged
 
 
 if __name__ == '__main__':
@@ -110,10 +118,9 @@ if __name__ == '__main__':
     _in_file_list = [
         'D:/11.wav',
     ]
+    _in_file_list = 'D:/11.wav'
 
-    for index, file in enumerate(_in_file_list):
-        tack = NSR(file, index + 1)
-    res_list, dictMerged = NSR.wait_completed()
+    res_list, dictMerged = TODO_NSR(_in_file_list)
 
     print(dictMerged)
     print(res_list)

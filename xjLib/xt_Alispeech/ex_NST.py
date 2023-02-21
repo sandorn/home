@@ -12,7 +12,6 @@ LastEditTime : 2022-11-24 20:47:47
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-import time
 from threading import Semaphore, Thread
 
 from nls import NlsSpeechTranscriber
@@ -27,20 +26,17 @@ Sem = Semaphore(2)  # 限制线程并发数
 
 class NST(on_state_cls):
     '''语音转文字  NlsSpeechTranscriber'''
-    all_Thread = []  # 类属性或类变量,实例公用
-    result_dict = {}  # 类属性或类变量,实例公用
+    all_Thread = []
+    result_dict = {}
 
     def __init__(self, file_name, tid=None):
         self.__th = Thread(target=self.__thread_run)
         self.__id = tid or id(self.__th)
-        self.start(file_name)
+        self.__file_name = file_name
+        self.start()
 
-    def loadfile(self, filename):
-        with open(filename, "rb") as f:
-            self.__data = f.read()
-
-    def start(self, filename):
-        self.loadfile(filename)
+    def start(self):
+        self.__data = open(self.__file_name, "rb").read()
         self.__th.start()
         self.all_Thread.append(self.__th)
 
@@ -109,20 +105,26 @@ class NST(on_state_cls):
             print(f'{self.__id}: NST stopped.')
 
 
+def TODO_NST(_in_file_list):
+    if isinstance(_in_file_list, str):
+        _ = [NST(_in_file_list, 1)]
+    elif isinstance(_in_file_list, list):
+        _ = [NST(file, index + 1) for index, file in enumerate(_in_file_list)]
+    else:
+        raise TypeError(f"TODO_NST: {_in_file_list} is not a file | file list.")
+
+    res_list, dictMerged = NST.wait_completed()
+    return res_list, dictMerged
+
+
 if __name__ == '__main__':
 
     _in_file_list = [
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/test1.pcm',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/test1.wav',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/tts_test.wav',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/test1.pcm',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/test1.wav',
-        'D:/UserData/xinjun/Downloads/alibabacloud-nls-python-sdk-1.0.0/tests/tts_test.wav',
+        'D:/11.wav',
     ]
+    _in_file_list = 'D:/11.wav'
 
-    for index, file in enumerate(_in_file_list):
-        tack = NST(file, index + 1)
-    res_list, dictMerged = NST.wait_completed()
+    res_list, dictMerged = TODO_NST(_in_file_list)
 
     print(dictMerged)
     print(res_list)

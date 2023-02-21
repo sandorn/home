@@ -99,15 +99,14 @@ class WorkManager(object):
         '''禁止添加任务，等待所有线程运行完毕,返回尚未获取的全部结果'''
         self.work_queue.join()  # #确保所有任务完成
         self.close_work_thread(len(self.all_Thread))  # #再关闭全部工作线程
-        return self._extracted_from_getResult()
+        return self.__getResult()
 
     def getAllResult(self):
         '''获取之前任务的全部结果，work_thread继续值机'''
         self.work_queue.join()
-        return self._extracted_from_getResult()
+        return self.__getResult()
 
-    # TODO Rename this here and in `wait_completed` and `getAllResult`
-    def _extracted_from_getResult(self):
+    def __getResult(self):
         result_list = []
         while not self.result_queue.empty():
             res = self.result_queue.get_nowait()

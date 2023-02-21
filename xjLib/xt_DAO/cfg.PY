@@ -119,3 +119,52 @@ def connect_str(key, odbc=None):
         return f"{driver}:///{config['host']}"
 
     return ''
+
+
+def make_connect_str(key, odbc=None):
+    """This factorized method builds the connection string"""
+
+    if key not in DB_CONFIG:
+        raise ValueError(f'错误提示：检查数据库配置：{key}')
+    config = deepcopy(DB_CONFIG[key])
+
+    types = config['type']
+    netdbstr = f"{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
+
+    driver_dict = {
+        'mysql': {
+            None: 'mysql',
+            'OurSQL': 'mysql+oursql',
+            'aiomysql': 'mysql+aiomysql',
+            'connector': 'mysql+mysqlconnector',
+            'mysqlclient': 'mysql+mysqldb',
+            'pymysql': 'mysql+pymysql'
+        },
+        'PostgreSQL': {
+            None: 'postgresql',
+            'pg8000': 'postgresql+pg8000',
+            'psycopg2': 'postgresql+psycopg2',
+        },
+        'Oracle': {
+            None: 'oracle',
+            'cx_oracle': 'oracle+cx_oracle'
+        },
+        'SQLServer': {
+            None: 'mssql+pyodbc',
+            'pyodbc': 'mssql+pyodbc',
+            'pymssql': 'mssql+pymssql'
+        },
+        'SQLite': {
+            None: 'sqlite',
+        },
+        'access': {
+            None: 'access+pyodbc'
+        },
+        'monetdb': {
+            None: 'monetdb',
+            'lite': 'monetdb+lite'
+        }
+    }
+
+    driver_name = driver_dict.get(types, {}).get(odbc, '')
+    return f"{driver_name}://{netdbstr}"
