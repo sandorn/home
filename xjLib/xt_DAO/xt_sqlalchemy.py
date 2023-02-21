@@ -183,8 +183,8 @@ if __name__ == "__main__":
     # Data_Model_2_py('uuu', 'd:/1.py', 'TXbook')  # 待测试
     item1 = {'username': '刘新军', 'password': '234567', '手机': '13910118122', '代理人编码': '10005393', '会员级别': 'SSS', '会员到期日': '9999-12-31 00:00:00'}
     sqlhelper = create_orm('TXbx', 'users2')  #, 'user99')
-    # res = sqlhelper.filter_by({'ID': 1})
-    # print(res)
+    res = sqlhelper.filter_by({'ID': 1})
+    print(res)
     # res = sqlhelper.select()
     # print(res)
     # resfrom_statement = sqlhelper.from_statement('select * from users2 where id=:id', {'id': 1})

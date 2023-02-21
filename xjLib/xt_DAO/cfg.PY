@@ -70,7 +70,7 @@ DB_CONFIG = {
 DB_CONFIG['default'] = DB_CONFIG['TXbook']
 
 
-def connect_str(key, odbc=None):
+def make_connect_str(key, odbc=None):
     if key not in DB_CONFIG: raise ValueError(f'错误提示：检查数据库配置：{key}')
     config = deepcopy(DB_CONFIG[key])
     types = config['type']
@@ -121,19 +121,16 @@ def connect_str(key, odbc=None):
     return ''
 
 
-def make_connect_str(key, odbc=None):
-    """This factorized method builds the connection string"""
-
-    if key not in DB_CONFIG:
-        raise ValueError(f'错误提示：检查数据库配置：{key}')
+def connect_str(key, odbc=None):
+    '''重构后'''
+    if key not in DB_CONFIG: raise ValueError(f'错误提示：检查数据库配置：{key}')
     config = deepcopy(DB_CONFIG[key])
-
     types = config['type']
+
     netdbstr = f"{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['db']}?charset={config['charset']}"
 
-    driver_dict = {
+    driver_map = {
         'mysql': {
-            None: 'mysql',
             'OurSQL': 'mysql+oursql',
             'aiomysql': 'mysql+aiomysql',
             'connector': 'mysql+mysqlconnector',
@@ -141,30 +138,35 @@ def make_connect_str(key, odbc=None):
             'pymysql': 'mysql+pymysql'
         },
         'PostgreSQL': {
-            None: 'postgresql',
             'pg8000': 'postgresql+pg8000',
-            'psycopg2': 'postgresql+psycopg2',
+            'psycopg2': 'postgresql+psycopg2'
         },
         'Oracle': {
-            None: 'oracle',
-            'cx_oracle': 'oracle+cx_oracle'
+            None: 'oracle'
         },
         'SQLServer': {
-            None: 'mssql+pyodbc',
             'pyodbc': 'mssql+pyodbc',
-            'pymssql': 'mssql+pymssql'
+            None: 'mssql+pymssql'
         },
         'SQLite': {
-            None: 'sqlite',
+            None: None
         },
-        'access': {
-            None: 'access+pyodbc'
+        "access": {
+            None: None
         },
-        'monetdb': {
-            None: 'monetdb',
-            'lite': 'monetdb+lite'
-        }
+        "monetdb": {
+            None: None
+        },
     }
 
-    driver_name = driver_dict.get(types, {}).get(odbc, '')
-    return f"{driver_name}://{netdbstr}"
+    driver = driver_map.get(types, {}).get(odbc, types)
+
+    if driver == types and odbc is not None: driver += f"+{odbc}"
+
+    if types == "SQLite": return f"sqlite:///{config['host']}"
+
+    if types == "access": return f"access+pyodbc://{config['host']}"
+
+    if types == "monetdb": return f"monetdb+lite:///{config['host']}"
+
+    return f"{driver}://{netdbstr}"

@@ -16,7 +16,7 @@ import asyncio
 
 from sqlalchemy import Column, MetaData, String, Table, select
 from sqlalchemy.ext.asyncio import create_async_engine
-from xt_DAO.cfg import DB_CONFIG, connect_str
+from xt_DAO.cfg import connect_str
 
 meta = MetaData()
 t1 = Table("t1", meta, Column("name", String(50), primary_key=True))
@@ -46,8 +46,6 @@ async def async_main() -> None:
 
 
 asyncio.run(async_main())
-
-
 '''
 https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html
 
