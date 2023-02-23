@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project ver="10" name="梦幻助手" libEmbed="true" icon="res\ico0.png" ui="win" output="cef3.exe" CompanyName="单位名称" FileDescription="cef3" LegalCopyright="Copyright (C) 单位名称 2017" ProductName="cef3" InternalName="cef3" FileVersion="0.0.0.1" ProductVersion="0.0.0.1" publishDir="/Publish/" dstrip="false" local="false" ignored="false">
+	<file name="main.aardio" path="main.aardio" comment="main.aardio"/>
+	<folder name="资源文件" path="res" embed="true" local="false" ignored="false">
+		<file name="1.gif" path="res\1.gif" comment="res\1.gif"/>
+		<file name="2.gif" path="res\2.gif" comment="res\2.gif"/>
+		<file name="cef_all.aardio" path="res\cef_all.aardio" comment="res\cef_all.aardio"/>
+		<file name="dm.dll" path="res\dm.dll" comment="res\dm.dll"/>
+		<file name="ico.png" path="res\ico.png" comment="res\ico.png"/>
+		<file name="ico0.png" path="res\ico0.png" comment="res\ico0.png"/>
+		<file name="spy.cur" path="res\spy.cur" comment="res\spy.cur"/>
+		<file name="webform_all.aardio" path="res\webform_all.aardio" comment="res\webform_all.aardio"/>
+		<file name="快速回收.bmp" path="res\快速回收.bmp" comment="res\快速回收.bmp"/>
+		<file name="快速回收.png" path="res\快速回收.png" comment="res\快速回收.png"/>
+	</folder>
+	<folder name="筛选器" path="D:\UserData\xinjun\Downloads\cef3\筛选器" embed="true" comment="目录" local="false" ignored="false"/>
+</project>

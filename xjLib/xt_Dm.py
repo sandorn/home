@@ -14,7 +14,6 @@ Github       : https://github.com/sandorn/home
 '''
 import os
 import random
-import string
 import time
 
 import win32com.client
@@ -25,16 +24,9 @@ ran = random.randrange
 tim = time.time
 
 
-def sp2tab(源串, 分割1, 分割2):
-    m = string.split(源串, 分割1)
-    if (分割2 is None):
-        return m
-
-    ret = []
-    for i in range(len(m)):
-        n = string.split(m[i], 分割2)
-        ret[i] = n
-    return ret
+def sp2tab(源串: str, 分割1, 分割2=None):
+    m = 源串.split(分割1)
+    return m if (分割2 is None) else [item.split(分割2) for item in m]
 
 
 dm_path = "D:/program/大漠/3.1233/dm.dll"

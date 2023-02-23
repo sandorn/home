@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-07 15:13:56
-FilePath     : /xjLib/__init__.py
+LastEditTime : 2023-02-22 11:43:42
+FilePath     : /CODE/xjLib/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -16,7 +15,10 @@ Github       : https://github.com/sandorn/home
 # package
 # __init__.py
 
+# author of the package
 __author__ = 'Even.Sand'
+
+# software license used for the package
 __license__ = 'NewSea'
 
-xjLib_VERSION = __version__ = '0.8'
+LIB_VERSION = '0.9'
