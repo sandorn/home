@@ -340,6 +340,6 @@ winform.onClose = function(hwnd, message, wParam, lParam) {
     }
 }
  
-winform.show(3/*_SW_SHOWMAXIMIZED*/)
+winform.show()  //3/*_SW_SHOWMAXIMIZED*/
 
 win.loopMessage()

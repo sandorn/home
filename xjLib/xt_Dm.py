@@ -11,17 +11,27 @@ FilePath     : /xjLib/xt_Dm.py
 LastEditTime : 2021-04-16 13:39:27
 Github       : https://github.com/sandorn/home
 ==============================================================
+大漠只能使用32位python
 '''
+import ctypes
 import os
 import random
 import time
 
-import win32com.client
+# from comtypes.client import CreateObject
+# from PyGameAuto.Dm import RegDm
+from win32com.client import DispatchEx
 
-delay = time.sleep
 ran = random.randrange
-# random.randrange(100, 1000, 2)
+delay = time.sleep
 tim = time.time
+
+
+def randelay(rand_start_time=50, rand_end_time=400):
+    """随机延迟"""
+    random.seed(time.time())
+    rand_time = random.randrange(rand_start_time, rand_end_time)
+    delay(rand_time)
 
 
 def sp2tab(源串: str, 分割1, 分割2=None):
@@ -29,218 +39,222 @@ def sp2tab(源串: str, 分割1, 分割2=None):
     return m if (分割2 is None) else [item.split(分割2) for item in m]
 
 
-dm_path = "D:/program/大漠/3.1233/dm.dll"
 
 
-class dmobject():
+class DmHelper():
     '''以管理员身份运行vscode'''
+    path = os.path.split(os.path.realpath(__file__))[0]
 
     def __init__(self):
-        # 调用大漠插件
         try:
-            self.dm = win32com.client.Dispatch("dm.dmsoft")
+            self.dm = self.CreateDm()
         except Exception:
-            os.system(f'regsvr32 /s {dm_path}')
-            self.dm = win32com.client.Dispatch("dm.dmsoft")
+            # os.system(f'regsvr32 /s {dm_path}')
+            self.dm = self.unreg_invoc()
 
-        # self.dm.setDict(0,  "C:\\Users\\Li\\Desktop\\help\\data\\num.txt"
+        self.RegDm()
+        # self.dm.setDict(0,  "C:/num.txt")
         # self.dm.useDict(0)
 
-    # 大漠绑定
+    @classmethod
+    def unreg_invoc(cls):
+        """免注册调用，返回大漠对象"""
+        dm = ctypes.windll.LoadLibrary(cls.path + r'\.res\DmReg.dll')
+        dm.SetDllPathW(cls.path + r'\.res\dm.dll', 0)
+        # return CreateObject('dm.dmsoft')
+        return DispatchEx('dm.dmsoft')
+
+    @classmethod
+    def CreateDm(cls):
+        """创建大漠对象"""
+        return DispatchEx('dm.dmsoft')
+
+    def RegDm(self):
+        """输入大漠注册码"""
+        reg_code, ver_info = ("jv965720b239b8396b1b7df8b768c919e86e10f", "ddsyyc365")
+        assert (self.dm is not None), "大漠插件未注册或者注册失败"
+        dmRegSult = self.dm.Reg(reg_code, ver_info)
+
+        if dmRegSult == -2:
+            print(f"大漠注册码使用失败,只能使用免费功能。状态码:{dmRegSult},进程没有以管理员方式运行")
+        elif dmRegSult == 1:
+            print("大漠注册码使用成功")
+        elif dmRegSult == 4:
+            print(f"大漠注册码使用失败,只能使用免费功能。状态码:{dmRegSult},注册码错误")
+        else:
+            print(f"大漠注册码使用失败,只能使用免费功能。状态码:{dmRegSult}。")
+
     def 绑定窗口(self, 局部窗口句柄, 显示参数="normal", 鼠标参数="normal", 键盘参数="normal", 绑定模式=0):
         ret = self.dm.BindWindow(局部窗口句柄, 显示参数, 鼠标参数, 键盘参数, 绑定模式)
         return self.dm.GetLastError() if (ret != 1) else True
 
     # #--------------------找字单击至消失--------------------#
-    def 找字单击至消失(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=1000, 中心点=False):
-        控制开关 = False
-        延迟 = ran(50, 400)
+    def 找字单击至消失(self, x_1, y_1, x_2, y_2, str_name, color_format, t=1500, 中心点=False):
         intx = inty = 0
         起始时间 = tim()
-        while ((tim() - 起始时间) < t):
-            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, 字名, 颜色值, 0.9, intx, inty)
-            tab = sp2tab(ret, "([^\\|]+)")
-            intx = int(tab[2])
-            inty = int(tab[3])
+        index = 0
+        while (tim() - 起始时间) < t:
+            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, str_name, color_format, 0.9, intx, inty)
+            tab = ret.split("([^\\|]+)")
+            intx, inty = int(tab[2]), int(tab[3])
 
             if (intx > 0 and inty > 0):
-                self.dm.鼠标移动单击(intx, inty, 中心点)
-                控制开关 = True
-            else:
-                控制开关 = False
+                self.鼠标移动单击(intx, inty, 中心点)
+                index += 1
+                continue
 
-            delay(延迟)
-            return 控制开关
+            randelay()
+        return index
 
     # #-------------------------找字单击------------------------#
-    def 找字单击(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=1000, 中心点=False):
-        控制开关 = True
-        延迟 = ran(50, 400)
-        ret = intx = inty = 0
+    def 找字单击(self, x_1, y_1, x_2, y_2, str_name, color_format, t=1000, 中心点=False):
+        intx = inty = 0
         起始时间 = tim()
-        while ((tim() - 起始时间) < t):
-            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, 字名, 颜色值, 0.9, intx, inty)
-            tab = sp2tab(ret, "([^\\|]+)")
-            intx = int(tab[2])
-            inty = int(tab[3])
-            if (intx > 0 and inty > 0):
-                self.dm.鼠标移动单击(intx, inty, 中心点)
-                delay(延迟)
-                控制开关 = True
-                break
+        while (tim() - 起始时间) < t:
+            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, str_name, color_format, 0.9, intx, inty)
+            tab = ret.split("([^\\|]+)")
+            intx, inty = int(tab[2]), int(tab[3])
 
-            delay(延迟)
-        return 控制开关
+            if (intx > 0 and inty > 0):
+                self.鼠标移动单击(intx, inty, 中心点)
+                return True
+
+            randelay()
+
+        return False
 
     # #-------------------------找字返回坐标-----------------#
-    def 找字返回坐标(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=1000):
-        控制开关 = False
-        延迟 = ran(50, 400)
-        ret = intx = inty = 0
+    def 找字返回坐标(self, x_1, y_1, x_2, y_2, str_name, color_format, t=1000):
+        intx = inty = 0
         起始时间 = tim()
-        while ((tim() - 起始时间) < t):
-            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, 字名, 颜色值, 0.9, intx, inty)
-            tab = sp2tab(ret, "([^\\|]+)")
-            intx = int(tab[2])
-            inty = int(tab[3])
+        while (tim() - 起始时间) < t:
+            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, str_name, color_format, 0.9, intx, inty)
+            tab = ret.split("([^\\|]+)")
+            intx, inty = int(tab[2]), int(tab[3])
+
             if (intx > 0 and inty > 0):
-                delay(延迟)
-                控制开关 = True
-                break
-            delay(延迟)
-        return 控制开关, intx, inty
+                return intx, inty
+
+            randelay()
+
+        return -1, -1
 
     # #-------------------------简易找字-----------------#
-    def 简易找字(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=1000):
-        控制开关 = False
-        延迟 = ran(50, 400)
-        ret = intx = inty = 0
+    def 简易找字(self, x_1, y_1, x_2, y_2, str_name, color_format, t=1000):
+        intx = inty = 0
         起始时间 = tim()
-        while ((tim() - 起始时间) < t):
-            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, 字名, 颜色值, 0.9, intx, inty)
-            tab = sp2tab(ret, "([^\\|]+)")
-            intx = int(tab[2])
-            inty = int(tab[3])
+        while (tim() - 起始时间) < t:
+            ret = self.dm.FindStrFast(x_1, y_1, x_2, y_2, str_name, color_format, 0.9)
+            if ret[2] == -1: continue
+            intx, inty = ret[1], ret[2]
             if (intx > 0 and inty > 0):
-                delay(延迟)
-                控制开关 = True
-                break
-            delay(延迟)
-        return 控制开关
+                return intx, inty
+
+            randelay()
+
+        return -1, -1
 
     # #--------------------找图单击至消失--------------------#
-    def 找图单击至消失(self, x_1, y_1, x_2, y_2, 图片名, t=1000, 扫描方式=0, 中心点=False):
-        控制开关 = False
-        延迟 = ran(50, 400)
-        ret = intx = inty = 0
-        # 起始时间 = tim()
-        while (控制开关):
-            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, 图片名, "000000", 0.9, 扫描方式)
-            tab = sp2tab(ret, "([^\\|]+)")
-            intx = int(tab[2])
-            inty = int(tab[3])
+    def 找图单击至消失(self, x_1, y_1, x_2, y_2, pic_name, t=1500, direct=0, 中心点=False):
+        intx = inty = 0
+        起始时间 = tim()
+        index = 0
+        while (tim() - 起始时间) < t:
+            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9, direct)
+            tab = ret.split("([^\\|]+)")
+            intx, inty = int(tab[2]), int(tab[3])
+
             if (intx > 0 and inty > 0):
-                self.dm.鼠标移动单击(intx, inty, 中心点)
-                控制开关 = True
-            else:
-                控制开关 = False
-            delay(延迟)
+                self.鼠标移动单击(intx, inty, 中心点)
+                index += 1
+                continue
+
+            randelay()
+        return index
 
     # #----------------------找图单击---------------------#
-    def 找图单击(self, x_1, y_1, x_2, y_2, 图片名, t=1000, 扫描方式=0, 中心点=False):
-        控制开关 = False
-        延迟 = ran(50, 400)
-        ret = intx = inty = 0
+    def 找图单击(self, x_1, y_1, x_2, y_2, pic_name, t=1000, direct=0, 中心点=False):
+        intx = inty = 0
         起始时间 = tim()
-        while ((tim() - 起始时间) < t):
-            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, 图片名, "000000", 0.9, 扫描方式)
-            tab = sp2tab(ret, "([^\\|]+)")
-            intx = int(tab[2])
-            inty = int(tab[3])
+        while (tim() - 起始时间) < t:
+            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9, direct)
+            tab = ret.split("([^\\|]+)")
+            intx, inty = int(tab[2]), int(tab[3])
+
             if (intx > 0 and inty > 0):
-                self.dm.鼠标移动单击(intx, inty, 中心点)
-                控制开关 = True
-                break
-            delay(延迟)
-        return 控制开关
+                self.鼠标移动单击(intx, inty, 中心点)
+                return True
+
+            randelay()
+
+        return False
 
     # #-------------------------找图返回坐标-----------------#
-    def 找图返回坐标(self, x_1, y_1, x_2, y_2, 图片名, t=1000, 扫描方式=0):
-        控制开关 = False
-        延迟 = ran(50, 400)
-        ret = intx = inty = 0
+    def 找图返回坐标(self, x_1, y_1, x_2, y_2, pic_name, t=1000, direct=0):
+        intx = inty = 0
         起始时间 = tim()
-        while ((tim() - 起始时间) < t):
-            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, 图片名, "000000", 0.9, 扫描方式)
-            tab = sp2tab(ret, "([^\\|]+)")
-            intx = int(tab[2])
-            inty = int(tab[3])
+        while (tim() - 起始时间) < t:
+            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9, direct)
+            tab = ret.split("([^\\|]+)")
+            intx, inty = int(tab[2]), int(tab[3])
             if (intx > 0 and inty > 0):
-                控制开关 = True
-                break
-            delay(延迟)
-        return 控制开关, intx, inty
+                return intx, inty
+
+            randelay()
+
+        return -1, -1
 
     # #-------------------------简易找图-----------------#
-    def 简易找图(self, x_1, y_1, x_2, y_2, 图片名, t=1000, 扫描方式=0):
-        控制开关 = False
-        延迟 = ran(50, 400)
-        ret = intx = inty = 0
+    def 简易找图(self, x_1, y_1, x_2, y_2, pic_name, t=1000, direct=0):
+        intx = inty = 0
         起始时间 = tim()
-        while ((tim() - 起始时间) < t):
-            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, 图片名, "000000", 0.9, 扫描方式)
-            tab = sp2tab(ret, "([^\\|]+)")
-            intx = int(tab[2])
-            inty = int(tab[3])
+        while (tim() - 起始时间) < t:
+            ret = self.dm.FindPic(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9, direct)
+            if ret[2] == -1: return
+            intx, inty = ret[1], ret[2]
             if (intx > 0 and inty > 0):
-                控制开关 = True
-                break
-            delay(延迟)
-        return 控制开关
+                return intx, inty
+
+            randelay()
+
+        return -1, -1
 
     # #----------------------鼠标移动单击------------------#
     def 鼠标移动单击(self, x, y, 中心点=False):
-        延迟 = ran(50, 200)
+        x, y = int(x), int(y)
         self.dm.MoveTo(x, y)
-        delay(20)
+        randelay(20, 50)
         self.dm.LeftClick()
-        delay(延迟)
+        randelay(50, 200)
+
         if (中心点):
             self.dm.MoveTo(x + ran(50, 300), y + ran(50, 300))
-            delay(延迟)
 
     # #----------------------识别字------------------#
-    def 简易识字(self, x_1, y_1, x_2, y_2, 颜色, 相似度=0.9, t=0):
-        控制开关 = False
+    def 简易识字(self, x_1, y_1, x_2, y_2, 颜色, 相似度=0.9, t=1000):
         认字 = ''
-        延迟 = ran(50, 400)
         起始时间 = tim()
 
         while ((tim() - 起始时间) < t):
             if 认字 := self.dm.Ocr(x_1, y_1, x_2, y_2, 颜色, 相似度):
-                delay(延迟)
-                控制开关 = True
                 return 认字
-            delay(延迟)
+            randelay(50, 200)
 
-        return 控制开关
+        return False
 
 
-if __name__ == '__main__':
-    mydm = dmobject()
-    print(mydm.dm.Ver())
 '''
 dm_object.绑定窗口 = @.绑定窗口(hwnd/*窗口句柄*/\n, display/*显示参数:"normal", "gdi", "gdi2", "dx2", "dx3", "dx"*/\n, mouse/*鼠标参数:"normal", "windows", "windows2", "windows3", "dx"*/\n, keypad/*键盘参数:"normal", "windows", "dx"*/\n, mode/*绑定模式:0, 2, 4*/)
-dm_object.找字单击至消失 = @.找字单击至消失(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/, False/*中心点*/)
-dm_object.找字单击 = @.找字单击(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/, False/*中心点*/)
-dm_object.简易找字 = @.简易找字(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/)
-dm_object.找字返回坐标 = @ret, intx, inty = ??.找字返回坐标(x_1, y_1, x_2, y_2, 字名, 颜色值, 0/*循环毫秒*/)
-dm_object.找图单击至消失 = @.找图单击至消失(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/, False/*中心点*/)
-dm_object.找图单击 = @.找图单击(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/, False/*中心点*/)
-dm_object.简易找图 = @.简易找图(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/)
-dm_object.找图返回坐标 = @ret, intx, inty = ??.找图返回坐标(x_1, y_1, x_2, y_2, 图片名, 0/*循环毫秒*/, 0/*扫描方式*/)
+dm_object.找字单击至消失 = @.找字单击至消失(x_1, y_1, x_2, y_2, str_name, color_format, 0/*时长*/, False/*中心点*/)
+dm_object.找字单击 = @.找字单击(x_1, y_1, x_2, y_2, str_name, color_format, 0/*时长*/, False/*中心点*/)
+dm_object.简易找字 = @.简易找字(x_1, y_1, x_2, y_2, str_name, color_format, 0/*时长*/)
+dm_object.找字返回坐标 = @ret, intx, inty = ??.找字返回坐标(x_1, y_1, x_2, y_2, str_name, color_format, 0/*时长*/)
+dm_object.找图单击至消失 = @.找图单击至消失(x_1, y_1, x_2, y_2, pic_name, 0/*时长*/, 0/*direct*/, False/*中心点*/)
+dm_object.找图单击 = @.找图单击(x_1, y_1, x_2, y_2, pic_name, 0/*时长*/, 0/*direct*/, False/*中心点*/)
+dm_object.简易找图 = @.简易找图(x_1, y_1, x_2, y_2, pic_name, 0/*时长*/, 0/*direct*/)
+dm_object.找图返回坐标 = @ret, intx, inty = ??.找图返回坐标(x_1, y_1, x_2, y_2, pic_name, 0/*时长*/, 0/*direct*/)
 dm_object.鼠标移动单击 = @.鼠标移动单击(x, y, False/*中心点*/)
-dm_object.简易识字 = @.简易识字(x_1, y_1, x_2, y_2, 颜色, 0.9/*相似度*/, 0/*循环毫秒*/)
+dm_object.简易识字 = @.简易识字(x_1, y_1, x_2, y_2, 颜色, 0.9/*相似度*/, 0/*时长*/)
 dm_object.方形渐开找鼠标 = @.方形渐开找鼠标(起点坐标X, 起点坐标Y, 鼠标特征码, 6/*圈数判定*/)
 ?xJlib.dm  =dm_object.
 xJlib.dm() = 创建大漠对象\ndm_object.
