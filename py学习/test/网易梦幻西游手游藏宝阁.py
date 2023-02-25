@@ -14,11 +14,11 @@
 
 import os
 import sys
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from xjLib.log import log
+from PyQt5.QtWidgets import *
 
 
 class Ui_MainWindow(object):
@@ -89,8 +89,8 @@ class Ui_MainWindow(object):
                 btn.setToolTip(msg)
                 btn.setStatusTip(msg)
             if name:
-                btn.setObjectName(name)  # @用于自动绑定信号和函数        
-                
+                btn.setObjectName(name)  # @用于自动绑定信号和函数
+
         self.btnUI(self.zoom_in_btn, 'ico/1075665.png', 'Ctrl+=', '放大页面\tCtrl+=')
         self.btnUI(self.reload_btn, 'ico/1075667.png', 'Ctrl+0', '复原页面\tCtrl+0')
         self.btnUI(self.zoom_out_btn, 'ico/1075664.png', 'Ctrl+-', '缩小页面\tCtrl+-')
@@ -231,7 +231,6 @@ class MyWindow(QMainWindow, Ui_MainWindow):
 
 
 if __name__ == '__main__':
-    log = log()
     app = QApplication(sys.argv)
     DEMO = MyWindow()
     sys.exit(app.exec_())
