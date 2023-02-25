@@ -47,8 +47,8 @@ import winreg
 
 
 def get_desktop():
-    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
-    return winreg.QueryValueEx(key, "Desktop")[0]
+    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders') as key:
+        return winreg.QueryValueEx(key, "Desktop")[0]
 
 
 def file_to_List(filepath):
@@ -89,11 +89,10 @@ def savefile(_filename, _str_list, br=''):
 import win32ui
 
 
-def filedialog(_dir='C:/'):
+def filedialog(_dir=None):
     '''依据封装win32ui库,实现打开文件对话框,并返回文件路径名'''
-    arg = f'defaultDir={_dir or "C:/"}'
-    _dlg = win32ui.CreateFileDialog(1, arg)  # 1表示打开文件对话框
     # _dlg.SetOFNInitialDir(_dir)  # 设置打开文件对话框中的初始显示目录
+    _dlg = win32ui.CreateFileDialog(1, f'defaultDir={_dir or "C:/"}') # 1表示打开文件对话框
     _dlg.DoModal()
     return _dlg.GetPathName()
 

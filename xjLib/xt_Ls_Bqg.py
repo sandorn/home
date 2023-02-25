@@ -16,10 +16,11 @@ LastEditTime : 2021-04-14 19:36:16
 from xt_Ahttp import ahttpGet
 from xt_Requests import get_tretry
 from xt_Response import htmlResponse
-from xt_String import Re_Sub, Str_Clean, Str_Replace, UNprintable_Chars
+from xt_String import Invisible_Chars, Re_Sub, Str_Clean, Str_Replace
 
 
 def clean_Content(in_str):
+    """清洗内容"""
     clean_list = [
         "', '",
         '&nbsp;',
@@ -46,7 +47,7 @@ def clean_Content(in_str):
         '<br />',
         '\t',
     ]
-    clean_list += UNprintable_Chars
+    clean_list += Invisible_Chars
     sub_list = [
         (r'\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)', ''),
     ]
@@ -70,7 +71,8 @@ def clean_Content(in_str):
     ]
 
     if isinstance(in_str, (list, tuple)):
-        in_str = '\n'.join([item.strip("\r\n　  ") for item in in_str])
+        in_str = '\n'.join([item.strip("\r\n　  　") for item in in_str])
+        # item.strip("\r\n　  ")
     in_str = in_str.strip("\r\n ")
 
     in_str = Str_Clean(in_str, clean_list)
