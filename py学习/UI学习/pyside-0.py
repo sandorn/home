@@ -5,11 +5,9 @@ import sys
 # from PySide2.QtWidgets import QApplication, QFileDialog, QMainWindow
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
 
-import design
-
 
 # 创建APP类，并继承UI的类
-class WoHeYunApp(QMainWindow, design.Ui_MainWindow):
+class WoHeYunApp(QMainWindow):
     # 初始化构造函数
     def __init__(self):
         # 继承： super指父类（子类，实例）.构造函数
@@ -35,9 +33,9 @@ def main():
     # 创建新的实例应用
     app = QApplication(sys.argv)
     # 我们将表单设置为WoHeYunApp
-    widgets = design.Ui_MainWindow()
+    widgets = WoHeYunApp()
     # 显示我们的表单
-    #widgets.show()
+    widgets.show()
     # 退出程序
     app.exec_()
 

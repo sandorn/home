@@ -8,6 +8,8 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
+import sys
+
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
@@ -105,4 +107,5 @@ class Ui_Dialog(object):
         self.radioButton.setText(QCoreApplication.translate("Dialog", u"RadioButton", None))
         self.radioButton_2.setText(QCoreApplication.translate("Dialog", u"RadioButton", None))
     # retranslateUi
+
 

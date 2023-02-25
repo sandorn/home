@@ -85,8 +85,8 @@ class MainWindow(wx.Frame):
         event.Skip()
 
 
-if __name__ == "__main__":
-    app = wx.App()  # 实例化一个主循环
-    frame = MainWindow(None)  # 实例化一个窗口
-    frame.Show()  # 调用窗口展示功能
-    app.MainLoop()  # 启动主循环
+# if __name__ == "__main__":
+#     app = wx.App()  # 实例化一个主循环
+#     frame = MainWindow(None)  # 实例化一个窗口
+#     frame.Show()  # 调用窗口展示功能
+#     app.MainLoop()  # 启动主循环

@@ -2,17 +2,15 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:53
-FilePath     : /xjLib/xt_Ui/__init__.py
-LastEditTime : 2022-12-02 23:57:50
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-02-25 18:08:10
+FilePath     : /CODE/xjLib/xt_Ui/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
 import os
 import random
 from functools import wraps
@@ -31,13 +29,13 @@ def EventLoop(function):
     def warp(*args, **kwargs):
         # @忽略用户的输入(鼠标和键盘事件),显示等待中的鼠标样式
         QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        # QApplication.setOverrideCursor(Qt.WaitCursor)
 
         result = function(*args, **kwargs)
 
         # @交还控制权,恢复鼠标样式
+        # QApplication.restoreOverrideCursor()
         qApp.processEvents()
-        QApplication.restoreOverrideCursor()
 
         return result
 
