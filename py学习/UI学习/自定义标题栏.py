@@ -1,22 +1,21 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-20 10:39:10
-#LastEditTime : 2020-05-20 10:42:48
-#Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
-#==============================================================
-
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-03-02 17:16:22
+FilePath     : /CODE/py学习/UI学习/自定义标题栏.py
+Github       : https://github.com/sandorn/home
+==============================================================
 CustomTitleBar/python at master · grayondream/CustomTitleBar
 https://github.com/grayondream/CustomTitleBar/tree/master/python
 '''
 
 import sys
+
 from TitleBar import *
 
 
@@ -52,14 +51,9 @@ class MainWindow(QMainWindow):
         self.titleBar.SetTitle(WINDOW_TITLE)
 
     def LoadStyleFromQss(self, f):
-        file = open(f)
-        lines = file.readlines()
-        file.close()
-        res = ''
-        for line in lines:
-            res += line
-
-        return res
+        with open(f) as file:
+            lines = file.readlines()
+        return ''.join(lines)
 
 
 if __name__ == '__main__':
@@ -69,4 +63,3 @@ if __name__ == '__main__':
     win.show()
 
     sys.exit(app.exec_())
-    pass

@@ -1,23 +1,23 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-28 19:16:13
-#FilePath     : /xjLib/xt_Hotkey.py
-#LastEditTime : 2020-07-16 18:42:31
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-03-02 19:11:22
+FilePath     : /CODE/xjLib/xt_Hotkey.py
+Github       : https://github.com/sandorn/home
+==============================================================
 原文链接：https://blog.csdn.net/lsjweiyi/article/details/79137931
 '''
 
-import win32con
 import ctypes
 import ctypes.wintypes
 import threading
+
+import win32con
 
 user32 = ctypes.windll.user32  # 加载user32.dll
 
@@ -65,19 +65,34 @@ class Hotkey(threading.Thread):  # 创建一个Thread.threading的扩展类
 
 
 if __name__ == '__main__':
-    hotkey = Hotkey()
-    hotkey.start()
 
-    while (True):
+    def run():
+        hotkey = Hotkey()
+        hotkey.start()
 
-        if hotkey.RUN is True:
-            # 这里放你要用热键启动执行的代码
-            print('win32con.VK_F9,hotkey.RUN == True', 'RUN')
-            hotkey.RUN = False
+        while (True):
+            if hotkey.RUN is True:
+                # 这里放你要用热键启动执行的代码
+                print('win32con.VK_F9,hotkey.RUN == True', 'RUN')
+                hotkey.RUN = False
+            elif hotkey.EXIT:
+                # 这里是用于退出循环的
+                print('win32con.VK_F10,hotkey.EXIT == True', 'EXIT')
+                break
+        # # QShortcut(QKeySequence("Escape"), self, self.close)
 
-        elif hotkey.EXIT:
-            # 这里是用于退出循环的
-            print('win32con.VK_F10,hotkey.EXIT == True', 'EXIT')
-            break
+    # run()
 
-    # # QShortcut(QKeySequence("Escape"), self, self.close)
+    import time
+
+    import psutil
+    import win32api
+    import win32com.client
+    import win32con
+    import win32gui
+    import win32process
+    import win32ui
+
+    # time.sleep(3)
+    # x, y = win32api.GetCursorPos()
+    # print(x, y)

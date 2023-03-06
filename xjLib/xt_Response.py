@@ -16,6 +16,7 @@ Github       : https://github.com/sandorn/home
 import json
 
 from chardet import detect
+from html2text import HTML2Text
 from lxml import etree
 from pyquery import PyQuery
 from requests_html import HTML
@@ -127,6 +128,12 @@ class htmlResponse(item_Mixin):
             # return [ele for selector in selectors for ele in element.xpath(selector)]
         else:
             return [element]
+
+    @property
+    def ctext(self):
+        h = HTML2Text()
+        h.ignore_links = True
+        return h.handle(self.raw.text)
 
     def __repr__(self):
         return f"<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>"

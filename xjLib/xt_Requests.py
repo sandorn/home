@@ -176,7 +176,7 @@ class SessionClient:
 
 
 if __name__ == '__main__':
-    print(get_wraps('http://www.baidu.com'))
+    print(get_wraps('http://www.baidu.com').ctext)
     s = SessionClient()
     # print(get_wraps('https://www.google.com'))
     print(s['get']('https://cn.bing.com'))

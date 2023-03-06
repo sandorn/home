@@ -20,18 +20,60 @@ if(!_STUDIO_INVOKED) {
 
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="梦幻助手";right=173;bottom=737;border="none";exmode="toolwindow")
+var winform = win.form(text="梦幻助手";right=170;bottom=737;border="none";exmode="toolwindow")
 winform.add(
-BindRun={cls="plus";text="绑定";left=21;top=697;right=81;bottom=715;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=4};
-BindStop={cls="plus";text="解绑";left=96;top=696;right=156;bottom=714;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=5};
-KeyRun={cls="plus";text="按键模拟";left=21;top=16;right=81;bottom=34;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=6};
-KeyStop={cls="plus";text="按键停止";left=96;top=16;right=156;bottom=34;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=7};
-MouseRun={cls="plus";text="鼠标模拟";left=21;top=349;right=81;bottom=367;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=8};
-MouseStop={cls="plus";text="鼠标停止";left=96;top=350;right=156;bottom=368;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=9};
-editxy={cls="edit";text="0,0";left=112;top=389;right=151;bottom=410;align="right";color=32768;dr=1;edge=1;z=1};
-listview={cls="listview";text="自定义控件";left=13;top=46;right=154;bottom=325;edge=1;z=10};
-plusCur={cls="plus";left=29;top=384;right=61;bottom=416;background="\res\1.gif";dr=1;notify=1;repeat="center";z=3};
-static={cls="static";text="坐标";left=75;top=391;right=103;bottom=410;dr=1;notify=1;transparent=1;z=2}
+BindRun={cls="plus";text="绑定";left=21;top=697;right=81;bottom=715;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=47};
+BindStop={cls="plus";text="解绑";left=96;top=696;right=156;bottom=714;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=48};
+KeyRun={cls="plus";text="按键模拟";left=21;top=16;right=81;bottom=34;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=49};
+KeyStop={cls="plus";text="按键停止";left=96;top=16;right=156;bottom=34;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=50};
+MouseRun={cls="plus";text="鼠标模拟";left=21;top=349;right=81;bottom=367;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=51};
+MouseStop={cls="plus";text="鼠标停止";left=96;top=350;right=156;bottom=368;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=52};
+checkbox1={cls="checkbox";text="1   间隔毫秒";left=23;top=76;right=117;bottom=98;dr=1;z=2};
+checkbox2={cls="checkbox";text="2   间隔毫秒";left=23;top=108;right=117;bottom=130;dr=1;z=3};
+checkbox3={cls="checkbox";text="3   间隔毫秒";left=23;top=141;right=117;bottom=163;dr=1;z=6};
+checkbox4={cls="checkbox";text="4   间隔毫秒";left=23;top=173;right=117;bottom=195;dr=1;z=8};
+checkbox5={cls="checkbox";text="5   间隔毫秒";left=23;top=206;right=117;bottom=228;dr=1;z=10};
+checkbox6={cls="checkbox";text="6   间隔毫秒";left=23;top=238;right=117;bottom=260;dr=1;z=12};
+checkbox7={cls="checkbox";text="7   间隔毫秒";left=23;top=271;right=117;bottom=293;dr=1;z=14};
+checkbox8={cls="checkbox";text="8   间隔毫秒";left=23;top=303;right=117;bottom=325;dr=1;z=16};
+ck1={cls="checkbox";text="1";left=23;top=452;right=56;bottom=473;dr=1;z=25};
+ck2={cls="checkbox";text="2";left=23;top=483;right=56;bottom=504;dr=1;z=28};
+ck3={cls="checkbox";text="3";left=23;top=513;right=56;bottom=534;dr=1;z=31};
+ck4={cls="checkbox";text="4";left=23;top=544;right=56;bottom=565;dr=1;z=34};
+ck5={cls="checkbox";text="5";left=23;top=575;right=56;bottom=596;dr=1;z=37};
+ck6={cls="checkbox";text="6";left=23;top=606;right=56;bottom=627;dr=1;z=40};
+ck7={cls="checkbox";text="7";left=23;top=636;right=56;bottom=657;dr=1;z=43};
+ck8={cls="checkbox";text="8";left=23;top=667;right=56;bottom=688;dr=1;z=46};
+edit1={cls="edit";text="100";left=117;top=73;right=153;bottom=96;align="right";color=32768;dr=1;edge=1;z=4};
+edit2={cls="edit";text="100";left=117;top=106;right=153;bottom=127;align="right";color=32768;dr=1;edge=1;z=5};
+edit3={cls="edit";text="100";left=117;top=139;right=153;bottom=160;align="right";color=32768;dr=1;edge=1;z=7};
+edit4={cls="edit";text="100";left=117;top=171;right=153;bottom=192;align="right";color=32768;dr=1;edge=1;z=9};
+edit5={cls="edit";text="100";left=117;top=204;right=153;bottom=225;align="right";color=32768;dr=1;edge=1;z=11};
+edit6={cls="edit";text="100";left=117;top=236;right=153;bottom=257;align="right";color=32768;dr=1;edge=1;z=13};
+edit7={cls="edit";text="100";left=117;top=269;right=153;bottom=290;align="right";color=32768;dr=1;edge=1;z=15};
+edit8={cls="edit";text="100";left=117;top=301;right=153;bottom=322;align="right";color=32768;dr=1;edge=1;z=17};
+editt1={cls="edit";text="4500";left=126;top=452;right=162;bottom=473;align="right";color=32768;dr=1;edge=1;z=22};
+editt2={cls="edit";text="4500";left=126;top=483;right=162;bottom=504;align="right";color=32768;dr=1;edge=1;z=27};
+editt3={cls="edit";text="4500";left=126;top=513;right=162;bottom=534;align="right";color=32768;dr=1;edge=1;z=30};
+editt4={cls="edit";text="4500";left=126;top=544;right=162;bottom=565;align="right";color=32768;dr=1;edge=1;z=33};
+editt5={cls="edit";text="4500";left=126;top=575;right=162;bottom=596;align="right";color=32768;dr=1;edge=1;z=36};
+editt6={cls="edit";text="4500";left=126;top=606;right=162;bottom=627;align="right";color=32768;dr=1;edge=1;z=39};
+editt7={cls="edit";text="4500";left=126;top=636;right=162;bottom=657;align="right";color=32768;dr=1;edge=1;z=42};
+editt8={cls="edit";text="4500";left=126;top=664;right=162;bottom=688;align="right";color=32768;dr=1;edge=1;z=45};
+editxy={cls="edit";text="0,0";left=112;top=389;right=151;bottom=410;align="right";color=32768;dr=1;edge=1;z=18};
+editxy1={cls="edit";text="0,0";left=58;top=452;right=118;bottom=473;align="right";color=32768;dr=1;edge=1;z=21};
+editxy2={cls="edit";text="0,0";left=58;top=483;right=118;bottom=504;align="right";color=32768;dr=1;edge=1;z=26};
+editxy3={cls="edit";text="0,0";left=58;top=513;right=118;bottom=534;align="right";color=32768;dr=1;edge=1;z=29};
+editxy4={cls="edit";text="0,0";left=58;top=544;right=118;bottom=565;align="right";color=32768;dr=1;edge=1;z=32};
+editxy5={cls="edit";text="0,0";left=58;top=575;right=118;bottom=596;align="right";color=32768;dr=1;edge=1;z=35};
+editxy6={cls="edit";text="0,0";left=58;top=606;right=118;bottom=627;align="right";color=32768;dr=1;edge=1;z=38};
+editxy7={cls="edit";text="0,0";left=58;top=636;right=118;bottom=657;align="right";color=32768;dr=1;edge=1;z=41};
+editxy8={cls="edit";text="0,0";left=58;top=667;right=118;bottom=688;align="right";color=32768;dr=1;edge=1;z=44};
+groupbox={cls="groupbox";text="按键";left=8;top=49;right=162;bottom=333;dr=1;edge=1;z=1};
+plusCur={cls="plus";left=29;top=384;right=61;bottom=416;background="\res\1.gif";dr=1;notify=1;repeat="center";z=20};
+static={cls="static";text="坐标";left=75;top=391;right=103;bottom=410;dr=1;notify=1;transparent=1;z=19};
+static2={cls="static";text="坐标";left=58;top=428;right=95;bottom=447;dr=1;notify=1;transparent=1;z=23};
+static4={cls="static";text="间隔";left=132;top=428;right=162;bottom=447;dr=1;notify=1;transparent=1;z=24}
 )
 /*}}*/
 
@@ -54,7 +96,6 @@ winform.MouseStop.skin(b_dict)
 winform.BindRun.skin(b_dict)
 winform.BindStop.skin(b_dict)
 
-/**
 for(i = 1; 8; 1) {
     winform["editxy" + i].wndproc = function(hwnd, message, wParam, lParam) {
         if(message = 0x203 /*_WM_LBUTTONDBLCLK*/ ) {
@@ -65,35 +106,7 @@ for(i = 1; 8; 1) {
         //无返回值则继续调用默认回调函数
     }
 }
-**/
 
-
-import xJlib.ctrl.listviewExx;
-var lst = xJlib.ctrl.listviewExx(winform.listview)
- 
-lst.setTitle({/*设置标题值*/
-{"序号";"姓名";"性别"};
-{200;200;-1}
-})
- 
- 
-lst.addItem( { 
-    text={"第一行内容";"1";"1,2"} 
-} )
-lst.addItem( { 
-    text={"第二行内容";"2";"2,2"} 
-} )
-lst.addItem( { 
-    text={"第三行内容";"3";"3,2"} 
-} )
- 
-lst.setTextclr(0x0000FF,1,2)
-lst.bgclr246 = 0x66ccee;/*偶数行颜色*/
-lst.bgclr135 = 0xFFF0E6;/*奇数行颜色*/
-lst.setCheckbox(2,1,true,"checkbox");
- 
- 
- 
 import xJlib.tray
 var mytray= xJlib.tray(winform ,  ,false ,false )
 

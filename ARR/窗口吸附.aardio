@@ -46,5 +46,13 @@ winform.wndproc = {
     }
 }
 
+var track = win.ui.tracker(winform)
+track.onMouseLeave = function(wParam,lParam){
+    winform.text ="鼠标离开了"
+}
+
+track.onMouseEnter = function(wParam,lParam){
+    winform.text ="鼠标进来了"
+}
 winform.show();
 win.loopMessage();
