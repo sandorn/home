@@ -49,11 +49,9 @@ Errs_D = {
     4: "注册码错误",
     5: "你的机器或者IP在黑名单列表中或者不在白名单列表中.",
     6: "非法使用插件. ",
-    7:
-    "你的帐号因为非法使用被封禁. （如果是在虚拟机中使用插件，必须使用Reg或者RegEx，不能使用RegNoMac或者RegExNoMac,否则可能会造成封号，或者封禁机器）",
+    7: "你的帐号因为非法使用被封禁. （如果是在虚拟机中使用插件，必须使用Reg或者RegEx，不能使用RegNoMac或者RegExNoMac,否则可能会造成封号，或者封禁机器）",
     8: "ver_info不在你设置的附加白名单中.",
-    77:
-    "机器码或者IP因为非法使用，而被封禁. （如果是在虚拟机中使用插件，必须使用Reg或者RegEx，不能使用RegNoMac或者RegExNoMac,否则可能会造成封号，或者封禁机器）封禁是全局的，如果使用了别人的软件导致77，也一样会导致所有注册码均无法注册。解决办法是更换IP，更换MAC.",
+    77: "机器码或者IP因为非法使用，而被封禁. （如果是在虚拟机中使用插件，必须使用Reg或者RegEx，不能使用RegNoMac或者RegExNoMac,否则可能会造成封号，或者封禁机器）封禁是全局的，如果使用了别人的软件导致77，也一样会导致所有注册码均无法注册。解决办法是更换IP，更换MAC.",
     -8: "版本附加信息长度超过了20",
     -9: "版本附加信息里包含了非法字母.",
 }
@@ -98,31 +96,17 @@ class DmHelper:
         if dmRegSult != 1:
             raise Exception(f'Failed to reg! {Errs_D[dmRegSult]}')
 
-    def 绑定窗口(self,
-             局部窗口句柄,
-             显示参数="normal",
-             鼠标参数="normal",
-             键盘参数="normal",
-             绑定模式=0):
+    def 绑定窗口(self, 局部窗口句柄, 显示参数="normal", 鼠标参数="normal", 键盘参数="normal", 绑定模式=0):
         ret = self.dm.BindWindow(局部窗口句柄, 显示参数, 鼠标参数, 键盘参数, 绑定模式)
         return self.dm.GetLastError() if (ret != 1) else True
 
     # #--------------------找字单击至消失--------------------#
-    def 找字单击至消失(self,
-                x_1,
-                y_1,
-                x_2,
-                y_2,
-                str_name,
-                color_format,
-                t=1500,
-                中心点=False):
+    def 找字单击至消失(self, x_1, y_1, x_2, y_2, str_name, color_format, t=1500, 中心点=False):
         intx = inty = 0
         起始时间 = tim()
         index = 0
         while (tim() - 起始时间) < t:
-            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, str_name, color_format,
-                                   0.9, intx, inty)
+            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, str_name, color_format, 0.9, intx, inty)
             tab = ret.split("([^\\|]+)")
             intx, inty = int(tab[2]), int(tab[3])
 
@@ -135,20 +119,11 @@ class DmHelper:
         return index
 
     # #-------------------------找字单击------------------------#
-    def 找字单击(self,
-             x_1,
-             y_1,
-             x_2,
-             y_2,
-             str_name,
-             color_format,
-             t=1000,
-             中心点=False):
+    def 找字单击(self, x_1, y_1, x_2, y_2, str_name, color_format, t=1000, 中心点=False):
         intx = inty = 0
         起始时间 = tim()
         while (tim() - 起始时间) < t:
-            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, str_name, color_format,
-                                   0.9, intx, inty)
+            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, str_name, color_format, 0.9, intx, inty)
             tab = ret.split("([^\\|]+)")
             intx, inty = int(tab[2]), int(tab[3])
 
@@ -165,8 +140,7 @@ class DmHelper:
         intx = inty = 0
         起始时间 = tim()
         while (tim() - 起始时间) < t:
-            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, str_name, color_format,
-                                   0.9, intx, inty)
+            ret = self.dm.FindStrE(x_1, y_1, x_2, y_2, str_name, color_format, 0.9, intx, inty)
             tab = ret.split("([^\\|]+)")
             intx, inty = int(tab[2]), int(tab[3])
 
@@ -182,8 +156,7 @@ class DmHelper:
         intx = inty = 0
         起始时间 = tim()
         while (tim() - 起始时间) < t:
-            ret = self.dm.FindStrFast(x_1, y_1, x_2, y_2, str_name,
-                                      color_format, 0.9)
+            ret = self.dm.FindStrFast(x_1, y_1, x_2, y_2, str_name, color_format, 0.9)
             if ret[2] == -1:
                 continue
             intx, inty = ret[1], ret[2]
@@ -195,21 +168,12 @@ class DmHelper:
         return -1, -1
 
     # #--------------------找图单击至消失--------------------#
-    def 找图单击至消失(self,
-                x_1,
-                y_1,
-                x_2,
-                y_2,
-                pic_name,
-                t=1500,
-                direct=0,
-                中心点=False):
+    def 找图单击至消失(self, x_1, y_1, x_2, y_2, pic_name, t=1500, direct=0, 中心点=False):
         intx = inty = 0
         起始时间 = tim()
         index = 0
         while (tim() - 起始时间) < t:
-            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9,
-                                   direct)
+            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9, direct)
             tab = ret.split("([^\\|]+)")
             intx, inty = int(tab[2]), int(tab[3])
 
@@ -226,8 +190,7 @@ class DmHelper:
         intx = inty = 0
         起始时间 = tim()
         while (tim() - 起始时间) < t:
-            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9,
-                                   direct)
+            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9, direct)
             tab = ret.split("([^\\|]+)")
             intx, inty = int(tab[2]), int(tab[3])
 
@@ -244,8 +207,7 @@ class DmHelper:
         intx = inty = 0
         起始时间 = tim()
         while (tim() - 起始时间) < t:
-            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9,
-                                   direct)
+            ret = self.dm.FindPicE(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9, direct)
             tab = ret.split("([^\\|]+)")
             intx, inty = int(tab[2]), int(tab[3])
             if intx > 0 and inty > 0:
@@ -260,8 +222,7 @@ class DmHelper:
         intx = inty = 0
         起始时间 = tim()
         while (tim() - 起始时间) < t:
-            ret = self.dm.FindPic(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9,
-                                  direct)
+            ret = self.dm.FindPic(x_1, y_1, x_2, y_2, pic_name, "000000", 0.9, direct)
             if ret[2] == -1:
                 return
             intx, inty = ret[1], ret[2]
