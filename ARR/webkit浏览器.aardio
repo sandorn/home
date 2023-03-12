@@ -34,8 +34,8 @@ wbKitView.onDocumentReady = function(url,mainFrameJSState,frameJSState){
 
 wbKitView.go("http://www.9377.com")
 winform.show();
-/*
 
+/*
 wbKitView.wait();
 wbKitView.querySelector("#input").value = "aardio webkit";
 wbKitView.querySelector("#search-button").click();

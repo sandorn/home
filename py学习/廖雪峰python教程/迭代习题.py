@@ -12,6 +12,8 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
+from functools import lru_cache
+
 
 def 迭代习题(func=None):
 
@@ -51,6 +53,7 @@ def 列表生成式():
         print('测试失败!')
 
 
+@lru_cache(maxsize=1024)
 def 斐波拉切数列(max):
 
     def fib(max):
@@ -63,6 +66,11 @@ def 斐波拉切数列(max):
 
     for i in fib(max):
         print(i)
+
+
+@lru_cache(maxsize=1024)  # 缓存，速度提高百倍
+def fib(n):
+    return 1 if n in [1, 2] else fib(n - 1) + fib(n - 2)
 
 
 def 生成器():
@@ -164,10 +172,11 @@ if __name__ == '__main__':
     # d = map(f, [0, 0, 1, 1, 2])
     # print(d)
     # print(reduce(f, [0, 0, 1, 1, 2]))
-    # 斐波拉切数列(9)
+    # 斐波拉切数列(40)
+    print(fib(40))
     # 生成器()
     # print(递归(5))
     # print(尾递归优化(5))
     # hanoi(3, 'X', 'Y', 'Z')
     # 递归汉诺塔_L(3)
-    递归汉诺塔_D(3)
+    # 递归汉诺塔_D(3)

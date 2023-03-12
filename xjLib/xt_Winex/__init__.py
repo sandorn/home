@@ -42,15 +42,14 @@ def GetCursorPos():
     return x, y
 
 
-def EnumWindows():
+def enum_windows():
     hwnd_title = {}
 
-    def get_all_hwnd(hwnd, mouse):
-        if (win32gui.IsWindow(hwnd) and win32gui.IsWindowEnabled(hwnd)
-                and win32gui.IsWindowVisible(hwnd)):
+    def callback(hwnd, hwnd_title):
+        if win32gui.IsWindow(hwnd) and win32gui.IsWindowEnabled(hwnd) and win32gui.IsWindowVisible(hwnd):
             hwnd_title[hwnd] = win32gui.GetWindowText(hwnd)
 
-    win32gui.EnumWindows(get_all_hwnd, 0)
+    win32gui.EnumWindows(callback, hwnd_title)
 
     return hwnd_title
 
@@ -127,17 +126,12 @@ def GetClassName(hwnd):
 
 def SetWindowTop(hwnd):
     '''通过句柄窗口置顶'''
-    win32gui.SetWindowPos(
-        hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE
-        | win32con.SWP_NOACTIVATE | win32con.SWP_NOOWNERZORDER
-        | win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOACTIVATE | win32con.SWP_NOOWNERZORDER | win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE)
 
 
 def SetWindowDown(hwnd):
     '''通过句柄取消窗口置顶'''
-    win32gui.SetWindowPos(
-        hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
-        win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
 
 
 def SetForegroundWindow(hwnd):
@@ -147,8 +141,7 @@ def SetForegroundWindow(hwnd):
 
 def SetWindowPos(hwnd, x, y, w, h):
     '''通过句柄设置窗口位置和大小'''
-    win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, x, y, w, h,
-                          win32con.SWP_SHOWWINDOW)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, x, y, w, h, win32con.SWP_SHOWWINDOW)
 
 
 def IsWindowEnabled(hwnd):
@@ -219,25 +212,24 @@ def SetWindowIconSmall(hwnd, icon):
 
 def SetWindowIconPath(hwnd, iconpath):
     '''通过句柄更改窗口图标'''
-    icon = win32gui.LoadImage(
-        0, iconpath, win32con.IMAGE_ICON, 0, 0, win32con.LR_LOADFROMFILE
-        | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED)
+    icon = win32gui.LoadImage(0, iconpath, win32con.IMAGE_ICON, 0, 0, win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED)
     win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_BIG, icon)
 
 
 def SetWindowIconPathSmall(hwnd, iconpath):
     '''通过句柄更改窗口小图标'''
-    icon = win32gui.LoadImage(
-        0, iconpath, win32con.IMAGE_ICON, 0, 0, win32con.LR_LOADFROMFILE
-        | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED)
+    icon = win32gui.LoadImage(0, iconpath, win32con.IMAGE_ICON, 0, 0, win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED)
     win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_SMALL, icon)
 
 
 def GetPixel(hwnd, x, y):
     '''通过句柄获取窗口RGB颜色'''
-    return win32gui.GetPixel(win32gui.GetDC(hwnd), x, y)
+    hdc = win32gui.GetDC(hwnd)
+    color = win32gui.GetPixel(hdc, x, y)
+    win32gui.ReleaseDC(hwnd, hdc)
+    return color
 
 
 if __name__ == "__main__":
-    print(GetWindowDC(GetDesktopWindow()))
-    print(GetWindowPlacement(GetForegroundWindow()))
+    print(GetDesktopWindow())
+    print(GetClassName(GetForegroundWindow()))

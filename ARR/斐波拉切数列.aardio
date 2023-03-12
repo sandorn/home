@@ -1,0 +1,27 @@
+import xJlib.console
+
+import console;
+
+function fib(max){
+    var a, b = 1, 1;
+    while a < max {
+        fiber.yield( b );
+        a, b = b, a+b;
+    }
+}
+
+for v in fiber.generator(fib,9) {
+    console.log( v )   
+}
+
+
+fib = function(n){
+	if(n ==1 or 2){
+		return 1
+	}
+	return  fib(n - 1) + fib(n - 2)
+}
+    
+xJlib.console.print("结果是：" ,fib(4) );  //结果错误
+
+console.pause(true);
