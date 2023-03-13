@@ -280,4 +280,4 @@ if __name__ == "__main__":
     # for item in EnumWindows():
     #     print(item)
     print(FindWindow("无标题 - 记事本"))
-    quit(FindWindow("无标题 - 记事本"))
+    close(FindWindow("无标题 - 记事本"))
