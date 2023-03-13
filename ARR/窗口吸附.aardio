@@ -1,12 +1,12 @@
 import win.ui;
 /*DSG{{*/
-var winform = win.form(text="自动吸附窗口测试";right=245;bottom=544)
+var winform = win.form(text = "自动吸附窗口测试"; right = 245; bottom = 544)
 winform.add(
-chkDock={cls="checkbox";text="启用吸附";left=42;top=17;right=134;bottom=32;z=4};
-chkMargin={cls="checkbox";text="是否留边";left=42;top=62;right=134;bottom=77;z=5};
-chkTopMost={cls="checkbox";text="窗口置顶";left=42;top=40;right=134;bottom=55;z=3};
-static={cls="static";left=35;top=98;right=139;bottom=125;bgcolor=12639424;center=1;font=LOGFONT(h=-16;weight=700);z=1};
-static2={cls="static";left=35;top=162;right=139;bottom=189;bgcolor=12639424;center=1;font=LOGFONT(h=-16;weight=700);z=2}
+    chkDock = { cls="checkbox"; text="启用吸附"; left=42; top=17; right=134; bottom=32; z=4 };
+chkMargin = { cls="checkbox"; text="是否留边"; left=42; top=62; right=134; bottom=77; z=5 };
+chkTopMost = { cls="checkbox"; text="窗口置顶"; left=42; top=40; right=134; bottom=55; z=3 };
+static = { cls="static"; left=35; top=98; right=139; bottom=125; bgcolor=12639424; center=1; font=LOGFONT(h = -16; weight=700); z=1 };
+static2 = { cls="static"; left=35; top=162; right=139; bottom=189; bgcolor=12639424; center=1; font=LOGFONT(h = -16; weight=700); z=2 }
 )
 /*}}*/
 
@@ -16,28 +16,28 @@ var wndObj = xJlib.ctrl.dock(winform, 30);
 
 //吸附
 wndObj.chkDock.checked = wndObj.wndDock()
-wndObj.chkDock.oncommand = function(id,event){
+wndObj.chkDock.oncommand = function (id, event) {
     wndObj.wndDock(wndObj.chkDock.checked)
 }
 
 //置顶 应使用内部方法避免冲突
-winform.chkTopMost.oncommand = function(id,event){
+winform.chkTopMost.oncommand = function (id, event) {
     winform.wndTopmost(winform.chkTopMost.checked)
     //win.setTopmost(winform.hwnd, winform.chkTopMost.checked)
 }
 //留边
-winform.chkMargin.oncommand = function(id,event){
+winform.chkMargin.oncommand = function (id, event) {
     winform.wndMargin(winform.chkMargin.checked)
 }
 winform.wndproc = {
-    [0x201] = function(hwnd,message,wParam,lParam){
+    [0x201] = function (hwnd, message, wParam, lParam) {
         owner.hitCaption();
     }
-    [0x503] = function(hwnd,message,wParam,lParam){
+    [0x503] = function (hwnd, message, wParam, lParam) {
         owner.static.text = owner.site;
     }
-    [0x5A3] = function(hwnd,message,wParam,lParam){
-        if(owner.msIn){
+    [0x5A3] = function (hwnd, message, wParam, lParam) {
+        if (owner.msIn) {
             owner.static2.text = "鼠标在窗内";
         }
         else {
@@ -47,12 +47,12 @@ winform.wndproc = {
 }
 
 var track = win.ui.tracker(winform)
-track.onMouseLeave = function(wParam,lParam){
-    winform.text ="鼠标离开了"
+track.onMouseLeave = function (wParam, lParam) {
+    winform.text = "鼠标离开了"
 }
 
-track.onMouseEnter = function(wParam,lParam){
-    winform.text ="鼠标进来了"
+track.onMouseEnter = function (wParam, lParam) {
+    winform.text = "鼠标进来了"
 }
 winform.show();
 win.loopMessage();

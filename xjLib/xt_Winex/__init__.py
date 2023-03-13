@@ -12,7 +12,7 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
-import ctypes  # wintypes
+import ctypes
 
 import psutil
 import win32api
@@ -21,6 +21,8 @@ import win32con
 import win32gui
 import win32process
 import win32ui
+
+from ctypes import wintypes
 
 user32 = ctypes.windll.user32  # 加载user32.dll
 kernel32 = ctypes.windll.kernel32  # 加载kernel32.dll
@@ -230,6 +232,52 @@ def GetPixel(hwnd, x, y):
     return color
 
 
+def EnumWindows():
+
+    def win_enum_handler(hwnd, window_list):
+        '''将窗口句柄添加到列表中'''
+        window_list.append({
+            'HWND': hwnd,
+            'TEXT': win32gui.GetWindowText(hwnd),
+            'NAME': win32gui.GetClassName(hwnd),
+            # 'IDDD': win32api.GetWindowLong(hwnd, win32con.GWL_ID),
+            'ID': getThreadProcessId(hwnd),
+        })
+
+    windows = []
+    win32gui.EnumWindows(win_enum_handler, windows)
+
+    return windows
+
+
+get_thread_process_id_c = user32.GetWindowThreadProcessId
+get_thread_process_id_c.argtypes = (wintypes.HWND, ctypes.POINTER(wintypes.DWORD))
+
+
+def getThreadProcessId(hwnd):
+    process_id = wintypes.DWORD()
+    get_thread_process_id_c(hwnd, ctypes.byref(process_id))
+    return process_id.value
+
+
+def postThreadMessage(hwnd, msgType, wParam, lParam):
+    process_id = wintypes.DWORD()
+    pro_id = get_thread_process_id_c(hwnd, ctypes.byref(process_id))
+    win32api.PostThreadMessage(pro_id, msgType, wParam, lParam)
+
+
+def quit(hwnd):
+    postThreadMessage(hwnd, win32con.WM_QUIT, 0, 0)
+
+
+def close(hwnd):
+    win32api.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+
+
 if __name__ == "__main__":
-    print(GetDesktopWindow())
-    print(GetClassName(GetForegroundWindow()))
+    # print(GetDesktopWindow())
+    # print(GetClassName(GetForegroundWindow()))
+    # for item in EnumWindows():
+    #     print(item)
+    print(FindWindow("无标题 - 记事本"))
+    quit(FindWindow("无标题 - 记事本"))
