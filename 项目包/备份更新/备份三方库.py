@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:56
-LastEditTime : 2022-12-05 21:28:53
-FilePath     : /项目包/备份更新/备份三方库.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2023-03-15 20:27:53
+FilePath     : /CODE/项目包/备份更新/备份三方库.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -36,18 +35,17 @@ def PIP_list_备份():
     need_back = []
     for i in out.splitlines()[2:]:
         临时字符 = i.split(' ')[0]
-        print("----------备份{} -----------".format(临时字符))
+        print(f"----------备份{临时字符} -----------")
         need_back.append(临时字符)
 
     ticks = time.strftime("%Y%m%d%H%M%S", time.localtime())
-    filename = mypath + 'PIP-list-%s.txt' % (ticks)
+    filename = f'{mypath}PIP-list-{ticks}.txt'
     print(filename)
     print("写库名到备份文件")
-    file = open(filename, 'w')
-    sep = '\n'
-    file.write(str(sep.join(need_back)))
-    file.close()
-    print("{}个库已全部备份完毕！".format(len(need_back)))
+    with open(filename, 'w') as file:
+        sep = '\n'
+        file.write(sep.join(need_back))
+    print(f"{len(need_back)}个库已全部备份完毕！")
 
 
 def PIP_freeze备份():
@@ -61,9 +59,9 @@ def PIP_freeze备份():
     pip批量安装requirements.txt文件中包含的组件依赖
     conda install --yes --file requirements.txt'''
     ticks = time.strftime("%Y%m%d%H%M%S", time.localtime())
-    filename = mypath + 'PIP-requirements-%s.txt' % (ticks)
+    filename = f'{mypath}PIP-requirements-{ticks}.txt'
     filename.replace('\\', '/')
-    subprocess.call("pip3 freeze > " + filename, shell=True)
+    subprocess.call(f"pip3 freeze > {filename}", shell=True)
     print("PIP_freeze备份完成！")
 
 

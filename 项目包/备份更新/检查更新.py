@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:56
-LastEditTime : 2022-12-19 22:48:28
-FilePath     : /项目包/备份更新/检查更新.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2023-03-15 20:29:40
+FilePath     : /CODE/项目包/备份更新/检查更新.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -33,24 +32,19 @@ def PIP更新():
     out = p.communicate()[0]
 
     print("切出待升级的包名, 并存入列表........")
-    need_update = []
-    for i in out.splitlines()[2:]:
-        need_update.append(i.split(' ')[0])
+    need_update = [i.split(' ')[0] for i in out.splitlines()[2:]]
     s = len(need_update)
-    print("需要升级的库有:{}个".format(s))
+    print(f"需要升级的库有:{s}个")
 
-    # 执行升级命令,每次取一个包进行升级,pip只支持一个包一个包的升级
-    n = 1
-    for nu in need_update:
+    for n, nu in enumerate(need_update, start=1):
         #  --upgrade-strategy only-if-needed 会升级到最新的兼容版本
         # com_update = f'pip3 install --upgrade-strategy only-if-needed {nu}'
         com_update = f'pip3 install -U {nu}'
-        print("正在更新第{}/{}个库[{}],\n执行:{},请等待...".format(n, s, nu, com_update))
+        print(f"正在更新第{n}/{s}个库[{nu}],\n执行:{com_update},请等待...")
         subprocess.call(com_update)
-        n += 1
         print("----------{com} 执行结束-----------\n".format(com=com_update))
 
-    print("{}个库已全部更新完毕！".format(s))
+    print(f"{s}个库已全部更新完毕！")
 
 
 if __name__ == '__main__':

@@ -21,22 +21,22 @@ if(!_STUDIO_INVOKED) {
 }
 
 import win.ui;
-
 /*DSG{{*/
-var winform = win.form( text = "梦幻助手"; right = 173; bottom = 737; border = "none"; exmode = "toolwindow" )
-              winform.add(
-                  BindRun = {cls = "plus"; text = "绑定"; left = 21; top = 697; right = 81; bottom = 715; bgcolor = -5197169; dl = 1; font = LOGFONT( name = '等距更纱黑体 SC' ); notify = 1; z = 4};
-                  BindStop = {cls = "plus"; text = "解绑"; left = 96; top = 696; right = 156; bottom = 714; bgcolor = -5197169; dl = 1; font = LOGFONT( name = '等距更纱黑体 SC' ); notify = 1; z = 5};
-                  KeyRun = {cls = "plus"; text = "按键模拟"; left = 21; top = 16; right = 81; bottom = 34; bgcolor = -5197169; dl = 1; font = LOGFONT( name = '等距更纱黑体 SC' ); notify = 1; z = 6};
-                  KeyStop = {cls = "plus"; text = "按键停止"; left = 96; top = 16; right = 156; bottom = 34; bgcolor = -5197169; dl = 1; font = LOGFONT( name = '等距更纱黑体 SC' ); notify = 1; z = 7};
-                  MouseRun = {cls = "plus"; text = "鼠标模拟"; left = 21; top = 349; right = 81; bottom = 367; bgcolor = -5197169; dl = 1; font = LOGFONT( name = '等距更纱黑体 SC' ); notify = 1; z = 8};
-                  MouseStop = {cls = "plus"; text = "鼠标停止"; left = 96; top = 350; right = 156; bottom = 368; bgcolor = -5197169; dl = 1; font = LOGFONT( name = '等距更纱黑体 SC' ); notify = 1; z = 9};
-                  editxy = {cls = "edit"; text = "0,0"; left = 112; top = 389; right = 151; bottom = 410; align = "right"; color = 32768; dr = 1; edge = 1; z = 1};
-                  listview = {cls = "listview"; left = 13; top = 46; right = 159; bottom = 333; edge = 1; z = 10};
-                  plusCur = {cls = "plus"; left = 29; top = 384; right = 61; bottom = 416; background = "\res\1.gif"; dr = 1; notify = 1; repeat = "center"; z = 3};
-                  static = {cls = "static"; text = "坐标"; left = 75; top = 391; right = 103; bottom = 410; dr = 1; notify = 1; transparent = 1; z = 2}
-              )
-              /*}}*/
+var winform = win.form(text="梦幻助手";right=1195;bottom=737;border="none";exmode="toolwindow")
+winform.add(
+BindRun={cls="plus";text="绑定";left=21;top=697;right=81;bottom=715;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=4};
+BindStop={cls="plus";text="解绑";left=96;top=696;right=156;bottom=714;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=5};
+KeyRun={cls="plus";text="按键模拟";left=21;top=16;right=81;bottom=34;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=6};
+KeyStop={cls="plus";text="按键停止";left=96;top=16;right=156;bottom=34;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=7};
+MouseRun={cls="plus";text="鼠标模拟";left=21;top=349;right=81;bottom=367;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=8};
+MouseStop={cls="plus";text="鼠标停止";left=96;top=350;right=156;bottom=368;bgcolor=-5197169;dl=1;font=LOGFONT(name='等距更纱黑体 SC');notify=1;z=9};
+custom={cls="custom";text="自定义控件";left=178;top=21;right=1178;bottom=721;z=11};
+editxy={cls="edit";text="0,0";left=112;top=389;right=151;bottom=410;align="right";color=32768;dr=1;edge=1;z=1};
+listview={cls="listview";left=13;top=46;right=159;bottom=333;edge=1;z=10};
+plusCur={cls="plus";left=29;top=384;right=61;bottom=416;background="\res\1.gif";dr=1;notify=1;repeat="center";z=3};
+static={cls="static";text="坐标";left=75;top=391;right=103;bottom=410;dr=1;notify=1;transparent=1;z=2}
+)
+/*}}*/
 
 //防止多次启动
 import win.ui.atom;
@@ -111,11 +111,13 @@ import xJlib.tray
 var mytray = xJlib.tray(winform, , false, false)
 
 //吸附
+/*
 import xJlib.ctrl.dock
 var wndObj = xJlib.ctrl.dock(winform, 30);
 winform.onMouseDown = function(wParam, lParam) {
     owner.hitCaption()
 }
+*/
 
 /*线程内函数{{*/
 import thread.command;
@@ -174,6 +176,7 @@ winform.BindRun.oncommand = function(id, event) {
     listener.dm("UnBindWindow", )
     thrdTable.hwnd = winex.waitVisible("贪玩游戏盒", , "com\.zx\.box")
     listener.bind(thrdTable.hwnd)
+    winex.orphanWindow(winform.custom,thrdTable.hwnd)
     winform.BindRun.disabled = true
     winform.BindStop.disabled = false
 }
@@ -268,6 +271,7 @@ winform.onClose = function(hwnd, message, wParam, lParam) {
     }
     mytray.delete()
 }
+
 win.setPos(winform.hwnd, 0, 0);
 
 import win.ui.minmax;

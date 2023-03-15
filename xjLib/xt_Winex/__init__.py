@@ -13,6 +13,8 @@ Github       : https://github.com/sandorn/home
 '''
 
 import ctypes
+import time
+from ctypes import wintypes
 
 import psutil
 import win32api
@@ -21,8 +23,6 @@ import win32con
 import win32gui
 import win32process
 import win32ui
-
-from ctypes import wintypes
 
 user32 = ctypes.windll.user32  # 加载user32.dll
 kernel32 = ctypes.windll.kernel32  # 加载kernel32.dll
@@ -274,10 +274,214 @@ def close(hwnd):
     win32api.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
 
 
+def isVisible(hwnd):
+    # 获取DWM状态
+    cloaked = ctypes.c_bool()
+    ctypes.windll.dwmapi.DwmGetWindowAttribute(hwnd, 14, ctypes.byref(cloaked), ctypes.sizeof(cloaked))
+
+    # 获取窗口可见性状态
+    _style = win32con.WS_VISIBLE | win32con.WS_MINIMIZE
+    _exStyle = win32con.WS_EX_APPWINDOW | win32con.WS_EX_TOOLWINDOW | win32con.WS_EX_NOACTIVATE
+
+    isVisible = ctypes.windll.user32.IsWindowVisible(hwnd)
+    styleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_STYLE) & _style
+    exStyleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_EXSTYLE) & _exStyle
+
+    # 判断窗口状态
+    if cloaked.value: return None
+    elif isVisible and styleState and not exStyleState:
+        return True
+    else:
+        return False
+
+
+# isUnicode函数：判断窗口是否Unicode窗口
+def isUnicode(hwnd):
+    # 获取窗口所属的进程ID
+    processID = ctypes.c_ulong()
+    ctypes.windll.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(processID))
+
+    # 打开进程获取进程相关信息
+    processHandle = ctypes.windll.kernel32.OpenProcess(win32con.PROCESS_QUERY_INFORMATION, False, processID)
+    # 获取进程的PEB结构体信息
+    peb = ctypes.c_ulong()
+    result = ctypes.windll.kernel32.ReadProcessMemory(processHandle, ctypes.cast(peb, ctypes.c_void_p), ctypes.byref(peb), ctypes.sizeof(peb), None)
+
+    # 获取进程的ANSI code page和Unicode code page信息
+    ansiCodePage = ctypes.c_ulong()
+    unicodeCodePage = ctypes.c_ulong()
+    result = ctypes.windll.kernel32.ReadProcessMemory(processHandle, ctypes.cast(peb.value + 0x038, ctypes.c_void_p), ctypes.byref(ansiCodePage), ctypes.sizeof(ansiCodePage), None)
+    result = ctypes.windll.kernel32.ReadProcessMemory(processHandle, ctypes.cast(peb.value + 0x03C, ctypes.c_void_p), ctypes.byref(unicodeCodePage), ctypes.sizeof(unicodeCodePage), None)
+
+    isUnicode = unicodeCodePage.value != 0
+    # 关闭进程句柄，释放资源
+    ctypes.windll.kernel32.CloseHandle(processHandle)
+
+    return isUnicode
+
+
+# waitEx函数：等待窗口出现
+def waitEx(parentHwnd=None, index=1, classNamePattern=None, titlePattern=None, controlId=None):
+    hwnd = None
+    count = 0
+
+    while True:
+        hwndList = []
+        if parentHwnd is None:
+            win32gui.EnumWindows(lambda h, p: p.append(h), hwndList)
+        else:
+            win32gui.EnumChildWindows(parentHwnd, lambda h, p: p.append(h), hwndList)
+        hwndList = [hwnd for hwnd in hwndList if classNamePattern in win32gui.GetClassName(hwnd) and titlePattern in win32gui.GetWindowText(hwnd)]
+        if len(hwndList) >= index:
+            hwnd = hwndList[index - 1]
+            if controlId is not None:
+                hwnd = win32gui.GetDlgItem(hwnd, controlId)
+            break
+
+        time.sleep(0.5)
+        count += 1
+        if count > 10:
+            break
+
+    return hwnd
+
+
+# findEx函数：查找窗口
+def findEx(parent=None, index=0, className=None, title=None, controlId=None, style=None, nStyle=None):
+    count = 0
+    hwndList = []
+    hwnd = None
+
+    if parent is not None:
+        win32gui.EnumChildWindows(parent, lambda h, p: p.append(h), hwndList)
+    else:
+        win32gui.EnumWindows(lambda h, p: p.append(h), hwndList)
+
+    for hwndfind in hwndList:
+        if className is not None and className not in win32gui.GetClassName(hwndfind):
+            continue
+        if title is not None and title not in win32gui.GetWindowText(hwndfind):
+            continue
+        if controlId is not None and controlId != win32gui.GetDlgCtrlID(hwndfind):
+            continue
+        if style is not None or nStyle is not None:
+            if (win32gui.GetWindowLong(hwndfind, win32con.GWL_STYLE) & style != style):
+                continue
+            if (win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE) & nStyle != nStyle):
+                continue
+
+        hwnd = hwndfind
+        if index:
+            count += 1
+            if count >= index: break
+
+    if hwnd is None and className is not None and title is not None:
+        hwndList = []
+        win32gui.EnumWindows(lambda h, p: p.append((h, win32gui.GetWindowText(h), win32gui.GetWindowThreadProcessId(h)[0], win32gui.GetWindowThreadProcessId(h)[1])), hwndList)
+        for hwndfind, hwndtitle, threadId, processId in hwndList:
+            if className not in win32gui.GetClassName(hwndfind):
+                continue
+            if title not in hwndtitle:
+                continue
+            if win32gui.GetWindow(hwndfind, win32gui.GW_OWNER) != parent:
+                continue
+            if style is not None or nStyle is not None:
+                if (win32gui.GetWindowLong(hwndfind, win32con.GWL_STYLE) & style != style):
+                    continue
+                if (win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE) & nStyle != nStyle):
+                    continue
+
+            hwnd = hwndfind
+            break
+
+    return hwnd
+
+
+import threading
+
+
+# closeAndWait函数：关闭窗口并等待消息处理完成
+def closeAndWait(hwnd):
+    # 发送WM_CLOSE消息
+    win32api.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+
+    # 定义事件对象，用于等待消息处理完成
+    event = threading.Event()
+
+    # 定义消息处理函数
+    def callback(hwnd, msg, wparam, lparam):
+        if hwnd == hwnd and msg == win32con.WM_DESTROY:
+            event.set()
+            return 0
+        else:
+            return win32gui.DefWindowProc(hwnd, msg, wparam, lparam)
+
+    # 注册消息处理函数
+    win32gui.SetWindowLong(hwnd, win32con.GWL_WNDPROC, callback)
+    # 等待消息处理完成
+    event.wait()
+    # 恢复原来的消息处理函数
+    win32gui.SetWindowLong(hwnd, win32con.GWL_WNDPROC, win32gui.DefWindowProc)
+
+
+# removeBorder函数：移除窗口边框
+def removeBorder(hwnd):
+    # 修改窗口样式
+    win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE) & ~0xCF0000)
+    # 重新设置窗口位置
+    win32gui.SetWindowPos(hwnd, None, 0, 0, 0, 0, win32con.SWP_FRAMECHANGED | win32con.SWP_NOACTIVATE | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
+
+
+# orphanWindow函数：将窗口设为子窗口，并且移除控件
+def orphanWindow(ctrl, hwnd):
+    # 移除窗口边框
+    removeBorder(hwnd)
+    # 将窗口设为子窗口
+    win32gui.SetParent(hwnd, ctrl.GetSafeHwnd())
+    # 移除控件
+    ctrl.orphanWindow(False, hwnd)
+
+
+def click(hwnd, cmdId=None, *args):
+    if not cmdId: win32api.PostMessage(hwnd, win32api.BM_CLICK, 0, 0)
+    else: _, cid = findMenu(hwnd, cmdId, *args)
+    if cid: win32api.PostMessage(hwnd, win32api.WM_COMMAND, cid, 0)
+    else: win32api.PostMessage(hwnd, win32api.WM_COMMAND, cmdId, 0)
+
+
+def findSubMenu(hMenu, label, *args):
+    if not hMenu: return hMenu, None
+    count = user32.GetMenuItemCount(hMenu)
+    if count < 1: return None, None
+
+    if isinstance(label, str):
+        buf = ctypes.create_unicode_buffer(1024)
+        for pos in range(count):
+            user32.GetMenuString(hMenu, pos, buf, 512, 0x400)
+            target = buf.value.replace("\&", "")
+            if label in target:
+                label = pos + 1
+                break
+
+    if isinstance(label, int):
+        if not (1 <= label <= count):
+            return None, None
+        menuId = user32.GetMenuItemID(hMenu, label - 1)
+        if menuId != -1: return hMenu, menuId
+        if not args: return hMenu, None
+        hMenu = user32.GetSubMenu(hMenu, label - 1)
+        return findSubMenu(hMenu, *args)
+
+
+def findMenu(hwnd=None, *args):
+    if not hwnd: hwnd = user32.GetDesktopWindow()
+    return findSubMenu(user32.GetMenuP(hwnd), *args)
+
+
 if __name__ == "__main__":
     # print(GetDesktopWindow())
     # print(GetClassName(GetForegroundWindow()))
     # for item in EnumWindows():
     #     print(item)
-    print(FindWindow("无标题 - 记事本"))
-    close(FindWindow("无标题 - 记事本"))
+    print(FindWindow("无标题 - 记事本"), isVisible(FindWindow("无标题 - 记事本")))
+    print(findEx(title="无标题 - 记事本"))
