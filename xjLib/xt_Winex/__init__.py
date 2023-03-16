@@ -471,7 +471,7 @@ def findSubMenu(hMenu, label, *args):
         if not args: return hMenu, None
         hMenu = user32.GetSubMenu(hMenu, label - 1)
         return findSubMenu(hMenu, *args)
-
+ 
 
 def findMenu(hwnd=None, *args):
     if not hwnd: hwnd = user32.GetDesktopWindow()
