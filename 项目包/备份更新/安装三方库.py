@@ -37,13 +37,28 @@ def 执行安装(filename):
     print(f"{len(list1)}个库开始安装：")
     for n, nu in enumerate(list1, start=1):
         com_ins = f"pip3 install -U {nu}"
-        print(f"共有{s}个库，正在安装第{n}个库{nu},\n执行命令：{com_ins}，请耐心等待.......")
-        subprocess.call(com_ins, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        print(f"正在安装第{n}个库{nu},\n执行命令：{com_ins}，请耐心等待.......")
+        subprocess.call(com_ins)
+        #, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         print(f"----------{com_ins} 执行结束-----------\n")
 
     print(f"{len(list1)}个库已全部安装完毕！")
 
 
+def 执行删除(filename):
+    list1 = []
+    with open(filename, "r") as file:
+        list1 = file.readlines()
+
+    print(f"{len(list1)}个库开始删除：")
+
+    com_ins = f"D:/Python3/python.exe -m pip uninstall -r  {filename} -y"
+    subprocess.call(com_ins)
+
+    print(f"{len(list1)}个库已全部删除完毕！")
+
+
 if __name__ == "__main__":
-    # 执行安装(filename)
-    执行安装("D:/CODE/项目包/备份更新/PIP-list-20230315202912.txt")
+    filename = "D:/CODE/项目包/备份更新/PIP-list-20230315232108.txt"
+    # 执行删除(filename)
+    执行安装(filename)

@@ -1,5 +1,4 @@
 about-time
-ahttp
 aiofiles
 aiohttp
 aiohttp-session
@@ -69,6 +68,7 @@ dnspython
 docstring-to-markdown
 docutils
 entrypoints
+et-xmlfile
 exceptiongroup
 executing
 fake-useragent
@@ -88,6 +88,7 @@ httptools
 hyperlink
 idna
 imagesize
+importlib
 importlib-metadata
 importlib-resources
 incremental
@@ -119,10 +120,12 @@ kiwisolver
 lazy-object-proxy
 locket
 lxml
+markdown-it-py
 MarkupSafe
 matplotlib
 matplotlib-inline
 mccabe
+mdurl
 memory-profiler
 mistune
 mkl
@@ -163,7 +166,6 @@ pep8
 pexpect
 pickleshare
 Pillow
-pip
 pkgutil_resolve_name
 platformdirs
 pluggy

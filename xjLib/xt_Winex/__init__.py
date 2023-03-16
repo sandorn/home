@@ -18,11 +18,11 @@ from ctypes import wintypes
 
 import psutil
 import win32api
-import win32com.client
+# import win32com.client
 import win32con
 import win32gui
 import win32process
-import win32ui
+# import win32ui
 
 user32 = ctypes.windll.user32  # 加载user32.dll
 kernel32 = ctypes.windll.kernel32  # 加载kernel32.dll

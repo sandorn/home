@@ -169,7 +169,9 @@ if __name__ == "__main__":
     url_get = "https://httpbin.org/get"
     url_post = "https://httpbin.org/post"
     url_headers = "https://httpbin.org/headers"
+
     # res = ahttpPost(url_post, data=b'data')
+
     res = ahttpGet(url_get)
     print(res)
     res = ahttpGetAll([url_headers, url_get])

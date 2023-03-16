@@ -2,6 +2,19 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-03-15 22:32:25
+FilePath     : /CODE/py学习/线程协程/协程实现方式比较/main_Test.py
+Github       : https://github.com/sandorn/home
+==============================================================
+'''
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+==============================================================
 Description  :
 Develop      : VSCode
 Author       : Even.Sand
