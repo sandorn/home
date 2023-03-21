@@ -450,6 +450,7 @@ def click(hwnd, cmdId=None, *args):
 
 
 def findSubMenu(hMenu, label, *args):
+    '''查找子菜单并返回菜单句柄和菜单ID'''
     if not hMenu: return hMenu, None
     count = user32.GetMenuItemCount(hMenu)
     if count < 1: return None, None
@@ -471,7 +472,7 @@ def findSubMenu(hMenu, label, *args):
         if not args: return hMenu, None
         hMenu = user32.GetSubMenu(hMenu, label - 1)
         return findSubMenu(hMenu, *args)
- 
+
 
 def findMenu(hwnd=None, *args):
     if not hwnd: hwnd = user32.GetDesktopWindow()
@@ -482,6 +483,7 @@ if __name__ == "__main__":
     # print(GetDesktopWindow())
     # print(GetClassName(GetForegroundWindow()))
     # for item in EnumWindows():
-    #     print(item)
-    print(FindWindow("无标题 - 记事本"), isVisible(FindWindow("无标题 - 记事本")))
-    print(findEx(title="无标题 - 记事本"))
+    # print(item)
+    res = FindWindow(None, classname='Chrome_WidgetWin_1')
+    print(GetWindowText(res), GetClassName(res))
+    print(findEx(className='Chrome_WidgetWin_1'))
