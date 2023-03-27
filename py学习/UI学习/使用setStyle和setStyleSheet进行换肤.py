@@ -20,7 +20,7 @@ from os.path import join, dirname, abspath
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QStyleFactory, QPushButton, QVBoxLayout, QWidget
 import qdarkstyle
-from xjLib.xt_ui import xt_QPushButton
+from xt_Ui import xt_QPushButton
 # _UI = join(dirname(abspath(__file__)), 'mainwindow.ui')
 
 

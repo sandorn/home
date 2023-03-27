@@ -487,3 +487,9 @@ if __name__ == "__main__":
     res = FindWindow(None, classname='Chrome_WidgetWin_1')
     print(GetWindowText(res), GetClassName(res))
     print(findEx(className='Chrome_WidgetWin_1'))
+    # win10环境下模拟鼠标点击
+    import win32api, win32con
+    win32api.SetCursorPos((100, 100))
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+
