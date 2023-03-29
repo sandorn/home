@@ -28,5 +28,13 @@
                 "isDefault": true
             }
         }
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "cargo",
+            "args": [
+                "build"
+            ]
+        }
     ]
 }
