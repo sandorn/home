@@ -47,7 +47,7 @@ def handle_back_ait(resp):
     # _showtext = element.xpath('//*[@id="content"]/text()')
     _showtext = resp.pyquery('#content').text()
     content = clean_Content(_showtext)
-    # if len(content) < 10: print(resp, '||||||||||||||||||||||||||', content, '||||||||||||||||||||||||||', resp.text)
+    # if len(content) < 10: print(resp, '||||||||', content, '||||||||', resp.text)
     return [index, title, content]
 
 

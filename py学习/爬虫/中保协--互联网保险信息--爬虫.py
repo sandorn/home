@@ -2,29 +2,14 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-07 15:03:20
-FilePath     : /py学习/爬虫/中保协--互联网保险信息--爬虫.py
+LastEditTime : 2023-04-18 17:25:59
+FilePath     : /CODE/py学习/爬虫/中保协--互联网保险信息--爬虫.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
-# !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-07-16 12:57:41
-#FilePath     : /??/???--???????--??.py
-#LastEditTime : 2020-07-16 15:39:01
-#Github       : https://github.com/sandorn/home
-#==============================================================
 '''
 
 import os

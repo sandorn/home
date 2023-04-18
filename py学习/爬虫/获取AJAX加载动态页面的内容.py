@@ -1,7 +1,8 @@
 import requests
+
 page = 1
+url = 'http://www.kfc.com.cn/kfccda/ashx/GetStoreList.ashx?op=cname'
 while True:
-    url = 'http://www.kfc.com.cn/kfccda/ashx/GetStoreList.ashx?op=cname'
     data = {
         'cname': '上海',
         'pid': '',

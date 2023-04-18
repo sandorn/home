@@ -39,10 +39,10 @@ class AsySpider(object):
     def get_page(self, url):
         try:
             response = yield httpclient.AsyncHTTPClient().fetch(url)
-            print('fetched :  %s' % url)
+            print(f'fetched :  {url}')
         except Exception as e:
-            print('Exception: %s %s' % (e, url))
-            raise gen.Return('')
+            print(f'Exception: {e} {url}')
+            raise gen.Return('') from e
         raise gen.Return(response.body)
 
     @gen.coroutine
@@ -55,7 +55,7 @@ class AsySpider(object):
                 if current_url in self._fetching:
                     return
 
-                print('fetching : %s' % current_url)
+                print(f'fetching : {current_url}')
                 self._fetching.add(current_url)
                 html = yield self.get_page(current_url)
                 self._fetched.add(current_url)
@@ -88,9 +88,7 @@ class AsySpider(object):
 
 
 def run_spider(beg, end):
-    urls = []
-    for page in range(beg, end):
-        urls.append('http://www.baidu.com')
+    urls = ['http://www.baidu.com' for _ in range(beg, end)]
     s = AsySpider(urls, 10)
     s.run()
 
@@ -102,9 +100,7 @@ def main():
     num = 4  # number of cpu cores
     per_num, left = divmod(all_num, num)
     s = range(0, all_num, per_num)
-    res = []
-    for i in range(len(s) - 1):
-        res.append((s[i], s[i + 1]))
+    res = [(s[i], s[i + 1]) for i in range(len(s) - 1)]
     res.append((s[len(s) - 1], all_num))
     print(res)
 
@@ -121,7 +117,6 @@ def main():
 
 if __name__ == '__main__':
     # main()
-    import requests
     from xt_Requests import get_tretry
 
     url = 'https://www.sina.com.cn/'
