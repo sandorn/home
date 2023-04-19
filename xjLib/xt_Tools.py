@@ -24,19 +24,18 @@ from copy import deepcopy
 from functools import reduce, wraps
 from types import FunctionType
 
-import openai
-
 # from memory_profiler import profile  # 内存分析
 # from snoop import snoop  # 调试
 
+# import openai
 
-def gpt(question=None):
-    openai.api_key = "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"
-    question = question or "介绍下你自己"
-    # n参数确定要生成的响应数量。
-    # max_tokens 参数确定生成的响应中标记（即单词或标点符号）的最大数量
-    response = openai.Completion.create(engine="text-davinci-002", prompt=question, temperature=0.5, max_tokens=1024, n=1, stop=None)
-    return response["choices"][0]["text"]
+# def gpt(question=None):
+#     openai.api_key = "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"
+#     question = question or "介绍下你自己"
+#     # n参数确定要生成的响应数量。
+#     # max_tokens 参数确定生成的响应中标记（即单词或标点符号）的最大数量
+#     response = openai.Completion.create(engine="text-davinci-002", prompt=question, temperature=0.5, max_tokens=4096, n=1, stop=None)
+#     return response["choices"][0]["text"]
 
 
 class ExceptContext(object):
@@ -232,15 +231,15 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            func_exc = exc_traceback = None
-            for _ in range( max_retries):
+            func_exc  = None
+            for _ in range(max_retries):
                 try:
                     result = func(*args, **kwargs)
                     if callable(validate) and validate(result) is False: continue
                     # #回调函数,处理结果
                     return callback(result) if callable(callback) else result
                 except exceptions as ex:
-                    func_exc, exc_traceback = ex, traceback.format_exc()
+                    func_exc, _ = ex, traceback.format_exc()
                     sleep(delay + step * _)  # #延迟重试
             # #重试次数使用完毕,结果错误,返回默认值
             print(f'try_except_wraps: [{func.__name__}]\tError: {func_exc!r}')
@@ -253,6 +252,7 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
 
 
 def retry_on_exception(func):
+
     def wrapper(*args, **kwargs):
         max_retry = 3
         for _ in range(max_retry):
@@ -262,7 +262,10 @@ def retry_on_exception(func):
                 print(e)
                 time.sleep(1)
         return None
+
     return wrapper
+
+
 if __name__ == '__main__':
 
     def trys():
@@ -336,7 +339,3 @@ if __name__ == '__main__':
     # trys()
     # fre()
     # fu()
-    ques = '''
-    帮我写一个python函数执行出现异常时自动重试的装饰器
-    '''
-    # print(gpt(ques))

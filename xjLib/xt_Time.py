@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-02-15 21:02:59
+LastEditTime : 2023-04-19 14:57:06
 FilePath     : /CODE/xjLib/xt_Time.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -17,9 +17,20 @@ import time
 import traceback
 from functools import wraps
 
-nowpro = lambda: time.process_time()
-nowsec = lambda: time.time()
-now = lambda: datetime.datetime.now()
+# nowpro = lambda: time.process_time()
+# nowsec = lambda: time.time()
+# now = lambda: datetime.datetime.now()
+
+def nowpro():
+    return time.process_time()
+
+
+def nowsec():
+    return time.time()
+
+
+def now():
+    return datetime.datetime.now()
 
 
 def fn_timer(func):
@@ -78,4 +89,5 @@ if __name__ == '__main__':
     print(get_10_timestamp())
     print(get_13_timestamp())
     print(get_10_timestamp('2020-06-15 13:28:27'))
+    print(get_13_timestamp('2020-06-15 13:28:27'))
     print(get_13_timestamp('2020-06-15 13:28:27'))
