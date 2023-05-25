@@ -17,12 +17,16 @@ https://zhuanlan.zhihu.com/p/31644562
 https://github.com/ShichaoMa
 '''
 
+import functools
+import logging
+import os
 import signal
 import time
 import traceback
 from copy import deepcopy
 from functools import reduce, wraps
 from types import FunctionType
+from typing import Any, Callable, Optional, Type
 
 # from memory_profiler import profile  # 内存分析
 # from snoop import snoop  # 调试
@@ -38,39 +42,92 @@ from types import FunctionType
 #     return response["choices"][0]["text"]
 
 
-class ExceptContext(object):
-    """
-    异常捕获上下文
-        with ExceptContext(Exception, errback=lambda name, *args:print(name)):
-            raise Exception("test. ..")
-    """
+class ExceptContext:
 
-    def __init__(self, exception=Exception, func_name=None, errback=lambda func_name, *args: traceback.print_exception(*args) is None, finalback=lambda got_err: got_err):
+    def __init__(
+        self,
+        exception: Type[Exception] = Exception,
+        func_name: str = "",
+        errback=None,
+        finalback=None,
+    ):
         """
-        :param exception: 指定要监控的异常
-        :param func_name: 可以选择提供当前所在函数的名称,回调函数会提交到函数,用于跟踪
-        :param errback: 提供一个回调函数,如果发生了指定异常,就调用该函数,该函数的返回值为True时不会继续抛出异常
-        :param finalback: finally要做的操作
+        Initialize the ExceptContext object.
+        :param exception: The type of exception to monitor.
+        :param func_name: The name of the current function being traced.
+        :param errback: A callback function to be called when the specified exception occurs.
+        :param finalback: A final callback function to be executed after all processing is done.
         """
+        if errback is None:
+            errback = self.default_errback
+        if finalback is None:
+            finalback = self.default_finalback
         self.errback = errback
         self.finalback = finalback
         self.exception = exception
-        self.got_err = False
-        self.func_name = func_name  # or _find_caller_name(is_func=True)
+        self.has_error = False
+        self.func_name = func_name
 
     def __enter__(self):
+        """
+        Enter the context block.
+        :return: The ExceptContext object itself.
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        return_code = False
+        """
+        Exit the context block.
+        :param exc_type: The type of the raised exception.
+        :param exc_val: The value of the raised exception.
+        :param exc_tb: The traceback of the raised exception.
+        :return: True if the exception was handled; False otherwise.
+        """
         if isinstance(exc_val, self.exception):
-            self.got_err = True
+            self.has_error = True
             return_code = self.errback(self.func_name, exc_type, exc_val, exc_tb)
-        self.finalback(self.got_err)
+        else:
+            return_code = False
+        self.finalback(self.has_error)
         return return_code
 
+    def __call__(self, func):
+        """
+        Use the ExceptContext object as a decorator.
+        :param func: The function to be decorated.
+        :return: The decorated function.
+        """
 
-def timeout(timeout_time, default):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with self:
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    @staticmethod
+    def default_errback(func_name, exc_type, exc_val, exc_tb):
+        """
+        The default callback function for handling exceptions.
+        :param func_name: The name of the function where the exception occurred.
+        :param exc_type: The type of the raised exception.
+        :param exc_val: The value of the raised exception.
+        :param exc_tb: The traceback of the raised exception.
+        :return: True if the exception was handled; False otherwise.
+        """
+        logging.exception(f"Exception in {func_name}: {exc_val}")
+        return True
+
+    @staticmethod
+    def default_finalback(has_error: bool):
+        """
+        The default callback function for final processing.
+        :param has_error: Whether an exception occurred or not.
+        """
+        pass
+
+
+def timeout0(timeout_time, default):
     """超时器,装饰函数并指定其超时时间"""
 
     class DecoratorTimeout(Exception):
@@ -97,6 +154,54 @@ def timeout(timeout_time, default):
         return function
 
     return timeout_function
+
+
+def timeout(timeout_time: int, default: Any):
+    """超时装饰器，用于为被装饰的函数设置超时时间。
+
+    Args:
+        timeout_time (int): 超时时间，以秒为单位。
+        default (Any): 默认返回值。
+
+    Returns:
+        Callable[..., Any]: 被装饰后的函数。
+    """
+
+    class DecoratorTimeout(Exception):
+        pass
+
+    def timeout_function(func: Callable[..., Any]) -> Callable[..., Any]:
+
+        @functools.wraps(func)
+        def function(*args, **kwargs) -> Any:
+
+            def timeout_handler(signum, frame):
+                raise DecoratorTimeout()
+
+            old_handler = signal.signal(signal.SIGINT, timeout_handler)
+            signal.alarm(timeout_time)
+
+            with signal_timeout_cleanup(signal.SIGINT, old_handler):
+                return func(*args, **kwargs)
+
+        return function
+
+    return timeout_function
+
+
+class signal_timeout_cleanup:
+    """Context manager to ensure a signal is set back to its original state."""
+
+    def __init__(self, signum, handler):
+        self.signum = signum
+        self.handler = handler
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        signal.alarm(0)
+        signal.signal(self.signum, self.handler)
 
 
 def call_later(callback, call_args=tuple(), immediately=True, interval=1):
@@ -135,10 +240,20 @@ def call_later(callback, call_args=tuple(), immediately=True, interval=1):
 
 def freshdefault(func):
     '''装饰函数,使可变对象可以作为默认值'''
+    # 保存函数的默认值
     fdefaults = func.__defaults__
+    # 保存函数注解
+    ftypes = func.__annotations__
 
     def refresher(*args, **kwds):
-        func.__defaults__ = deepcopy(fdefaults)
+        if fdefaults:
+            # 恢复函数的默认值
+            func.__defaults__ = deepcopy(fdefaults)
+        if ftypes:
+            # 恢复函数的注解
+            for key in ftypes.keys():
+                if key not in kwds.keys():
+                    kwds[key] = deepcopy(ftypes[key])
         return func(*args, **kwds)
 
     return refresher
@@ -197,6 +312,9 @@ def catch_wraps(func, bool=False):
             if bool: traceback.print_exc()
             return None
 
+    wrapper.__name__ = func.__name__
+    wrapper.__doc__ = func.__doc__
+    wrapper.__dict__.update(func.__dict__)
     return wrapper
 
 
@@ -231,7 +349,7 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            func_exc  = None
+            func_exc = None
             for _ in range(max_retries):
                 try:
                     result = func(*args, **kwargs)
@@ -251,10 +369,10 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
     return decorator(fn) if callable(fn) else decorator
 
 
-def retry_on_exception(func):
+def retry_on_exception(func, max_retry=3):
+    """Retry 3 times if the function throws an exception."""
 
     def wrapper(*args, **kwargs):
-        max_retry = 3
         for _ in range(max_retry):
             try:
                 return func(*args, **kwargs)
@@ -279,10 +397,9 @@ if __name__ == '__main__':
             with open(filename, "r") as f:
                 print(len(f.readlines()))
 
-        @catch_wraps
         def add(a, b):
             with ExceptContext():
-                return (int(a) + int(b))
+                return (int(a) / int(b))
 
         @try_except_wraps
         def assertSumIsPositive(*args):
@@ -298,7 +415,7 @@ if __name__ == '__main__':
 
         simple()
         readFile("UnexistFile.txt")
-        print(add(1, 2))
+        print(add(1, 0))
         # assertSumIsPositive(1, 2, -3, -4)
         # checkLen(a=5, b=2)
 
@@ -336,6 +453,6 @@ if __name__ == '__main__':
             )
         print(_create_func.__dict__)
 
-    # trys()
+    trys()
     # fre()
     # fu()

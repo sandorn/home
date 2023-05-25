@@ -78,17 +78,17 @@ def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
     return list(reversed(result)) if reverse else result
 
 
-def align(str1, distance=66, alignment='left'):
+def align(str1, distance=66, alignment='L'):
     # #居中打印为string类方法
-    if alignment == 'center': return str1.center(distance, ' ')
+    if alignment == 'C': return str1.center(distance, ' ')
     if not isinstance(str1, str): str1 = str(str1)
     # #print打印对齐
     length = len(str1.encode('utf-8', 'ignore'))
     slen = max(0, distance - length)
 
-    if alignment == 'left':
+    if alignment == 'L':
         aligned_str = f"{str1}{' ' * slen}"
-    elif alignment == 'right':
+    elif alignment == 'R':
         aligned_str = f"{' ' * slen}{str1}"
     else:
         raise ValueError("Alignment must be one of 'left', 'center', or 'right'")
@@ -100,7 +100,7 @@ def remove_all_blank(value, keep_blank=True):
     if keep_blank:
         return ''.join(ch for ch in value if ch.isprintable())
     else:
-        return ''.join(c for c in value if not c.isspace() and c.isprintable())
+        return ''.join(filter(lambda c: c.isprintable() and not c.isspace(), value))
 
 
 def Str_Replace(replacement, trims):
@@ -178,10 +178,17 @@ def Re_Compile(replacement: str, trimsL: list):
     trims:list内包含tuple或list
     用法=Re_Compile(replacement,[('A', 'aaa'), ('B', 'bbb')])
     """
+
     # for trim in trimsL:
     #     pattern = re.compile(trim[0])
     #     replacement = pattern.sub(trim[1], replacement)
     # return replacement
+    if not isinstance(replacement, str):
+        raise TypeError(f"Expected str, got {type(replacement)}")
+    if not isinstance(trimsL, list):
+        raise TypeError(f"Expected list, got {type(trimsL)}")
+    if not all(isinstance(t, (tuple, list)) for t in trimsL):
+        raise TypeError(f"Expected list of lists or tuples, got {trimsL}")
     pattern = re.compile('|'.join(t[0] for t in trimsL))
     return pattern.sub(
         lambda x: next((t[1] for t in trimsL if t[0] == x.group()), x.group()),
@@ -194,25 +201,30 @@ def str_split_limited_list(intext, mixnum=100, maxnum=280):
 
 
 def str2list(intext, maxlen=300):
-    newText = []
-    _temp = ''
+    """
+    将输入的字符串分割成若干个段落，每个段落的长度不超过 maxlen。
+    """
+    # 按照句号（。）将原始字符串分割为一组子串
+    sentence_list = re.split('。', Str_Replace(intext, [['\r', '。'], ['\n', '。'], [' ', '']]))
+    # 过滤掉空子串，并添加句号
+    sentence_list = [f'{item}。' for item in sentence_list if item]
 
-    _temp_list = re.split('。', Str_Replace(intext, [['\r', '。'], ['\n', '。'], [' ', '']]))
-    _temp_list = [f'{item}。' for item in _temp_list if item != '']
+    paragraph_list = []
+    current_paragraph = ''
+    for sentence in sentence_list:
+        # 如果当前段落长度不超过最大长度，则继续添加新的句子
+        if len(current_paragraph + sentence) <= maxlen:
+            current_paragraph += sentence
+        else:
+            # 否则，当前段落结束，添加到段落列表中
+            paragraph_list.append(current_paragraph)
+            current_paragraph = sentence
 
-    for text in _temp_list:
-        if len(_temp) < maxlen:
-            if len(_temp + text.strip()) < maxlen:
-                _temp += text
-            else:
-                # 一段结束
-                newText.append(_temp)
-                _temp = text
+    # 处理最后一个段落
+    if current_paragraph:
+        paragraph_list.append(current_paragraph)
 
-    # 最后一段
-    newText.append(_temp)
-
-    return newText
+    return paragraph_list
 
 
 def dict2qss(dict_tmp):
@@ -1641,7 +1653,7 @@ if __name__ == '__main__':
 这几天，西安交通大学各班陆续举办学习党的二十大精神主题班会。上世纪50年代，一批交大人响应党的号召从上海迁至西安，用高昂情怀和满腔热血铸就了“胸怀大局、无私奉献、弘扬传统、艰苦创业”的“西迁精神”。如今，参观交大西迁博物馆、学习西迁精神，成为西安交大学子的必修课。“学习贯彻党的二十大精神，我们要把青年工作作为战略性工作来抓，用习近平新时代中国特色社会主义思想武装青年，用党的初心使命感召青年，做青年朋友的知心人、青年工作的热心人、青年群众的引路人。”从事班主任工作12年的西安交大机械工程学院青年教授雷亚国表示，将进一步激励交大学子当好“西迁精神”新传人，到祖国建设最需要的地方建功立业。
     '''
 
-    # for c in str_split_limited_list(ttt):
+    # for c in str2list(ttt):
     #     print(len(c), c)
     # print('end')
     import unittest
@@ -1656,6 +1668,7 @@ if __name__ == '__main__':
             self.assertEqual(Str_Replace(self.replacement, self.trims), 'AAA BBB CCC')
 
     # unittest.main()
+
     def test_str_clean():
         test_str = "###hello?world"
         result = Str_Clean(test_str, ["#", "?"])
@@ -1663,6 +1676,7 @@ if __name__ == '__main__':
         assert result == "hello|world", result
 
     # test_str_clean()
+
     def test_Re_Sub():
         replacement = "This\n is \u2018a\u2019 test\ufeff string"
         trims = None
