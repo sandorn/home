@@ -60,25 +60,28 @@ class _MyThread(Thread):
         self._running = False
 
 
-def Thread_wrap(fun):
+def Thread_wrap(func=None, *args, **kwargs):
     '''函数的线程装饰器,返回线程实例,有无括号都可以,\n
     getResult获取结果,类或实例getAllResult获取结果集合,\n
     可在调用被装饰函数添加daemon=True,callback等参数'''
 
-    @wraps(fun)
-    def inner(*args, **kwargs):
-        _mythr = _MyThread(
-            fun,
-            fun.__name__,
-            *args,
-            **kwargs,
-        )
-        _mythr.daemon = kwargs.pop('daemon', False)
-        _mythr.start()
-        print(f"{_mythr} start with thread_wrap...")
-        return _mythr
+    def wrapper(fun):
 
-    return inner
+        def inner(*args, **kwargs):
+            _mythr = _MyThread(
+                fun,
+                fun.__name__,
+                *args,
+                **kwargs,
+            )
+            _mythr.daemon = kwargs.pop('daemon', False)
+            _mythr.start()
+            print(f"{_mythr} start with thread_wrap...")
+            return _mythr
+
+        return inner
+
+    return wrapper(func, *args, **kwargs) if callable(func) else wrapper
 
 
 def QThread_wrap(func=None, *args, **kwargs):
@@ -168,7 +171,7 @@ if __name__ == "__main__":
         print('Thread_wrap_simple in func a : ', i, i * 2)
         return i * 2
 
-    @thread_safe
+    @Thread_wrap
     def b(i):
         print('Thread_wrap in func b : ', i, i * 5)
         return i * 5
@@ -182,8 +185,8 @@ if __name__ == "__main__":
         return i * 11
 
     # aa = a(8)
-    # bb = b(40)
-    cc = c(3, callback=lambda x: x * 100)
+    cc = b(40)
+    # cc = c(3, callback=lambda x: x * 100)
     print('Result:', cc.Result)
     # print('callback:', cc.callback)
     # print('daemon:', cc.daemon)

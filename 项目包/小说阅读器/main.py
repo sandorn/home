@@ -68,7 +68,7 @@ class NyWindow(Ui_Window):
         self.listWidget.clean()
 
         try:
-            self.getlist(self.baseurl + '/' + self.book_number + '/')
+            self.getlist(f'{self.baseurl}/{self.book_number}/')
         except Exception as err:
             QMessageBox.warning(None, "警告", f"没有数据，请检查：{err}", QMessageBox.Ok)
         else:
@@ -102,14 +102,14 @@ class NyWindow(Ui_Window):
     @EventLoop
     def getlist(self, url):
         self.bookname, self.urls, self.titles = get_download_url(url)
-        self.setWindowTitle(self.title + '--' + self.bookname)
+        self.setWindowTitle(f'{self.title}--{self.bookname}')
         return
 
     @EventLoop
     @Thread_wrap
     def getcontent(self, url):
-        _, title, content = get_contents((1, url))
-        return "《" + self.bookname + '->' + title + "》\n\n" + content
+        _, title, content = get_contents(1, url)
+        return f"《{self.bookname}->{title}" + "》\n\n" + content
 
     # 将文件显示在List列表中(图表显示)
     @EventLoop
