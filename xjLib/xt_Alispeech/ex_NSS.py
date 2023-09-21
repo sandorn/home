@@ -151,13 +151,11 @@ if __name__ == '__main__':
 
         from PyQt5.QtCore import QThread
         from xt_Alispeech.Play import Qthread_play, Thread_play
-        print(len(out_file))
         for oufile in out_file:
-            task = Qthread_play(oufile[1])
-            task.join()
-            # task2 = Thread_play(oufile[1])
-            # QThread.msleep(10000)
-            # task2.stop()
+            # task = Qthread_play(oufile[1])
+            # task.join()
+            task2 = Thread_play(oufile[1])
+            task2.wait()
 
     read()
     # print(TODO_TTS(_text))

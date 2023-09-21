@@ -121,7 +121,7 @@ def create_read_thread(meta):
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
-                datalist = self._target(text, {'aformat': self.aformat}, readonly=True)
+                datalist = self._target(text, readonly=True, aformat=self.aformat)
                 datalist.sort(key=lambda x: x[0])
                 [self.datas_list.append(item[1]) for item in datalist]
                 QThread.msleep(50)
@@ -197,7 +197,7 @@ class _read_class_meta:
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
-                datalist = self._target(text, {'aformat': self.aformat}, readonly=True)
+                datalist = self._target(text, readonly=True, aformat=self.aformat)
                 assert isinstance(datalist, list)
                 datalist.sort(key=lambda x: x[0])
                 [self.datas_list.append(item[1]) for item in datalist]

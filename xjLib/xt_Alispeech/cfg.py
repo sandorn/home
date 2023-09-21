@@ -58,7 +58,7 @@ class Constant(Singleton_Mixin):
         now = get_10_timestamp()
         # #token生命周期缩短10分钟
         if (self.__ExpireTime - 60 * 10) <= now:
-            self.__token, self.__ExpireTime = getToken(self.__accessKeyId, self.__accessKeySecret)
+            self.__token = getToken(self.__accessKeyId, self.__accessKeySecret)
         return self.__token
 
 
@@ -68,10 +68,10 @@ class SpeechArgs(dict_mothed_Mixin):
     long_tts: bool = False
     aformat: str = 'mp3'
     sample_rate: int = 16000
-    voice: str = 'Aida'  # aida   # ailun  # kenny  # aijing # aixia
+    voice: str = 'ailun'  # aida   # ailun  # kenny  # aijing # aixia
     volume: int = 50
-    speech_rate: int = 0
-    pitch_rate: int = 0
+    speech_rate: int = -80
+    pitch_rate: int = -80
     text: str = ''
     wait_complete: bool = True
     start_timeout: int = 10
@@ -182,3 +182,20 @@ VIOCE = [
     ('Kyong', 'Kyong', '韩语女声', '韩语场景', '韩语', '8K/16K', '否', '否', '标准版'),
     ('masha', 'masha', '俄语女声', '俄语场景', '俄语', '8K/16K', '否', '否', '标准版'),
 ]
+
+# 参数说明
+# 参数	类型	参数说明
+# text	String	要合成的文字。
+# aformat	String	合成出来音频的格式，默认为pcm。
+# voice	String	发音人，默认为xiaoyun。
+# sample_rate	Integer	识别音频采样率，默认值：16000 Hz。
+# volume	Integer	音量大小，取值范围0~100，默认值：50。
+# speech_rate	Integer	语速，取值范围-500~500，默认值：0。
+# pitch_rate	Integer	语调，取值范围-500~500，默认值：0。
+# wait_complete	Boolean	是否阻塞到合成完成。
+# start_timeout	Integer	和云端连接建立超时，默认值：10秒。
+# completed_timeout	Integer	从连接建立到合成完成超时，默认值：60秒
+# ping_interval	Integer	Ping包发送间隔，默认值：8秒。无需间隔可设置为0或None。
+# ping_timeout	Integer	是否检查Pong包超时，默认值：None。None为不检查Pong包是否超时。
+# ex	Dict	用户提供的额外参数，该字典内容会以key:value形式合并进请求的payload段中，详情可参见接口说明章节中的请求数据。
+# 返回值：Boolean类型，False为失败，True为成功。
