@@ -122,7 +122,7 @@ for future in as_completed(all_task):
 
 7、通过executor的map获取已经完成的task值
 for data in executor.map(get_html,urls):
-    print(data)
+    print(data)
 
 8、使用wait()方法阻塞线程
 '''
