@@ -159,3 +159,4 @@ if __name__ == '__main__':
 
     read()
     # print(TODO_TTS(_text))
+    # print(TODO_TTS(_text, aformat='wav', merge=True, voice='Aida'))
