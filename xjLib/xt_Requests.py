@@ -133,40 +133,39 @@ class SessionClient:
         try:
             self.response = None
             self._request()
-        except Exception as err:
+        except requests.exceptions.RequestException as err:
             print(f'SessionClient request:<{self.url}>; Err:{err!r}')
-            # print(self._request.retry.statistics)
             return None
         else:
-            # #返回正确结果
             assert isinstance(self.response, requests.Response)
             self.update_cookies(self.response.cookies)
-            result = htmlResponse(self.response)
-            if callable(self.callback): result = self.callback(result)
+            result = htmlResponse(self.response)  # 这里需要定义htmlResponse类
+            if callable(self.callback):
+                result = self.callback(result)
             return result
 
-    def __create_params(self, *args, **kwargs):
+    def __create_params(self, method, *args, **kwargs):
+        self.method = method  # 保存请求方法
         self.url = args[0]
         self.args = args[1:]
 
         self.update_headers(kwargs.pop("headers", MYHEAD))
         self.update_cookies(kwargs.pop("cookies", {}))
         self.callback = kwargs.pop("callback", None)
-        kwargs.setdefault('timeout', TIMEOUT)  # @超时
+        kwargs.setdefault('timeout', TIMEOUT)
         self.kwargs = kwargs
         return self.start_fetch_run()
 
     def __getattr__(self, method):
         if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'patch']:
-            self.method = method
-            # @不带括号,传递*args, **kwargs参数
-            return self.__create_params
+            return lambda *args, **kwargs: self.__create_params(method, *args, **kwargs)
 
-    # #下标obj[key]
     def __getitem__(self, method):
         if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'patch']:
-            self.method = method
-            return self.__create_params
+            return lambda *args, **kwargs: self.__create_params(method, *args, **kwargs)
+            # self.method = method
+            # @不带括号,传递*args, **kwargs参数
+            # return self.__create_params
 
     def update_cookies(self, cookie_dict):
         self.sson.cookies.update(cookie_dict)
@@ -180,7 +179,7 @@ if __name__ == '__main__':
     s = SessionClient()
     # print(get_wraps('https://www.google.com'))
     print(s['get']('https://cn.bing.com'))
-    print(s.head('http://httpbin.org/headers').headers)
+    # print(s.head('http://httpbin.org/headers').headers)
     # print(s.put('http://httpbin.org/put', data=b'data'))
     # print(s.delete('http://httpbin.org/delete'))
     # print(s.options('http://httpbin.org/get').headers)
@@ -198,6 +197,7 @@ if __name__ == '__main__':
     # ]
     # for url in urls:
     # ...
+    # url = 'http://www.163.com'
     # res = get_wraps(url)
     # print(res.text)
     # print(res.xpath('//title/text()'))

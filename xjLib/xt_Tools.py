@@ -350,7 +350,7 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
         @wraps(func)
         def wrapper(*args, **kwargs):
             func_exc = None
-            for _ in range(max_retries):
+            for index in range(max_retries):
                 try:
                     result = func(*args, **kwargs)
                     if callable(validate) and validate(result) is False: continue
@@ -358,7 +358,7 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
                     return callback(result) if callable(callback) else result
                 except exceptions as ex:
                     func_exc, _ = ex, traceback.format_exc()
-                    sleep(delay + step * _)  # #延迟重试
+                    sleep(delay + step * index)  # #延迟重试
             # #重试次数使用完毕,结果错误,返回默认值
             print(f'try_except_wraps: [{func.__name__}]\tError: {func_exc!r}')
             if callable(process) and process(func_exc) is True:

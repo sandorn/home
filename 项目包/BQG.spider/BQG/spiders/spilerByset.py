@@ -1,19 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-02-27 11:40:29
-#FilePath     : /项目包/BQG.spider/BQG/spiders/spilerByset.py
-#LastEditTime : 2020-07-15 10:16:03
-#Github       : https://github.com/sandorn/home
-#License      : (C)Copyright 2009-2020, NewSea
-#==============================================================
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2023-09-22 16:16:31
+FilePath     : /CODE/项目包/BQG.spider/BQG/spiders/spilerByset.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
-
 import os
 import sys
 
@@ -32,6 +29,7 @@ class Spider(scrapy.Spider):
     custom_settings = {
         #$ 使用数据库,判断重复入库
         'ITEM_PIPELINES': {
+            'BQG.pipelines.Pipeline2Csv': 4,
             # 'BQG.pipelines.PipelineToSqlTwisted': 10,  # 25s
             # 'BQG.pipelines.PipelineToAiomysqlpool': 20,  # 27s
             # 'BQG.pipelines.PipelineToAsynorm': 80,  # 32s
