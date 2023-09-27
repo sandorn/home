@@ -18,7 +18,7 @@ from functools import wraps
 import qdarkstyle
 from PyQt5.QtCore import (QEventLoop, QMetaObject, QSize, Qt, pyqtSignal, pyqtSlot)
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget, qApp)
+from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget)
 from xt_File import qsstools
 
 
@@ -27,16 +27,13 @@ def EventLoop(function):
 
     @wraps(function)
     def warp(*args, **kwargs):
-        # @忽略用户的输入(鼠标和键盘事件),显示等待中的鼠标样式
-        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
-        # QApplication.setOverrideCursor(Qt.WaitCursor)
+        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘）
+        QApplication.setOverrideCursor(Qt.WaitCursor)  # 显示等待中的鼠标样式
 
         result = function(*args, **kwargs)
 
-        # @交还控制权,恢复鼠标样式
-        # QApplication.restoreOverrideCursor()
-        qApp.processEvents()
-
+        QApplication.processEvents()  # 交还控制权
+        QApplication.restoreOverrideCursor()  # 恢复鼠标样式
         return result
 
     return warp
@@ -760,6 +757,7 @@ class xt_QTextBrowser(QTextBrowser):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTextBrowser_{id(self)}")
         self.setReadOnly(True)
+        self.fontsize = 16
         self.ensureCursorVisible()  # 游标可用
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         # 设置垂直滚动条按需可见
@@ -770,10 +768,26 @@ class xt_QTextBrowser(QTextBrowser):
         # 打开外部链接 默认false 当openlinks设置false时 该选项无效
         self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard | Qt.LinksAccessibleByMouse | Qt.TextBrowserInteraction | Qt.TextSelectableByKeyboard | Qt.TextSelectableByMouse)
 
-    def addtext(self, str):
-        self.append(str)  # 添加数据
-        self.moveCursor(self.textCursor().End)  # 文本框显示到底部
-        qApp.processEvents()
+    def decrease_text_size(self):
+        self.fontsize -= 2
+        self.setFontSize(self.fontsize)
+
+    def increase_text_size(self):
+        self.fontsize += 2
+        self.setFontSize(self.fontsize)
+
+    def setFontSize(self, size):
+        cursor = self.textCursor()
+        char_format = cursor.charFormat()
+        char_format.setFontPointSize(size)
+        cursor.setCharFormat(char_format)
+        self.setTextCursor(cursor)
+
+        _text = self.toPlainText().strip()
+        if not cursor.selectedText().strip():
+            self.clear()
+            self.setText(_text)
+        self.repaint()  #强制刷新
 
 
 class xt_QTextEdit(QTextEdit):
@@ -798,10 +812,10 @@ class xt_QLineEdit(QLineEdit):
         self.textEdited.connect(self.textEdited_event)
 
     def textChanged_event(self):
-        print('textChanged', self.text())
+        print('xt_QLineEdit textChanged', self.text())
 
     def textEdited_event(self):
-        print('textEdited', self.text())
+        print('xt_QLineEdit textEdited', self.text())
 
 
 class xt_QPushButton(QPushButton):
@@ -1149,7 +1163,7 @@ class xt_QMainWindow(QMainWindow):
         self.Close_action.setShortcut('Ctrl+Q')
         # self.Close_action.setToolTip('Close the window')
         # self.Close_action.setStatusTip('Close the window')
-        self.Close_action.triggered.connect(qApp.quit)
+        self.Close_action.triggered.connect(QApplication.quit)
 
     def tool_init(self):  # #工具栏
         self.file_toolbar = self.addToolBar('')

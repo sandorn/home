@@ -32,12 +32,14 @@ class NyWindow(Ui_Window):
         self.urls = []  # 章节链接列表
         self.titles = []  # 章节名称列表
         self.setWindowTitle('小说阅读器')
-        self.setWindowOpacity(0.9)  # 设置窗口透明度
+        self.setWindowOpacity(1.0)  # 设置窗口透明度
 
         self.lineEdit.textChanged.connect(self.setnum)
         self.pushButton_read.clicked.connect(self.read_Button_event)
         self.pushButton_3.clicked.connect(self.previous)
         self.pushButton_4.clicked.connect(self.nextpage)
+        self.pushButton_jia.clicked.connect(self.QTextEdit.increase_text_size)
+        self.pushButton_jian.clicked.connect(self.QTextEdit.decrease_text_size)
 
     @pyqtSlot()
     @EventLoop
@@ -122,13 +124,12 @@ class NyWindow(Ui_Window):
     def currentRowChanged_event(self, row):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
-        _qh = self.getcontent(self.urls[row])
-        _text = _qh.getResult()
+        _text = self.getcontent(self.urls[row]).getResult()  #获取Thread_wrap线程返回值
         # nowthread = QThread()
         # nowthread.run = self.getcontent
         # _text = nowthread.run(self.urls[row])
 
-        self.QTextEdit.setFontPointSize(16)  # 设置字号
+        self.QTextEdit.setFontPointSize(self.QTextEdit.fontsize)  # 设置字号
         self.QTextEdit.setText(_text)
 
 

@@ -16,15 +16,7 @@ Github       : https://github.com/sandorn/home
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMetaObject, Qt
 from PyQt5.QtWidgets import QHBoxLayout, QSplitter, QVBoxLayout
-from xt_Ui import (
-    xt_QCheckBox,
-    xt_QLabel,
-    xt_QLineEdit,
-    xt_QListWidget,
-    xt_QMainWindow,
-    xt_QPushButton,
-    xt_QTextBrowser,
-)
+from xt_Ui import (xt_QCheckBox, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTextBrowser)
 
 
 class Ui_Window(xt_QMainWindow):
@@ -48,6 +40,8 @@ class Ui_Window(xt_QMainWindow):
         self.pushButton_read = xt_QPushButton("&Read")
         self.pushButton_3 = xt_QPushButton("上一章")
         self.pushButton_4 = xt_QPushButton("下一章")
+        self.pushButton_jia = xt_QPushButton("＋")
+        self.pushButton_jian = xt_QPushButton("－")
         self.checkbox = xt_QCheckBox('自动翻页')
         self.splitter = QSplitter(self)
 
@@ -58,6 +52,8 @@ class Ui_Window(xt_QMainWindow):
         ht_1.addWidget(self.pushButton)
         ht_1.addSpacing(10)
         ht_1.addStretch(2)
+        ht_1.addWidget(self.pushButton_jia, stretch=1)
+        ht_1.addWidget(self.pushButton_jian, stretch=1)
         ht_1.addWidget(self.checkbox, stretch=1)
         ht_1.addWidget(self.pushButton_read, stretch=1)
         ht_1.addWidget(self.pushButton_3, stretch=1)

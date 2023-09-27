@@ -15,17 +15,18 @@
 # ！/usr/bin/env python
 # -*- coding:utf -8-*-
 
+import threading
 import time
-from retrying import retry
+from queue import Queue
+
 import requests
 from bs4 import BeautifulSoup
-import threading
-from queue import Queue
 
 lock = threading.RLock()
 
 
 class WorkManager(object):
+
     def __init__(self, do_job, works, thread_num=25):
         self.job = do_job
         self.work_queue = Queue()  # 任务队列
@@ -42,7 +43,7 @@ class WorkManager(object):
 
     # #初始化线程,同时运行线程数量有效果，原理没明白
     def __init_thread_pool(self, thread_num):
-        for i in range(thread_num):
+        for _ in range(thread_num):
             self.threads.append(Work(self.work_queue, self.result_queue))
 
     # #等待所有线程运行完毕
@@ -55,13 +56,14 @@ class WorkManager(object):
             item.join()
 
         result_list = []
-        for i in range(self.result_queue.qsize()):
+        for _ in range(self.result_queue.qsize()):
             res = self.result_queue.get()
             result_list.append(res)
         return result_list
 
 
 class Work(threading.Thread):
+
     def __init__(self, work_queue, result_queue):
         threading.Thread.__init__(self)
         self.work_queue = work_queue
@@ -79,8 +81,7 @@ class Work(threading.Thread):
                 self.result_queue.put(result)  # 取得函数返回值
                 self.work_queue.task_done()  # 通知系统任务完成
                 with lock:
-                    print('{}\tdone\twith\t{}\tat\t{}'.format(
-                        threading.currentThread().name, args[0], get_stime()))
+                    print(f'{threading.currentThread().name}\tdone\twith\t{args[0]}\tat\t{get_stime()}')
             except Exception as error:
                 print(error, flush=True)
                 break
@@ -91,40 +92,16 @@ def get_stime():
     local_time = time.localtime(ct)
     data_head = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
     data_secs = (ct - int(ct)) * 1000
-    stamp = "%s.%03d" % (data_head, data_secs)
-    return stamp
+    return "%s.%03d" % (data_head, data_secs)
 
 
-myhead = {
-    'User-Agent':
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
-    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-    'Accept-Encoding': 'gzip,deflate,sdch, br',
-    'Accept-Language': 'zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4',
-    'Cache-Control': 'max-age=0',
-    'Connection': 'close',
-    'Proxy-Connection': 'no-cache'
-}
+myhead = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36', 'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8', 'Accept-Encoding': 'gzip,deflate,sdch, br', 'Accept-Language': 'zh-TW,zh;q=0.8,en-US;q=0.6,en;q=0.4', 'Cache-Control': 'max-age=0', 'Connection': 'close', 'Proxy-Connection': 'no-cache'}
 
 
-def parse_url(url,
-              params=None,
-              headers=myhead,
-              proxies=None,
-              timeout=6,
-              ecode='utf-8',
-              wait_random_min=200,
-              wait_random_max=3000,
-              stop_max_attempt_number=100):
-    @retry(wait_random_min=wait_random_min,
-           wait_random_max=wait_random_max,
-           stop_max_attempt_number=stop_max_attempt_number)
+def parse_url(url, params=None, headers=myhead, proxies=None, timeout=6, ecode='utf-8', wait_random_min=200, wait_random_max=3000, stop_max_attempt_number=100):
+
     def _parse_url(url):
-        response = requests.get(url,
-                                params=params,
-                                headers=headers,
-                                proxies=proxies,
-                                timeout=timeout)
+        response = requests.get(url, params=params, headers=headers, proxies=proxies, timeout=timeout)
         assert response.status_code == 200
         return response.content.decode(ecode)
 
@@ -149,8 +126,7 @@ def fd():
     _dlg = win32ui.CreateFileDialog(1)  # 1表示打开文件对话框
     _dlg.SetOFNInitialDir('c:/')  # 设置打开文件对话框中的初始显示目录
     _dlg.DoModal()
-    filename = _dlg.GetPathName()  # 获取选择的文件名称
-    return filename
+    return _dlg.GetPathName()
 
 
 def make_urls(pages):
@@ -169,16 +145,9 @@ def make_urls(pages):
     keys = sorted(set(_k), key=_k.index)
     #为方便演示，用list直接替代读文件
     '''
-    keys = [
-        "减肥计划", "减肥运动", "如何减肥", "怎么减肥", "有效减肥", "郑多燕减肥", "减肥视频", "减肥", "减肥方法",
-        "减肥食谱", "   ", "减肚子", "腰腹减肥", "\t", "减腰", "减肥法", "减肥法"
-    ]
+    keys = ["减肥计划", "减肥运动", "如何减肥", "怎么减肥", "有效减肥", "郑多燕减肥", "减肥视频", "减肥", "减肥方法", "减肥食谱", "   ", "减肚子", "腰腹减肥", "\t", "减腰", "减肥法", "减肥法"]
     keys = ['健身']
-    out_url = [(
-        key,
-        page,
-        "https://www.baidu.com/s?wd={}&pn={}".format(key, page * 10),
-    ) for key in keys for page in range(pages)]
+    out_url = [(key, page, f"https://www.baidu.com/s?wd={key}&pn={page * 10}") for key in keys for page in range(pages)]
     return 'baidu', out_url
     # return res[0], out_url
 
@@ -206,8 +175,7 @@ def getkeys(key, page, url):
     '''
 
     # 方法2，效果与方法1相同
-    allTags = result.findAll(
-        'div', ['result-op c-container xpath-log', 'result c-container'])
+    allTags = result.findAll('div', ['result-op c-container xpath-log', 'result c-container'])
     # 'result-op c-container xpath-log'   #百度自己内容
     index = 0
     for tag in allTags:
@@ -217,9 +185,7 @@ def getkeys(key, page, url):
             break
         if not href.startswith('http'):
             break
-        baidu_url = requests.get(url=href,
-                                 headers=myhead,
-                                 allow_redirects=False)
+        baidu_url = requests.get(url=href, headers=myhead, allow_redirects=False)
         real_url = baidu_url.headers['Location']  # 得到网页原始地址
         if real_url.startswith('http'):
             index += 1
@@ -231,19 +197,17 @@ def getkeys(key, page, url):
 
 def savefile(_filename, lists):
     # 函数说明:将爬取的文章lists写入文件
-    print('[' + _filename + ']开始保存......', end='', flush=True)
+    print(f'[{_filename}]开始保存......', end='', flush=True)
     lists.sort()
 
     with open(_filename, 'a', encoding='utf-8') as f:
         f.seek(0)
         f.truncate()
         for lists_line in lists:
-            for index, item in enumerate(lists_line):
-                f.write('key:' + item[0] + '\tpage:' + str(item[1]) +
-                        '\tindex:' + str(item[2]) + '\ttitle:' + item[3] +
-                        '\turl:' + item[4] + '\n')
+            for item in lists_line:
+                f.write(f'key:{item[0]}' + '\tpage:' + str(item[1]) + '\tindex:' + str(item[2]) + '\ttitle:' + item[3] + '\turl:' + item[4] + '\n')
 
-    print('[' + _filename + ']保存完成。', flush=True)
+    print(f'[{_filename}]保存完成。', flush=True)
 
 
 def main():
@@ -256,8 +220,9 @@ def main():
 
     work_manager = WorkManager(getkeys, urls)  # 调用函数,参数:list内tupe,线程数量
     texts = work_manager.wait_allcomplete()
-    savefile(_name + '_百度词频.txt', texts)
-    print("threadPool cost all time: %s" % (time.time() - start), flush=True)
+
+    savefile(f'{_name}_百度词频.txt', texts)
+    print(f"threadPool cost all time: {time.time() - start}", flush=True)
 
 
 if __name__ == "__main__":

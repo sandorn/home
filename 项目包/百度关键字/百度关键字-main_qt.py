@@ -13,16 +13,15 @@
 '''
 import sys
 import time
+from urllib.parse import unquote
 
+from baidu_key_UI import Ui_MainWindow
 from PyQt5.QtCore import QEventLoop, Qt, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import (QApplication, QFileDialog, QTableWidgetItem, qApp)
-
+from PyQt5.QtWidgets import QApplication, QFileDialog, QTableWidgetItem, qApp
 from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
-
-from xt_Requests import get_parse
-from baidu_key_UI import Ui_MainWindow
-from urllib.parse import unquote
+from xt_Requests import get
+from xt_Ui import EventLoop
 
 
 class MyWindow(Ui_MainWindow):
@@ -41,13 +40,10 @@ class MyWindow(Ui_MainWindow):
 
     def step_valueChanged(self):
         self.pbar.setValue(int(self.step))
-        self.label.setText("进度：{}/{}".format(self.step, self.pbar.maximum()))
-        pass
+        self.label.setText(f"进度：{self.step}/{self.pbar.maximum()}")
 
+    @EventLoop
     def update(self, item):
-        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
-        QApplication.setOverrideCursor(Qt.WaitCursor)  # 显示等待中的鼠标样式
-
         RowCont = self.resultTable.rowCount()
         self.resultTable.insertRow(RowCont)
         self.resultTable.setItem(RowCont, 0, QTableWidgetItem(item[0]))
@@ -56,50 +52,63 @@ class MyWindow(Ui_MainWindow):
         self.resultTable.setItem(RowCont, 3, QTableWidgetItem(item[3]))
         self.resultTable.setItem(RowCont, 4, QTableWidgetItem(item[4]))
         self.resultTable.scrollToBottom()  # 滚动到最下
-        qApp.processEvents()  # 交还控制权
-
-        QApplication.restoreOverrideCursor()  # 恢复鼠标样式
 
     @pyqtSlot()
     def on_openObject_triggered(self):
-        # #打开关键字文件并导入
-        self.open_action.setEnabled(False)
-        self.save_action.setEnabled(False)
-        self.run_action.setEnabled(False)
+        # 打开关键字文件并导入
+        self.disable_actions()  # 禁用动作按钮
         filename, _ = QFileDialog.getOpenFileName(self, 'Open file')
 
         if filename:
-            [self.keysTable.removeRow(0) for _ in range(self.keysTable.rowCount())]
+            self.clear_keys_table()  # 清空关键字表格
             self.status_bar.showMessage('导入关键字......')
-            self._name = filename.split('.')[0:-1][0]  # 文件名，含完整路径，去掉后缀
+            self._name = self.get_file_name_without_extension(filename)
 
             with open(filename) as myFile:
-                # @名称排序且去重去空
-                self.keys = sorted(set([row.strip() for row in myFile if row.strip()]))
+                self.keys = self.get_sorted_unique_nonempty_rows(myFile)  # 获取文件中的排序、去重、非空行
 
-            # 写入QTableWidget
-            for item in self.keys:
-                RowCont = self.keysTable.rowCount()
-                self.keysTable.insertRow(RowCont)
-                self.keysTable.setItem(RowCont, 0, QTableWidgetItem(item))
-                self.keysTable.scrollToBottom()  # 滚动到最下面
+            self.write_to_table_widget()  # 将关键字写入表格
+
         self.status_bar.showMessage('导入关键字完毕!')
+        self.enable_actions()  # 启用动作按钮
+
+    def disable_actions(self):
+        self.open_action.setEnabled(False)
+        self.save_action.setEnabled(False)
+        self.run_action.setEnabled(False)
+
+    def clear_keys_table(self):
+        self.keysTable.setRowCount(0)
+
+    def get_file_name_without_extension(self, filename):
+        return '.'.join(filename.split('.')[:-1])
+
+    def get_sorted_unique_nonempty_rows(self, file):
+        return sorted({row.strip() for row in file if row.strip()})
+
+    def write_to_table_widget(self):
+        for item in self.keys:
+            row_count = self.keysTable.rowCount()
+            self.keysTable.insertRow(row_count)
+            self.keysTable.setItem(row_count, 0, QTableWidgetItem(item))
+            self.keysTable.scrollToBottom()
+
+    def enable_actions(self):
         self.open_action.setEnabled(True)
         self.save_action.setEnabled(True)
         self.run_action.setEnabled(True)
 
     @pyqtSlot()
+    @EventLoop
     def on_runObject_triggered(self):
         if len(self.keys) == 0:
-            self.status_bar.showMessage('没有导入关键字！！！')
+            self.status_bar.showMessage('请先导入关键字！！！')
             return
-        self.open_action.setEnabled(False)
-        self.save_action.setEnabled(False)
-        self.run_action.setEnabled(False)
+        self.disable_actions()  # 禁用动作按钮
+
         self.resultTable.clearContents()
         self.resultTable.setRowCount(0)
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘事件）
+
         # 构建urls
         pages = self.lineEdit.value()
 
@@ -109,25 +118,22 @@ class MyWindow(Ui_MainWindow):
 
         self.texts = []  # #清空结果库
         resp_list = ahttpGetAll(self.urls)
+
         print(len(resp_list), resp_list[1])
+
         self.getdatas(resp_list)
         self.texts.sort(key=lambda x: x[0])  # #排序
 
         self.status_bar.showMessage('抓取百度检索信息完毕')
-        self.open_action.setEnabled(True)
-        self.save_action.setEnabled(True)
-        self.run_action.setEnabled(True)
-        QApplication.restoreOverrideCursor()  # 恢复鼠标样式
 
-    # ! 多线程运行，as_completed 等待各子线程结束，将各子线程运行结果返回给主线程
-    # ! 子线程全部启动后，在逐一退出时会有卡顿
+        self.enable_actions()  # 启用动作按钮
 
     def getdatas(self, resp_list):
         _max = len(resp_list)
         self.step = 0
         self.pbar.setMaximum(_max)
         self._step.emit()  # 传递更新进度条信号
-        self.label.setText("进度：{}/{}".format(self.step, _max))
+
         for response in resp_list:
             url = str(response.url)
             key = unquote(url.split("?")[1].split("&")[0].split('=')[1]).replace('+', ' ')
@@ -143,16 +149,15 @@ class MyWindow(Ui_MainWindow):
                     continue
 
                 # #获取真实网址
-                real_url = get_parse(href, allow_redirects=False).headers['Location']  # 网页原始地址
+                real_url = get(href, allow_redirects=False).headers['Location']  # 网页原始地址
                 if real_url.startswith('http') and '.baidu.com' not in real_url:
                     _item = [key, pages, index, title, real_url]
                     self._signal.emit(_item)  # 传递更新结果数据表信号
                     self.texts.append(_item)
             self.step += 1
             self._step.emit()  # 传递更新进度条信号
-            self.label.setText("进度：{}/{}".format(self.step, _max))
 
-        QApplication.processEvents()
+        # QApplication.processEvents()
         time.sleep(0.02)
 
     @pyqtSlot()
@@ -160,19 +165,17 @@ class MyWindow(Ui_MainWindow):
         if len(self.texts) == 0:
             self.status_bar.showMessage('没有发现需要保存的内容！！！')
             return
-        self.open_action.setEnabled(False)
-        self.save_action.setEnabled(False)
-        self.run_action.setEnabled(False)
-        savefile(self._name + '_百度词频.txt', self.texts, br='\t')
+
+        self.disable_actions()  # 禁用动作按钮
+
+        savefile(f'{self._name}_百度词频.txt', self.texts, br='\t')
         self.texts = []
         self.status_bar.showMessage(f'[{self._name}_百度词频.txt]保存完成。')
-        self.open_action.setEnabled(True)
-        self.save_action.setEnabled(True)
-        self.run_action.setEnabled(True)
+
+        self.enable_actions()  # 启用动作按钮
 
 
 if __name__ == "__main__":
-
     app = QApplication(sys.argv)
     w = MyWindow()
     sys.exit(app.exec_())
