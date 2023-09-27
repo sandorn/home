@@ -29,7 +29,7 @@ class Ui_Window(xt_QMainWindow):
     def setupUi(self):
         self.centralwidget = QtWidgets.QWidget()
         self.label = xt_QLabel("小说书号：")
-        self.lineEdit = xt_QLineEdit('38_38165')
+        self.lineEdit = xt_QLineEdit('38_38166')
         self.book_number = self.lineEdit.text()
         self.lineEdit.setObjectName('lineEditobj')
         self.pushButton = xt_QPushButton("&OK 确定")
