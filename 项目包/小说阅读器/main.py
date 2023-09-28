@@ -35,11 +35,15 @@ class NyWindow(Ui_Window):
         self.setWindowOpacity(1.0)  # 设置窗口透明度
 
         self.lineEdit.textChanged.connect(self.setnum)
+        self.lineEdit.returnPressed.connect(self.on_OK_clicked)
         self.pushButton_read.clicked.connect(self.read_Button_event)
         self.pushButton_3.clicked.connect(self.previous)
         self.pushButton_4.clicked.connect(self.nextpage)
         self.pushButton_jia.clicked.connect(self.QTextEdit.increase_text_size)
         self.pushButton_jian.clicked.connect(self.QTextEdit.decrease_text_size)
+        self.pushButton.clicked.connect(self.on_OK_clicked)
+        self.QTextEdit.scroll_to_bottom_event = self.nextpage
+        self.QTextEdit.scroll_to_top_event = self.previous
 
     @pyqtSlot()
     @EventLoop
@@ -129,7 +133,6 @@ class NyWindow(Ui_Window):
         # nowthread.run = self.getcontent
         # _text = nowthread.run(self.urls[row])
 
-        self.QTextEdit.setFontPointSize(self.QTextEdit.fontsize)  # 设置字号
         self.QTextEdit.setText(_text)
 
 

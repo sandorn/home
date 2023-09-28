@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-02-25 18:08:10
+LastEditTime : 2023-09-28 16:21:52
 FilePath     : /CODE/xjLib/xt_Ui/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -16,7 +16,7 @@ import random
 from functools import wraps
 
 import qdarkstyle
-from PyQt5.QtCore import (QEventLoop, QMetaObject, QSize, Qt, pyqtSignal, pyqtSlot)
+from PyQt5.QtCore import (QEventLoop, QMetaObject, QSize, Qt, QThread, pyqtSignal, pyqtSlot)
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget)
 from xt_File import qsstools
@@ -32,8 +32,9 @@ def EventLoop(function):
 
         result = function(*args, **kwargs)
 
-        QApplication.processEvents()  # 交还控制权
         QApplication.restoreOverrideCursor()  # 恢复鼠标样式
+        QApplication.processEvents()  # 交还控制权
+
         return result
 
     return warp
@@ -758,15 +759,41 @@ class xt_QTextBrowser(QTextBrowser):
         self.setObjectName(f"xt_QTextBrowser_{id(self)}")
         self.setReadOnly(True)
         self.fontsize = 16
+        self.setFontPointSize(self.fontsize)  # 设置字号
         self.ensureCursorVisible()  # 游标可用
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        # 设置垂直滚动条按需可见
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        # 设置水平滚动条按需可见
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 设置垂直滚动条按需可见
+        # Qt.ScrollBarAlwaysOff  #禁用垂直滚动条
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 设置水平滚动条按需可见
         self.setOpenLinks(True)  # 打开文档内部链接 默认为True
-        self.setOpenExternalLinks(True)
-        # 打开外部链接 默认false 当openlinks设置false时 该选项无效
+        self.setOpenExternalLinks(True)  # 打开外部链接,默认false,openlinks设置false时 该选项无效
         self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard | Qt.LinksAccessibleByMouse | Qt.TextBrowserInteraction | Qt.TextSelectableByKeyboard | Qt.TextSelectableByMouse)
+        self.scrollTimes = 0  # 滚动次数,避免太灵敏
+
+    def event(self, event):
+        if (event.type() == event.Wheel and self.verticalScrollBar().value() == self.verticalScrollBar().maximum()):
+            self.scrollTimes += 1
+            if self.scrollTimes >= 5:
+                # 滚动到底部时触发函数
+                self.scroll_to_bottom_event()
+                self.scrollTimes = 0
+                return True  # 拦截滚动事件，不再传递给滚动条
+
+        if (event.type() == event.Wheel and self.verticalScrollBar().value() == self.verticalScrollBar().minimum()):
+            self.scrollTimes += 1
+            if self.scrollTimes >= 5:
+                # 滚动到顶部时触发函数
+                self.scroll_to_top_event()
+                self.scrollTimes = 0
+                return True  # 拦截滚动事件，不再传递给滚动条
+        return super().event(event)
+
+    def scroll_to_bottom_event(self):
+        # 在滚动到底部时触发的函数
+        print("滚动到底部")
+
+    def scroll_to_top_event(self):
+        # 在滚动到底部时触发的函数
+        print("滚动到顶部")
 
     def decrease_text_size(self):
         self.fontsize -= 2
@@ -810,12 +837,18 @@ class xt_QLineEdit(QLineEdit):
         self.setObjectName(f"xt_QLineEdit_{id(self)}")
         self.textChanged.connect(self.textChanged_event)
         self.textEdited.connect(self.textEdited_event)
+        self.returnPressed.connect(self.returnPressed_event)
 
-    def textChanged_event(self):
-        print('xt_QLineEdit textChanged', self.text())
+    def textChanged_event(self, text):
+        print('xt_QLineEdit textChanged:', text)
 
     def textEdited_event(self):
         print('xt_QLineEdit textEdited', self.text())
+
+    def returnPressed_event(self):
+        text = self.text()
+        print('xt_QLineEdit returnPressed:', text)
+        # 在这里添加你希望执行的操作
 
 
 class xt_QPushButton(QPushButton):

@@ -154,7 +154,7 @@ def get_contents(index, target):
 
     # title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
     title = "".join(_title).replace(u'\u3000', u' ').replace(u'\xa0', u' ').replace(u'\u00a0', u' ')
-    content = clean_Content(_showtext)
+    content = clean_Content(_showtext).strip()
     return [index, title, content]
 
 

@@ -61,8 +61,7 @@ class _MyThread(Thread):
 
 
 def Thread_wrap(func=None, *args, **kwargs):
-    '''函数的线程装饰器,返回线程实例,有无括号都可以,\n
-    getResult获取结果,类或实例getAllResult获取结果集合,\n
+    '''函数的线程装饰器,返回线程实例,有无括号都可以,getResult获取结果,\n
     可在调用被装饰函数添加daemon=True,callback等参数'''
 
     def wrapper(fun):

@@ -16,7 +16,8 @@ Github       : https://github.com/sandorn/home
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMetaObject, Qt
 from PyQt5.QtWidgets import QHBoxLayout, QSplitter, QVBoxLayout
-from xt_Ui import (xt_QCheckBox, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTextBrowser)
+from xt_Ui import (xt_QCheckBox, xt_QLabel, xt_QLineEdit, xt_QListWidget,
+                   xt_QMainWindow, xt_QPushButton, xt_QTextBrowser)
 
 
 class Ui_Window(xt_QMainWindow):
@@ -29,7 +30,7 @@ class Ui_Window(xt_QMainWindow):
     def setupUi(self):
         self.centralwidget = QtWidgets.QWidget()
         self.label = xt_QLabel("小说书号：")
-        self.lineEdit = xt_QLineEdit('38_38166')
+        self.lineEdit = xt_QLineEdit('38_38164')
         self.book_number = self.lineEdit.text()
         self.lineEdit.setObjectName('lineEditobj')
         self.pushButton = xt_QPushButton("&OK 确定")
