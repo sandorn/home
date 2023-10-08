@@ -14,7 +14,7 @@ Github       : https://github.com/sandorn/home
 '''
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QThread, pyqtSlot
+from PyQt5.QtCore import QMetaObject, QThread, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 from read_ui import Ui_Window
 from xt_Alispeech.Play import Synt_Read_QThread
@@ -29,49 +29,42 @@ class NyWindow(Ui_Window):
     def __init__(self):
         super().__init__()
         self.baseurl = 'https://www.biqukan8.cc/'
+        self.lineEdit.setText('0_288')
+        self.book_number = self.lineEdit.text()
         self.urls = []  # 章节链接列表
         self.titles = []  # 章节名称列表
-        self.setWindowTitle('小说阅读器')
-        self.setWindowOpacity(1.0)  # 设置窗口透明度
 
+        self.QTextEdit.scroll_to_top_event = self.on_upB_clicked
+        self.QTextEdit.scroll_to_bottom_event = self.on_downB_clicked
         self.lineEdit.textChanged.connect(self.setnum)
-        self.lineEdit.returnPressed.connect(self.on_OK_clicked)
-        self.pushButton_read.clicked.connect(self.read_Button_event)
-        self.pushButton_3.clicked.connect(self.previous)
-        self.pushButton_4.clicked.connect(self.nextpage)
-        self.pushButton_jia.clicked.connect(self.QTextEdit.increase_text_size)
-        self.pushButton_jian.clicked.connect(self.QTextEdit.decrease_text_size)
-        self.pushButton.clicked.connect(self.on_OK_clicked)
-        self.QTextEdit.scroll_to_bottom_event = self.nextpage
-        self.QTextEdit.scroll_to_top_event = self.previous
+        self.lineEdit.returnPressed.connect(self.on_okB_clicked)
+        self.jiaB.clicked.connect(self.QTextEdit.increase_text_size)
+        self.jianB.clicked.connect(self.QTextEdit.decrease_text_size)
 
-    @pyqtSlot()
-    @EventLoop
-    def on_Run_triggered(self, *args, **kwargs):
-        ...
-
-    @pyqtSlot()
-    def on_Do_triggered(self):
-        ...
+        QMetaObject.connectSlotsByName(self)
 
     def setnum(self):
         self.book_number = self.lineEdit.text()
 
-    def previous(self):
+    @pyqtSlot()
+    @EventLoop
+    def on_upB_clicked(self):
         if self.listWidgetCurrentRow == 0: return
         if self.listWidgetCurrentRow > 0:
             self.listWidget.setCurrentRow(self.listWidgetCurrentRow - 1)
 
-    def nextpage(self):
+    @pyqtSlot()
+    @EventLoop
+    def on_downB_clicked(self):
         if self.listWidgetCurrentRow + 1 == self.listWidget.count(): return
         if self.listWidgetCurrentRow + 1 < self.listWidget.count():
             self.listWidget.setCurrentRow(self.listWidgetCurrentRow + 1)
 
     @pyqtSlot()
     @EventLoop
-    def on_OK_clicked(self):
-        self.QTextEdit.clear()
+    def on_okB_clicked(self):
         self.listWidget.clean()
+        self.QTextEdit.clear()
 
         try:
             self.getlist(f'{self.baseurl}/{self.book_number}/')
@@ -79,20 +72,20 @@ class NyWindow(Ui_Window):
             QMessageBox.warning(None, "警告", f"没有数据，请检查：{err}", QMessageBox.Ok)
         else:
             self.bindList()  # 对列表进行填充
-            self.listWidget.currentRowChanged.connect(self.currentRowChanged_event)  # @绑定单击方法
         return
 
-    def read_Button_event(self):
-        (self.read_read if self.pushButton_read.text() == '&Read' else self.read_stop)()
+    @pyqtSlot()
+    def on_readB_clicked(self):
+        (self.read_read if self.readB.text() == '&Read' else self.read_stop)()
 
     @EventLoop
     def read_stop(self):
-        self.pushButton_read.setText('&Read')
+        self.readB.setText('&Read')
         self.runthread.stop()
 
     @EventLoop
     def read_read(self):
-        self.pushButton_read.setText('&STOP')
+        self.readB.setText('&STOP')
         newText = str2list(self.QTextEdit.toPlainText())  # 处理字符串
         self.runthread = Synt_Read_QThread(newText)
         self.runthread._signal.connect(self.playdone)  # #绑定Synt_Read_QThread中定义的信号
@@ -125,7 +118,7 @@ class NyWindow(Ui_Window):
 
     # List列表单击方法，用来打开选中的项
     @EventLoop
-    def currentRowChanged_event(self, row):
+    def on_listWidget_currentRowChanged(self, row):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
         _text = self.getcontent(self.urls[row]).getResult()  #获取Thread_wrap线程返回值

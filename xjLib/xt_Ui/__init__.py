@@ -30,7 +30,11 @@ def EventLoop(function):
         QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)  # 忽略用户的输入（鼠标和键盘）
         QApplication.setOverrideCursor(Qt.WaitCursor)  # 显示等待中的鼠标样式
 
+        QThread.msleep(1)  # 等待一下,否则会卡死
+
         result = function(*args, **kwargs)
+
+        QThread.msleep(1)  # 等待一下,否则会卡死
 
         QApplication.restoreOverrideCursor()  # 恢复鼠标样式
         QApplication.processEvents()  # 交还控制权
@@ -623,15 +627,15 @@ class xt_QListWidget(QListWidget):
         return widgetres
 
     def itemClicked_event(self, item):
-        # print('QListWidget_itemClicked_event', item, item.text())
+        # print('QListWidget_itemClicked_event')
         # self.currentRow() == self.currentIndex().row()
-        pass
+        ...
 
     def currentRowChanged_event(self, row):
         # item = self.item(row)
-        # print('QListWidget_currentRowChanged_event', row, item.text())
+        # print('QListWidget_currentRowChanged_event')
         # self.currentRow() == self.currentIndex().row()
-        pass
+        ...
 
 
 class xt_QTreeWidget(QTreeWidget):
@@ -767,40 +771,42 @@ class xt_QTextBrowser(QTextBrowser):
         self.setOpenLinks(True)  # 打开文档内部链接 默认为True
         self.setOpenExternalLinks(True)  # 打开外部链接,默认false,openlinks设置false时 该选项无效
         self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard | Qt.LinksAccessibleByMouse | Qt.TextBrowserInteraction | Qt.TextSelectableByKeyboard | Qt.TextSelectableByMouse)
-        self.scrollTimes = 0  # 滚动次数,避免太灵敏
 
     def event(self, event):
-        if (event.type() == event.Wheel and self.verticalScrollBar().value() == self.verticalScrollBar().maximum()):
-            self.scrollTimes += 1
-            if self.scrollTimes >= 5:
-                # 滚动到底部时触发函数
+        if event.type() == event.Wheel:
+            scrollbar = self.verticalScrollBar()
+            current_value = scrollbar.value()
+            maximum_value = scrollbar.maximum()
+            minimum_value = scrollbar.minimum()
+
+            if current_value == maximum_value:
+                QThread.msleep(200)
                 self.scroll_to_bottom_event()
-                self.scrollTimes = 0
                 return True  # 拦截滚动事件，不再传递给滚动条
 
-        if (event.type() == event.Wheel and self.verticalScrollBar().value() == self.verticalScrollBar().minimum()):
-            self.scrollTimes += 1
-            if self.scrollTimes >= 5:
-                # 滚动到顶部时触发函数
+            elif current_value == minimum_value:
+                QThread.msleep(200)
                 self.scroll_to_top_event()
-                self.scrollTimes = 0
                 return True  # 拦截滚动事件，不再传递给滚动条
+
         return super().event(event)
 
     def scroll_to_bottom_event(self):
         # 在滚动到底部时触发的函数
-        print("滚动到底部")
+        # print("滚动到底部")
+        ...
 
     def scroll_to_top_event(self):
         # 在滚动到底部时触发的函数
-        print("滚动到顶部")
+        # print("滚动到顶部")
+        ...
 
     def decrease_text_size(self):
-        self.fontsize -= 2
+        self.fontsize -= 1
         self.setFontSize(self.fontsize)
 
     def increase_text_size(self):
-        self.fontsize += 2
+        self.fontsize += 1
         self.setFontSize(self.fontsize)
 
     def setFontSize(self, size):
@@ -819,15 +825,15 @@ class xt_QTextBrowser(QTextBrowser):
 
 class xt_QTextEdit(QTextEdit):
 
+    # QTextEdit详细操作-凌的博客  http://www.jiuaitu.com/python/407.html
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTextEdit_{id(self)}")
         self.textChanged.connect(self.textChanged_event)
 
     def textChanged_event(self):
-        # print('textChanged', self.toPlainText())
-        # QTextEdit详细操作-凌的博客  http://www.jiuaitu.com/python/407.html
-        pass
+        print('textChanged', self.toPlainText())
+        ...
 
 
 class xt_QLineEdit(QLineEdit):
@@ -846,9 +852,8 @@ class xt_QLineEdit(QLineEdit):
         print('xt_QLineEdit textEdited', self.text())
 
     def returnPressed_event(self):
-        text = self.text()
-        print('xt_QLineEdit returnPressed:', text)
-        # 在这里添加你希望执行的操作
+        # 文本框回车，执行的操作
+        print('xt_QLineEdit returnPressed:', self.text())
 
 
 class xt_QPushButton(QPushButton):
@@ -866,7 +871,7 @@ class xt_QPushButton(QPushButton):
 
     def clicked_event(self):
         # print('QPushButton_clicked_event', self.text())
-        pass
+        ...
 
 
 class xt_QCheckBox(QCheckBox):
@@ -891,12 +896,12 @@ class xt_QCheckBox(QCheckBox):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QCheckBox_{id(self)}")
         self.setChecked(True)
-
         self.stateChanged.connect(self.stateChangedEvent)
 
     def stateChangedEvent(self, state):
-        # print(state)
-        pass
+        print(state)
+        if state == Qt.Checked:
+            print('选中')
 
 
 class xt_QComboBox(QComboBox):
@@ -1121,7 +1126,7 @@ class xt_QMainWindow(QMainWindow):
             self.status_progress_init()
         if TBackground:
             self.setAttribute(Qt.WA_TranslucentBackground)  # 设置窗口背景透明
-            self.setWindowOpacity(0.9)  # 设置窗口透明度
+            self.setWindowOpacity(1.0)  # 设置窗口透明度
             self.setAutoFillBackground(False)
 
         if FWindowHint:
@@ -1132,14 +1137,13 @@ class xt_QMainWindow(QMainWindow):
             self.mouseMoveEvent = super().mouseMoveEvent  # type: ignore
             self.mouseReleaseEvent = super().mouseReleaseEvent  # type: ignore
 
-        QMetaObject.connectSlotsByName(self)  # @用于自动绑定信号和函数
+        # QMetaObject.connectSlotsByName(self)  # @用于自动绑定信号和函数
         '''
         继承仍需声明,可能与控件生成顺序有关
         事件action:on_objectName_triggered
         按钮button:on_objectName_clicked
         必须使用@PyQt5.QtCore.pyqtSlot()修饰要调用的函数
-        ......
-        手工绑定:connect(lamda : self.func(args))；解除绑定:disconnect()
+        手工绑定:connect(self.func)；解除绑定:disconnect()
         '''
         qss = '''* {font: 11pt 'Sarasa Term SC';outline: none;}''' + qdarkstyle.load_stylesheet_pyqt5()
         self.setStyleSheet(qss)
@@ -1148,11 +1152,11 @@ class xt_QMainWindow(QMainWindow):
     def setupUI(self):
         # #窗体icon,size...
         self.basepath = os.path.dirname(__file__)
-        self.setWindowIcon(QIcon(f'{self.basepath}/ico/ico.ico'))
+        self.setWindowIcon(QIcon(f'{self.basepath}\ico\ico.ico'))
         # @将窗口大小调整为可用屏幕空间的百分比
         self.resize(QDesktopWidget().availableGeometry(self).size() * 0.618)
         # self.setGeometry(300, 300, 1024, 768)
-        # def paintEvent(self, event): # #窗口居中
+        # def paintEvent(self, event):
         #     '''窗口大小变化后再次居中'''
         #     self.center()
 
@@ -1180,16 +1184,15 @@ class xt_QMainWindow(QMainWindow):
         self.setCursor(QCursor(Qt.ArrowCursor))
 
     def action_init(self):  # #QAction
-        # _path = os.path.dirname(__file__) + '/'
-        self.Run_action = QAction(QIcon(f'{self.basepath}/ico/Execute.png'), '&Execute', self)
-        self.Do_action = QAction(QIcon(f'{self.basepath}/ico/Performing.png'), '&Performing', self)
-        self.Theme_action = QAction(QIcon(f'{self.basepath}/ico/color.ico'), '&Theme', self)
+        self.Run_action = QAction(QIcon(f'{self.basepath}\ico\Execute.png'), '&Execute', self)
+        self.Do_action = QAction(QIcon(f'{self.basepath}\ico\Performing.png'), '&Performing', self)
+        self.Theme_action = QAction(QIcon(f'{self.basepath}\ico\color.ico'), '&Theme', self)
         self.Run_action.setObjectName("Run")
         self.Do_action.setObjectName("Do")
         self.Theme_action.setObjectName("Theme")
         # !必须,关键,用于自动绑定信号和函数  on_ObjectName_triggered
         # !配套:QMetaObject.connectSlotsByName(self)
-        self.Close_action = QAction(QIcon(f'{self.basepath}/ico/close.ico'), '&Quit', self)
+        self.Close_action = QAction(QIcon(f'{self.basepath}\ico\close.ico'), '&Quit', self)
         self.Run_action.setShortcut('Ctrl+E')
         self.Do_action.setShortcut('Ctrl+P')
         self.Theme_action.setShortcut('Ctrl+T')
@@ -1200,8 +1203,7 @@ class xt_QMainWindow(QMainWindow):
 
     def tool_init(self):  # #工具栏
         self.file_toolbar = self.addToolBar('')
-        self.file_toolbar.setToolButtonStyle(3)  # type: ignore
-        # self.file_toolbar.setFixedHeight(120)
+        self.file_toolbar.setToolButtonStyle(3)
         self.file_toolbar.addAction(self.Run_action)
         self.file_toolbar.addSeparator()  # 分隔线
         self.file_toolbar.addAction(self.Do_action)
@@ -1214,7 +1216,7 @@ class xt_QMainWindow(QMainWindow):
         self.file_toolbar.setFloatable(False)
         self.file_toolbar.setIconSize(QSize(36, 36))
         self.file_toolbar.setStyleSheet("QToolBar{spacing:16px;}")
-        self.file_toolbar.setContextMenuPolicy(Qt.CustomContextMenu)  # ActionsContextMenu #CustomContextMenu
+        self.file_toolbar.setContextMenuPolicy(Qt.CustomContextMenu)  # ActionsContextMenu
 
     def menu_init(self):  # #菜单栏
         menubar = self.menuBar()
@@ -1230,7 +1232,6 @@ class xt_QMainWindow(QMainWindow):
         self.status1 = xt_QStatusBar()
         self.status2 = xt_QLabel()
         self.status3 = xt_QLabel()
-        # self.setStatusBar(self.statusBar)
         self.pbar = xt_QProgressBar()
         _statusBar = self.statusBar()
         _statusBar.setSizeGripEnabled(False)
@@ -1238,28 +1239,29 @@ class xt_QMainWindow(QMainWindow):
         _statusBar.addWidget(self.status2, stretch=1)
         _statusBar.addWidget(self.status3, stretch=1)
         _statusBar.addWidget(self.pbar, stretch=1)
-        # _statusBar.addPermanentWidget(self.pbar, stretch=100)
         self.status1.showMessage('Ready to compose')
 
     @pyqtSlot()
     def on_Run_triggered(self):
+        # print('on_Run_triggered')
         ...
 
     @pyqtSlot()
     def on_Do_triggered(self):
+        # print('on_Do_triggered')
         ...
 
     @pyqtSlot()
     def on_Theme_triggered(self):
-        # #根据名称绑定的函数
+        # print('on_Theme_triggered')
         qss_list = [
-            f'{self.basepath}/blue.qss',
-            f'{self.basepath}/css.qss',
-            f'{self.basepath}/dark_orange.qss',
-            f'{self.basepath}/dark.qss',
-            f'{self.basepath}/grey.qss',
-            f'{self.basepath}/qdark.qss',
-            f'{self.basepath}/white.qss',
+            f'{self.basepath}\qss\\blue.qss',
+            f'{self.basepath}\qss\css.qss',
+            f'{self.basepath}\qss\dark_orange.qss',
+            f'{self.basepath}\qss\dark.qss',
+            f'{self.basepath}\qss\grey.qss',
+            f'{self.basepath}\qss\qdark.qss',
+            f'{self.basepath}\qss\white.qss',
         ]
         file_name = random.choice(qss_list)
         self.setWindowTitle(f'{self.title}--' + file_name.split('/')[-1].split('.')[0])
