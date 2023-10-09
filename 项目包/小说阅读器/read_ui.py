@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-10-04 14:02:42
+LastEditTime : 2023-10-08 18:46:03
 FilePath     : /CODE/项目包/小说阅读器/read_ui.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -15,9 +15,18 @@ Github       : https://github.com/sandorn/home
 import os
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QMetaObject
 from PyQt5.QtWidgets import QHBoxLayout, QSplitter, QVBoxLayout
-from xt_Ui import (QIcon, xt_QCheckBox, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTextBrowser)
+from xt_Ui import (
+    QIcon,
+    xt_QCheckBox,
+    xt_QLabel,
+    xt_QLineEdit,
+    xt_QListWidget,
+    xt_QMainWindow,
+    xt_QPushButton,
+    xt_QTextBrowser,
+)
 
 
 class Ui_Window(xt_QMainWindow):
@@ -26,6 +35,7 @@ class Ui_Window(xt_QMainWindow):
         super().__init__('小说阅读器', tool=True, menu=True, status=True)
         self.setupUi()
         self.retranslateUi()
+        QMetaObject.connectSlotsByName(self)
 
     def setupUi(self):
         self.basepath = os.path.dirname(__file__)

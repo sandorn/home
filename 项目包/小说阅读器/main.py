@@ -2,19 +2,18 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2022-12-05 12:06:28
-LastEditTime : 2022-12-05 12:06:28
-FilePath     : /项目包/小说阅读器/main.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2023-10-09 10:33:48
+FilePath     : /CODE/项目包/小说阅读器/main.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QMetaObject, QThread, pyqtSlot
+from PyQt5.QtCore import QThread, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 from read_ui import Ui_Window
 from xt_Alispeech.Play import Synt_Read_QThread
@@ -40,8 +39,6 @@ class NyWindow(Ui_Window):
         self.lineEdit.returnPressed.connect(self.on_okB_clicked)
         self.jiaB.clicked.connect(self.QTextEdit.increase_text_size)
         self.jianB.clicked.connect(self.QTextEdit.decrease_text_size)
-
-        QMetaObject.connectSlotsByName(self)
 
     def setnum(self):
         self.book_number = self.lineEdit.text()
@@ -117,6 +114,7 @@ class NyWindow(Ui_Window):
         self.listWidget.scrollToTop()  # scrollToBottom()
 
     # List列表单击方法，用来打开选中的项
+    @pyqtSlot(int)
     @EventLoop
     def on_listWidget_currentRowChanged(self, row):
         self.listWidgetCurrentRow = row

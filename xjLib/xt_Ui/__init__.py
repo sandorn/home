@@ -16,9 +16,48 @@ import random
 from functools import wraps
 
 import qdarkstyle
-from PyQt5.QtCore import (QEventLoop, QMetaObject, QSize, Qt, QThread, pyqtSignal, pyqtSlot)
+from PyQt5.QtCore import (
+    QEventLoop,
+    QSize,
+    Qt,
+    QThread,
+    pyqtSignal,
+    pyqtSlot,
+)
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QAction, QApplication, QCheckBox, QComboBox, QDesktopWidget, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMainWindow, QMenu, QMessageBox, QProgressBar, QPushButton, QSpinBox, QStatusBar, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget)
+from PyQt5.QtWidgets import (
+    QAction,
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDesktopWidget,
+    QDoubleSpinBox,
+    QFileDialog,
+    QHBoxLayout,
+    QHeaderView,
+    QInputDialog,
+    QLabel,
+    QLineEdit,
+    QListView,
+    QListWidget,
+    QListWidgetItem,
+    QMainWindow,
+    QMenu,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QSpinBox,
+    QStatusBar,
+    QTableView,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QTextBrowser,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QWidget,
+)
 from xt_File import qsstools
 
 
