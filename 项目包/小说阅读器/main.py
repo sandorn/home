@@ -114,7 +114,7 @@ class NyWindow(Ui_Window):
         self.listWidget.scrollToTop()  # scrollToBottom()
 
     # List列表单击方法，用来打开选中的项
-    @pyqtSlot(int)
+    @pyqtSlot(int)  # 参数与func一致
     @EventLoop
     def on_listWidget_currentRowChanged(self, row):
         self.listWidgetCurrentRow = row
