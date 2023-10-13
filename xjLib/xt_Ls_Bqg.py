@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 # ==============================================================
 # Descripttion : None
 # Develop      : VSCode
@@ -11,7 +11,7 @@ FilePath     : /xjLib/xt_Ls_Bqg.py
 LastEditTime : 2021-04-14 19:36:16
 # Github       : https://github.com/sandorn/home
 # ==============================================================
-'''
+"""
 
 from xt_Ahttp import ahttpGet
 from xt_Requests import get_tretry
@@ -23,54 +23,54 @@ def clean_Content(in_str):
     """清洗内容"""
     clean_list = [
         "', '",
-        '&nbsp;',
-        ';[笔趣看  www.biqukan.com]',
-        'www.biqukan.com。',
-        'wap.biqukan.com',
-        'www.biqukan.com',
-        'm.biqukan.com',
-        'n.biqukan.com',
-        'www.biqukan8.cc。',
-        'www.biqukan8.cc',
-        'm.biqukan8.cc。',
-        'm.biqukan8.cc',
-        '百度搜索“笔趣看小说网”手机阅读:',
-        '百度搜索“笔趣看小说网”手机阅读：',
-        '请记住本书首发域名:',
-        '请记住本书首发域名：',
-        '笔趣阁手机版阅读网址:',
-        '笔趣阁手机版阅读网址：',
-        '关注公众号：书友大本营  关注即送现金、点币！',
-        ';[笔趣看  ]',
-        '[笔趣看 ]',
-        '<br />',
-        '\t',
+        "&nbsp;",
+        ";[笔趣看  www.biqukan.com]",
+        "www.biqukan.com。",
+        "wap.biqukan.com",
+        "www.biqukan.com",
+        "m.biqukan.com",
+        "n.biqukan.com",
+        "www.biqukan8.cc。",
+        "www.biqukan8.cc",
+        "m.biqukan8.cc。",
+        "m.biqukan8.cc",
+        "百度搜索“笔趣看小说网”手机阅读:",
+        "百度搜索“笔趣看小说网”手机阅读：",
+        "请记住本书首发域名:",
+        "请记住本书首发域名：",
+        "笔趣阁手机版阅读网址:",
+        "笔趣阁手机版阅读网址：",
+        "关注公众号：书友大本营  关注即送现金、点币！",
+        ";[笔趣看  ]",
+        "[笔趣看 ]",
+        "<br />",
+        "\t",
     ]
     clean_list += Invisible_Chars
     sub_list = [
-        (r'\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)', ''),
+        (r"\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)", ""),
     ]
     repl_list = [
-        (u'\u3000', '  '),
-        (u'\xa0', ' '),
-        (u'\u0009', ' '),
-        (u'\u000B', ' '),
-        (u'\u000C', ' '),
-        (u'\u0020', ' '),
-        (u'\u00a0', ' '),
-        (u'\uFFFF', ' '),
-        (u'\u000A', '\n'),
-        (u'\u000D', '\n'),
-        (u'\u2028', '\n'),
-        (u'\u2029', '\n'),
-        ('\r', '\n'),
-        ('    ', '\n    '),
-        ('\r\n', '\n'),
-        ('\n\n', '\n'),
+        ("\u3000", "  "),
+        ("\xa0", " "),
+        ("\u0009", " "),
+        ("\u000B", " "),
+        ("\u000C", " "),
+        ("\u0020", " "),
+        ("\u00a0", " "),
+        ("\uFFFF", " "),
+        ("\u000A", "\n"),
+        ("\u000D", "\n"),
+        ("\u2028", "\n"),
+        ("\u2029", "\n"),
+        ("\r", "\n"),
+        ("    ", "\n    "),
+        ("\r\n", "\n"),
+        ("\n\n", "\n"),
     ]
 
     if isinstance(in_str, (list, tuple)):
-        in_str = '\n'.join([item.strip("\r\n　  　") for item in in_str])
+        in_str = "\n".join([item.strip("\r\n　  　") for item in in_str])
         # item.strip("\r\n　  ")
     in_str = in_str.strip("\r\n ")
 
@@ -85,13 +85,19 @@ def 结果处理(resps):
     _texts = []
 
     for resp in resps:
-        if resp is None: continue
+        if resp is None:
+            continue
         _xpath = (
-            '//h1/text()',
+            "//h1/text()",
             '//*[@id="content"]/text()',
         )
         _title, _showtext = resp.xpath(_xpath)
-        title = "".join(_title).replace(u'\u3000', u' ').replace(u'\xa0', u' ').replace(u'\u00a0', u' ')
+        title = (
+            "".join(_title)
+            .replace("\u3000", " ")
+            .replace("\xa0", " ")
+            .replace("\u00a0", " ")
+        )
         content = clean_Content(_showtext)
         # if len(content) < 10: print(resp, '||||||||||||||||||||||||||', resp.text)
         _texts.append([resp.index, title, content])
@@ -112,31 +118,30 @@ def get_download_url(target):
 
     _xpath = (
         # '//meta[@property="og:novel:book_name"]/@content',
-        '//h2/text()',
-        '//dt[2]/following-sibling::dd/a/@href',
-        '//dt[2]/following-sibling::dd/a/text()',
+        "//h2/text()",
+        "//dt[2]/following-sibling::dd/a/@href",
+        "//dt[2]/following-sibling::dd/a/text()",
         # '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href',
     )
     bookname, temp_urls, titles = resp.xpath(_xpath)
     bookname = bookname[0]
-    urls = ['/'.join(target.split('/')[:-2]) + item for item in temp_urls]  # 章节链接
+    urls = ["/".join(target.split("/")[:-2]) + item for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
 
 def get_biqugse_download_url(target):
-
     resp = get_tretry(target)
     assert isinstance(resp, htmlResponse)
     _xpath = [
         '//meta[@property="og:title"]//@content',
-        '//dt[2]/following-sibling::dd/a/@href',
-        '//dt[2]/following-sibling::dd/a/text()',
+        "//dt[2]/following-sibling::dd/a/@href",
+        "//dt[2]/following-sibling::dd/a/text()",
         # '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()',
     ]
     bookname, temp_urls, titles = resp.xpath(_xpath)
 
     bookname = bookname[0]
-    baseurl = '/'.join(target.split('/')[:-2])
+    baseurl = "/".join(target.split("/")[:-2])
     urls = [baseurl + item for item in temp_urls]  # # 章节链接
     return bookname, urls, titles
 
@@ -146,14 +151,19 @@ def get_contents(index, target):
     assert isinstance(resp, htmlResponse)
 
     # #pyquery
-    _title = resp.pyquery('h1').text()
-    _showtext = resp.pyquery('#content').text()
+    _title = resp.pyquery("h1").text()
+    _showtext = resp.pyquery("#content").text()
 
     # _xpath = ('//h1/text()', '//*[@id="content"]/text()')
     # _title, _showtext = resp.xpath(_xpath)
 
     # title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
-    title = "".join(_title).replace(u'\u3000', u' ').replace(u'\xa0', u' ').replace(u'\u00a0', u' ')
+    title = (
+        "".join(_title)
+        .replace("\u3000", " ")
+        .replace("\xa0", " ")
+        .replace("\u00a0", " ")
+    )
     content = clean_Content(_showtext).strip()
     return [index, title, content]
 
@@ -163,17 +173,17 @@ def ahttp_get_contents(args):
     resp = ahttpGet(target)
     assert isinstance(resp, htmlResponse)
     _xpath = (
-        '//h1/text()',
+        "//h1/text()",
         '//*[@id="content"]/text()',
     )
     _title, _showtext = resp.xpath(_xpath)
-    title = Str_Replace(_title, [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
+    title = Str_Replace(_title, [("\u3000", " "), ("\xa0", " "), ("\u00a0", " ")])
     content = clean_Content(_showtext)
     return [index, title, content]
 
 
 if __name__ == "__main__":
-    url = 'http://www.biqugse.com/96703/'
+    url = "http://www.biqugse.com/96703/"
     # 'http://www.biqugse.com/96703/'
     # 'https://www.biqukan8.cc/38_38163/'
     bookname, urls, titles = get_biqugse_download_url(url)

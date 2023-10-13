@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
@@ -10,7 +10,7 @@ LastEditTime : 2023-10-09 10:33:48
 FilePath     : /CODE/项目包/小说阅读器/main.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QThread, pyqtSlot
@@ -27,11 +27,14 @@ class NyWindow(Ui_Window):
 
     def __init__(self):
         super().__init__()
-        self.baseurl = 'https://www.biqukan8.cc/'
-        self.lineEdit.setText('0_288')
+        self.baseurl = "https://www.biqukan8.cc/"
+        self.lineEdit.setText("0_288")
         self.book_number = self.lineEdit.text()
         self.urls = []  # 章节链接列表
         self.titles = []  # 章节名称列表
+        self.bookname = ""  # 小说名称
+        self.listWidgetCurrentRow = 0  # 当前选中的行
+        self.runthread = None
 
         self.QTextEdit.scroll_to_top_event = self.on_upB_clicked
         self.QTextEdit.scroll_to_bottom_event = self.on_downB_clicked
@@ -53,7 +56,8 @@ class NyWindow(Ui_Window):
     @pyqtSlot()
     @EventLoop
     def on_downB_clicked(self):
-        if self.listWidgetCurrentRow + 1 == self.listWidget.count(): return
+        if self.listWidgetCurrentRow + 1 == self.listWidget.count():
+            return
         if self.listWidgetCurrentRow + 1 < self.listWidget.count():
             self.listWidget.setCurrentRow(self.listWidgetCurrentRow + 1)
 
@@ -64,28 +68,34 @@ class NyWindow(Ui_Window):
         self.QTextEdit.clear()
 
         try:
-            self.getlist(f'{self.baseurl}/{self.book_number}/')
+            self.getlist(f"{self.baseurl}/{self.book_number}/")
         except Exception as err:
-            QMessageBox.warning(None, "警告", f"没有数据，请检查：{err}", QMessageBox.Ok)
+            QMessageBox.warning(
+                None,
+                "警告",
+                f"没有数据，请检查：{err}",
+                QMessageBox.Ok,
+            )
         else:
             self.bindList()  # 对列表进行填充
         return
 
     @pyqtSlot()
     def on_readB_clicked(self):
-        (self.read_read if self.readB.text() == '&Read' else self.read_stop)()
+        (self.read_read if self.readB.text() == "&Read" else self.read_stop)()
 
     @EventLoop
     def read_stop(self):
-        self.readB.setText('&Read')
+        self.readB.setText("&Read")
         self.runthread.stop()
 
     @EventLoop
     def read_read(self):
-        self.readB.setText('&STOP')
+        self.readB.setText("&STOP")
         newText = str2list(self.QTextEdit.toPlainText())  # 处理字符串
         self.runthread = Synt_Read_QThread(newText)
-        self.runthread._signal.connect(self.playdone)  # #绑定Synt_Read_QThread中定义的信号
+        # #绑定Synt_Read_QThread中定义的信号
+        self.runthread._signal.connect(self.playdone)
 
     def playdone(self):
         self.read_stop()
@@ -98,7 +108,7 @@ class NyWindow(Ui_Window):
     @EventLoop
     def getlist(self, url):
         self.bookname, self.urls, self.titles = get_download_url(url)
-        self.setWindowTitle(f'{self.title}--{self.bookname}')
+        self.setWindowTitle(f"{self.title}--{self.bookname}")
         return
 
     @EventLoop
@@ -110,16 +120,18 @@ class NyWindow(Ui_Window):
     # 将文件显示在List列表中(图表显示)
     @EventLoop
     def bindList(self):
-        self.listWidget.addItems([self.titles[index] for index in range(len(self.titles))])
+        self.listWidget.addItems(
+            [self.titles[index] for index in range(len(self.titles))])
         self.listWidget.scrollToTop()  # scrollToBottom()
 
     # List列表单击方法，用来打开选中的项
-    @pyqtSlot(int)  # 参数与func一致
+    # @pyqtSlot(int)  # 参数与func一致  #有没有都行
     @EventLoop
     def on_listWidget_currentRowChanged(self, row):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
-        _text = self.getcontent(self.urls[row]).getResult()  #获取Thread_wrap线程返回值
+        _text = self.getcontent(
+            self.urls[row]).getResult()  # 获取Thread_wrap线程返回值
         # nowthread = QThread()
         # nowthread.run = self.getcontent
         # _text = nowthread.run(self.urls[row])
