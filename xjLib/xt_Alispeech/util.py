@@ -1,16 +1,15 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-06-03 16:57:09
-#FilePath     : /xjLib/xt_Alispeech/conf.py
-#LastEditTime : 2020-07-22 13:27:36
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-10-16 14:40:24
+FilePath     : /CODE/xjLib/xt_Alispeech/util.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 import os
 import shutil
@@ -36,7 +35,8 @@ def handle_result(res):
 
 def get_voice_data(voice_data_list):
     '''情形1-不保存文件,返回音频数据,用于朗读'''
-    return [[index, open(item[1], 'rb').read()] for index, item in enumerate(voice_data_list)]
+    return [[index, open(item[1], 'rb').read()]
+            for index, item in enumerate(voice_data_list)]
 
 
 def save_sound_file(voice_data_list, path=None):
@@ -57,7 +57,10 @@ def merge_sound_file(voice_file_list, args, path=None):
     '''情形3-合并音频,删除过程文件'''
     if path is None: path = get_desktop()
     # 将声音列表初始化为AudioSegment格式
-    sound_list = [AudioSegment.from_file(item[1], format=args['aformat']) for item in voice_file_list]
+    sound_list = [
+        AudioSegment.from_file(item[1], format=args['aformat'])
+        for item in voice_file_list
+    ]
     # [[item[0], AudioSegment.from_file(item[1], format=format)] for item in voice_file_list]
 
     # 使用sum函数来快速完成声音文件相加，无需循环
@@ -69,4 +72,3 @@ def merge_sound_file(voice_file_list, args, path=None):
 
     # $[[1, 'D:\\Desktop\\1.mp3'],]
     return [[1, __fname]]
-

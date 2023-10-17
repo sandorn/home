@@ -85,11 +85,6 @@ class NyWindow(Ui_Window):
         (self.read_read if self.readB.text() == "&Read" else self.read_stop)()
 
     @EventLoop
-    def read_stop(self):
-        self.readB.setText("&Read")
-        self.runthread.stop()
-
-    @EventLoop
     def read_read(self):
         self.readB.setText("&STOP")
         newText = str2list(self.QTextEdit.toPlainText())  # 处理字符串
@@ -97,11 +92,16 @@ class NyWindow(Ui_Window):
         # #绑定Synt_Read_QThread中定义的信号
         self.runthread._signal.connect(self.playdone)
 
+    @EventLoop
+    def read_stop(self):
+        self.readB.setText("&Read")
+        if self.runthread is not None: self.runthread.stop()
+
     def playdone(self):
         self.read_stop()
         if self.checkbox.isChecked():
             QThread.msleep(100)
-            self.nextpage()
+            self.on_downB_clicked()
             QThread.msleep(100)
             self.read_read()
 

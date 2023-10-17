@@ -27,7 +27,6 @@ from xt_Ui import (
     xt_QTextBrowser,
 )
 
-
 class Ui_Window(xt_QMainWindow):
 
     def __init__(self):
