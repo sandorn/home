@@ -41,7 +41,8 @@ class _MyThread(Thread):
 
     def run(self):
         self.Result = self._target(*self._args, **self._kwargs)
-        self.Result = self.callback(self.Result) if callable(self.callback) else self.Result
+        self.Result = self.callback(self.Result) if callable(
+            self.callback) else self.Result
 
     def getResult(self):
         """获取当前线程结果"""
@@ -98,8 +99,11 @@ def QThread_wrap(func=None, *args, **kwargs):
             _mythr.join = _mythr.wait
             _mythr.run = fun
             print(f"{_mythr} | {fun.__name__} start with QThread_wrap...")
+
             _mythr.Result = _mythr.run(*args, **kwargs)
-            _mythr.Result = _mythr.callback(_mythr.Result) if callable(_mythr.callback) else _mythr.Result
+            if callable(_mythr.callback):
+                _mythr.Result = _mythr.callback(_mythr.Result)
+
             # _mythr.join()  # 自动阻塞，等待结果
             return _mythr
 

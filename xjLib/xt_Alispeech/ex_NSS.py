@@ -108,7 +108,6 @@ class NSS(on_state_cls):
                 start_timeout=self.args.get('start_timeout', 10),
                 completed_timeout=self.args.get('completed_timeout', 60),
                 ex=self.args.get('ex', {}),
-                # {'enable_subtitle': True},  #输出每个字在音频中的时间位置
             )
 
             QThread.msleep(100)
@@ -126,7 +125,10 @@ def TODO_TTS(_in_text, readonly=False, merge=False, **kwargs):
     assert isinstance(_in_text, list)
 
     # $运行主程序
-    _ = [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
+    _ = [
+        NSS(text, tid=index + 1, args=args)
+        for index, text in enumerate(_in_text)
+    ]
     voice_data_list = NSS.wait_completed()
 
     # $处理结果

@@ -16,7 +16,15 @@ import random
 from functools import wraps
 
 import qdarkstyle
-from PyQt5.QtCore import QEventLoop, QSize, Qt, QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import (
+    QEventLoop,
+    QMetaObject,
+    QSize,
+    Qt,
+    QThread,
+    pyqtSignal,
+    pyqtSlot,
+)
 from PyQt5.QtGui import QCursor, QIcon, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (
     QAction,
@@ -821,16 +829,14 @@ class xt_QTextBrowser(QTextBrowser):
         if event.type() == event.Wheel:
             scrollbar = self.verticalScrollBar()
             current_value = scrollbar.value()
-            maximum_value = scrollbar.maximum()
-            minimum_value = scrollbar.minimum()
 
-            if current_value == maximum_value:
-                QThread.msleep(200)
+            if current_value == scrollbar.maximum():
+                QThread.msleep(400)
                 self.scroll_to_bottom_event()
                 return True  # 拦截滚动事件，不再传递给滚动条
 
-            elif current_value == minimum_value:
-                QThread.msleep(200)
+            elif current_value == scrollbar.minimum():
+                QThread.msleep(400)
                 self.scroll_to_top_event()
                 return True  # 拦截滚动事件，不再传递给滚动条
 
@@ -876,7 +882,7 @@ class xt_QTextEdit(QTextEdit):
         self.textChanged.connect(self.textChanged_event)
 
     def textChanged_event(self):
-        print("textChanged", self.toPlainText())
+        # print("textChanged", self.toPlainText())
         ...
 
 
@@ -898,6 +904,39 @@ class xt_QLineEdit(QLineEdit):
     def returnPressed_event(self):
         # 文本框回车，执行的操作
         print("xt_QLineEdit returnPressed:", self.text())
+
+        # def keyPressEvent(self, event):
+        #     if event.key() in [Qt.Key_Return, Qt.Key_Enter]:
+        #         # print('QLineEdit_keyPressEvent', event.key())
+        #         self.textChanged.emit()
+        #     else:
+        #         super().keyPressEvent(event)
+
+    #     # 创建整数范围验证器
+    #     int_validator = QIntValidator(-500, 500)
+    #     self.setValidator(int_validator)
+
+    #     # 连接文本变化信号到槽函数
+    #     self.textChanged.connect(self.onTextChanged)
+
+    # def onTextChanged(self):
+    #     text = self.text()
+
+    #     # 如果文本为空，则保持文本不变
+    #     if not text:
+    #         return
+
+    #     # 如果文本不是整数，则移除非数字字符
+    #     if not text.isdigit():
+    #         self.setText(''.join(filter(str.isdigit, text)))
+    #         return
+
+    #     # 如果文本超出允许范围，则截断为在范围内的整数
+    #     value = int(text)
+    #     if value < -500:
+    #         self.setText('-500')
+    #     elif value > 500:
+    #         self.setText('500')
 
 
 class xt_QPushButton(QPushButton):
@@ -1014,22 +1053,15 @@ class xt_QSpinBox(QSpinBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # QSpinBox旨在处理整数和离散值(例如:月份名称)
-
         self.setObjectName(f"xt_QSpinBox_{id(self)}")
-        # 范围
-        self.setRange(20, 200)
-        # 步长
-        self.setSingleStep(10)
+        self.setRange(0, 100)  # 范围
+        self.setSingleStep(1)  # 步长
         #  当前值 self.setValue(150)
-        #  前缀
-        self.setPrefix("缩放: ")
-        #  后缀
-        self.setSuffix(" %")
+        self.setPrefix("缩放: ")  #  前缀
+        # self.setSuffix(" %")  #  后缀
         # 特殊显示文本
-        self.setSpecialValueText("Automatic")
-        #  开启循环
-        self.setWrapping(True)
-
+        # self.setSpecialValueText("Automatic")
+        # self.setWrapping(True)#  开启循环
         self.valueChanged.connect(self.valueChanged_event)
 
     def valueChanged_event(self, value):
@@ -1048,22 +1080,14 @@ class xt_QDoubleSpinBox(QDoubleSpinBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QDoubleSpinBox _{id(self)}")
-        # 范围
-        self.setRange(20, 200)
-        # 步长
-        self.setSingleStep(0.005)
-        # 精度
-        self.setDecimals(3)
+        self.setRange(0, 100)  # 范围
+        self.setSingleStep(0.01)  # 步长
+        self.setDecimals(2)  # 精度
         #  当前值 self.setValue(150)
-        #  前缀
-        self.setPrefix("缩放: ")
-        #  后缀
-        self.setSuffix(" %")
-        # 特殊显示文本
-        self.setSpecialValueText("Automatic")
-        #  开启循环
-        self.setWrapping(True)
-
+        self.setPrefix("缩放: ")  #  前缀
+        # self.setSuffix(" %")  #  后缀
+        # self.setSpecialValueText("Automatic")# 特殊显示文本
+        # self.setWrapping(True)#  开启循环
         self.valueChanged.connect(self.valueChanged_event)
 
     def valueChanged_event(self, value):
@@ -1193,7 +1217,8 @@ class xt_QMainWindow(QMainWindow):
             self.mouseMoveEvent = super().mouseMoveEvent  # type: ignore
             self.mouseReleaseEvent = super().mouseReleaseEvent  # type: ignore
 
-        # QMetaObject.connectSlotsByName(self)  # @用于自动绑定信号和函数
+        QMetaObject.connectSlotsByName(self)  # @用于自动绑定信号和函数
+        # !必须,关键,用于自动绑定信号和函数  on_ObjectName_triggered
         """
         继承仍需声明,可能与控件生成顺序有关
         事件action:on_objectName_triggered
@@ -1209,7 +1234,7 @@ class xt_QMainWindow(QMainWindow):
     def setupUI(self):
         # #窗体icon,size...
         self.basepath = os.path.dirname(__file__)
-        self.setWindowIcon(QIcon(f"{self.basepath}\ico\ico.ico"))
+        self.setWindowIcon(QIcon(f"{self.basepath}/ico/ico.ico"))
         # @将窗口大小调整为可用屏幕空间的百分比
         self.resize(QDesktopWidget().availableGeometry(self).size() * 0.618)
         # self.setGeometry(300, 300, 1024, 768)
@@ -1236,23 +1261,21 @@ class xt_QMainWindow(QMainWindow):
             self.move(QMouseEvent.globalPos() - self.m_DragPosition)
             QMouseEvent.accept()
 
-    def mouseReleaseEvent(self, QMouseEvent):
+    def mouseReleaseEvent(self):
         self.m_drag = False
         self.setCursor(QCursor(Qt.ArrowCursor))
 
     def action_init(self):  # #QAction
-        self.Run_action = QAction(QIcon(f"{self.basepath}\ico\Execute.png"),
+        self.Run_action = QAction(QIcon(f"{self.basepath}/ico/Execute.png"),
                                   "&Execute", self)
-        self.Do_action = QAction(QIcon(f"{self.basepath}\ico\Performing.png"),
+        self.Do_action = QAction(QIcon(f"{self.basepath}/ico/Performing.png"),
                                  "&Performing", self)
-        self.Theme_action = QAction(QIcon(f"{self.basepath}\ico\color.ico"),
+        self.Theme_action = QAction(QIcon(f"{self.basepath}/ico/color.ico"),
                                     "&Theme", self)
         self.Run_action.setObjectName("Run")
         self.Do_action.setObjectName("Do")
         self.Theme_action.setObjectName("Theme")
-        # !必须,关键,用于自动绑定信号和函数  on_ObjectName_triggered
-        # !配套:QMetaObject.connectSlotsByName(self)
-        self.Close_action = QAction(QIcon(f"{self.basepath}\ico\close.ico"),
+        self.Close_action = QAction(QIcon(f"{self.basepath}/ico/close.ico"),
                                     "&Quit", self)
         self.Run_action.setShortcut("Ctrl+E")
         self.Do_action.setShortcut("Ctrl+P")
@@ -1264,7 +1287,13 @@ class xt_QMainWindow(QMainWindow):
 
     def tool_init(self):  # #工具栏
         self.file_toolbar = self.addToolBar("")
-        self.file_toolbar.setToolButtonStyle(3)
+        self.file_toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        '''
+        Qt.ToolButtonIconOnly：仅显示图标，没有文本。
+        Qt.ToolButtonTextOnly：仅显示文本，没有图标。
+        Qt.ToolButtonTextBesideIcon：图标和文本并排显示。
+        Qt.ToolButtonTextUnderIcon：图标在上方，文本在下方显示。
+        '''
         self.file_toolbar.addAction(self.Run_action)
         self.file_toolbar.addSeparator()  # 分隔线
         self.file_toolbar.addAction(self.Do_action)
@@ -1317,13 +1346,13 @@ class xt_QMainWindow(QMainWindow):
     def on_Theme_triggered(self):
         # print('on_Theme_triggered')
         qss_list = [
-            f"{self.basepath}\qss\\blue.qss",
-            f"{self.basepath}\qss\css.qss",
-            f"{self.basepath}\qss\dark_orange.qss",
-            f"{self.basepath}\qss\dark.qss",
-            f"{self.basepath}\qss\grey.qss",
-            f"{self.basepath}\qss\qdark.qss",
-            f"{self.basepath}\qss\white.qss",
+            f"{self.basepath}/qss/blue.qss",
+            f"{self.basepath}/qss/css.qss",
+            f"{self.basepath}/qss/dark_orange.qss",
+            f"{self.basepath}/qss/dark.qss",
+            f"{self.basepath}/qss/grey.qss",
+            f"{self.basepath}/qss/qdark.qss",
+            f"{self.basepath}/qss/white.qss",
         ]
         file_name = random.choice(qss_list)
         self.setWindowTitle(f"{self.title}--" +

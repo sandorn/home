@@ -50,16 +50,13 @@ class NyWindow(Ui_Window):
     @EventLoop
     def on_upB_clicked(self):
         if self.listWidgetCurrentRow == 0: return
-        if self.listWidgetCurrentRow > 0:
-            self.listWidget.setCurrentRow(self.listWidgetCurrentRow - 1)
+        self.listWidget.setCurrentRow(self.listWidgetCurrentRow - 1)
 
     @pyqtSlot()
     @EventLoop
     def on_downB_clicked(self):
-        if self.listWidgetCurrentRow + 1 == self.listWidget.count():
-            return
-        if self.listWidgetCurrentRow + 1 < self.listWidget.count():
-            self.listWidget.setCurrentRow(self.listWidgetCurrentRow + 1)
+        if self.listWidgetCurrentRow + 1 == self.listWidget.count(): return
+        self.listWidget.setCurrentRow(self.listWidgetCurrentRow + 1)
 
     @pyqtSlot()
     @EventLoop

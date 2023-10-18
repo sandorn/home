@@ -92,7 +92,9 @@ class NSR(on_state_cls):
                 ping_timeout=None,
                 ex={},
             )
-            slices = [self.__data[i:i + 640] for i in range(0, len(self.__data), 640)]
+            slices = [
+                self.__data[i:i + 640] for i in range(0, len(self.__data), 640)
+            ]
             # slices = zip(*(iter(self.__data), ) * 640)
             for __s in slices:
                 _NSR_.send_audio(bytes(__s))
@@ -107,7 +109,8 @@ def TODO_NSR(_in_file_list):
     elif isinstance(_in_file_list, list):
         _ = [NSR(file, index + 1) for index, file in enumerate(_in_file_list)]
     else:
-        raise TypeError(f"TODO_NSR: {_in_file_list} is not a file | file list.")
+        raise TypeError(
+            f"TODO_NSR: {_in_file_list} is not a file | file list.")
 
     res_list, dictMerged = NSR.wait_completed()
     return res_list, dictMerged
