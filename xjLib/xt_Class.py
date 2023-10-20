@@ -1,16 +1,15 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-05-30 14:25:16
-FilePath     : /xjLib/xt_Class.py
-LastEditTime : 2021-04-14 19:35:50
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-10-20 10:47:17
+FilePath     : /CODE/xjLib/xt_Class.py
+Github       : https://github.com/sandorn/home
+==============================================================
 '''
 
 
@@ -74,7 +73,11 @@ class dict_mothed_Mixin:
     def get_dict(self):
         '''把对象转换成字典'''
         if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
-            self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
+            self.__dict__ = {
+                key: getattr(self, key)
+                for key in dir(self) if not key.startswith('__')
+                and not callable(getattr(self, key))
+            }
         return self.__dict__
 
 
@@ -197,9 +200,9 @@ if __name__ == "__main__":
     def one():
         my_dict = SetOnceDict()
         try:
-            my_dict['username'] = '1111'
-            my_dict['me'] = 'sandorn'
-            my_dict['username'] = 'hellokitty'
+            my_dict['username'] = '333'
+            my_dict['me'] = 'sand'
+            my_dict['username'] = 'sandorny'
         except Exception as err:
             print(err)
         print(99999, my_dict)
@@ -209,7 +212,7 @@ if __name__ == "__main__":
         class Animal(iter_Mixin, repr_Mixin):
 
             def __init__(self):
-                self.name = 'na98888me'
+                self.name = 'liuxinjun'
                 self.age = 12
                 self._i = 787
                 self.姓名 = '行云流水'

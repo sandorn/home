@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-10-13 14:50:12
+LastEditTime : 2023-10-19 10:12:00
 FilePath     : /CODE/项目包/小说阅读器/read_ui.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -27,6 +27,7 @@ from xt_Ui import (
     xt_QTextBrowser,
 )
 
+
 class Ui_Window(xt_QMainWindow):
 
     def __init__(self):
@@ -37,9 +38,7 @@ class Ui_Window(xt_QMainWindow):
 
     def setupUi(self):
         self.basepath = os.path.dirname(__file__)
-
         self.setWindowIcon(QIcon(f"{self.basepath}/book.png"))
-
         self.centralwidget = QtWidgets.QWidget()
         self.label = xt_QLabel("小说书号：")
         self.lineEdit = xt_QLineEdit()
@@ -48,7 +47,6 @@ class Ui_Window(xt_QMainWindow):
         self.listWidget = xt_QListWidget()
         self.listWidget.setObjectName("listWidget")
         self.QTextEdit = xt_QTextBrowser()
-
         self.readB = xt_QPushButton("&Read")
         self.readB.setObjectName("readB")
         self.upB = xt_QPushButton("上一章")
@@ -63,10 +61,12 @@ class Ui_Window(xt_QMainWindow):
         self.splitter = QSplitter(self)
 
     def retranslateUi(self):
+        self.file_toolbar.addWidget(self.lineEdit)
+        self.file_toolbar.addSeparator()  # 分隔线
+        self.file_toolbar.addWidget(self.okB)
+
         ht_1 = QHBoxLayout()
         ht_1.addWidget(self.label, stretch=0)
-        ht_1.addWidget(self.lineEdit, stretch=2)
-        ht_1.addWidget(self.okB)
         ht_1.addSpacing(10)
         ht_1.addStretch(2)
         ht_1.addWidget(self.jiaB, stretch=1)

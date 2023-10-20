@@ -44,7 +44,10 @@ class Constant(Singleton_Mixin):
 
 
 class SpeechArgs(dict_mothed_Mixin):
-    '''TTS参数'''
+    '''
+    TTS参数
+    使用SpeechArgs().get_dict()获取参数字典
+    '''
     long_tts: bool = False
     aformat: str = 'mp3'
     sample_rate: int = 16000

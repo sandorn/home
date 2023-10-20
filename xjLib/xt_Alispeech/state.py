@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2022-12-27 18:59:04
-FilePath     : /xjLib/xt_Alispeech/on_state.py
+LastEditTime : 2023-10-20 10:25:27
+FilePath     : /CODE/xjLib/xt_Alispeech/state.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
 
+# 1. 语音识别状态机
 class on_state_cls:
 
     def _on_sentence_begin(self, message, *args):
@@ -44,6 +44,9 @@ class on_state_cls:
         ...
 
 
+# @语音合成状态机
+
+
 class on_state_primitive:
 
     def _on_sentence_begin(self, message, *args):
@@ -68,9 +71,9 @@ class on_state_primitive:
         print(f"_on_data data=>{data}: args=>{args}")
 
     def _on_completed(self, message, *args):
-        '''早于_on_close'''
+        """早于_on_close"""
         print(f"_on_completed message=>{message}: args=>{args}")
 
     def _on_close(self, *args):
-        '''最后执行'''
+        """最后执行"""
         print(f"_on_close: args=>{args}")

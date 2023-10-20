@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2022-11-24 21:36:44
-LastEditTime : 2022-12-03 16:33:15
-FilePath     : /xjLib/xt_Alispeech/ex_NSS.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-10-20 10:22:36
+FilePath     : /CODE/xjLib/xt_Alispeech/ex_NSS.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 import os
 from threading import Semaphore, Thread
 
@@ -144,8 +144,8 @@ def TODO_TTS(_in_text, readonly=False, merge=False, **kwargs):
 if __name__ == '__main__':
 
     _text = [
-        '立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年，',
-        '为实现中华民族伟大复兴的中国梦不懈奋斗',
+        "立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年。",
+        "青年强，则国家强。当代中国青年生逢其时，施展才干的舞台无比广阔，实现梦想的前景无比光明。",
     ]
 
     def read():

@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2022-11-29 23:53:26
-LastEditTime : 2022-12-21 23:18:41
-FilePath     : /项目包/阿里语音生成器/main.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2023-10-20 10:21:02
+FilePath     : /CODE/项目包/阿里语音生成器/main.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -43,17 +42,20 @@ class Ui_MainWindow(xt_QMainWindow):
         self.FilePath = xt_QLineEdit()
         self.QTextEdit = xt_QTextEdit()
         self.splitter = QSplitter(self)
+
         self.QSpinBox = xt_QSpinBox(self)
         self.QSpinBox.setRange(0, 100)
         self.QSpinBox.setValue(50)
         self.QSpinBox.setPrefix("volume: ")
         self.file_toolbar.addWidget(self.QSpinBox)
+
         self.QSpinBox1 = xt_QSpinBox(self)
         self.QSpinBox1.setRange(-500, 500)
         self.QSpinBox1.setValue(0)
         self.QSpinBox1.setPrefix("speech_rate: ")
         self.QSpinBox1.setSuffix("")  #  后缀
         self.file_toolbar.addWidget(self.QSpinBox1)
+
         self.QSpinBox2 = xt_QSpinBox(self)
         self.QSpinBox2.setRange(-500, 500)
         self.QSpinBox2.setValue(0)
@@ -66,8 +68,8 @@ class Ui_MainWindow(xt_QMainWindow):
         self.splitter.setStretchFactor(0, 4)  # 设定比例
         self.splitter.addWidget(self.QTextEdit)
         self.splitter.setStretchFactor(1, 6)  # 设定比例
-        self.splitter.setOrientation(
-            Qt.Horizontal)  # Qt.Vertical 垂直  # Qt.Horizontal 水平
+        self.splitter.setOrientation(Qt.Horizontal)
+        # Qt.Vertical 垂直  # Qt.Horizontal 水平
         self.setCentralWidget(self.splitter)
         self.QTextEdit.textChanged.connect(self.textChanged_event)
 

@@ -817,13 +817,14 @@ class xt_QTextBrowser(QTextBrowser):
         # Qt.ScrollBarAlwaysOff  #禁用垂直滚动条
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 设置水平滚动条按需可见
         self.setOpenLinks(True)  # 打开文档内部链接 默认为True
-        self.setOpenExternalLinks(
-            True)  # 打开外部链接,默认false,openlinks设置false时 该选项无效
-        self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard
-                                     | Qt.LinksAccessibleByMouse
-                                     | Qt.TextBrowserInteraction
-                                     | Qt.TextSelectableByKeyboard
-                                     | Qt.TextSelectableByMouse)
+        self.setOpenExternalLinks(True)
+        # 打开外部链接,默认false,openlinks设置false时 该选项无效
+        self.setTextInteractionFlags(
+            Qt.LinksAccessibleByKeyboard
+            | Qt.LinksAccessibleByMouse
+            | Qt.TextBrowserInteraction
+            | Qt.TextSelectableByKeyboard
+            | Qt.TextSelectableByMouse, )
 
     def event(self, event):
         if event.type() == event.Wheel:
@@ -904,39 +905,6 @@ class xt_QLineEdit(QLineEdit):
     def returnPressed_event(self):
         # 文本框回车，执行的操作
         print("xt_QLineEdit returnPressed:", self.text())
-
-        # def keyPressEvent(self, event):
-        #     if event.key() in [Qt.Key_Return, Qt.Key_Enter]:
-        #         # print('QLineEdit_keyPressEvent', event.key())
-        #         self.textChanged.emit()
-        #     else:
-        #         super().keyPressEvent(event)
-
-    #     # 创建整数范围验证器
-    #     int_validator = QIntValidator(-500, 500)
-    #     self.setValidator(int_validator)
-
-    #     # 连接文本变化信号到槽函数
-    #     self.textChanged.connect(self.onTextChanged)
-
-    # def onTextChanged(self):
-    #     text = self.text()
-
-    #     # 如果文本为空，则保持文本不变
-    #     if not text:
-    #         return
-
-    #     # 如果文本不是整数，则移除非数字字符
-    #     if not text.isdigit():
-    #         self.setText(''.join(filter(str.isdigit, text)))
-    #         return
-
-    #     # 如果文本超出允许范围，则截断为在范围内的整数
-    #     value = int(text)
-    #     if value < -500:
-    #         self.setText('-500')
-    #     elif value > 500:
-    #         self.setText('500')
 
 
 class xt_QPushButton(QPushButton):
@@ -1235,8 +1203,8 @@ class xt_QMainWindow(QMainWindow):
         # #窗体icon,size...
         self.basepath = os.path.dirname(__file__)
         self.setWindowIcon(QIcon(f"{self.basepath}/ico/ico.ico"))
-        # @将窗口大小调整为可用屏幕空间的百分比
         self.resize(QDesktopWidget().availableGeometry(self).size() * 0.618)
+        # @将窗口大小调整为可用屏幕空间的百分比
         # self.setGeometry(300, 300, 1024, 768)
         # def paintEvent(self, event):
         #     '''窗口大小变化后再次居中'''
