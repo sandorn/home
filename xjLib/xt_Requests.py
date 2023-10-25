@@ -58,7 +58,9 @@ def _request_parse(method, url, *args, **kwargs):
             attempts -= 1
             func_exc = True
             ret_err = err
-            print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}')
+            print(
+                f'_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}'
+            )
         else:
             # #返回正确结果
             result = htmlResponse(response)
@@ -118,14 +120,16 @@ post_tretry = partial(_request_tretry, "post")
 
 class SessionClient:
     '''封装session,保存cookies,利用TRETRY三方库实现重试'''
-    __slots__ = ('sson', 'method', 'url', 'args', 'kwargs', 'response', 'callback')
+    __slots__ = ('sson', 'method', 'url', 'args', 'kwargs', 'response',
+                 'callback')
 
     def __init__(self):
         self.sson = requests.session()
 
     @TRETRY
     def _request(self):
-        self.response = self.sson.request(self.method, self.url, *self.args, **self.kwargs)
+        self.response = self.sson.request(self.method, self.url, *self.args,
+                                          **self.kwargs)
         self.response.raise_for_status()
         return self.response
 
@@ -157,12 +161,18 @@ class SessionClient:
         return self.start_fetch_run()
 
     def __getattr__(self, method):
-        if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'patch']:
-            return lambda *args, **kwargs: self.__create_params(method, *args, **kwargs)
+        if method in [
+                'get', 'post', 'head', 'options', 'put', 'delete', 'patch'
+        ]:
+            return lambda *args, **kwargs: self.__create_params(
+                method, *args, **kwargs)
 
     def __getitem__(self, method):
-        if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'patch']:
-            return lambda *args, **kwargs: self.__create_params(method, *args, **kwargs)
+        if method in [
+                'get', 'post', 'head', 'options', 'put', 'delete', 'patch'
+        ]:
+            return lambda *args, **kwargs: self.__create_params(
+                method, *args, **kwargs)
             # self.method = method
             # @不带括号,传递*args, **kwargs参数
             # return self.__create_params
@@ -175,10 +185,10 @@ class SessionClient:
 
 
 if __name__ == '__main__':
-    print(get_wraps('http://www.baidu.com').ctext)
-    s = SessionClient()
+    # print(get_wraps('http://www.baidu.com').ctext)
+    # sii = SessionClient()
     # print(get_wraps('https://www.google.com'))
-    print(s['get']('https://cn.bing.com'))
+    # print(sii['get']('https://cn.bing.com'))
     # print(s.head('http://httpbin.org/headers').headers)
     # print(s.put('http://httpbin.org/put', data=b'data'))
     # print(s.delete('http://httpbin.org/delete'))
@@ -197,17 +207,17 @@ if __name__ == '__main__':
     # ]
     # for url in urls:
     # ...
-    # url = 'http://www.163.com'
-    # res = get_wraps(url)
+    url = 'http://www.163.com'
+    res = get_wraps(url)
     # print(res.text)
-    # print(res.xpath('//title/text()'))
-    # print(res.xpath(['//title/text()', '//title/text()']))
-    # print(res.xpath())
-    # print(res.xpath(' '))
-    # print(res.xpath(''))
-    # print(res.dom.xpath('//title/text()'))
-    # print(res.html.xpath('//title/text()'))
-    # print(res.element.xpath('//title/text()'))
+    print(res.xpath('//title/text()'))
+    print(res.xpath(['//title/text()', '//title/text()']))
+    print(res.xpath())
+    print(res.xpath(' '))
+    print(res.xpath(''))
+    print(res.dom.xpath('//title/text()'))
+    print(res.html.xpath('//title/text()'))
+    print(res.element.xpath('//title/text()'))
     # print(res.pyquery('title').text())
     '''
     ###############################################################

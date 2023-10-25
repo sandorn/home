@@ -107,13 +107,12 @@ if __name__ == '__main__':
 方法1
        全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a').extract()
 
-
         for index in range(len(全部章节节点)):
             _ZJHERF = re.match('<a href="(.*?)">', 全部章节节点[index]).group(1)
             _ZJHERF = response.urljoin(_ZJHERF)
             _ZJNAME = re.match('<a href=".*?">(.*?)</a>', 全部章节节点[index]).group(1)
 
-方法2：
+方法2
         全部章节链接 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
         全部章节名称 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
         baseurl = '/'.join(response.url.split('/')[0:-2])

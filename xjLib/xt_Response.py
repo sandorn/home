@@ -25,16 +25,20 @@ from xt_Class import item_Mixin
 
 class htmlResponse(item_Mixin):
     '''封装网页抓取结果,使之标准化'''
-    __slots__ = ('raw', 'clientResponse', '_content', 'index', 'encoding', 'code_type')
+    __slots__ = ('raw', 'clientResponse', '_content', 'index', 'encoding',
+                 'code_type')
 
     def __init__(self, response, content=None, index=None):
         if response is not None:
             self.raw = self.clientResponse = response
             self._content: bytes = content or response.content
             self.index: int = index or id(self)
-            self.encoding = response.encoding if hasattr(response, 'encoding') else 'utf-8'
+            self.encoding = response.encoding if hasattr(
+                response, 'encoding') else 'utf-8'
             # if isinstance(self._content, bytes): self.code_type = detect(self._content)['encoding'] or 'utf-8'
-            self.code_type = detect(self._content)['encoding'] or 'utf-8' if isinstance(self._content, bytes) else self.encoding
+            self.code_type = detect(
+                self._content)['encoding'] or 'utf-8' if isinstance(
+                    self._content, bytes) else self.encoding
             # response.apparent_encoding
     @property
     def content(self):
@@ -47,7 +51,8 @@ class htmlResponse(item_Mixin):
         # except AttributeError:
         #     _text = self.content
         # return _text
-        _text = self.clientResponse.text.encode(self.encoding).decode(self.code_type, 'ignore')
+        _text = self.clientResponse.text.encode(self.encoding).decode(
+            self.code_type, 'ignore')
         return _text if hasattr(self.clientResponse, 'text') else self.content
 
     @property
@@ -119,15 +124,32 @@ class htmlResponse(item_Mixin):
     def pyquery(self):
         return PyQuery(self.html)  # , parser='xml')
 
-    def xpath(self, selectors=None):
-        element = self.element
-        if isinstance(selectors, str):
-            return [*element.xpath(selectors)] if selectors.strip() != '' else [element]
-        elif isinstance(selectors, (list, tuple)):
-            return [element.xpath(selector) for selector in selectors]
-            # return [ele for selector in selectors for ele in element.xpath(selector)]
-        else:
-            return [element]
+    def xpath(self, selectors: str | list | tuple = ""):
+        """
+        在元素上执行XPath选择。
+        参数selectors: XPath选择器,可以是字符串或字符串的列表/元组。
+        返回值: 选择的元素列表。
+        """
+        if isinstance(selectors, str) and not selectors.strip():
+            return False
+
+        if isinstance(selectors, (str, list, tuple)):
+            selectors = selectors if isinstance(selectors,
+                                                (list,
+                                                 tuple)) else [selectors]
+            return [
+                ele for selector in selectors
+                for ele in self.element.xpath(selector) if selector.strip()
+            ]
+            # return [self.element.xpath(selector) for selector in selectors]
+
+            # selected_elements = []
+            # for selector in selectors:
+            #     if selector.strip():
+            #         selected_elements.extend(self.element.xpath(selector))
+            # return selected_elements
+
+        return False
 
     @property
     def ctext(self):

@@ -16,7 +16,7 @@ LastEditTime : 2021-04-14 19:36:16
 from xt_Ahttp import ahttpGet
 from xt_Requests import get_tretry
 from xt_Response import htmlResponse
-from xt_String import Invisible_Chars, Re_Sub, Str_Clean, Str_Replace
+from xt_String import Re_Sub, Str_Clean, Str_Replace
 
 
 def clean_Content(in_str):
@@ -43,12 +43,17 @@ def clean_Content(in_str):
         "关注公众号：书友大本营  关注即送现金、点币！",
         ";[笔趣看  ]",
         "[笔趣看 ]",
+        "[笔趣看\xa0\xa0]",
         "<br />",
         "\t",
     ]
-    clean_list += Invisible_Chars
+    # clean_list += Invisible_Chars # 不可见字符
+    # 格式化html string, 去掉多余的字符，类，script等。
+    #(r"<([a-z][a-z0-9]*) [^>]*>", r'<\g<1>>'),
+    #(r"<\s*script[^>]*>[^<]*<\s*/\s*script\s*>", ''),
+    #(r"</?a.*?>", ''),
     sub_list = [
-        (r"\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)", ""),
+        (r"\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)", ''),
     ]
     repl_list = [
         ("\u3000", "  "),
@@ -69,14 +74,19 @@ def clean_Content(in_str):
         ("\n\n", "\n"),
     ]
 
+    # 如果输入是列表或元组，则将其连接为一个字符串
     if isinstance(in_str, (list, tuple)):
-        in_str = "\n".join([item.strip("\r\n　  　") for item in in_str])
-        # item.strip("\r\n　  ")
+        in_str = "\n".join([item.strip("\r\n\u3000\xa0  ") for item in in_str])
+    # 剥离字符串两端的空白字符和换行符
     in_str = in_str.strip("\r\n ")
 
+    # 使用Str_Clean函数清理字符串
     in_str = Str_Clean(in_str, clean_list)
-    in_str = Re_Sub(in_str, sub_list)
+    # 使用Re_Sub函数替换子字符串
+    in_str = Re_Sub(in_str, sub_list)  # type: ignore
+    # 使用Str_Replace函数替换字符
     in_str = Str_Replace(in_str, repl_list)
+
     return in_str
 
 
@@ -92,12 +102,9 @@ def 结果处理(resps):
             '//*[@id="content"]/text()',
         )
         _title, _showtext = resp.xpath(_xpath)
-        title = (
-            "".join(_title)
-            .replace("\u3000", " ")
-            .replace("\xa0", " ")
-            .replace("\u00a0", " ")
-        )
+        title = ("".join(_title).replace("\u3000",
+                                         " ").replace("\xa0", " ").replace(
+                                             "\u00a0", " "))
         content = clean_Content(_showtext)
         # if len(content) < 10: print(resp, '||||||||||||||||||||||||||', resp.text)
         _texts.append([resp.index, title, content])
@@ -125,7 +132,8 @@ def get_download_url(target):
     )
     bookname, temp_urls, titles = resp.xpath(_xpath)
     bookname = bookname[0]
-    urls = ["/".join(target.split("/")[:-2]) + item for item in temp_urls]  # 章节链接
+    urls = ["/".join(target.split("/")[:-2]) + item
+            for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
 
@@ -151,20 +159,14 @@ def get_contents(index, target):
     assert isinstance(resp, htmlResponse)
 
     # #pyquery
-    _title = resp.pyquery("h1").text()
-    _showtext = resp.pyquery("#content").text()
+    title = resp.pyquery("h1").text()
+    content = resp.pyquery("#content").text()
 
     # _xpath = ('//h1/text()', '//*[@id="content"]/text()')
-    # _title, _showtext = resp.xpath(_xpath)
+    # _title, content = resp.xpath(_xpath)
 
-    # title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
-    title = (
-        "".join(_title)
-        .replace("\u3000", " ")
-        .replace("\xa0", " ")
-        .replace("\u00a0", " ")
-    )
-    content = clean_Content(_showtext).strip()
+    title = ("".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"])))
+    content = clean_Content(content).strip()
     return [index, title, content]
 
 
@@ -177,16 +179,15 @@ def ahttp_get_contents(args):
         '//*[@id="content"]/text()',
     )
     _title, _showtext = resp.xpath(_xpath)
-    title = Str_Replace(_title, [("\u3000", " "), ("\xa0", " "), ("\u00a0", " ")])
+    title = Str_Replace(_title, [("\u3000", " "), ("\xa0", " "),
+                                 ("\u00a0", " ")])
     content = clean_Content(_showtext)
     return [index, title, content]
 
 
 if __name__ == "__main__":
-    url = "http://www.biqugse.com/96703/"
-    # 'http://www.biqugse.com/96703/'
-    # 'https://www.biqukan8.cc/38_38163/'
-    bookname, urls, titles = get_biqugse_download_url(url)
+    url = "https://www.biqukan8.cc/0_288/"
+    bookname, urls, titles = get_download_url(url)
     print(bookname)
     for _ in range(len(urls)):
         ...
