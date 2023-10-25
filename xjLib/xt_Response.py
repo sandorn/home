@@ -131,25 +131,19 @@ class htmlResponse(item_Mixin):
         返回值: 选择的元素列表。
         """
         if isinstance(selectors, str) and not selectors.strip():
-            return False
+            return []
 
         if isinstance(selectors, (str, list, tuple)):
             selectors = selectors if isinstance(selectors,
                                                 (list,
                                                  tuple)) else [selectors]
+
             return [
-                ele for selector in selectors
-                for ele in self.element.xpath(selector) if selector.strip()
+                self.element.xpath(selector) for selector in selectors
+                if selector.strip()
             ]
-            # return [self.element.xpath(selector) for selector in selectors]
 
-            # selected_elements = []
-            # for selector in selectors:
-            #     if selector.strip():
-            #         selected_elements.extend(self.element.xpath(selector))
-            # return selected_elements
-
-        return False
+        return []
 
     @property
     def ctext(self):

@@ -174,10 +174,10 @@ def ahttp_get_contents(args):
     index, target = args
     resp = ahttpGet(target)
     assert isinstance(resp, htmlResponse)
-    _xpath = (
+    _xpath = [
         "//h1/text()",
         '//*[@id="content"]/text()',
-    )
+    ]
     _title, _showtext = resp.xpath(_xpath)
     title = Str_Replace(_title, [("\u3000", " "), ("\xa0", " "),
                                  ("\u00a0", " ")])
