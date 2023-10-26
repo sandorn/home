@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-14 23:33:17
+LastEditTime : 2023-10-26 17:05:52
 FilePath     : /CODE/xjLib/xt_Ahttp.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -21,12 +21,26 @@ from xt_Head import TIMEOUT, Head
 from xt_Requests import TRETRY
 from xt_Response import htmlResponse
 
-__all__ = ('get', 'post', 'head', 'put', 'delete', 'options', 'trace', 'connect', 'patch', 'ahttpGet', 'ahttpGetAll', 'ahttpPost', 'ahttpPostAll')
+__all__ = (
+    'get',
+    'post',
+    'head',
+    'put',
+    'delete',
+    'options',
+    'trace',
+    'connect',
+    'patch',
+    'ahttpGet',
+    'ahttpGetAll',
+    'ahttpPost',
+    'ahttpPostAll',
+)
 
 
 def _unil_session_method(method, *args, **kwargs):
     session = SessionMeta()
-    method_dict = {
+    method_dict: dict = {
         "get": session.get,
         "post": session.post,
         'head': session.head,
@@ -37,7 +51,12 @@ def _unil_session_method(method, *args, **kwargs):
         'connect': session.connect,
         'patch': session.patch,
     }
-    return method_dict[method](*args, **kwargs)
+
+    if method in [
+            'get', 'post', 'head', 'options', 'put', 'delete', 'trace',
+            'connect', 'patch'
+    ]:
+        return method_dict.get(method)(*args, **kwargs)
 
 
 # #使用偏函数 Partial,快速构建多个函数
@@ -54,11 +73,11 @@ patch = partial(_unil_session_method, "patch")
 
 class SessionMeta:
 
-    def __init__(self, *args, **kwargs):
-        ...
-
     def __getattr__(self, name):
-        if name in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
+        if name in [
+                'get', 'post', 'head', 'options', 'put', 'delete', 'trace',
+                'connect', 'patch'
+        ]:
             new_AsyncTask = AsyncTask()
             return new_AsyncTask.__getattr__(name)  # @ 设置方法
 
@@ -69,7 +88,10 @@ class AsyncTask:
         self.index = id(self)
 
     def __getattr__(self, name):
-        if name in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
+        if name in [
+                'get', 'post', 'head', 'options', 'put', 'delete', 'trace',
+                'connect', 'patch'
+        ]:
             self.method = name  # @ 设置方法
             return self._make_params  # @ 设置参数
 
@@ -100,13 +122,18 @@ async def _async_fetch(self):
 
     @TRETRY
     async def _fetch_run():
-        async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as self.session, self.session.request(self.method, self.url, raise_for_status=True, *self.args, **self.kwargs) as self.response:
+        async with TCPConnector(ssl=False) as Tconn, ClientSession(
+                cookies=self.cookies,
+                connector=Tconn) as self.session, self.session.request(
+                    self.method,
+                    self.url,
+                    raise_for_status=True,
+                    *self.args,
+                    **self.kwargs) as self.response:
             self.content = await self.response.read()
             return self.response, self.content, self.index
 
     try:
-        # import threading
-        # print(f'Count:{threading.active_count()} | {threading.current_thread()}|{id(self.session)}')
         await _fetch_run()
     except Exception as err:
         print(f'Async_fetch:{self} | RetryErr:{err!r}')
@@ -115,7 +142,9 @@ async def _async_fetch(self):
         return self
     else:
         # #返回结果,不管是否正确
-        self.result = htmlResponse(self.response, self.content, index=self.index)
+        self.result = htmlResponse(self.response,
+                                   self.content,
+                                   index=self.index)
         if self.callback: self.result = self.callback(self.result)
         return self.result
 
@@ -133,13 +162,15 @@ async def create_gather_task(tasks):
 async def create_threads_task(coroes):
     '''异步多线程,使用不同session'''
     threadsafe_loop = asyncio.new_event_loop()
-    Thread(target=threadsafe_loop.run_forever, name='ThreadSafe', daemon=True).start()
+    Thread(target=threadsafe_loop.run_forever, name='ThreadSafe',
+           daemon=True).start()
 
     new_tasks = []
     for index, coro in enumerate(coroes, 1):
         coro.index = index
         _coroutine = coro.start()
-        new_tasks.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
+        new_tasks.append(
+            asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
 
     return [task.result() for task in new_tasks]
 
@@ -153,7 +184,8 @@ def aiohttp_parse(method, url, *args, **kwargs):
 
 def aiohttp__issue(method, urls, *args, **kwargs):
     coroes = [eval(method)(url, *args, **kwargs) for url in urls]
-    _coroutine = create_threads_task(coroes) if kwargs.pop('threadsafe', True) else create_gather_task(coroes)
+    _coroutine = create_threads_task(coroes) if kwargs.pop(
+        'threadsafe', True) else create_gather_task(coroes)
     # return asyncio.run(_coroutine)  # 3.7+ 方式 , threadsafe:单线程或者多线程
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(_coroutine)

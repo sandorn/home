@@ -1,17 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-# ==============================================================
-# Descripttion : None
-# Develop      : VSCode
-# Author       : Even.Sand
-# Contact      : sandorn@163.com
-# Date         : 2020-04-01 10:29:33
-FilePath     : /xjLib/xt_Ls_Bqg.py
-LastEditTime : 2021-04-14 19:36:16
-# Github       : https://github.com/sandorn/home
-# ==============================================================
-"""
+'''
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2023-01-14 23:30:19
+LastEditTime : 2023-10-26 16:47:01
+FilePath     : /CODE/xjLib/xt_Ls_Bqg.py
+Github       : https://github.com/sandorn/home
+==============================================================
+'''
 
 from xt_Ahttp import ahttpGet
 from xt_Requests import get_tretry
@@ -54,6 +53,7 @@ def clean_Content(in_str):
     #(r"</?a.*?>", ''),
     sub_list = [
         (r"\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)", ''),
+        (r'\[.*?\]|http.*?\s*\(.*?\)|\s*www.*?\s*\..*?\s*\..*?\s*\..*?', ''),
     ]
     repl_list = [
         ("\u3000", "  "),
@@ -178,10 +178,9 @@ def ahttp_get_contents(args):
         "//h1/text()",
         '//*[@id="content"]/text()',
     ]
-    _title, _showtext = resp.xpath(_xpath)
-    title = Str_Replace(_title, [("\u3000", " "), ("\xa0", " "),
-                                 ("\u00a0", " ")])
-    content = clean_Content(_showtext)
+    title, content = resp.xpath(_xpath)
+    title = ("".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"])))
+    content = clean_Content(content)
     return [index, title, content]
 
 
@@ -189,7 +188,5 @@ if __name__ == "__main__":
     url = "https://www.biqukan8.cc/0_288/"
     bookname, urls, titles = get_download_url(url)
     print(bookname)
-    for _ in range(len(urls)):
-        ...
     res = get_contents(1, urls[1])
     print(res)

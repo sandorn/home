@@ -1,17 +1,17 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
+'''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:49
-FilePath     : /xjLib/xt_Log.py
-LastEditTime : 2022-04-13 10:36:06
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-10-26 16:48:29
+FilePath     : /CODE/xjLib/xt_Log.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-"""
+'''
+
 import logging
 import logging.config
 from datetime import datetime
@@ -30,18 +30,22 @@ _levelToName = {
 
 
 class xt_log(object):
+
     def __init__(self, level=logging.DEBUG, logger=__name__):
         self.level = level
-        self.filename = (
-            datetime.now().strftime("%Y%m%d") + "-" + _levelToName.get(level) + ".log"
-        )
+        self.filename = (datetime.now().strftime("%Y%m%d") + "-" +
+                         _levelToName[level] + ".log")
         # #定义字典
         self.conf_dic = {
             "version": 1,
             "disable_existing_loggers": False,
             "formatters": {
-                "standard": {"format": standard_format},
-                "simple": {"format": simple_format},
+                "standard": {
+                    "format": standard_format
+                },
+                "simple": {
+                    "format": simple_format
+                },
             },
             "filters": {},
             "handlers": {
@@ -93,7 +97,7 @@ class xt_log(object):
 
     def print(self, *args):
         # listargs = (list(args))
-        commad = getattr(self.logger, _levelToName.get(self.level))
+        commad = getattr(self.logger, _levelToName[self.level])
         [commad(item) for item in list(args)]
 
 

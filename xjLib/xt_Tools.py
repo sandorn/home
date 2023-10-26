@@ -11,7 +11,6 @@
 #LastEditTime : 2020-07-30 12:43:08
 #Github       : https://github.com/sandorn/home
 #==============================================================
-
 拒绝重复造轮子!python实用工具类及函数大推荐! - 知乎
 https://zhuanlan.zhihu.com/p/31644562
 https://github.com/ShichaoMa
@@ -19,27 +18,13 @@ https://github.com/ShichaoMa
 
 import functools
 import logging
-import os
 import signal
 import time
 import traceback
 from copy import deepcopy
 from functools import reduce, wraps
 from types import FunctionType
-from typing import Any, Callable, Optional, Type
-
-# from memory_profiler import profile  # 内存分析
-# from snoop import snoop  # 调试
-
-# import openai
-
-# def gpt(question=None):
-#     openai.api_key = "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"
-#     question = question or "介绍下你自己"
-#     # n参数确定要生成的响应数量。
-#     # max_tokens 参数确定生成的响应中标记（即单词或标点符号）的最大数量
-#     response = openai.Completion.create(engine="text-davinci-002", prompt=question, temperature=0.5, max_tokens=4096, n=1, stop=None)
-#     return response["choices"][0]["text"]
+from typing import Any, Callable, Type
 
 
 class ExceptContext:
@@ -85,7 +70,8 @@ class ExceptContext:
         """
         if isinstance(exc_val, self.exception):
             self.has_error = True
-            return_code = self.errback(self.func_name, exc_type, exc_val, exc_tb)
+            return_code = self.errback(self.func_name, exc_type, exc_val,
+                                       exc_tb)
         else:
             return_code = False
         self.finalback(self.has_error)
@@ -197,7 +183,7 @@ class signal_timeout_cleanup:
         self.handler = handler
 
     def __enter__(self):
-        pass
+        ...
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         signal.alarm(0)
@@ -318,7 +304,16 @@ def catch_wraps(func, bool=False):
     return wrapper
 
 
-def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: float = 0.1, exceptions: (BaseException, tuple, list) = BaseException, sleep=time.sleep, process=lambda ex: True, validate=None, callback=None, default=None):
+def try_except_wraps(fn=None,
+                     max_retries: int = 6,
+                     delay: float = 0.2,
+                     step: float = 0.1,
+                     exceptions: (BaseException, tuple, list) = BaseException,
+                     sleep=time.sleep,
+                     process=lambda ex: True,
+                     validate=None,
+                     callback=None,
+                     default=None):
     """
         函数执行出现异常时自动重试的简单装饰器
         :param f: function 执行的函数。
@@ -353,7 +348,8 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
             for index in range(max_retries):
                 try:
                     result = func(*args, **kwargs)
-                    if callable(validate) and validate(result) is False: continue
+                    if callable(validate) and validate(result) is False:
+                        continue
                     # #回调函数,处理结果
                     return callback(result) if callable(callback) else result
                 except exceptions as ex:
