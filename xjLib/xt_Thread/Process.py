@@ -13,41 +13,8 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
-import multiprocessing
 import os
 from multiprocessing import Manager, Process, Semaphore
-
-
-class MyProcess(Process):
-    '''多进程,继承自multiprocessing.Process,无结果返回'''
-
-    all_Process = []  # 类属性或类变量,实例公用
-
-    def __init__(self, func, *args, **kwargs):
-        super(MyProcess, self).__init__()
-        self.index = len(self.all_Process)
-        self.daemon = True
-        self.target = func
-        self.args = args
-        self.kwargs = kwargs
-        self.start()
-        self.all_Process.append(self)
-
-    def run(self) -> None:
-        print(f'Pid: {os.getpid()} | {multiprocessing.current_process()}')
-        self.target(*self.args, **self.kwargs)
-
-    @classmethod
-    def stop_all(cls):
-        """停止线程池, 所有线程停止工作"""
-        while cls.all_Process:
-            prc = cls.all_Process.pop()
-            prc.join()
-
-    @classmethod
-    def wait_completed(cls):
-        """等待全部线程结束,返回结果"""
-        cls.stop_all()
 
 
 class CustomProcess(Process):
@@ -70,8 +37,7 @@ class CustomProcess(Process):
     def run(self):
         # print(f'Pid: {os.getpid()} \t|\t {multiprocessing.current_process()}|{self.pid}|{self.name}')
         with self.sem:
-            self.Result = self.target(*self.args, **self.kwargs)
-            self.result_dict[self.pid] = self.Result
+            self.result_dict[self.pid] = self.target(*self.args, **self.kwargs)
 
     @classmethod
     def wait_completed(cls):
@@ -86,7 +52,10 @@ def Do_CustomProcess(func, *args, **kwargs):
     sem = Semaphore(24)
     return_dict = Manager().dict()
     # Create the list of CustomProcess objects
-    tt = [CustomProcess(return_dict, sem, func, *args_iter, **kwargs) for args_iter in list(zip(*args))]
+    tt = [
+        CustomProcess(return_dict, sem, func, *args_iter, **kwargs)
+        for args_iter in list(zip(*args))
+    ]
     # Wait until all the processes have completed
     CustomProcess.wait_completed()
     # Return the values from the Manager dict
@@ -96,22 +65,22 @@ def Do_CustomProcess(func, *args, **kwargs):
 if __name__ == '__main__':
 
     from xt_File import savefile
-    from xt_Ls_Bqg import get_biqugse_download_url, get_contents
+    from xt_Ls_Bqg import get_contents, get_download_url
 
     def Custom():
-        url = 'http://www.biqugse.com/96703/'
-        bookname, urls, titles = Do_CustomProcess(get_biqugse_download_url, [url])[0]
+        url = 'https://www.biqukan8.cc/0_288/'
+        bookname, urls, titles = Do_CustomProcess(get_download_url, [url])[0]
         res_list = Do_CustomProcess(get_contents, list(range(10)), urls[:10])
         res_list.sort(key=lambda x: x[0])  # #排序
         files = os.path.split(__file__)[-1].split(".")[0]
         savefile(f'{files}&{bookname}&Do_CustomProcess.txt', res_list, br='\n')
 
-    # Custom()  # 用时: 27s[10]
+    Custom()  # 用时: 14s[10]
 
     def Poolapply_async():
         from multiprocessing import Pool
-        url = 'http://www.biqugse.com/96703/'
-        bookname, urls, titles = Do_CustomProcess(get_biqugse_download_url, [url])[0]
+        url = 'https://www.biqukan8.cc/0_288/'
+        bookname, urls, titles = Do_CustomProcess(get_download_url, [url])[0]
 
         p = Pool(32)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
         res_l = []
@@ -127,4 +96,4 @@ if __name__ == '__main__':
         files = os.path.split(__file__)[-1].split(".")[0]
         savefile(f'{files}&{bookname}&Poolapply_async.txt', res_list, br='\n')
 
-    Poolapply_async()  # 用时: 29s[10] 60s
+    # Poolapply_async()  # 用时: 29s[10] 60s

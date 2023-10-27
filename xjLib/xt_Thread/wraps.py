@@ -13,6 +13,7 @@
 #==============================================================
 '''
 
+from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from threading import Lock, Thread
 
@@ -26,6 +27,21 @@ def thread_safe(func):
     def wrapper(*args, **kwargs):
         with Lock() as lock:
             return func(*args, **kwargs)
+
+    return wrapper
+
+
+def run_in_threadpool(func):
+    '''
+    数据科学通常涉及模型训练或超参数调整等任务的并行处理。
+    @parallelize_decorator 使用多个 CPU 核心并行化函数调用。
+    '''
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with ThreadPoolExecutor() as executor:
+            results = list(executor.map(func, *args, **kwargs))
+        return results
 
     return wrapper
 
@@ -165,7 +181,7 @@ def create_mixin_class(name, cls, meta, **kwargs):
     return type(name, (cls, meta), kwargs)
 
 
-thread_print = print_lock = thread_safe(print)
+thread_print = thread_safe(print)
 
 if __name__ == "__main__":
 
@@ -188,11 +204,17 @@ if __name__ == "__main__":
         return i * 11
 
     # aa = a(8)
-    cc = b(40)
+    # cc = b(40)
     # cc = c(3, callback=lambda x: x * 100)
-    print('Result:', cc.Result)
+    # print('Result:', cc.Result)
     # print('callback:', cc.callback)
     # print('daemon:', cc.daemon)
     # print('objectName:', cc.objectName())
     # print(thread_print.__name__)
-    print_lock('hello world')
+    # print_lock('hello world')
+    @run_in_threadpool
+    def parallel_task(x):
+        return x**2
+
+    re = parallel_task([1, 2, 3, 4, 5])
+    print(re)

@@ -25,19 +25,20 @@ from xt_Time import timeit
 
 
 async def fetch(url):
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as sess:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(
+            ssl=False)) as sess:
         async with sess.get(url) as response:
             content = await response.read()
     return htmlResponse(response, content)
 
 
-async def get_biqugse_download_url(url):
+async def get_down_url(url):
     urls = []
     resp = await fetch(url)
     _xpath = (
-        '//meta[@property="og:title"]//@content',
-        '//dt[2]/following-sibling::dd/a/@href',
-        '//dt[2]/following-sibling::dd/a/text()',
+        "//h2/text()",
+        "//dt[2]/following-sibling::dd/a/@href",
+        "//dt[2]/following-sibling::dd/a/text()",
     )
     bookname, temp_urls, titles = resp.xpath(_xpath)
 
@@ -52,35 +53,20 @@ texts = []  # 将爬下来的小说都存在里面，做最后排序
 
 async def get_contents(index, url):
     resp = await fetch(url)
-    _xpath = (
-        '//h1/text()',
-        '//*[@id="content"]/text()',
-    )
-    _title, _showtext = resp.xpath(_xpath)
+    title = resp.pyquery("h1").text()
+    content = resp.pyquery("#content").text()
 
-    title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
-    content = clean_Content(_showtext)
+    title = Str_Replace("".join(title), [(u'\u3000', u' '), (u'\xa0', u' '),
+                                         (u'\u00a0', u' ')])
+    content = clean_Content(content)
     # return [index, title, content]
     texts.append([index, title, content])
-
-
-async def callback(future):
-    index, _name, _showtext = await future.result()  # 回调函数取得返回值
-    print(index, _name, _showtext)
-    name = Str_Replace(_name, {
-        '\'': '',
-        ' ': ' ',
-        '\xa0': ' ',
-    })
-
-    text = clean_Content(_showtext)
-    texts.append([index, name, text])
 
 
 @timeit
 def main_thread(url):
 
-    bookname, urls, _ = asyncio.run(get_biqugse_download_url(url))
+    bookname, urls, _ = asyncio.run(get_down_url(url))
 
     tasks = [get_contents(index, url) for index, url in enumerate(urls)]
 
@@ -94,5 +80,4 @@ def main_thread(url):
 
 
 if __name__ == '__main__':
-    # main_thread('http://www.biqugse.com/96703/')  # 4.5秒
-    main_thread('http://www.biqugse.com/28542/')  # 110卡住
+    main_thread('https://www.biqukan8.cc/0_288/')

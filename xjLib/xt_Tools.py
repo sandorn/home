@@ -449,6 +449,6 @@ if __name__ == '__main__':
             )
         print(_create_func.__dict__)
 
-    trys()
+    # trys()
     # fre()
     # fu()

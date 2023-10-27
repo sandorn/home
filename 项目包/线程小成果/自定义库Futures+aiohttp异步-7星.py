@@ -2,23 +2,23 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2023-01-13 14:21:07
-FilePath     : /项目包/线程小成果/自定义库Futures+aiohttp异步-7星.py
+LastEditTime : 2023-10-27 16:07:31
+FilePath     : /CODE/项目包/线程小成果/自定义库Futures+aiohttp异步-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+
 
 import os
 
 from xt_Ahttp import ahttpGetAll
 from xt_Asyncio import AioCrawl
 from xt_File import savefile
-from xt_Ls_Bqg import get_biqugse_download_url, 结果处理
+from xt_Ls_Bqg import get_download_url, 结果处理
 from xt_Thread import ProcessPool
 from xt_Time import fn_timer
 
@@ -46,20 +46,14 @@ def pool(url_list, func):
     mypool = ProcessPool()
 
     for url in url_list:
-        bookname, urls, _ = get_biqugse_download_url(url)
+        bookname, urls, _ = get_download_url(url)
         mypool.add_sub(func, [bookname, urls])
     mypool.wait_completed()
 
 
 if __name__ == "__main__":
     url_list = [
-        'http://www.biqugse.com/96703/',
-        # 'http://www.biqugse.com/28542/',  # 超大 182s
-        # 'http://www.biqugse.com/96717/',
-        # 'http://www.biqugse.com/76169/',
-        # 'http://www.biqugse.com/82744/',
-        # 'http://www.biqugse.com/96095/',
-        # 'http://www.biqugse.com/92385/',
+        'https://www.biqukan8.cc/0_288/',
     ]
     # pool(url_list, Aio_ahttp)  # ahttpGetAll 96s
     pool(url_list, Aio_feach_run)  # AioCrawl 97s

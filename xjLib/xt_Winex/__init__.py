@@ -18,11 +18,11 @@ from ctypes import wintypes
 
 import psutil
 import win32api
-# import win32com.client
 import win32con
 import win32gui
 import win32process
-# import win32ui
+import threading
+
 
 user32 = ctypes.windll.user32  # 加载user32.dll
 kernel32 = ctypes.windll.kernel32  # 加载kernel32.dll
@@ -48,7 +48,8 @@ def enum_windows():
     hwnd_title = {}
 
     def callback(hwnd, hwnd_title):
-        if win32gui.IsWindow(hwnd) and win32gui.IsWindowEnabled(hwnd) and win32gui.IsWindowVisible(hwnd):
+        if win32gui.IsWindow(hwnd) and win32gui.IsWindowEnabled(
+                hwnd) and win32gui.IsWindowVisible(hwnd):
             hwnd_title[hwnd] = win32gui.GetWindowText(hwnd)
 
     win32gui.EnumWindows(callback, hwnd_title)
@@ -128,12 +129,17 @@ def GetClassName(hwnd):
 
 def SetWindowTop(hwnd):
     '''通过句柄窗口置顶'''
-    win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOACTIVATE | win32con.SWP_NOOWNERZORDER | win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE)
+    win32gui.SetWindowPos(
+        hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE
+        | win32con.SWP_NOACTIVATE | win32con.SWP_NOOWNERZORDER
+        | win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE)
 
 
 def SetWindowDown(hwnd):
     '''通过句柄取消窗口置顶'''
-    win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
+    win32gui.SetWindowPos(
+        hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+        win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
 
 
 def SetForegroundWindow(hwnd):
@@ -143,7 +149,8 @@ def SetForegroundWindow(hwnd):
 
 def SetWindowPos(hwnd, x, y, w, h):
     '''通过句柄设置窗口位置和大小'''
-    win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, x, y, w, h, win32con.SWP_SHOWWINDOW)
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, x, y, w, h,
+                          win32con.SWP_SHOWWINDOW)
 
 
 def IsWindowEnabled(hwnd):
@@ -214,13 +221,17 @@ def SetWindowIconSmall(hwnd, icon):
 
 def SetWindowIconPath(hwnd, iconpath):
     '''通过句柄更改窗口图标'''
-    icon = win32gui.LoadImage(0, iconpath, win32con.IMAGE_ICON, 0, 0, win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED)
+    icon = win32gui.LoadImage(
+        0, iconpath, win32con.IMAGE_ICON, 0, 0, win32con.LR_LOADFROMFILE
+        | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED)
     win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_BIG, icon)
 
 
 def SetWindowIconPathSmall(hwnd, iconpath):
     '''通过句柄更改窗口小图标'''
-    icon = win32gui.LoadImage(0, iconpath, win32con.IMAGE_ICON, 0, 0, win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED)
+    icon = win32gui.LoadImage(
+        0, iconpath, win32con.IMAGE_ICON, 0, 0, win32con.LR_LOADFROMFILE
+        | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED)
     win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_SMALL, icon)
 
 
@@ -244,14 +255,15 @@ def EnumWindows():
             'ID': getThreadProcessId(hwnd),
         })
 
-    windows = []
-    win32gui.EnumWindows(win_enum_handler, windows)
+    windowslist = []
+    win32gui.EnumWindows(win_enum_handler, windowslist)
 
-    return windows
+    return windowslist
 
 
 get_thread_process_id_c = user32.GetWindowThreadProcessId
-get_thread_process_id_c.argtypes = (wintypes.HWND, ctypes.POINTER(wintypes.DWORD))
+get_thread_process_id_c.argtypes = (wintypes.HWND,
+                                    ctypes.POINTER(wintypes.DWORD))
 
 
 def getThreadProcessId(hwnd):
@@ -277,15 +289,18 @@ def close(hwnd):
 def isVisible(hwnd):
     # 获取DWM状态
     cloaked = ctypes.c_bool()
-    ctypes.windll.dwmapi.DwmGetWindowAttribute(hwnd, 14, ctypes.byref(cloaked), ctypes.sizeof(cloaked))
+    ctypes.windll.dwmapi.DwmGetWindowAttribute(hwnd, 14, ctypes.byref(cloaked),
+                                               ctypes.sizeof(cloaked))
 
     # 获取窗口可见性状态
     _style = win32con.WS_VISIBLE | win32con.WS_MINIMIZE
     _exStyle = win32con.WS_EX_APPWINDOW | win32con.WS_EX_TOOLWINDOW | win32con.WS_EX_NOACTIVATE
 
     isVisible = ctypes.windll.user32.IsWindowVisible(hwnd)
-    styleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_STYLE) & _style
-    exStyleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_EXSTYLE) & _exStyle
+    styleState = ctypes.windll.user32.GetWindowLongW(
+        hwnd, win32con.GWL_STYLE) & _style
+    exStyleState = ctypes.windll.user32.GetWindowLongW(
+        hwnd, win32con.GWL_EXSTYLE) & _exStyle
 
     # 判断窗口状态
     if cloaked.value: return None
@@ -295,25 +310,37 @@ def isVisible(hwnd):
         return False
 
 
-# isUnicode函数：判断窗口是否Unicode窗口
+import ctypes
+from ctypes import wintypes
+
+
 def isUnicode(hwnd):
     # 获取窗口所属的进程ID
-    processID = ctypes.c_ulong()
-    ctypes.windll.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(processID))
+    processID = wintypes.DWORD()
+    ctypes.windll.user32.GetWindowThreadProcessId(hwnd,
+                                                  ctypes.byref(processID))
 
     # 打开进程获取进程相关信息
-    processHandle = ctypes.windll.kernel32.OpenProcess(win32con.PROCESS_QUERY_INFORMATION, False, processID)
+    processHandle = ctypes.windll.kernel32.OpenProcess(
+        win32con.PROCESS_QUERY_INFORMATION, False, processID)
     # 获取进程的PEB结构体信息
-    peb = ctypes.c_ulong()
-    result = ctypes.windll.kernel32.ReadProcessMemory(processHandle, ctypes.cast(peb, ctypes.c_void_p), ctypes.byref(peb), ctypes.sizeof(peb), None)
+    peb = wintypes.LPVOID()
+    ctypes.windll.ntdll.NtQueryInformationProcess(processHandle, 0,
+                                                  ctypes.byref(peb),
+                                                  ctypes.sizeof(peb), None)
 
     # 获取进程的ANSI code page和Unicode code page信息
-    ansiCodePage = ctypes.c_ulong()
-    unicodeCodePage = ctypes.c_ulong()
-    result = ctypes.windll.kernel32.ReadProcessMemory(processHandle, ctypes.cast(peb.value + 0x038, ctypes.c_void_p), ctypes.byref(ansiCodePage), ctypes.sizeof(ansiCodePage), None)
-    result = ctypes.windll.kernel32.ReadProcessMemory(processHandle, ctypes.cast(peb.value + 0x03C, ctypes.c_void_p), ctypes.byref(unicodeCodePage), ctypes.sizeof(unicodeCodePage), None)
+    ansiCodePage = wintypes.ULONG()
+    unicodeCodePage = wintypes.ULONG()
+    ctypes.windll.kernel32.ReadProcessMemory(processHandle, peb + 0x038,
+                                             ctypes.byref(ansiCodePage),
+                                             ctypes.sizeof(ansiCodePage), None)
+    ctypes.windll.kernel32.ReadProcessMemory(processHandle, peb + 0x03C,
+                                             ctypes.byref(unicodeCodePage),
+                                             ctypes.sizeof(unicodeCodePage),
+                                             None)
 
-    isUnicode = unicodeCodePage.value != 0
+    isUnicode = unicodeCodePage != 0
     # 关闭进程句柄，释放资源
     ctypes.windll.kernel32.CloseHandle(processHandle)
 
@@ -321,7 +348,11 @@ def isUnicode(hwnd):
 
 
 # waitEx函数：等待窗口出现
-def waitEx(parentHwnd=None, index=1, classNamePattern=None, titlePattern=None, controlId=None):
+def waitEx(parentHwnd=None,
+           index=1,
+           classNamePattern=None,
+           titlePattern=None,
+           controlId=None):
     hwnd = None
     count = 0
 
@@ -330,8 +361,13 @@ def waitEx(parentHwnd=None, index=1, classNamePattern=None, titlePattern=None, c
         if parentHwnd is None:
             win32gui.EnumWindows(lambda h, p: p.append(h), hwndList)
         else:
-            win32gui.EnumChildWindows(parentHwnd, lambda h, p: p.append(h), hwndList)
-        hwndList = [hwnd for hwnd in hwndList if classNamePattern in win32gui.GetClassName(hwnd) and titlePattern in win32gui.GetWindowText(hwnd)]
+            win32gui.EnumChildWindows(parentHwnd, lambda h, p: p.append(h),
+                                      hwndList)
+        hwndList = [
+            hwnd for hwnd in hwndList
+            if classNamePattern in win32gui.GetClassName(hwnd)
+            and titlePattern in win32gui.GetWindowText(hwnd)
+        ]
         if len(hwndList) >= index:
             hwnd = hwndList[index - 1]
             if controlId is not None:
@@ -347,7 +383,13 @@ def waitEx(parentHwnd=None, index=1, classNamePattern=None, titlePattern=None, c
 
 
 # findEx函数：查找窗口
-def findEx(parent=None, index=0, className=None, title=None, controlId=None, style=None, nStyle=None):
+def findEx(parent=None,
+           index=0,
+           className=None,
+           title=None,
+           controlId=None,
+           style=None,
+           nStyle=None):
     count = 0
     hwndList = []
     hwnd = None
@@ -358,16 +400,20 @@ def findEx(parent=None, index=0, className=None, title=None, controlId=None, sty
         win32gui.EnumWindows(lambda h, p: p.append(h), hwndList)
 
     for hwndfind in hwndList:
-        if className is not None and className not in win32gui.GetClassName(hwndfind):
+        if className is not None and className not in win32gui.GetClassName(
+                hwndfind):
             continue
         if title is not None and title not in win32gui.GetWindowText(hwndfind):
             continue
-        if controlId is not None and controlId != win32gui.GetDlgCtrlID(hwndfind):
+        if controlId is not None and controlId != win32gui.GetDlgCtrlID(
+                hwndfind):
             continue
         if style is not None or nStyle is not None:
-            if (win32gui.GetWindowLong(hwndfind, win32con.GWL_STYLE) & style != style):
+            if (win32gui.GetWindowLong(hwndfind, win32con.GWL_STYLE) & style
+                    != style):
                 continue
-            if (win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE) & nStyle != nStyle):
+            if (win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE) & nStyle
+                    != nStyle):
                 continue
 
         hwnd = hwndfind
@@ -377,7 +423,11 @@ def findEx(parent=None, index=0, className=None, title=None, controlId=None, sty
 
     if hwnd is None and className is not None and title is not None:
         hwndList = []
-        win32gui.EnumWindows(lambda h, p: p.append((h, win32gui.GetWindowText(h), win32gui.GetWindowThreadProcessId(h)[0], win32gui.GetWindowThreadProcessId(h)[1])), hwndList)
+        win32gui.EnumWindows(
+            lambda h, p: p.append((h, win32gui.GetWindowText(h),
+                                   win32gui.GetWindowThreadProcessId(h)[0],
+                                   win32gui.GetWindowThreadProcessId(h)[1])),
+            hwndList)
         for hwndfind, hwndtitle, threadId, processId in hwndList:
             if className not in win32gui.GetClassName(hwndfind):
                 continue
@@ -386,18 +436,17 @@ def findEx(parent=None, index=0, className=None, title=None, controlId=None, sty
             if win32gui.GetWindow(hwndfind, win32gui.GW_OWNER) != parent:
                 continue
             if style is not None or nStyle is not None:
-                if (win32gui.GetWindowLong(hwndfind, win32con.GWL_STYLE) & style != style):
+                if (win32gui.GetWindowLong(hwndfind, win32con.GWL_STYLE)
+                        & style != style):
                     continue
-                if (win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE) & nStyle != nStyle):
+                if (win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE)
+                        & nStyle != nStyle):
                     continue
 
             hwnd = hwndfind
             break
 
     return hwnd
-
-
-import threading
 
 
 # closeAndWait函数：关闭窗口并等待消息处理完成
@@ -427,9 +476,14 @@ def closeAndWait(hwnd):
 # removeBorder函数：移除窗口边框
 def removeBorder(hwnd):
     # 修改窗口样式
-    win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE) & ~0xCF0000)
+    win32gui.SetWindowLong(
+        hwnd, win32con.GWL_STYLE,
+        win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE) & ~0xCF0000)
     # 重新设置窗口位置
-    win32gui.SetWindowPos(hwnd, None, 0, 0, 0, 0, win32con.SWP_FRAMECHANGED | win32con.SWP_NOACTIVATE | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
+    win32gui.SetWindowPos(
+        hwnd, None, 0, 0, 0, 0,
+        win32con.SWP_FRAMECHANGED | win32con.SWP_NOACTIVATE
+        | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER)
 
 
 # orphanWindow函数：将窗口设为子窗口，并且移除控件
@@ -481,15 +535,13 @@ def findMenu(hwnd=None, *args):
 
 if __name__ == "__main__":
     # print(GetDesktopWindow())
+    print(isUnicode(GetDesktopWindow()))
     # print(GetClassName(GetForegroundWindow()))
-    # for item in EnumWindows():
-    # print(item)
-    res = FindWindow(None, classname='Chrome_WidgetWin_1')
-    print(GetWindowText(res), GetClassName(res))
-    print(findEx(className='Chrome_WidgetWin_1'))
+    # for item in EnumWindows(): print(item)
+    # res = FindWindow(None, classname='Chrome_WidgetWin_1')
+    # print(GetWindowText(res), GetClassName(res))
+    # print(findEx(className='Chrome_WidgetWin_1'))
     # win10环境下模拟鼠标点击
-    import win32api, win32con
-    win32api.SetCursorPos((100, 100))
-    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
-    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
-
+    # win32api.SetCursorPos((100, 100))
+    # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+    # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)

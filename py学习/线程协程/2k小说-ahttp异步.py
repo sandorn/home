@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 '''
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:55
-LastEditTime : 2022-12-14 18:53:16
-FilePath     : /线程协程/2k小说-ahttp异步.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2023-10-27 15:54:47
+FilePath     : /CODE/py学习/线程协程/2k小说-ahttp异步.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
@@ -29,9 +28,7 @@ def get_download_url(target):
     _bookname = response.xpath('//h1/text()')[0]
     全部章节节点 = response.xpath('//html/body/dl/dt[2]/following-sibling::dd/a/@href')
 
-    for item in 全部章节节点:
-        _ZJHERF = target + item
-        urls.append(_ZJHERF)
+    urls.extend(target + item for item in 全部章节节点)
     return _bookname, urls
 
 
@@ -59,23 +56,23 @@ def callback(resp):
         ],
     )
 
-    texts.append([index, name, '    ' + text])
+    texts.append([index, name, f'    {text}'])
 
 
 def main(url):
-    print('开始下载：《{}》\t{}\t获取下载链接......'.format(url, get_time()), flush=True)
+    print(f'开始下载：《{url}》\t{get_time()}\t获取下载链接......', flush=True)
     bookname, urls = get_download_url(url)
 
-    print('AHTTP,开始下载：《' + bookname + '》', flush=True)
+    print(f'AHTTP,开始下载：《{bookname}》', flush=True)
     ahttpGetAll(urls, pool=500, timeout=60, callback=callback)
-    print('AHTTP，书籍《' + bookname + '》完成下载')
+    print(f'AHTTP，书籍《{bookname}》完成下载')
 
     texts.sort(key=lambda x: x[0])  # #排序
     # @重新梳理数据，剔除序号
     aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
     files = os.path.split(__file__)[-1].split(".")[0]
-    savefile(files + '＆' + bookname + '.txt', aftertexts, br='\n')
-    print('{} 结束，\t用时:{} 秒。'.format(get_time(), round(time.time() - _stime, 2)))
+    savefile(f'{files}＆{bookname}.txt', aftertexts, br='\n')
+    print(f'{get_time()} 结束，\t用时:{round(time.time() - _stime, 2)} 秒。')
 
 
 if __name__ == '__main__':

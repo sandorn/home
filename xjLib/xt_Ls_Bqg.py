@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-14 23:30:19
-LastEditTime : 2023-10-26 16:47:01
+LastEditTime : 2023-10-27 15:59:02
 FilePath     : /CODE/xjLib/xt_Ls_Bqg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -134,23 +134,6 @@ def get_download_url(target):
     bookname = bookname[0]
     urls = ["/".join(target.split("/")[:-2]) + item
             for item in temp_urls]  # 章节链接
-    return bookname, urls, titles
-
-
-def get_biqugse_download_url(target):
-    resp = get_tretry(target)
-    assert isinstance(resp, htmlResponse)
-    _xpath = [
-        '//meta[@property="og:title"]//@content',
-        "//dt[2]/following-sibling::dd/a/@href",
-        "//dt[2]/following-sibling::dd/a/text()",
-        # '//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()',
-    ]
-    bookname, temp_urls, titles = resp.xpath(_xpath)
-
-    bookname = bookname[0]
-    baseurl = "/".join(target.split("/")[:-2])
-    urls = [baseurl + item for item in temp_urls]  # # 章节链接
     return bookname, urls, titles
 
 
