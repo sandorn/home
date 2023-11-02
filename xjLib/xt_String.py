@@ -164,7 +164,7 @@ def Re_Sub(replacement: str, trims: list[list | tuple]):
     trims[0]:查找字符串,trims[1]:替换字符串
     """
     # lamda表达式,参数与输入值顺序相反
-    if trims is None: return replacement
+    if trims is None or not trims: return replacement
 
     return reduce(
         lambda str_tmp, item: re.sub(
@@ -315,4 +315,4 @@ if __name__ == '__main__':
     # test_Re_Compile()
     str2 = "Powe, on；the 2333, 。哈哈 ！！\U0001f914看看可以吗？一行代码就可以了！^_^"
     # print(remove_all_blank(str2, keep_blank=False))
-    print(clean_invisible_chars(str2))
+    # print(clean_invisible_chars(str2))
