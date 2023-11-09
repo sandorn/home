@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-10-25 18:10:09
+LastEditTime : 2023-11-06 09:58:53
 FilePath     : /CODE/xjLib/xt_Time.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -27,15 +27,19 @@ def fn_timer(func):
 
     @wraps(func)
     def func_timer(*args, **kwargs):
-        _st = traceback.extract_stack()
+        _st = traceback.extract_stack()[-2]
         _s_time = nowsec()
         _s_pro = nowpro()
 
         result = func(*args, **kwargs)
 
+        elapsed_time = nowsec() - _s_time
+        process_time = nowpro() - _s_pro
+
         print(
-            f"{_st[0][0]}|{_st[0][1]}|{func.__name__}|time:{nowsec() - _s_time: .2f} sec|processtime:{nowpro() - _s_pro: .2f} sec"
+            f"{_st.filename}|{_st.lineno}|{func.__name__}|time: {elapsed_time:.2f} sec|processtime: {process_time:.2f} sec"
         )
+
         return result
 
     return func_timer

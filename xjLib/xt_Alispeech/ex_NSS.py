@@ -143,22 +143,21 @@ def TODO_TTS(_in_text, readonly=False, merge=False, **kwargs):
 
 if __name__ == '__main__':
 
-    _text = [
-        "立志做有理想、敢担当、能吃苦、肯奋斗的新时代好青年。",
-        "青年强，则国家强。当代中国青年生逢其时，施展才干的舞台无比广阔，实现梦想的前景无比光明。",
-    ]
+    _text = '''
+    我家过亿的资产全是借来的
+    我爸每天都会向亲朋好友借几十万块钱
+    '''
 
     def read():
         out_file = TODO_TTS(_text, readonly=True, aformat='wav')
 
-        from PyQt5.QtCore import QThread
-        from xt_Alispeech.Play import Qthread_play, Thread_play
+        from xt_Alispeech.Play import QThread, Qthread_play, Thread_play
         for oufile in out_file:
             # task = Qthread_play(oufile[1])
             # task.join()
             task2 = Thread_play(oufile[1])
             task2.wait()
 
-    read()
+    # read()
     # print(TODO_TTS(_text))
-    # print(TODO_TTS(_text, aformat='wav', merge=True, voice='Aida'))
+    print(TODO_TTS(_text, aformat='wav', merge=True, voice='aifei'))

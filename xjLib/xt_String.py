@@ -100,7 +100,6 @@ def remove_all_blank(value, keep_blank=True):
     if keep_blank:
         return ''.join(ch for ch in value if ch.isprintable())
     else:
-        # return ''.join(filter(lambda c: c.isprintable() and not c.isspace(), value))
         return ''.join(ch for ch in value
                        if ch.isprintable() and not ch.isspace())
 
@@ -121,7 +120,6 @@ def Str_Replace(replacement: str, trims: list[list | tuple]):
     # for item in trims:
     #     replacement = replacement.replace(item[0], item[1])
     # return replacement
-    # 第二种方法  # replacement 为初始值,最后传入,在lambda中最先接收
     """
 
     return reduce(
