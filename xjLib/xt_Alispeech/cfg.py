@@ -49,9 +49,9 @@ class SpeechArgs(dict_mothed_Mixin):
     使用SpeechArgs().get_dict()获取参数字典
     '''
     long_tts: bool = False
-    aformat: str = 'mp3'
+    aformat: str = 'wav'
     sample_rate: int = 16000
-    voice: str = 'ailun'  # aida   # ailun  # kenny  # aijing # aixia
+    voice: str = 'aifei'  # aida   # ailun  # kenny  # aijing # aixia #aifei
     volume: int = 50
     speech_rate: int = 0  # -80
     pitch_rate: int = 0  # -80

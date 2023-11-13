@@ -121,7 +121,9 @@ def create_read_thread(meta):
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
-                datalist = self._target(text, readonly=True, aformat=self.aformat)
+                datalist = self._target(text,
+                                        readonly=True,
+                                        aformat=self.aformat)
                 datalist.sort(key=lambda x: x[0])
                 [self.datas_list.append(item[1]) for item in datalist]
                 QThread.msleep(50)
@@ -130,7 +132,9 @@ def create_read_thread(meta):
 
             print('pygame_play MainMonitor stoping!!!!')
 
-        self._MainMonitor = Thread(target=_func, daemon=True, name="MainMonitor")
+        self._MainMonitor = Thread(target=_func,
+                                   daemon=True,
+                                   name="MainMonitor")
         self._MainMonitor.start()
 
     def run(self):
@@ -149,7 +153,9 @@ def create_read_thread(meta):
                     print('self.py_mixer new loading......')
                     continue
 
-                if (not self._MainMonitor.is_alive() and len(self.textlist) == 0 and len(self.datas_list) == 0):
+                if (not self._MainMonitor.is_alive()
+                        and len(self.textlist) == 0
+                        and len(self.datas_list) == 0):
                     print('all recod play finished!!!!')
                     if self.__isQ: self._signal.emit()
                     self.stop()
@@ -160,13 +166,14 @@ def create_read_thread(meta):
         print('self.py_mixer.stoping!!!!')
 
     _name = 'QThread' if meta is QThread else 'Thread'
-    return type(f'Synt_Read_{_name}', (meta, ), {
-        '_signal': pyqtSignal(),
-        '__init__': __init__fn,
-        'main_monitor': main_monitor,
-        'run': run,
-        'stop': stop,
-    })
+    return type(
+        f'Synt_Read_{_name}', (meta, ), {
+            '_signal': pyqtSignal(),
+            '__init__': __init__fn,
+            'main_monitor': main_monitor,
+            'run': run,
+            'stop': stop,
+        })
 
 
 Synt_Read_Thread = create_read_thread(Thread)
@@ -187,7 +194,7 @@ class _read_class_meta:
         self.datas_list = []
         self._running = True
         pygame.mixer.init(frequency=8000)  # @不可默认
-        self.aformat = 'wav'
+        self.aformat = 'pcm'
         self.pym = pygame.mixer
         self.main_monitor()  # 启动语音生成
         self.start()  # type: ignore
@@ -197,7 +204,9 @@ class _read_class_meta:
         def _func():
             while len(self.textlist) > 0:
                 text = self.textlist.pop(0)
-                datalist = self._target(text, readonly=True, aformat=self.aformat)
+                datalist = self._target(text,
+                                        readonly=True,
+                                        aformat=self.aformat)
                 assert isinstance(datalist, list)
                 datalist.sort(key=lambda x: x[0])
                 [self.datas_list.append(item[1]) for item in datalist]
@@ -208,7 +217,9 @@ class _read_class_meta:
             print('pygame_play MainMonitor stoping!!!!')
 
         # #daemon=True,跟随主线程关闭 ,不能用双QThread嵌套
-        self._MainMonitor = Thread(target=_func, daemon=True, name="MainMonitor")
+        self._MainMonitor = Thread(target=_func,
+                                   daemon=True,
+                                   name="MainMonitor")
         self._MainMonitor.start()
 
     def run(self):
@@ -227,7 +238,9 @@ class _read_class_meta:
                     print('py_mixer new loading......')
                     continue
 
-                if (not self._MainMonitor.is_alive() and len(self.textlist) == 0 and len(self.datas_list) == 0):
+                if (not self._MainMonitor.is_alive()
+                        and len(self.textlist) == 0
+                        and len(self.datas_list) == 0):
                     print('all recod play finished!!!!')
                     if self.__isQ: self._signal.emit()  # type: ignore
                     self.stop()
