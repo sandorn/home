@@ -19,6 +19,26 @@ import re
 from functools import reduce
 
 
+def is_valid_id_number(id_number):
+    """
+    验证身份证号码是否符合格式要求
+    :param id_number: 身份证号码
+    :return: 验证结果，True表示有效，False表示无效
+    """
+    # 身份证号码格式要求：18位，前17位为数字，最后一位为校验码（1-2位）
+    if not re.match(r'^\d{17}(\d|X|x)$', id_number):
+        return False
+
+    # 计算校验码
+    weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
+    check_codes = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2']
+    sum_weights = sum(int(id_number[i]) * weights[i] for i in range(17))
+    check_code = check_codes[sum_weights % 11]
+
+    # 检查输入的校验码是否与计算出的校验码一致
+    return id_number[-1].upper() == check_code
+
+
 def Ex_md5(data):
     """将string转化为MD5"""
     my_md5 = hashlib.md5()  # 获取一个MD5的加密算法对象
@@ -314,3 +334,8 @@ if __name__ == '__main__':
     str2 = "Powe, on；the 2333, 。哈哈 ！！\U0001f914看看可以吗？一行代码就可以了！^_^"
     # print(remove_all_blank(str2, keep_blank=False))
     # print(clean_invisible_chars(str2))
+
+    # 测试
+    print(is_valid_id_number("230605197505032139"))  # True
+    print(is_valid_id_number("23060219750503213x"))  # True
+    print(is_valid_id_number("110101199003078017"))  # False

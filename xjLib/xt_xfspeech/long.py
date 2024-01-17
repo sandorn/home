@@ -189,11 +189,9 @@ if __name__ == "__main__":
     API_KEY = APIKey
     API_SECRET = APISecret
 
-    file = open("./xjLib/xt_xfspeech/1.txt", encoding='utf-8')
-    text = file.read()
-    task_id = do_create(text)
-    file.close()
-
+    with open("./xjLib/xt_xfspeech/1.txt", encoding='utf-8') as file:
+        text = file.read()
+        task_id = do_create(text)
     # 3、执行查询任务
     # 创建任务执行成功后，由返回的task_id执行查询任务
     if task_id:
@@ -208,6 +206,8 @@ if __name__ == "__main__":
         code.write(f.content)
     if filename:
         print("\n音频保存成功！")
+    else:
+        print("\n音频保存失败！")
 '''
 create_response: {"header": {"code": 11200, "message": "licc limit", "sid": "dts000f844e@dx18bb2344bab7020882"}}
 创建任务失败，返回状态码: 11200
