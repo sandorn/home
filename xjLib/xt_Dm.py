@@ -11,6 +11,7 @@ FilePath     : /xjLib/xt_Dm.py
 LastEditTime : 2021-04-16 13:39:27
 Github       : https://github.com/sandorn/home
 ==============================================================
+https://github.com/bode135/pydamo/tree/master
 大漠只能使用32位python
 """
 import ctypes

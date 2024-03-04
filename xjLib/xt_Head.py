@@ -273,14 +273,17 @@ USER_AGENTS = [
 ]
 
 MYHEAD = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
+    'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
     'Accept': '*/*,application/*,application/json,text/*,text/html',
     'Accept-Encoding': 'gzip, deflate',
     'Content-Encoding': 'gzip,deflate,compress',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
-    'Accept-Charset': 'UTF-8,GB2312,GBK,GB18030,ISO-8859-1,ISO-8859-5;q=0.7,*;q=0.7',
+    'Accept-Charset':
+    'UTF-8,GB2312,GBK,GB18030,ISO-8859-1,ISO-8859-5;q=0.7,*;q=0.7',
     # 'Connection': 'close',  # 'keep-alive',
-    'Content-Type': 'text/html,application/x-www-form-unlencoded; charset=UTF-8',
+    'Content-Type':
+    'text/html,application/x-www-form-unlencoded; charset=UTF-8',
     'Upgrade': 'HTTP/1.1',  # 强制降级到'HTTP/1.1',
     'Connection': 'Upgrade'
     # 'X-Requested-With': 'XMLHttpRequest',
@@ -292,23 +295,24 @@ MYHEAD = {
 
 class Head:
 
+    def __init__(self):
+        self.MYHEAD = {}
+
+    def set_user_agent(self, user_agent):
+        self.MYHEAD['User-Agent'] = user_agent
+
     @property
     def random(self):
-        MYHEAD['User-Agent'] = self.ua  # 随机生成一个User-Agent
-        return MYHEAD
+        self.set_user_agent(UserAgent().random)
+        # 随机生成一个fake_useragent
+        return self.MYHEAD
 
     @property
     def myhead(self):
-        MYHEAD['User-Agent'] = self.uac
-        return MYHEAD
-
-    @property
-    def ua(self):
-        return UserAgent().random
-
-    @property
-    def uac(self):
-        return random.choice(USER_AGENTS)  # 随机生成一个User-Agent
+        user_agent = random.choice(USER_AGENTS)
+        self.set_user_agent(user_agent)
+        # 随机选择一个User-Agent
+        return self.MYHEAD
 
 
 ###########################################################################################

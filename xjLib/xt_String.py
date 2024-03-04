@@ -48,6 +48,7 @@ def Ex_md5(data):
 
 
 def Ex_sha1(data):
+    """将string转化为sha1"""
     my_sha = hashlib.sha1()
     my_sha.update(data.encode("utf-8", 'ignore'))
     return my_sha.hexdigest()
