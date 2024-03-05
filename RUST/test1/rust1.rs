@@ -23,20 +23,20 @@ fn main() {
     println!(
         "程序运算的值为: {}    {}    {}",
         five(),
-        add(11, 22),
-        乘法(12, 23)
+        add(123, 456),
+        multiply(12, 12)
     );
 }
 
 fn five() -> i32 {
-    5
+    3 + 2
 }
 
 fn add(a: i32, b: i32) -> i32 {
-    let _ = a + b;
-    999 //不可加分号
+    let c = a + b;
+    c
 }
 
-fn 乘法(a: i32, b: i32) -> i32 {
-    return a * b;
+fn multiply(a: i32, b: i32) -> i32 {
+    a * b
 }
