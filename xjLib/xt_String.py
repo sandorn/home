@@ -290,7 +290,6 @@ def random_char(length=20):
 
 def class_add_dict(in_obj):
     '''把对象转换成字典'''
-    # in_obj.__dict__ = {key: getattr(in_obj, key) for key in dir(in_obj) if not key.startswith('__') and not callable(getattr(in_obj, key))}
     in_obj.__dict__ = {
         key: value
         for key, value in vars(in_obj).items()
