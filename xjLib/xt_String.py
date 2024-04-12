@@ -11,11 +11,11 @@ FilePath     : /CODE/xjLib/xt_String.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
-
 import hashlib
 import json
 import random
 import re
+import string
 from functools import reduce
 
 
@@ -123,7 +123,7 @@ def remove_all_blank(value, keep_blank=True):
         return ''.join(ch for ch in value if ch.isprintable())
     else:
         return ''.join(ch for ch in value
-                       if ch.isprintable() and not ch.isspace())
+                       if ch.isprintable() and ch not in string.whitespace)
 
 
 def clean_invisible_chars(text):
@@ -290,11 +290,15 @@ def random_char(length=20):
 
 def class_add_dict(in_obj):
     '''把对象转换成字典'''
-    in_obj.__dict__ = {
+    if not hasattr(in_obj, '__dict__'):
+        in_obj.__dict__ = {}
+
+    in_obj.__dict__.update({
         key: value
         for key, value in vars(in_obj).items()
         if not key.startswith('__') and not callable(value)
-    }
+    })
+
     return in_obj.__dict__
 
 

@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : None
 #Develop      : VSCode
@@ -12,7 +12,7 @@ LastEditTime : 2021-04-14 18:09:32
 #Github       : https://github.com/sandorn/home
 #==============================================================
 requests 简化调用
-'''
+"""
 
 from functools import partial
 
@@ -30,13 +30,13 @@ TRETRY = retry(
 
 
 def _setKw(kwargs):
-    kwargs.setdefault('headers', Head().random)
-    kwargs.setdefault('timeout', TIMEOUT)  # @超时
+    kwargs.setdefault("headers", Head().random)
+    kwargs.setdefault("timeout", TIMEOUT)  # @超时
     return kwargs
 
 
 def _request_parse(method, url, *args, **kwargs):
-    '''自实现重试'''
+    """自实现重试"""
     attempts = RETRY_TIME
     response = None
     func_exc = ret_err = False
@@ -58,20 +58,20 @@ def _request_parse(method, url, *args, **kwargs):
             attempts -= 1
             func_exc = True
             ret_err = err
-            print(
-                f'_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}'
-            )
+            print(f"_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}")
         else:
             # #返回正确结果
             result = htmlResponse(response)
-            if callable(callback): result = callback(result)
+            if callable(callback):
+                result = callback(result)
             return result
     # #错误返回None
-    if func_exc: return ret_err
+    if func_exc:
+        return ret_err
 
 
 def _request_wraps(method, url, *args, **kwargs):
-    '''利用自编重试装饰器,实现重试'''
+    """利用自编重试装饰器,实现重试"""
     kwargs = _setKw(kwargs)
     callback = kwargs.pop("callback", None)
 
@@ -90,7 +90,7 @@ def _request_wraps(method, url, *args, **kwargs):
 
 
 def _request_tretry(method, url, *args, **kwargs):
-    '''利用TRETRY三方库实现重试'''
+    """利用TRETRY三方库实现重试"""
     kwargs = _setKw(kwargs)
     callback = kwargs.pop("callback", None)
 
@@ -103,10 +103,11 @@ def _request_tretry(method, url, *args, **kwargs):
     try:
         response = __fetch_run()
         result = htmlResponse(response)
-        if callable(callback): result = callback(result)
+        if callable(callback):
+            result = callback(result)
         return result
     except Exception as err:
-        print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
+        print(f"_request_tretry.{method}:<{url}>; Err:{err!r}")
         return err
 
 
@@ -119,17 +120,16 @@ post_tretry = partial(_request_tretry, "post")
 
 
 class SessionClient:
-    '''封装session,保存cookies,利用TRETRY三方库实现重试'''
-    __slots__ = ('sson', 'method', 'url', 'args', 'kwargs', 'response',
-                 'callback')
+    """封装session,保存cookies,利用TRETRY三方库实现重试"""
+
+    __slots__ = ("sson", "method", "url", "args", "kwargs", "response", "callback")
 
     def __init__(self):
         self.sson = requests.session()
 
     @TRETRY
     def _request(self):
-        self.response = self.sson.request(self.method, self.url, *self.args,
-                                          **self.kwargs)
+        self.response = self.sson.request(self.method, self.url, *self.args, **self.kwargs)
         self.response.raise_for_status()
         return self.response
 
@@ -138,7 +138,7 @@ class SessionClient:
             self.response = None
             self._request()
         except requests.exceptions.RequestException as err:
-            print(f'SessionClient request:<{self.url}>; Err:{err!r}')
+            print(f"SessionClient request:<{self.url}>; Err:{err!r}")
             return None
         else:
             assert isinstance(self.response, requests.Response)
@@ -156,23 +156,17 @@ class SessionClient:
         self.update_headers(kwargs.pop("headers", MYHEAD))
         self.update_cookies(kwargs.pop("cookies", {}))
         self.callback = kwargs.pop("callback", None)
-        kwargs.setdefault('timeout', TIMEOUT)
+        kwargs.setdefault("timeout", TIMEOUT)
         self.kwargs = kwargs
         return self.start_fetch_run()
 
     def __getattr__(self, method):
-        if method in [
-                'get', 'post', 'head', 'options', 'put', 'delete', 'patch'
-        ]:
-            return lambda *args, **kwargs: self.__create_params(
-                method, *args, **kwargs)
+        if method in ["get", "post", "head", "options", "put", "delete", "patch"]:
+            return lambda *args, **kwargs: self.__create_params(method, *args, **kwargs)
 
     def __getitem__(self, method):
-        if method in [
-                'get', 'post', 'head', 'options', 'put', 'delete', 'patch'
-        ]:
-            return lambda *args, **kwargs: self.__create_params(
-                method, *args, **kwargs)
+        if method in ["get", "post", "head", "options", "put", "delete", "patch"]:
+            return lambda *args, **kwargs: self.__create_params(method, *args, **kwargs)
             # self.method = method
             # @不带括号,传递*args, **kwargs参数
             # return self.__create_params
@@ -184,7 +178,7 @@ class SessionClient:
         self.sson.headers.update(header_dict)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # print(get_wraps('http://www.baidu.com').ctext)
     # sii = SessionClient()
     # print(get_wraps('https://www.google.com'))
@@ -207,19 +201,19 @@ if __name__ == '__main__':
     # ]
     # for url in urls:
     # ...
-    url = 'http://www.163.com'
+    url = "http://www.163.com"
     res = get_wraps(url)
     # print(res.text)
-    print(res.xpath('//title/text()'))
-    print(res.xpath(['//title/text()', '//title/text()']))
+    print(res.xpath("//title/text()"))
+    print(res.xpath(["//title/text()", "//title/text()"]))
     print(res.xpath())
-    print(res.xpath(' '))
-    print(res.xpath(''))
-    print(res.dom.xpath('//title/text()'))
-    print(res.html.xpath('//title/text()'))
-    print(res.element.xpath('//title/text()'))
+    print(res.xpath(" "))
+    print(res.xpath(""))
+    print(res.dom.xpath("//title/text()"))
+    print(res.html.xpath("//title/text()"))
+    print(res.element.xpath("//title/text()"))
     # print(res.pyquery('title').text())
-    '''
+    """
     ###############################################################
     # allow_redirects=False #取消重定向
     res = get_wraps('https://www.biqukan8.cc/38_38163/')
@@ -280,4 +274,4 @@ if __name__ == '__main__':
 
         print(each.xpath("string(.)").strip())  # 获取文本方法1,全
         print(each.text.strip())  # 获取文本方法2,可能不全
-'''
+"""
