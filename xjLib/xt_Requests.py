@@ -25,8 +25,7 @@ from xt_Tools import try_except_wraps
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
     stop=stop_after_attempt(RETRY_TIME),
-    wait=wait_random(min=0, max=1),
-)
+    wait=wait_random(min=0, max=1))
 
 
 def _setKw(kwargs):
