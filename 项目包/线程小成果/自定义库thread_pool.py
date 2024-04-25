@@ -16,7 +16,7 @@ Github       : https://github.com/sandorn/home
 import os
 
 from xt_File import savefile
-from xt_Ls_Bqg import clean_Content, get_biqugse_download_url
+from xt_Ls_Bqg import clean_Content, get_download_url
 from xt_Requests import get as get
 from xt_Response import htmlResponse
 from xt_String import Str_Replace
@@ -41,7 +41,7 @@ def get_contents(index, target):
 
 @fn_timer
 def main(target):
-    bookname, urls, _ = get_biqugse_download_url(target)
+    bookname, urls, _ = get_download_url(target)
     for index, url in enumerate(urls):
         get_contents(index, url)
     text_list = pool.wait_completed()
@@ -52,5 +52,4 @@ def main(target):
 
 if __name__ == "__main__":
 
-    # main('http://www.biqugse.com/96703/')
-    main('http://www.biqugse.com/28542/')  # 143sec
+    main('https://www.biqukan8.cc/0_288/')

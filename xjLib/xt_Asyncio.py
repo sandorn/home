@@ -99,7 +99,7 @@ class AioCrawl:
 
     async def _task_run(self, url, method='GET', index=None, *args, **kwargs):
         '''运行任务'''
-        kwargs.setdefault('headers', Head().random)
+        kwargs.setdefault('headers', Head().randua)
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))
         cookies = kwargs.pop("cookies", {})
         callback = kwargs.pop("callback", None)

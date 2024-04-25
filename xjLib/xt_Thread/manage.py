@@ -192,9 +192,8 @@ class thread_pool:
 
         # 线程的开启
         for _ in range(num):
-            thread = Thread(target=_pools_pull)
+            thread = Thread(target=_pools_pull, daemon=True)
             thread.start()
-            thread.daemon = True  # Set daemon status
 
     def main_monitor(self):
 
@@ -203,7 +202,7 @@ class thread_pool:
             while True:
 
                 sleep(0.2)
-                if not _main_thr.isAlive():
+                if not _main_thr.is_alive():
                     self.close_all()
                     break
 

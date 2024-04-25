@@ -15,14 +15,14 @@ Github       : https://github.com/sandorn/home
 import os
 
 from xt_File import savefile
-from xt_Ls_Bqg import get_biqugse_download_url, get_contents
+from xt_Ls_Bqg import get_download_url, get_contents
 from xt_Thread import CustomThread
 from xt_Time import fn_timer
 
 
 @fn_timer
 def main_thread(target):
-    bookname, urls, _ = get_biqugse_download_url(target)
+    bookname, urls, _ = get_download_url(target)
     _ = [CustomThread(get_contents, index, urls[index]) for index in range(len(urls))]
     text_list = CustomThread.getAllResult()
     text_list.sort(key=lambda x: x[0])  # #排序
@@ -32,5 +32,5 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
-    # main_thread('http://www.biqugse.com/28542/')  # 143sec
-    main_thread('http://www.biqugse.com/96703/')
+    main_thread('https://www.biqukan8.cc/0_288/')
+    # time: 18.47 sec|processtime: 35.41 sec

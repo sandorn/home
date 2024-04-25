@@ -31,7 +31,7 @@ class AsnycGrab(object):
 
     async def get_body(self, url, index=None):
         async with ClientSession() as session:
-            async with session.get(url, headers=Head().random, timeout=30) as response:
+            async with session.get(url, headers=Head().randua, timeout=30) as response:
                 if response.status == 200:
                     html = await response.read()
                     return htmlResponse(response, html, index)
@@ -88,12 +88,7 @@ class AsnycGrab(object):
 
 if __name__ == '__main__':
     url_list = [
-        'http://www.biqugse.com/96703/',  #11s
-        # 'http://www.biqugse.com/96717/',
-        # 'http://www.biqugse.com/76169/',
-        # 'http://www.biqugse.com/82744/',
-        # 'http://www.biqugse.com/96095/',
-        # 'http://www.biqugse.com/92385/',
+        'https://www.biqukan8.cc/0_288/',  #11s
     ]
     async_example = AsnycGrab(url_list)
     async_example.start_loop()

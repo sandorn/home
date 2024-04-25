@@ -10,7 +10,7 @@ LastEditTime : 2023-01-18 13:07:41
 FilePath     : /CODE/项目包/线程小成果/笔趣阁-asyncio.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-顺讯，单独，速度慢
+#! 失效，出错
 '''
 
 import asyncio
@@ -25,10 +25,8 @@ from xt_Time import timeit
 
 
 async def fetch(url):
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(
-            ssl=False)) as sess:
-        async with sess.get(url) as response:
-            content = await response.read()
+    async with aiohttp.TCPConnector(ssl=False) as Tconn, aiohttp.ClientSession(connector=Tconn) as session, session.get(url, raise_for_status=True) as response:
+        content = await response.read()
     return htmlResponse(response, content)
 
 
@@ -56,8 +54,7 @@ async def get_contents(index, url):
     title = resp.pyquery("h1").text()
     content = resp.pyquery("#content").text()
 
-    title = Str_Replace("".join(title), [(u'\u3000', u' '), (u'\xa0', u' '),
-                                         (u'\u00a0', u' ')])
+    title = Str_Replace("".join(title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
     content = clean_Content(content)
     # return [index, title, content]
     texts.append([index, title, content])
@@ -67,7 +64,7 @@ async def get_contents(index, url):
 def main_thread(url):
 
     bookname, urls, _ = asyncio.run(get_down_url(url))
-
+    print(1111111111, bookname)
     tasks = [get_contents(index, url) for index, url in enumerate(urls)]
 
     loop = asyncio.new_event_loop()

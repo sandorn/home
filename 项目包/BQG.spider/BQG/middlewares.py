@@ -21,7 +21,7 @@ class RandomUserAgentMiddlware(object):
         return cls(crawler)
 
     def process_request(self, request, spider):
-        request.headers.setdefault('User-Agent', Head().ua)
+        request.headers.setdefault('User-Agent', Head().myhead)
 
 
 class BqgSpiderMiddleware(object):

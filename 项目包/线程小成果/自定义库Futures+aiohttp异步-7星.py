@@ -12,7 +12,6 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 '''
 
-
 import os
 
 from xt_Ahttp import ahttpGetAll
@@ -55,5 +54,5 @@ if __name__ == "__main__":
     url_list = [
         'https://www.biqukan8.cc/0_288/',
     ]
-    # pool(url_list, Aio_ahttp)  # ahttpGetAll 96s
-    pool(url_list, Aio_feach_run)  # AioCrawl 97s
+    # pool(url_list, Aio_ahttp)  # 卡死
+    pool(url_list, Aio_feach_run)  # AioCrawl 12s

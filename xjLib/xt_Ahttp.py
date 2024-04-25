@@ -52,10 +52,7 @@ def _unil_session_method(method, *args, **kwargs):
         'patch': session.patch,
     }
 
-    if method in [
-            'get', 'post', 'head', 'options', 'put', 'delete', 'trace',
-            'connect', 'patch'
-    ]:
+    if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
         return method_dict.get(method)(*args, **kwargs)
 
 
@@ -74,10 +71,7 @@ patch = partial(_unil_session_method, "patch")
 class SessionMeta:
 
     def __getattr__(self, name):
-        if name in [
-                'get', 'post', 'head', 'options', 'put', 'delete', 'trace',
-                'connect', 'patch'
-        ]:
+        if name in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
             new_AsyncTask = AsyncTask()
             return new_AsyncTask.__getattr__(name)  # @ 设置方法
 
@@ -88,10 +82,7 @@ class AsyncTask:
         self.index = id(self)
 
     def __getattr__(self, name):
-        if name in [
-                'get', 'post', 'head', 'options', 'put', 'delete', 'trace',
-                'connect', 'patch'
-        ]:
+        if name in ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']:
             self.method = name  # @ 设置方法
             return self._make_params  # @ 设置参数
 
@@ -102,7 +93,7 @@ class AsyncTask:
         self.url = args[0]
         self.args = args[1:]
 
-        kwargs.setdefault('headers', Head().random)
+        kwargs.setdefault('headers', Head().randua)
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
         self.cookies = kwargs.pop("cookies", {})
         self.callback = kwargs.pop("callback", None)
@@ -122,14 +113,7 @@ async def _async_fetch(self):
 
     @TRETRY
     async def _fetch_run():
-        async with TCPConnector(ssl=False) as Tconn, ClientSession(
-                cookies=self.cookies,
-                connector=Tconn) as self.session, self.session.request(
-                    self.method,
-                    self.url,
-                    raise_for_status=True,
-                    *self.args,
-                    **self.kwargs) as self.response:
+        async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as self.session, self.session.request(self.method, self.url, raise_for_status=True, *self.args, **self.kwargs) as self.response:
             self.content = await self.response.read()
             return self.response, self.content, self.index
 
@@ -142,9 +126,7 @@ async def _async_fetch(self):
         return self
     else:
         # #返回结果,不管是否正确
-        self.result = htmlResponse(self.response,
-                                   self.content,
-                                   index=self.index)
+        self.result = htmlResponse(self.response, self.content, index=self.index)
         if self.callback: self.result = self.callback(self.result)
         return self.result
 
@@ -162,15 +144,13 @@ async def create_gather_task(tasks):
 async def create_threads_task(coroes):
     '''异步多线程,使用不同session'''
     threadsafe_loop = asyncio.new_event_loop()
-    Thread(target=threadsafe_loop.run_forever, name='ThreadSafe',
-           daemon=True).start()
+    Thread(target=threadsafe_loop.run_forever, name='ThreadSafe', daemon=True).start()
 
     new_tasks = []
     for index, coro in enumerate(coroes, 1):
         coro.index = index
         _coroutine = coro.start()
-        new_tasks.append(
-            asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
+        new_tasks.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
 
     return [task.result() for task in new_tasks]
 
@@ -184,8 +164,7 @@ def aiohttp_parse(method, url, *args, **kwargs):
 
 def aiohttp__issue(method, urls, *args, **kwargs):
     coroes = [eval(method)(url, *args, **kwargs) for url in urls]
-    _coroutine = create_threads_task(coroes) if kwargs.pop(
-        'threadsafe', True) else create_gather_task(coroes)
+    _coroutine = create_threads_task(coroes) if kwargs.pop('threadsafe', True) else create_gather_task(coroes)
     # return asyncio.run(_coroutine)  # 3.7+ 方式 , threadsafe:单线程或者多线程
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(_coroutine)

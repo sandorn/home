@@ -29,7 +29,7 @@ TRETRY = retry(
 
 
 def _setKw(kwargs):
-    kwargs.setdefault("headers", Head().random)
+    kwargs.setdefault("headers", Head().randua)
     kwargs.setdefault("timeout", TIMEOUT)  # @超时
     return kwargs
 

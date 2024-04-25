@@ -17,14 +17,14 @@ import os
 
 from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
-from xt_Ls_Bqg import get_biqugse_download_url, get_contents, 结果处理
+from xt_Ls_Bqg import get_download_url, get_contents, 结果处理
 from xt_Thread import ProcessPool, ThreadPool
 from xt_Time import fn_timer
 
 
 @fn_timer
 def ahttp_All(url):
-    bookname, urls, _ = get_biqugse_download_url(url)
+    bookname, urls, _ = get_download_url(url)
     resps = ahttpGetAll(urls)
     text_list = 结果处理(resps)
     text_list.sort(key=lambda x: x[0])  # #排序
@@ -47,7 +47,7 @@ def multpool_ahttp(urls):
 
 def thr_sub(url):
     mypool = ThreadPool()
-    bookname, urls, _ = get_biqugse_download_url(url)
+    bookname, urls, _ = get_download_url(url)
     args = [[i, u] for i, u in enumerate(urls)]
     mypool.add_sub(get_contents, *args)
     text_list = mypool.wait_completed()
@@ -73,13 +73,7 @@ def thrPool_thrsub(urls):
 
 if __name__ == '__main__':
     urls = [
-        'http://www.biqugse.com/96703/',
-        # 'http://www.biqugse.com/28542/',  # 超大 ahttp_All  155sec
-        # 'http://www.biqugse.com/96717/',
-        # 'http://www.biqugse.com/76169/',
-        # 'http://www.biqugse.com/82744/',
-        # 'http://www.biqugse.com/96095/',
-        # 'http://www.biqugse.com/92385/',
+        'https://www.biqukan8.cc/0_288/',
     ]
 
     # ahttp_All(urls[0])

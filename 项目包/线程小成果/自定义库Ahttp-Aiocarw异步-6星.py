@@ -17,7 +17,7 @@ import os
 from xt_Ahttp import ahttpGetAll
 from xt_Asyncio import AioCrawl
 from xt_File import savefile
-from xt_Ls_Bqg import (clean_Content, get_biqugse_download_url, get_contents, 结果处理)
+from xt_Ls_Bqg import (clean_Content, get_download_url, get_contents, 结果处理)
 from xt_Response import htmlResponse
 from xt_Thread import FuncInThreadPool
 from xt_Time import fn_timer
@@ -92,8 +92,8 @@ def func_ThreadPool(bookname, urls):
 
 if __name__ == "__main__":
     # url = 'http://www.biqugse.com/28542/'
-    url = "http://www.biqugse.com/96703/"
-    bookname, urls, _ = get_biqugse_download_url(url)
+    url = "https://www.biqukan8.cc/0_288/"
+    bookname, urls, _ = get_download_url(url)
     # Aio_feach_run(bookname, urls)
     # Aio_feach_back(bookname, urls)
     # ahttp_run(bookname, urls)

@@ -273,17 +273,14 @@ USER_AGENTS = [
 ]
 
 MYHEAD = {
-    'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36',
     'Accept': '*/*,application/*,application/json,text/*,text/html',
     'Accept-Encoding': 'gzip, deflate',
     'Content-Encoding': 'gzip,deflate,compress',
     'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.6,en;q=0.4',
-    'Accept-Charset':
-    'UTF-8,GB2312,GBK,GB18030,ISO-8859-1,ISO-8859-5;q=0.7,*;q=0.7',
+    'Accept-Charset': 'UTF-8,GB2312,GBK,GB18030,ISO-8859-1,ISO-8859-5;q=0.7,*;q=0.7',
     # 'Connection': 'close',  # 'keep-alive',
-    'Content-Type':
-    'text/html,application/x-www-form-unlencoded; charset=UTF-8',
+    'Content-Type': 'text/html,application/x-www-form-unlencoded; charset=UTF-8',
     'Upgrade': 'HTTP/1.1',  # 强制降级到'HTTP/1.1',
     'Connection': 'Upgrade'
     # 'X-Requested-With': 'XMLHttpRequest',
@@ -296,23 +293,23 @@ MYHEAD = {
 class Head:
 
     def __init__(self):
-        self.MYHEAD = {}
+        self.headers = {}
 
-    def set_user_agent(self, user_agent):
-        self.MYHEAD['User-Agent'] = user_agent
+    def __set_user_agent__(self, user_agent):
+        self.headers['User-Agent'] = user_agent
 
     @property
-    def random(self):
-        self.set_user_agent(UserAgent().random)
+    def randua(self):
+        self.__set_user_agent__(UserAgent().random)
         # 随机生成一个fake_useragent
-        return self.MYHEAD
+        return self.headers
 
     @property
-    def myhead(self):
+    def ua(self):
         user_agent = random.choice(USER_AGENTS)
-        self.set_user_agent(user_agent)
+        self.__set_user_agent__(user_agent)
         # 随机选择一个User-Agent
-        return self.MYHEAD
+        return self.headers
 
 
 ###########################################################################################
@@ -392,3 +389,8 @@ class Head:
     Warning	警告实体可能存在的问题	Warning: 199 Miscellaneous warning
     WWW-Authenticate	表明客户端请求实体应该使用的授权方案	WWW-Authenticate: Basic
 '''
+
+if __name__ == '__main__':
+    head = Head()
+    print(head.ua)
+    print(head.randua)

@@ -16,14 +16,14 @@ Github       : https://github.com/sandorn/home
 import os
 
 from xt_File import savefile
-from xt_Ls_Bqg import get_biqugse_download_url, get_contents
+from xt_Ls_Bqg import get_download_url, get_contents
 from xt_Thread import WorkManager
 from xt_Time import fn_timer
 
 
 @fn_timer
 def manager(url):
-    bookname, urls, _ = get_biqugse_download_url(url)
+    bookname, urls, _ = get_download_url(url)
     WM = WorkManager()
     WM.add_work_queue([[get_contents, index, url] for index, url in enumerate(urls)])
     text_list = WM.wait_completed()
@@ -34,11 +34,6 @@ def manager(url):
 
 
 if __name__ == "__main__":
-    url = 'http://www.biqugse.com/96703/'
-    # 'http://www.biqugse.com/96703/'
-    # 'https://www.biqukan8.cc/38_38163/'
-
-    # 38_38836  #2_2714  2_2760
-
+    url = 'https://www.biqukan8.cc/0_288/'
     # main(url)
     manager(url)
