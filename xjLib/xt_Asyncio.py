@@ -40,8 +40,7 @@ def silence_event_loop_closed(func):
     return wrapper
 
 
-_ProactorBasePipeTransport.__del__ = silence_event_loop_closed(
-    _ProactorBasePipeTransport.__del__)
+_ProactorBasePipeTransport.__del__ = silence_event_loop_closed(_ProactorBasePipeTransport.__del__)
 
 
 def future_wrapper(func):
@@ -79,8 +78,7 @@ def asyn_run_wrapper(func):
             if iscoroutinefunction(func):
                 return await asyncio.create_task(func(*args, **kwargs))
             else:
-                return await asyncio.create_task(
-                    async_wrapper(func)(*args, **kwargs))
+                return await asyncio.create_task(async_wrapper(func)(*args, **kwargs))
 
         return asyncio.run(__wrapper(*args, **kwargs))
 
@@ -106,14 +104,7 @@ class AioCrawl:
 
         @TRETRY
         async def __fetch():
-            async with ClientSession(
-                    cookies=cookies, connector=TCPConnector(
-                        ssl=False)) as session, session.request(
-                            method,
-                            url,
-                            raise_for_status=True,
-                            *args,
-                            **kwargs) as response:
+            async with ClientSession(cookies=cookies, connector=TCPConnector(ssl=False)) as session, session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
                 content = await response.read()
                 return response, content
 
@@ -134,12 +125,7 @@ class AioCrawl:
 
         for index, url in enumerate(url_list, 1):
             if not isinstance(url, str): continue
-            task = asyncio.create_task(
-                self._task_run(url,
-                               method=method,
-                               index=index,
-                               *args,
-                               **kwargs))
+            task = asyncio.create_task(self._task_run(url, method=method, index=index, *args, **kwargs))
             if callback: task.add_done_callback(callback)
             self.future_list.append(task)
 
@@ -147,10 +133,7 @@ class AioCrawl:
 
     def add_tasks(self, url_list, method='GET', *args, **kwargs):
         '''添加网址列表,异步并发爬虫'''
-        _coroutine = self._issue_tasks(url_list,
-                                       method=method,
-                                       *args,
-                                       **kwargs)
+        _coroutine = self._issue_tasks(url_list, method=method, *args, **kwargs)
         return asyncio.run(_coroutine)
         # self.loop.run_until_complete(_coroutine)  # 异常中断
 
@@ -213,12 +196,11 @@ if __name__ == '__main__':
     async def get_a_html(url):
         return get_wraps(url)
 
-    # print(222, get_a_html('https://httpbin.org/get'))
+    print(222, get_a_html('https://httpbin.org/get'))
 
     @asyn_run_wrapper
     async def get_message():
-        async with ClientSession() as session, session.get(
-                'http://httpbin.org/headers') as response:
+        async with ClientSession() as session, session.get('http://httpbin.org/headers') as response:
             return await response.text()
 
-    # print(333,  get_message())
+    print(333, get_message())
