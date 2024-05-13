@@ -6,7 +6,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-03-15 20:27:53
+LastEditTime : 2024-05-11 10:52:25
 FilePath     : /CODE/项目包/备份更新/备份三方库.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -22,7 +22,7 @@ mypath = os.path.split(os.path.realpath(__file__))[0] + "\\"
 
 
 def PIP_list_备份():
-    print("PIP_list_备份:")
+    print("PIP_list_备份......")
     # pip显示需要更新的python列表
     com_list = 'pip3 list '
     p = subprocess.Popen(com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -49,7 +49,7 @@ def PIP_list_备份():
 
 
 def PIP_freeze备份():
-    print("PIP_freeze备份:")
+    print("PIP_freeze备份......")
     '''pip批量导出包含环境中所有组件的requirements.txt文件
     pip freeze > requirements.txt
     pip批量安装requirements.txt文件中包含的组件依赖
