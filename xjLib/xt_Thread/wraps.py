@@ -212,9 +212,10 @@ if __name__ == "__main__":
     # print('objectName:', cc.objectName())
     # print(thread_print.__name__)
     # print_lock('hello world')
+
     @run_in_threadpool
     def parallel_task(x):
         return x**2
 
-    re = parallel_task([1, 2, 3, 4, 5])
+    re = parallel_task(list(range(1000)))
     print(re)

@@ -125,14 +125,14 @@ def get_download_url(target):
 
     _xpath = (
         # '//meta[@property="og:novel:book_name"]/@content',
-        "//h2/text()",
-        "//dt[2]/following-sibling::dd/a/@href",
-        "//dt[2]/following-sibling::dd/a/text()",
+        "//h1/text()",
+        "//dt[1]/following-sibling::dd/a/@href",
+        "//dt[1]/following-sibling::dd/a/text()",
         # '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href',
     )
     bookname, temp_urls, titles = resp.xpath(_xpath)
     bookname = bookname[0]
-    urls = ["/".join(target.split("/")[:-2]) + item
+    urls = ["/".join(target.split("/")[:-3]) + item
             for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
@@ -143,7 +143,7 @@ def get_contents(index, target):
 
     # #pyquery
     title = resp.pyquery("h1").text()
-    content = resp.pyquery("#content").text()
+    content = resp.pyquery("#chaptercontent").text()
 
     # _xpath = ('//h1/text()', '//*[@id="content"]/text()')
     # _title, content = resp.xpath(_xpath)
@@ -159,7 +159,7 @@ def ahttp_get_contents(args):
     assert isinstance(resp, htmlResponse)
     _xpath = [
         "//h1/text()",
-        '//*[@id="content"]/text()',
+        '//*[@id="chaptercontent"]/text()',
     ]
     title, content = resp.xpath(_xpath)
     title = ("".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"])))
@@ -168,8 +168,8 @@ def ahttp_get_contents(args):
 
 
 if __name__ == "__main__":
-    url = "https://www.biqukan8.cc/0_288/"
+    url = "https://www.biquge11.cc/read/11159/"
     bookname, urls, titles = get_download_url(url)
-    print(bookname)
-    res = get_contents(1, urls[1])
+    print(bookname, urls[0], titles[0])
+    res = get_contents(0, urls[0])
     print(res)

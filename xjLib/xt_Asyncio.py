@@ -90,7 +90,8 @@ class AioCrawl:
     def __init__(self, loop=None):
         self.future_list = []
         self.result_list = []
-        self.loop = loop or asyncio.get_event_loop()
+        self.loop = loop  or asyncio.new_event_loop()
+        # or asyncio.get_event_loop()
 
     def __del__(self):
         self.loop.close()
@@ -150,7 +151,7 @@ class AioCrawl:
         self.loop.run_until_complete(self._func_run(func, *args, **kwargs))
 
     def __get_result(self):
-        for _ in range(len(self.future_list)):
+        while self.future_list:
             future = self.future_list.pop()
             res = future.result()
             self.result_list.append(res)
@@ -170,20 +171,20 @@ class AioCrawl:
 if __name__ == '__main__':
     ...
     #$add_tasks#######################################################################
-    # bb = AioCrawl()
-    # bb.add_tasks(["https://httpbin.org/get"] * 3)
-    # print(bb.wait_completed())
-    # bb.add_tasks(["https://httpbin.org/post"] * 3, method='post')
-    # print(bb.wait_completed())
-    #$add_func#######################################################################
-    # from xt_Requests import get_wraps
+    bb = AioCrawl()
+    bb.add_tasks(["https://httpbin.org/get"] * 3)
+    print(bb.wait_completed())
+    bb.add_tasks(["https://httpbin.org/post"] * 3, method='post')
+    print(bb.wait_completed())
+    #$add_func########################################################
+    from xt_Requests import get_wraps
 
-    # bb = AioCrawl()
-    # bb.add_func(get_wraps, ["https://httpbin.org/get"] * 3)
-    # print(bb.wait_completed())
-    # bb.add_tasks(["https://httpbin.org/post"] * 3, method='post')
-    # print(bb.wait_completed())
-    #$装饰器#######################################################################
+    aa = AioCrawl()
+    aa.add_func(get_wraps, ["https://httpbin.org/get"] * 3)
+    print(aa.wait_completed())
+    aa.add_tasks(["https://httpbin.org/post"] * 3, method='post')
+    print(aa.wait_completed())
+    #$装饰器##################################################################
     from xt_Requests import get_wraps
 
     @asyn_run_wrapper
@@ -196,11 +197,11 @@ if __name__ == '__main__':
     async def get_a_html(url):
         return get_wraps(url)
 
-    print(222, get_a_html('https://httpbin.org/get'))
+    # print(222, get_a_html('https://httpbin.org/get'))
 
     @asyn_run_wrapper
     async def get_message():
         async with ClientSession() as session, session.get('http://httpbin.org/headers') as response:
             return await response.text()
 
-    print(333, get_message())
+    # print(333, get_message())

@@ -10,6 +10,7 @@ LastEditTime : 2023-01-13 23:35:11
 FilePath     : /CODE/项目包/线程小成果/自定义库Ahttp-Aiocarw异步-6星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
+网站关闭，需要重新调整
 '''
 
 import os
@@ -45,7 +46,7 @@ def handle_back_ait(resp):
     # _title = "".join(element.xpath('//h1/text()'))
     title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
     # _showtext = element.xpath('//*[@id="content"]/text()')
-    _showtext = resp.pyquery('#content').text()
+    _showtext = resp.pyquery('#chaptercontent').text()
     content = clean_Content(_showtext)
     # if len(content) < 10: print(resp, '||||||||', content, '||||||||', resp.text)
     return [index, title, content]
@@ -91,14 +92,13 @@ def func_ThreadPool(bookname, urls):
 
 
 if __name__ == "__main__":
-    # url = 'http://www.biqugse.com/28542/'
-    url = "https://www.biqukan8.cc/0_288/"
+    url = 'https://www.biquge11.cc/read/11159/'
     bookname, urls, _ = get_download_url(url)
-    # Aio_feach_run(bookname, urls)
+    Aio_feach_run(bookname, urls)
     # Aio_feach_back(bookname, urls)
     # ahttp_run(bookname, urls)
     # Aio_add_func(bookname, urls)
-    func_ThreadPool(bookname, urls)
+    # func_ThreadPool(bookname, urls)
 '''
 Aio_feach_run(bookname, urls)        179sec
 Aio_feach_run_back(bookname, urls)   187sec

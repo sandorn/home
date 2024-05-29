@@ -6,12 +6,12 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2023-10-27 16:07:31
+LastEditTime : 2024-05-29 10:40:20
 FilePath     : /CODE/项目包/线程小成果/自定义库Futures+aiohttp异步-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
+网站关闭，需要重新调整
 '''
-
 import os
 
 from xt_Ahttp import ahttpGetAll
@@ -52,7 +52,7 @@ def pool(url_list, func):
 
 if __name__ == "__main__":
     url_list = [
-        'https://www.biqukan8.cc/0_288/',
+        'https://www.biquge11.cc/read/11159/',
     ]
     # pool(url_list, Aio_ahttp)  # 卡死
     pool(url_list, Aio_feach_run)  # AioCrawl 12s

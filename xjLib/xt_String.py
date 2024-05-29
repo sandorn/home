@@ -71,7 +71,6 @@ def encrypt_str(data, algorithm='md5'):
     my_encrypt.update(data.encode("utf-8", 'ignore'))  # 得到MD5消息摘要
     return my_encrypt.hexdigest()
 
-
 def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
     """
     增强去重功能，解决了重复元素可能覆盖的问题
@@ -85,7 +84,10 @@ def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
     duplicator = {}
     # 使用列表来存储有效的值
     result = []
-    if reverse: iterable = reversed(iterable)
+
+    if reverse:
+        iterable = reversed(iterable)
+
     # 遍历所有元素
     for i in iterable:
         # 调用keep函数获取该元素值
@@ -96,8 +98,8 @@ def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
         if key_words not in duplicator:
             duplicator[key_words] = keep_field
             result.append(keep_field)
-    return list(reversed(result)) if reverse else result
 
+    return list(reversed(result)) if reverse else result
 
 def align(str1, distance=66, alignment='L'):
     # #居中打印为string类方法
