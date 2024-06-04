@@ -183,6 +183,7 @@ pip
 pkgutil_resolve_name
 platformdirs
 pluggy
+ply
 progress
 prompt-toolkit
 Protego
@@ -221,9 +222,11 @@ pyppeteer
 pyproject-api
 pyproject_hooks
 PyQt5
+pyqt5-plugins
 PyQt5-Qt5
 PyQt5-sip
 PyQt5-stubs
+pyqt5-tools
 PyQtWebEngine
 PyQtWebEngine-Qt5
 pyquery
@@ -279,6 +282,7 @@ setuptools
 shellingham
 shiboken6
 simplejson
+sip
 six
 sniffio
 snoop
@@ -332,6 +336,8 @@ w3lib
 watchdog
 wcwidth
 webencodings
+websocket
+websocket-client
 websockets
 whatthepatch
 wheel
