@@ -13,7 +13,6 @@ LastEditTime : 2021-04-14 18:09:32
 #==============================================================
 requests 简化调用
 """
-
 from functools import partial
 
 import requests
@@ -22,10 +21,8 @@ from xt_Head import MYHEAD, RETRY_TIME, TIMEOUT, Head
 from xt_Response import htmlResponse
 from xt_Tools import try_except_wraps
 
-TRETRY = retry(
-    reraise=True,  # 保留最后一次错误
-    stop=stop_after_attempt(RETRY_TIME),
-    wait=wait_random(min=0, max=1))
+# 保留最后一次错误
+TRETRY = retry(reraise=True, stop=stop_after_attempt(RETRY_TIME), wait=wait_random(min=0, max=1))
 
 
 def _setKw(kwargs):
@@ -48,11 +45,6 @@ def _request_parse(method, url, *args, **kwargs):
             response = requests.request(method, url, *args, **kwargs)
             response.raise_for_status()
             assert response.status_code in [200, 201, 302]
-        # except requests.Timeout as err:
-        #     attempts -= 1
-        #     func_exc = True
-        #     ret_err = err
-        #     print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Timeout:{ret_err!r}')
         except Exception as err:
             attempts -= 1
             func_exc = True
