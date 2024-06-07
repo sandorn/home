@@ -59,6 +59,6 @@ def 执行删除(filename):
 
 
 if __name__ == "__main__":
-    filename = "D:/CODE/项目包/备份更新/PIP-list-20230315232108.txt"
+    filename = "D:/CODE/项目包/备份更新/PIP-list-20240604202024.txt"
     # 执行删除(filename)
     执行安装(filename)

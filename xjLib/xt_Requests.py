@@ -1,18 +1,18 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2019-05-16 12:57:23
-FilePath     : /xjLib/xt_Requests.py
-LastEditTime : 2021-04-14 18:09:32
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2024-06-07 10:35:33
+FilePath     : /CODE/xjLib/xt_Requests.py
+Github       : https://github.com/sandorn/home
+==============================================================
 requests 简化调用
 """
+
 from functools import partial
 
 import requests
@@ -49,6 +49,7 @@ def _request_parse(method, url, *args, **kwargs):
             attempts -= 1
             func_exc = True
             ret_err = err
+
             print(f"_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}")
         else:
             # #返回正确结果
@@ -203,7 +204,7 @@ if __name__ == "__main__":
     print(res.dom.xpath("//title/text()"))
     print(res.html.xpath("//title/text()"))
     print(res.element.xpath("//title/text()"))
-    # print(res.pyquery('title').text())
+    print(res.pyquery('title').text())
     """
     ###############################################################
     # allow_redirects=False #取消重定向
