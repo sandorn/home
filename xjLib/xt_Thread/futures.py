@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  :
 Develop      : VSCode
@@ -11,16 +11,14 @@ FilePath     : /xjLib/xt_Thread/futures.py
 LastEditTime : 2022-10-22 11:07:45
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 import asyncio
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
 
 def futuresPool(_cls):
-
     class FuturesPoolCls(_cls):
-
         def __init__(self):
             super().__init__()
             self._future_tasks = []
@@ -29,25 +27,24 @@ def futuresPool(_cls):
             self.future_generator = self.map(func, *args_iter)
 
         def add_sub(self, func, *args_iter, callback=None):
-            self._future_tasks += [
-                self.submit(func, *item) for item in args_iter
-            ]
+            self._future_tasks += [self.submit(func, *item) for item in args_iter]
             if callback:
-                map(lambda t: t.add_done_callback(callback),
-                    self._future_tasks)
+                map(lambda t: t.add_done_callback(callback), self._future_tasks)
 
         def wait_completed(self):
-            '''返回结果,有序'''
-            if self._future_tasks: return self._wait_sub_completed()
-            else: return self._wait_map_completed()
+            """返回结果,有序"""
+            if self._future_tasks:
+                return self._wait_sub_completed()
+            else:
+                return self._wait_map_completed()
 
         def _wait_map_completed(self):
-            '''返回结果,有序'''
+            """返回结果,有序"""
             self.shutdown(wait=True)  # 新增
             return list(self.future_generator)
 
         def _wait_sub_completed(self):
-            '''等待线程池结束,返回全部结果,有序'''
+            """等待线程池结束,返回全部结果,有序"""
             self.shutdown(wait=True)
             result_list = []
             for future in self._future_tasks:
@@ -55,11 +52,11 @@ def futuresPool(_cls):
                     res = future.result()
                     result_list.append(res)
                 except Exception as err:
-                    print('exception :', err)
+                    print("exception :", err)
             return result_list
 
         def get_sub_result(self):
-            '''获取结果,无序'''
+            """获取结果,无序"""
             self.shutdown(wait=True)
             result_list = []
             for future in as_completed(self._future_tasks):  # 迭代生成器,统一结束'
@@ -67,7 +64,7 @@ def futuresPool(_cls):
                     resp = future.result()
                     result_list.append(resp)
                 except Exception as err:
-                    print('exception :', err)
+                    print("exception :", err)
 
             return result_list
 
@@ -81,10 +78,10 @@ ProcessPool = futuresPool(ProcessPoolExecutor)
 
 
 class FuncInThreadPool:
-    '''将程序放到ThreadPoolExecutor中异步运行,返回结果'''
+    """将程序放到ThreadPoolExecutor中异步运行,返回结果"""
 
     def __init__(self, func, *args, **kwargs):
-        self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.new_event_loop()
         self.executor = ThreadPoolExecutor(max_workers=32)
         self.func, self.args, self.kwargs = func, args, kwargs
         self.start()
@@ -92,8 +89,8 @@ class FuncInThreadPool:
     async def __work(self):
         __args = list(zip(*self.args))
         self.future_list = [
-            self.loop.run_in_executor(self.executor, self.func, *arg,
-                                      **self.kwargs) for arg in __args
+            self.loop.run_in_executor(self.executor, self.func, *arg, **self.kwargs)
+            for arg in __args
         ]
         await asyncio.gather(*self.future_list)
 
@@ -104,8 +101,7 @@ class FuncInThreadPool:
         return self.loop.run_until_complete(self.__work())
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     from xt_Requests import get_tretry
 
     res = FuncInThreadPool(get_tretry, ["http://httpbin.org/get"] * 3)

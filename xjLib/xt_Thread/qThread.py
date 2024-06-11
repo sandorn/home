@@ -1,17 +1,18 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-02-17 10:21:40
+LastEditTime : 2024-06-11 10:15:15
 FilePath     : /CODE/xjLib/xt_Thread/qThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
-from PyQt5.QtCore import QThread
+"""
+
+from PyQt6.QtCore import QThread
 from xt_Thread import Singleton_Mixin, create_mixin_class, singleton_wrap_class
 
 
@@ -47,20 +48,20 @@ class CustomQThread(QThread):
             return None
 
     def join(self):
-        '''等待线程执行完毕'''
+        """等待线程执行完毕"""
         self.wait()
 
 
 @singleton_wrap_class
-class QThread_wrap_class(CustomQThread):
-    ...
+class QThread_wrap_class(CustomQThread): ...
 
 
-class QThread_Singleton_Mixin(Singleton_Mixin, CustomQThread):
-    ...
+class QThread_Singleton_Mixin(Singleton_Mixin, CustomQThread): ...
 
 
-SingletonQThread = create_mixin_class('SingletonQThread', Singleton_Mixin, CustomQThread)
+SingletonQThread = create_mixin_class(
+    "SingletonQThread", Singleton_Mixin, CustomQThread
+)
 
 if __name__ == "__main__":
 

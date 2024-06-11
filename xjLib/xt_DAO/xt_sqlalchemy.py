@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
@@ -10,12 +10,13 @@ LastEditTime : 2023-01-21 00:07:57
 FilePath     : /CODE/xjLib/xt_DAO/xt_sqlalchemy.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 import pandas
 import sqlalchemy
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import DeclarativeMeta
+
 # , declarative_base 类工厂
 from sqlalchemy.orm import scoped_session, sessionmaker
 from xt_Class import typed_property
@@ -23,21 +24,21 @@ from xt_DAO.cfg import connect_str
 from xt_DAO.xt_chemyMeta import Orm_Meta
 
 
-def get_engine(key='default'):
+def get_engine(key="default"):
     engine = create_engine(connect_str(key))
     # session = sessionmaker(bind=engine)()  # 单线程
     # scoped_session类似单例模式,每次调用都是同一个session
-    session = scoped_session(sessionmaker(bind=engine))  # autocommit=True, autoflush=True
-
+    session = scoped_session(
+        sessionmaker(bind=engine)
+    )  # autocommit=True, autoflush=True
     return engine, session
 
 
 class SqlConnection(Orm_Meta):
-
     # #限定参数类型
-    dbmodel = typed_property('dbmodel', DeclarativeMeta)
+    dbmodel = typed_property("dbmodel", DeclarativeMeta)
 
-    def __init__(self, Base, key='default', tablename=None):
+    def __init__(self, Base, key="default", tablename=None):
         self.Base = Base  # orm基类
         self.tablename = tablename or self.Base.__tablename__
         # #设置self.params参数
@@ -85,7 +86,7 @@ class SqlConnection(Orm_Meta):
         self.session.add(item)
         try:
             return self.session.commit()
-        except BaseException as e:
+        except BaseException:
             self.session.rollback()
             return 0
 
@@ -95,7 +96,7 @@ class SqlConnection(Orm_Meta):
         self.session.add_all(item)
         try:
             return self.session.commit()
-        except BaseException as e:
+        except BaseException:
             self.session.rollback()
             return 0
 
@@ -105,59 +106,75 @@ class SqlConnection(Orm_Meta):
         try:
             self.session.commit()
             return deleteNum
-        except BaseException as e:
+        except BaseException:
             self.session.rollback()
             return 0
 
     def update(self, conditions_dict, value_dict):
-        '''
+        """
         conditions_dict:条件字典;where
         value_dict:更新数据字典:{'字段':字段值}
-        '''
+        """
         query = self.__条件筛选(conditions_dict)
-        updatevalue = {self.params.get(key, None): value_dict.get(key) for key in list(value_dict.keys()) if self.params.get(key, None)}
+        updatevalue = {
+            self.params.get(key, None): value_dict.get(key)
+            for key in list(value_dict.keys())
+            if self.params.get(key, None)
+        }
         return query.update(updatevalue)
 
     # TODO unitled in `delete` and `update`
     def __条件筛选(self, conditions_dict):
-        conditon_list = [self.params.get(key) == conditions_dict.get(key) for key in list(conditions_dict.keys()) if self.params.get(key, None)]
+        conditon_list = [
+            self.params.get(key) == conditions_dict.get(key)
+            for key in list(conditions_dict.keys())
+            if self.params.get(key, None)
+        ]
         result = self.query
         for condition in conditon_list:
             result = result.filter(condition)
         return result
 
     def select(self, conditions_dict=None, Columns_list=None, count=None):
-        '''
+        """
         conditions:字典,条件 where。类似self.params
         Columns:选择的列名
         count:返回的记录数
         return:处理后的list,内含dict(未选择列),或tuple(选择列)
-        '''
+        """
         if isinstance(Columns_list, (tuple, list)) and len(Columns_list) > 0:
-            __Columns_list = [self.params.get(key) for key in Columns_list if self.params.get(key, None)]
+            __Columns_list = [
+                self.params.get(key)
+                for key in Columns_list
+                if self.params.get(key, None)
+            ]
         else:
             __Columns_list = [self.Base]
 
         query = self.session.query(*__Columns_list)
 
         if isinstance(conditions_dict, dict):
-            conditon_list = [self.params.get(key) == conditions_dict.get(key) for key in list(conditions_dict.keys()) if self.params.get(key, None)]
+            conditon_list = [
+                self.params.get(key) == conditions_dict.get(key)
+                for key in list(conditions_dict.keys())
+                if self.params.get(key, None)
+            ]
             for __cond in conditon_list:
                 query = query.filter(__cond)
 
         return query.limit(count).all() if count else query.all()
 
     def from_statement(self, sql, conditions_dict=None):
-        '''使用完全基于字符串的语句'''
+        """使用完全基于字符串的语句"""
         query = self.query.from_statement(text(sql))
         return query.params(**conditions_dict).all() if conditions_dict else query.all()
 
     def filter_by(self, filter_kwargs, count=None):
-        '''
+        """
         filter_by用于简单查询,不支持比较运算符,不需要额外指定类名。
         filter_by的参数直接支持组合查询。
         仅支持[等于]、[and],无需明示,在参数中以字典形式传入
-        '''
+        """
         query = self.query.filter_by(**filter_kwargs)
         return query.limit(count).all() if count else query.all()
 
@@ -174,6 +191,7 @@ class SqlConnection(Orm_Meta):
 
 def create_orm(key, source_table_name, target_table_name=None):
     from xt_DAO.xt_chemyMeta import getModel
+
     engine, _ = get_engine(key)
     _t = getModel(source_table_name, engine, target_table_name)  # #获取orm基类
     return SqlConnection(Base=_t, key=key, tablename=_t.__tablename__)
@@ -181,9 +199,16 @@ def create_orm(key, source_table_name, target_table_name=None):
 
 if __name__ == "__main__":
     # Data_Model_2_py('uuu', 'd:/1.py', 'TXbook')  # 待测试
-    item1 = {'username': '刘新军', 'password': '234567', '手机': '13910118122', '代理人编码': '10005393', '会员级别': 'SSS', '会员到期日': '9999-12-31 00:00:00'}
-    sqlhelper = create_orm('TXbx', 'users2')  #, 'user99')
-    res = sqlhelper.filter_by({'ID': 1})
+    item1 = {
+        "username": "刘新军",
+        "password": "234567",
+        "手机": "13910118122",
+        "代理人编码": "10005393",
+        "会员级别": "SSS",
+        "会员到期日": "9999-12-31 00:00:00",
+    }
+    sqlhelper = create_orm("TXbx", "users2")  # , 'user99')
+    res = sqlhelper.filter_by({"ID": 1})
     print(res)
     # res = sqlhelper.select()
     # print(res)
@@ -200,7 +225,7 @@ if __name__ == "__main__":
     # print(deleNum)
     # res = sqlhelper.select({'username': '刘新军'}, ['ID', 'username'], 2)
     # print(res)
-    '''
+    """
     https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html
     http://sunnyingit.github.io/book/section_python/SQLalchemy-engine.html
     https://www.cnblogs.com/pycode/p/mysql-orm.html
@@ -215,4 +240,4 @@ if __name__ == "__main__":
     # delete_sql = tbl.delete().where(tbl.c.id == 1)
     https://www.cnblogs.com/panwenbin-logs/p/5731265.html#_label4
     ==============================================================
-    '''
+    """

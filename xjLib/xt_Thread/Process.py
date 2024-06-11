@@ -1,17 +1,16 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 11:36:53
-LastEditTime : 2022-12-31 11:40:09
-FilePath     : /xjLib/xt_Thread/Process.py
+LastEditTime : 2024-06-08 20:56:43
+FilePath     : /CODE/xjLib/xt_Thread/Process.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 import os
 from multiprocessing import Manager, Process, Semaphore
@@ -48,7 +47,7 @@ class CustomProcess(Process):
 
 
 def Do_CustomProcess(func, *args, **kwargs):
-    '''调用CustomProcess,Manager.dict()返回结果'''
+    """调用CustomProcess,Manager.dict()返回结果"""
     sem = Semaphore(24)
     return_dict = Manager().dict()
     # Create the list of CustomProcess objects
@@ -62,24 +61,24 @@ def Do_CustomProcess(func, *args, **kwargs):
     return return_dict.values()
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     from xt_File import savefile
     from xt_Ls_Bqg import get_contents, get_download_url
 
     def Custom():
-        url = 'https://www.biqukan8.cc/0_288/'
+        url = "https://www.biqukan8.cc/0_288/"
         bookname, urls, titles = Do_CustomProcess(get_download_url, [url])[0]
         res_list = Do_CustomProcess(get_contents, list(range(10)), urls[:10])
         res_list.sort(key=lambda x: x[0])  # #排序
         files = os.path.split(__file__)[-1].split(".")[0]
-        savefile(f'{files}&{bookname}&Do_CustomProcess.txt', res_list, br='\n')
+        savefile(f"{files}&{bookname}&Do_CustomProcess.txt", res_list, br="\n")
 
     Custom()  # 用时: 14s[10]
 
     def Poolapply_async():
         from multiprocessing import Pool
-        url = 'https://www.biqukan8.cc/0_288/'
+
+        url = "https://www.biqukan8.cc/0_288/"
         bookname, urls, titles = Do_CustomProcess(get_download_url, [url])[0]
 
         p = Pool(32)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
@@ -94,6 +93,6 @@ if __name__ == '__main__':
         res_list.sort(key=lambda x: x[0])  # #排序
         # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
         files = os.path.split(__file__)[-1].split(".")[0]
-        savefile(f'{files}&{bookname}&Poolapply_async.txt', res_list, br='\n')
+        savefile(f"{files}&{bookname}&Poolapply_async.txt", res_list, br="\n")
 
-    # Poolapply_async()  # 用时: 29s[10] 60s
+    Poolapply_async()  # 用时: 29s[10] 60s

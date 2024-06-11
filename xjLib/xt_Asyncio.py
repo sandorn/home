@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  :
 Develop      : VSCode
@@ -13,7 +13,8 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 aiohttp笔记 - happy_codes - 博客园
 https://www.cnblogs.com/haoabcd2010/p/10615364.html
-'''
+"""
+
 import asyncio
 from asyncio.coroutines import iscoroutinefunction
 from asyncio.proactor_events import _ProactorBasePipeTransport
@@ -27,14 +28,14 @@ from xt_Response import htmlResponse
 
 
 def silence_event_loop_closed(func):
-    '''解决event loop is closed问题'''
+    """解决event loop is closed问题"""
 
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
         except RuntimeError as e:
-            if str(e) != 'Event loop is closed':
+            if str(e) != "Event loop is closed":
                 raise
 
     return wrapper
@@ -44,7 +45,7 @@ _ProactorBasePipeTransport.__del__ = silence_event_loop_closed(_ProactorBasePipe
 
 
 def future_wrapper(func):
-    '''future装饰器'''
+    """future装饰器"""
 
     @wraps(func)
     def __future(*args, **kwargs):
@@ -57,7 +58,7 @@ def future_wrapper(func):
 
 
 def async_wrapper(func):
-    '''异步装饰器,装饰普通函数,返回coroutine'''
+    """异步装饰器,装饰普通函数,返回coroutine"""
 
     @wraps(func)
     async def _wrapper(*args, **kwargs):
@@ -68,7 +69,7 @@ def async_wrapper(func):
 
 
 def asyn_run_wrapper(func):
-    '''异步装饰器,装饰函数和async函数,直接运行,返回结果'''
+    """异步装饰器,装饰函数和async函数,直接运行,返回结果"""
 
     @wraps(func)
     def _wrapper(*args, **kwargs):
@@ -90,16 +91,16 @@ class AioCrawl:
     def __init__(self, loop=None):
         self.future_list = []
         self.result_list = []
-        self.loop = loop  or asyncio.new_event_loop()
+        self.loop = loop or asyncio.new_event_loop()
         # or asyncio.get_event_loop()
 
     def __del__(self):
         self.loop.close()
 
-    async def _task_run(self, url, method='GET', index=None, *args, **kwargs):
-        '''运行任务'''
-        kwargs.setdefault('headers', Head().randua)
-        kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))
+    async def _task_run(self, url, method="GET", index=None, *args, **kwargs):
+        """运行任务"""
+        kwargs.setdefault("headers", Head().randua)
+        kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
         cookies = kwargs.pop("cookies", {})
         callback = kwargs.pop("callback", None)
 
@@ -112,28 +113,31 @@ class AioCrawl:
         try:
             response, content = await __fetch()
         except Exception as err:
-            print(f'AioCrawl_task_run:{self} | RetryErr:{err!r}')
+            print(f"AioCrawl_task_run:{self} | RetryErr:{err!r}")
             return err
         else:
             index = index or id(url)
             result = htmlResponse(response, content, index)
-            if callback: result = callback(result)
+            if callback:
+                result = callback(result)
             return result
 
-    async def _issue_tasks(self, url_list, method='GET', *args, **kwargs):
+    async def _issue_tasks(self, url_list, method="GET", *args, **kwargs):
         """分发任务"""
         callback = kwargs.pop("fu_callback", None)
 
         for index, url in enumerate(url_list, 1):
-            if not isinstance(url, str): continue
+            if not isinstance(url, str):
+                continue
             task = asyncio.create_task(self._task_run(url, method=method, index=index, *args, **kwargs))
-            if callback: task.add_done_callback(callback)
+            if callback:
+                task.add_done_callback(callback)
             self.future_list.append(task)
 
         return await asyncio.gather(*self.future_list, return_exceptions=True)
 
-    def add_tasks(self, url_list, method='GET', *args, **kwargs):
-        '''添加网址列表,异步并发爬虫'''
+    def add_tasks(self, url_list, method="GET", *args, **kwargs):
+        """添加网址列表,异步并发爬虫"""
         _coroutine = self._issue_tasks(url_list, method=method, *args, **kwargs)
         return asyncio.run(_coroutine)
         # self.loop.run_until_complete(_coroutine)  # 异常中断
@@ -147,7 +151,7 @@ class AioCrawl:
         await asyncio.gather(*self.future_list)
 
     def add_func(self, func, *args, **kwargs):
-        '''添加函数及参数,异步运行'''
+        """添加函数及参数,异步运行"""
         self.loop.run_until_complete(self._func_run(func, *args, **kwargs))
 
     def __get_result(self):
@@ -162,29 +166,31 @@ class AioCrawl:
     def wait_completed(self):
         while True:
             tmp = [fu._state for fu in self.future_list]
-            if 'PENDING' in tmp: continue
-            else: break
+            if "PENDING" in tmp:
+                continue
+            else:
+                break
 
         return self.__get_result()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     ...
-    #$add_tasks#######################################################################
+    # $add_tasks#######################################################################
     bb = AioCrawl()
     bb.add_tasks(["https://httpbin.org/get"] * 3)
     print(bb.wait_completed())
-    bb.add_tasks(["https://httpbin.org/post"] * 3, method='post')
+    bb.add_tasks(["https://httpbin.org/post"] * 3, method="post")
     print(bb.wait_completed())
-    #$add_func########################################################
+    # $add_func########################################################
     from xt_Requests import get_wraps
 
     aa = AioCrawl()
     aa.add_func(get_wraps, ["https://httpbin.org/get"] * 3)
     print(aa.wait_completed())
-    aa.add_tasks(["https://httpbin.org/post"] * 3, method='post')
+    aa.add_tasks(["https://httpbin.org/post"] * 3, method="post")
     print(aa.wait_completed())
-    #$装饰器##################################################################
+    # $装饰器##################################################################
     from xt_Requests import get_wraps
 
     @asyn_run_wrapper
@@ -201,7 +207,7 @@ if __name__ == '__main__':
 
     @asyn_run_wrapper
     async def get_message():
-        async with ClientSession() as session, session.get('http://httpbin.org/headers') as response:
+        async with ClientSession() as session, session.get("http://httpbin.org/headers") as response:
             return await response.text()
 
     # print(333, get_message())
