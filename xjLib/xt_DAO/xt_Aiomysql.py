@@ -11,7 +11,6 @@ Github       : https://github.com/sandorn/home
 #==============================================================
 https://www.yangyanxing.com/article/aiomysql_in_python.html
 https://blog.csdn.net/ydyang1126/article/details/78226701/
-#@出错query : select * from  // update正常
 """
 
 import asyncio
@@ -60,8 +59,10 @@ class AioMysql(item_Mixin):
     async def __query(self, sql):
         try:
             async with self.engine.acquire() as conn:
-                result = await conn.execute(sql)
-                return await result.fetchall() if result._metadata is not None else 1
+                async with conn._connection.cursor() as cursor:  # @关键语句
+                    # 执行SQL语句
+                    result = await cursor.execute(sql)
+                    return await cursor.fetchall() or result
         except Exception:
             print(traceback.format_exc())
 
@@ -124,12 +125,12 @@ if __name__ == '__main__':
     print(res)
     # res = aio.query(query_list[0])
     # print(res)
-    # update_sql = [
-    #     "UPDATE users2 set username='刘澈' WHERE ID = '1'",
-    #     "UPDATE users2 set username='刘新军' WHERE ID = '2'",
-    # ]
-    # res = aio.query(update_sql)
-    # print(res)
+    update_sql = [
+        "UPDATE users2 set username='刘澈' WHERE ID = '1'",
+        "UPDATE users2 set username='刘新军' WHERE ID = '2'",
+    ]
+    res = aio.query(update_sql)
+    print(res)
     # res = aio.update(
     #     [{'username': '刘澈3'}, {'username': '刘新军4'}],
     #     [
