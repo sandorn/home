@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : None
 #Develop      : VSCode
@@ -11,7 +10,7 @@
 #LastEditTime : 2020-07-22 15:02:22
 #Github       : https://github.com/sandorn/home
 #==============================================================
-'''
+"""
 
 import traceback
 from functools import wraps
@@ -28,7 +27,7 @@ def _handle_thread_exception(request, exc_info):
 
 
 class task_object(iter_Mixin):
-    '''任务处理的对象类'''
+    """任务处理的对象类"""
 
     def __init__(self, func, *args, **kwds):
         self.requestID = id(self)
@@ -40,13 +39,13 @@ class task_object(iter_Mixin):
         self.kwds = kwds or {}
 
     def __str__(self):
-        return f"<work_task_object id={self.requestID} target={self.func}  args={ self.args} kwargs={self.kwds} exception={self.exception}>"
+        return f'<work_task_object id={self.requestID} target={self.func}  args={ self.args} kwargs={self.kwds} exception={self.exception}>'
 
 
-class WorkManager(object):
-    '''自编线程池，可以再次添加任务;\n
+class WorkManager:
+    """自编线程池，可以再次添加任务;\n
     获取阶段结果:getAllResult();\n
-    关闭线程获取最终结果:wait_completed()'''
+    关闭线程获取最终结果:wait_completed()"""
 
     def __init__(self, items=None, MaxSem=66, callback=None, exc_callback=_handle_thread_exception, **kwds):
         self.work_queue = Queue()  # 任务队列
@@ -96,13 +95,13 @@ class WorkManager(object):
         self.close_work_thread(len(self.all_Thread))
 
     def wait_completed(self):
-        '''禁止添加任务，等待所有线程运行完毕,返回尚未获取的全部结果'''
+        """禁止添加任务，等待所有线程运行完毕,返回尚未获取的全部结果"""
         self.work_queue.join()  # #确保所有任务完成
         self.close_work_thread(len(self.all_Thread))  # #再关闭全部工作线程
         return self.__getResult()
 
     def getAllResult(self):
-        '''获取之前任务的全部结果，work_thread继续值机'''
+        """获取之前任务的全部结果，work_thread继续值机"""
         self.work_queue.join()
         return self.__getResult()
 
@@ -115,7 +114,6 @@ class WorkManager(object):
 
 
 class Work(Thread):
-
     def __init__(self, work_queue, result_queue, **kwds):
         super().__init__(**kwds)
         self.daemon = True
@@ -133,10 +131,12 @@ class Work(Thread):
                     result = task.func(*task.args, **task.kwds)  # 传递 list 各元素
                 except Exception as err:
                     task.exception = err
-                    if task.exc_callback: task.exc_callback(err)
+                    if task.exc_callback:
+                        task.exc_callback(err)
                     self.result_queue.put(err)  # 存储错误信息
                 else:
-                    if task.callback: result = task.callback(result)
+                    if task.callback:
+                        result = task.callback(result)
                     self.result_queue.put(result)  # 函数返回值
                 self.work_queue.task_done()  # 通知系统任务完成
             else:
@@ -148,7 +148,7 @@ class Work(Thread):
 
 
 class thread_pool:
-    '''仿写vthread,线程装饰器,thread_pool(200)'''
+    """仿写vthread,线程装饰器,thread_pool(200)"""
 
     def __init__(self, pool_num=32):
         self._pool_queue = Queue()  # #任务存储,组内queue
@@ -158,7 +158,6 @@ class thread_pool:
         self._result_list = []  # #任务结果存储
 
     def __call__(self, func):
-
         @wraps(func)
         def _run_threads(*args, **kw):
             self._pool_queue.put((func, args, kw))
@@ -175,17 +174,17 @@ class thread_pool:
         self._pool_max_num = num
 
     def _run(self, num):
-
         def _pools_pull():
             while True:
                 args_list = self._pool_queue.get()
-                if args_list == 'KillThreadParams': return
+                if args_list == 'KillThreadParams':
+                    return
                 try:
                     func, args, kw = args_list
                     Result = func(*args, **kw)  # 获取结果
                     self._result_list.append(Result)
                 except BaseException as e:
-                    print(" - thread stop_by_error - ", e)
+                    print(' - thread stop_by_error - ', e)
                     break
                 finally:
                     self._pool_queue.task_done()  # 发出此队列完成信号
@@ -196,17 +195,15 @@ class thread_pool:
             thread.start()
 
     def main_monitor(self):
-
         def _func():
             _main_thr = main_thread()
             while True:
-
                 sleep(0.2)
                 if not _main_thr.is_alive():
                     self.close_all()
                     break
 
-        self._MainMonitor = Thread(target=_func, name="MainMonitor")
+        self._MainMonitor = Thread(target=_func, name='MainMonitor')
         self._MainMonitor.start()
 
     def joinall(self):

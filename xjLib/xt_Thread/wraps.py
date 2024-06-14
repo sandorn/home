@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 #==============================================================
 #Descripttion : None
@@ -25,7 +24,7 @@ def thread_safe(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        with Lock() as lock:
+        with Lock() as _:
             return func(*args, **kwargs)
 
     return wrapper
@@ -52,14 +51,12 @@ class _MyThread(Thread):
     def __init__(self, func, name, *args, **kwargs):
         super().__init__(target=func, name=name, args=args, kwargs=kwargs)
         self._running = True
-        self.callback = self._kwargs.pop("callback", None)
+        self.callback = self._kwargs.pop('callback', None)
         self.Result = None
 
     def run(self):
         self.Result = self._target(*self._args, **self._kwargs)
-        self.Result = (
-            self.callback(self.Result) if callable(self.callback) else self.Result
-        )
+        self.Result = self.callback(self.Result) if callable(self.callback) else self.Result
 
     def getResult(self):
         """获取当前线程结果"""
@@ -90,9 +87,9 @@ def Thread_wrap(func=None, *args, **kwargs):
                 *args,
                 **kwargs,
             )
-            _mythr.daemon = kwargs.pop("daemon", False)
+            _mythr.daemon = kwargs.pop('daemon', False)
             _mythr.start()
-            print(f"{_mythr} start with thread_wrap...")
+            print(f'{_mythr} start with thread_wrap...')
             return _mythr
 
         return inner
@@ -108,12 +105,12 @@ def QThread_wrap(func=None, *args, **kwargs):
     def wrapper(fun):
         def inner(*args, **kwargs):
             _mythr = QThread()
-            _mythr.daemon = kwargs.pop("daemon", True)
-            _mythr.callback = kwargs.pop("callback", None)
+            _mythr.daemon = kwargs.pop('daemon', True)
+            _mythr.callback = kwargs.pop('callback', None)
             _mythr.setObjectName(fun.__name__)
             _mythr.join = _mythr.wait
             _mythr.run = fun
-            print(f"{_mythr} | {fun.__name__} start with QThread_wrap...")
+            print(f'{_mythr} | {fun.__name__} start with QThread_wrap...')
 
             _mythr.Result = _mythr.run(*args, **kwargs)
             if callable(_mythr.callback):
@@ -141,7 +138,7 @@ class Thread_wrap_class:
         self.func = func
 
     def __call__(self, *args, **kwargs):
-        kwargs["Result_dict"] = Thread_wrap_class.Result_dict
+        kwargs['Result_dict'] = Thread_wrap_class.Result_dict
         _mythr = _MyThread(
             self.func,
             self.func.__name__,
@@ -149,8 +146,8 @@ class Thread_wrap_class:
             **kwargs,
         )
 
-        print(f"{_mythr} start with thread_wrap_class...")
-        _mythr.daemon = kwargs.pop("daemon", False)
+        print(f'{_mythr} start with thread_wrap_class...')
+        _mythr.daemon = kwargs.pop('daemon', False)
         _mythr.start()
         self.thread_dict[_mythr.ident] = _mythr
         return _mythr
@@ -183,16 +180,16 @@ def create_mixin_class(name, cls, meta, **kwargs):
 
 thread_print = thread_safe(print)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     @Thread_wrap_simple
     def a(i):
-        print("Thread_wrap_simple in func a : ", i, i * 2)
+        print('Thread_wrap_simple in func a : ', i, i * 2)
         return i * 2
 
     @Thread_wrap
     def b(i):
-        print("Thread_wrap in func b : ", i, i * 5)
+        print('Thread_wrap in func b : ', i, i * 5)
         return i * 5
 
     import time
@@ -200,22 +197,22 @@ if __name__ == "__main__":
     @QThread_wrap
     def c(i):
         time.sleep(2)
-        print("QThread_wrap in func c : ", i, i * 11)
+        print('QThread_wrap in func c : ', i, i * 11)
         return i * 11
 
-    # aa = a(8)
-    # cc = b(40)
-    # cc = c(3, callback=lambda x: x * 100)
-    # print('Result:', cc.Result)
-    # print('callback:', cc.callback)
-    # print('daemon:', cc.daemon)
-    # print('objectName:', cc.objectName())
-    # print(thread_print.__name__)
-    # print_lock('hello world')
+    aa = a(8)
+    cc = b(40)
+    cc = c(3, callback=lambda x: x * 100)
+    print('Result:', cc.Result)
+    print('callback:', cc.callback)
+    print('daemon:', cc.daemon)
+    print('objectName:', cc.objectName())
+    print(thread_print.__name__)
+    thread_print('hello world')
 
     @run_in_threadpool
     def parallel_task(x):
         return x**2
 
-    re = parallel_task(list(range(1000)))
+    re = parallel_task(list(range(100)))
     print(re)

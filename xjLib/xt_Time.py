@@ -1,29 +1,37 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-11-06 09:58:53
+LastEditTime : 2024-06-13 16:43:57
 FilePath     : /CODE/xjLib/xt_Time.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+https://mp.weixin.qq.com/s/4nkQITVniE9FhESDMt34Ow  # wrapt库
+"""
 
 import datetime
 import time
 import traceback
 from functools import wraps
 
-nowpro = lambda: time.process_time()
-nowsec = lambda: time.time()
-now = lambda: datetime.datetime.now()
+
+def nowpro():
+    return time.process_time()
+
+
+def nowsec():
+    return time.time()
+
+
+def now():
+    return datetime.datetime.now()
 
 
 def fn_timer(func):
-    '''装饰器:测量函数执行时长'''
+    """装饰器:测量函数执行时长"""
 
     @wraps(func)
     def func_timer(*args, **kwargs):
@@ -36,9 +44,7 @@ def fn_timer(func):
         elapsed_time = nowsec() - _s_time
         process_time = nowpro() - _s_pro
 
-        print(
-            f"{_st.filename}|{_st.lineno}|{func.__name__}|time: {elapsed_time:.2f} sec|processtime: {process_time:.2f} sec"
-        )
+        print(f'{_st.filename}|{_st.lineno}|{func.__name__}|time: {elapsed_time:.2f} sec|processtime: {process_time:.2f} sec')
 
         return result
 
@@ -63,7 +69,7 @@ def get_sql_time():
 
 
 def get_10_timestamp(timestr=None):
-    '''获取当前时间的时间戳-10位'''
+    """获取当前时间的时间戳-10位"""
     if timestr is None:
         timestr = time.time()
         return int(round(timestr))
@@ -73,7 +79,7 @@ def get_10_timestamp(timestr=None):
 
 
 def get_13_timestamp(timestr=None):
-    '''获取当前时间的时间戳-13位'''
+    """获取当前时间的时间戳-13位"""
     return get_10_timestamp(timestr) * 1000
 
 

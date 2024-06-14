@@ -576,7 +576,7 @@ def findSubMenu(hMenu, label, *args):
         buf = ctypes.create_unicode_buffer(1024)
         for pos in range(count):
             user32.GetMenuString(hMenu, pos, buf, 512, 0x400)
-            target = buf.value.replace("\&", "")
+            target = buf.value.replace("\\&", "")
             if label in target:
                 label = pos + 1
                 break

@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 ==============================================================
 Description  : 头部注释
@@ -59,11 +58,9 @@ class QThread_wrap_class(CustomQThread): ...
 class QThread_Singleton_Mixin(Singleton_Mixin, CustomQThread): ...
 
 
-SingletonQThread = create_mixin_class(
-    "SingletonQThread", Singleton_Mixin, CustomQThread
-)
+SingletonQThread = create_mixin_class('SingletonQThread', Singleton_Mixin, CustomQThread)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     def f(*args):
         return sum(args)

@@ -1,7 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-==============================================================
+"""==============================================================
 Descripttion : mysql 异步版本
 Develop      : VSCode
 Author       : Even.Sand
@@ -13,6 +11,7 @@ Github       : https://github.com/sandorn/home
 #==============================================================
 https://www.yangyanxing.com/article/aiomysql_in_python.html
 https://blog.csdn.net/ydyang1126/article/details/78226701/
+#@出错query : select * from  // update正常
 """
 
 import asyncio
@@ -26,45 +25,33 @@ from xt_DAO.untilsql import get_insert_sql, get_update_sql
 
 
 class AioMysql(item_Mixin):
-    def __init__(self, key="default", tablename=None):
+    def __init__(self, key='default', tablename=None):
         self.coro_list = []
         if tablename:
             self.tablename = tablename
         self.loop = asyncio.new_event_loop()
-        self.run_in_loop([self.create_engine(key=key, autocommit=True)])
-
-    def __del__(self):
-        self.loop.close()
+        asyncio.set_event_loop(self.loop)
+        self.run_in_loop([self.create_engine(key)])
 
     async def create_engine(self, key, autocommit=True):
         if key not in DB_CONFIG:
-            raise ValueError(f"错误提示:检查数据库配置:{key}")
+            raise ValueError(f'错误提示:检查数据库配置:{key}')
         conf = deepcopy(DB_CONFIG[key])
-        conf.pop("type", None)
+        conf.pop('type', None)
         try:
-            self.engine = await aio_sa.create_engine(
-                autocommit=autocommit,
-                **conf,
-            )
+            self.engine = await aio_sa.create_engine(autocommit=autocommit, **conf)
         except Exception as err:
-            print("connect error:", err)
+            print('connect error:', err)
 
     def run_in_loop(self, coro_list=None):
         coro_list = coro_list or self.coro_list
         return self.loop.run_until_complete(asyncio.gather(*coro_list))
 
-    def init_orm(self, tablename):
-        self.tablename = tablename
-
-    def querymany(self, sql_list, autorun=True):
-        _coro = [self.__query(sql) for sql in sql_list]
-        if autorun:
-            return self.run_in_loop(_coro)
-        else:
-            self.coro_list.extend(_coro)
-
     def query(self, sql, autorun=True):
-        _coro = [self.__query(sql)]
+        if isinstance(sql, str):
+            _coro = [self.__query(sql)]
+        if isinstance(sql, list):
+            _coro = [self.__query(_sql) for _sql in sql]
         if autorun:
             return self.run_in_loop(_coro)
         else:
@@ -103,10 +90,7 @@ class AioMysql(item_Mixin):
         tablename = tablename or self.tablename
         if isinstance(data_dict_list, dict):
             data_dict_list = [data_dict_list]
-        _coro = [
-            self.__update(data_dict, whrere_dict, tablename)
-            for data_dict, whrere_dict in zip(data_dict_list, whrere_dict_list)
-        ]
+        _coro = [self.__update(data_dict, whrere_dict, tablename) for data_dict, whrere_dict in zip(data_dict_list, whrere_dict_list)]
         if autorun:
             return self.run_in_loop(_coro)
         else:
@@ -123,32 +107,20 @@ class AioMysql(item_Mixin):
                     print(traceback.format_exc())
 
 
-if __name__ == "__main__":
-    query_list = [
-        "select * from users2 where id = 1",
-        "select * from users2",
-    ]
+if __name__ == '__main__':
+    query_list = ['SELECT users2.ID FROM users2', 'SELECT * FROM  users2']
 
-    item1 = {
-        "username": "刘新军",
-        "password": "234567",
-        "手机": "13910118122",
-        "代理人编码": "10005393",
-        "会员级别": "SSS",
-        "会员到期日": "9999-12-31 00:00:00",
-    }
-    executemany_sql = "update users2 set username=%s where ID = %s"
-    executemany_data = [("刘澈", 1), ("刘新军", 2)]
+    item1 = {'username': '刘新军', 'password': '234567', '手机': '13910118122', '代理人编码': '10005393', '会员级别': 'SSS', '会员到期日': '9999-12-31 00:00:00'}
 
-    aio = AioMysql("TXbx", tablename="users2")
-    # res = aio.insert([item1, item1])
+    aio = AioMysql('TXbx', 'users2')
+    # res = aio.insert([item1])
     # print(res)
     # res = aio.insert([item1, item1], autorun=False)
     # res = aio.run_in_loop()
     # print(res)
-    # res = aio.insert([item1, item1], 'users')
+    # res = aio.insert([item1, item1], 'users2')
     # print(res)
-    res = aio.querymany(query_list)
+    res = aio.query(query_list)
     print(res)
     # res = aio.query(query_list[0])
     # print(res)
@@ -156,14 +128,10 @@ if __name__ == "__main__":
     #     "UPDATE users2 set username='刘澈' WHERE ID = '1'",
     #     "UPDATE users2 set username='刘新军' WHERE ID = '2'",
     # ]
-    # res = aio.querymany(update_sql)
+    # res = aio.query(update_sql)
     # print(res)
     # res = aio.update(
-    #     [{
-    #         'username': '刘澈3'
-    #     }, {
-    #         'username': '刘新军4'
-    #     }],
+    #     [{'username': '刘澈3'}, {'username': '刘新军4'}],
     #     [
     #         {
     #             'ID': '1',
@@ -171,6 +139,7 @@ if __name__ == "__main__":
     #         {
     #             'ID': '2',
     #             # 'username': '刘新军',
-    #         }
-    #     ])
+    #         },
+    #     ],
+    # )
     # print(res)

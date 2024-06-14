@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : # #暂时无用，废弃
 #Develop      : VSCode
@@ -12,7 +11,7 @@
 #Github       : https://github.com/sandorn/home
 #==============================================================
 用途不明，暂时废弃
-'''
+"""
 
 import itertools
 
@@ -34,7 +33,8 @@ def has_defined_metaclass(cls):
 
 
 def _get_class_flag(cls):
-    if is_metaclass(cls): return META_CLS
+    if is_metaclass(cls):
+        return META_CLS
     return HAS_META_CLS if has_defined_metaclass(cls) else COMMON_CLS
 
 
@@ -72,7 +72,6 @@ def _get_meta_cls_and_original_class(cls):
 
 
 def _combined_metaclass(*metas):
-
     class CombinedMeta(*metas):
         pass
 
@@ -91,7 +90,6 @@ def generate_base(*mixins):
     meta_cls = _combined_metaclass(*mixin_metaclass_list) if mixin_metaclass_list else type
 
     class BaseClass(metaclass=meta_cls, *mixin_common_list):
-
         @classmethod
         def get_metas(cls):
             mro = meta_cls.mro(meta_cls)
@@ -109,13 +107,11 @@ def generate_base(*mixins):
 
 
 class DelegateMetaClass(type):
-
     def __new__(cls, name, bases, attrs):
         methods = attrs.pop('delegated_methods', ())
         for m in methods:
 
             def make_func(m):
-
                 def func(self, *args, **kwargs):
                     return getattr(self.delegate, m)(*args, **kwargs)
 
@@ -126,7 +122,6 @@ class DelegateMetaClass(type):
 
 
 class Delegate(metaclass=DelegateMetaClass):
-
     def __init__(self, delegate):
         self.delegate = delegate
 
@@ -139,10 +134,9 @@ class ImmutableDict(Delegate):
     delegated_methods = ('__contains__', '__getitem__', '__eq__', '__len__', '__str__', 'get', 'has_key', 'items', 'iteritems', 'iterkeys', 'itervalues', 'keys', 'values')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     class Mymeta(type):
-
         def __init__(cls, name, bases, dic):
             super().__init__(name, bases, dic)
             print('===>Mymeta.__init__')

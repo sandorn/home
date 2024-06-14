@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : string  |  dict  |  list  |  tupe  |  json
 Develop      : VSCode
@@ -10,7 +9,8 @@ LastEditTime : 2023-02-25 04:31:14
 FilePath     : /CODE/xjLib/xt_String.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
+
 import hashlib
 import json
 import random
@@ -23,7 +23,7 @@ def is_valid_id_number(id_number):
     """
     验证身份证号码是否符合格式要求
     :param id_number: 身份证号码
-    :return: 验证结果，True表示有效，False表示无效
+    :return: 验证结果,True表示有效,False表示无效
     """
     # 身份证号码格式要求：18位，前17位为数字，最后一位为校验码（1-2位）
     pattern = r'^\d{17}(\d|X|x)$'
@@ -43,19 +43,19 @@ def is_valid_id_number(id_number):
 def Ex_md5(data):
     """将string转化为MD5"""
     my_md5 = hashlib.md5()  # 获取一个MD5的加密算法对象
-    my_md5.update(data.encode("utf-8", 'ignore'))  # 得到MD5消息摘要
+    my_md5.update(data.encode('utf-8', 'ignore'))  # 得到MD5消息摘要
     return my_md5.hexdigest()
 
 
 def Ex_sha1(data):
     """将string转化为sha1"""
     my_sha = hashlib.sha1()
-    my_sha.update(data.encode("utf-8", 'ignore'))
+    my_sha.update(data.encode('utf-8', 'ignore'))
     return my_sha.hexdigest()
 
 
 def encrypt_str(data, algorithm='md5'):
-    """ 用不同算法对字符串进行加密
+    """用不同算法对字符串进行加密
     :param data: 待加密的字符串
     :param algorithm: 加密算法，可以是 md5 or sha1
     :return: 密文
@@ -68,8 +68,9 @@ def encrypt_str(data, algorithm='md5'):
         print('Unsupported algorithm.')
         return False
 
-    my_encrypt.update(data.encode("utf-8", 'ignore'))  # 得到MD5消息摘要
+    my_encrypt.update(data.encode('utf-8', 'ignore'))  # 得到MD5消息摘要
     return my_encrypt.hexdigest()
+
 
 def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
     """
@@ -101,10 +102,13 @@ def duplicate(iterable, keep=lambda x: x, key=lambda x: x, reverse=False):
 
     return list(reversed(result)) if reverse else result
 
+
 def align(str1, distance=66, alignment='L'):
     # #居中打印为string类方法
-    if alignment == 'C': return str1.center(distance, ' ')
-    if not isinstance(str1, str): str1 = str(str1)
+    if alignment == 'C':
+        return str1.center(distance, ' ')
+    if not isinstance(str1, str):
+        str1 = str(str1)
     # #print打印对齐
     length = len(str1.encode('utf-8', 'ignore'))
     slen = max(0, distance - length)
@@ -114,8 +118,7 @@ def align(str1, distance=66, alignment='L'):
     elif alignment == 'R':
         aligned_str = f"{' ' * slen}{str1}"
     else:
-        raise ValueError(
-            "Alignment must be one of 'left', 'center', or 'right'")
+        raise ValueError("Alignment must be one of 'left', 'center', or 'right'")
     return aligned_str
 
 
@@ -124,12 +127,11 @@ def remove_all_blank(value, keep_blank=True):
     if keep_blank:
         return ''.join(ch for ch in value if ch.isprintable())
     else:
-        return ''.join(ch for ch in value
-                       if ch.isprintable() and ch not in string.whitespace)
+        return ''.join(ch for ch in value if ch.isprintable() and ch not in string.whitespace)
 
 
 def clean_invisible_chars(text):
-    '''定义要清除的不可见字符的正则表达式'''
+    """定义要清除的不可见字符的正则表达式"""
     invisible_chars_pattern = r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+'
     return re.sub(invisible_chars_pattern, '', text)
 
@@ -171,7 +173,7 @@ def Str_Clean(replacement: str, trims: list | tuple) -> str:
     return reduce(
         lambda strtmp, item: strtmp.replace(
             item,
-            "",
+            '',
         ),
         trims,
         replacement,
@@ -186,7 +188,8 @@ def Re_Sub(replacement: str, trims: list[list | tuple]):
     trims[0]:查找字符串,trims[1]:替换字符串
     """
     # lamda表达式,参数与输入值顺序相反
-    if trims is None or not trims: return replacement
+    if trims is None or not trims:
+        return replacement
 
     return reduce(
         lambda str_tmp, item: re.sub(
@@ -212,11 +215,11 @@ def Re_Compile(replacement: str, trimsL: list[list | tuple]):
     #     replacement = pattern.sub(trim[1], replacement)
     # return replacement
     if not isinstance(replacement, str):
-        raise TypeError(f"Expected str, got {type(replacement)}")
+        raise TypeError(f'Expected str, got {type(replacement)}')
     if not isinstance(trimsL, list):
-        raise TypeError(f"Expected list, got {type(trimsL)}")
+        raise TypeError(f'Expected list, got {type(trimsL)}')
     if not all(isinstance(t, (tuple, list)) for t in trimsL):
-        raise TypeError(f"Expected list of lists or tuples, got {trimsL}")
+        raise TypeError(f'Expected list of lists or tuples, got {trimsL}')
 
     pattern = re.compile('|'.join(t[0] for t in trimsL))
     return pattern.sub(
@@ -226,8 +229,7 @@ def Re_Compile(replacement: str, trimsL: list[list | tuple]):
 
 
 def str_split_limited_list(intext, mixnum=100, maxnum=280):
-    return ([intext] if len(intext) < mixnum else re.findall(
-        r'[\s\S]{' + str(mixnum) + ',' + str(maxnum) + '}。', intext))
+    return [intext] if len(intext) < mixnum else re.findall(r'[\s\S]{' + str(mixnum) + ',' + str(maxnum) + '}。', intext)
 
 
 def str2list(intext, maxlen=300):
@@ -235,8 +237,7 @@ def str2list(intext, maxlen=300):
     将输入的字符串分割成若干个段落，每个段落的长度不超过 maxlen。
     """
     # 按照句号（。）将原始字符串分割为一组子串
-    sentence_list = re.split(
-        '。', Str_Replace(intext, [['\r', '。'], ['\n', '。'], [' ', '']]))
+    sentence_list = re.split('。', Str_Replace(intext, [['\r', '。'], ['\n', '。'], [' ', '']]))
     # 过滤掉空子串，并添加句号
     sentence_list = [f'{item}。' for item in sentence_list if item]
 
@@ -259,13 +260,13 @@ def str2list(intext, maxlen=300):
 
 
 def dict2qss(dict_tmp: dict):
-    '''字典形式的QSS转字符串。弃用!
-        qdarkstyle.utils.scss._dict_to_scss 替代
-    '''
+    """字典形式的QSS转字符串。弃用!
+    qdarkstyle.utils.scss._dict_to_scss 替代
+    """
     # # 排序  print key, dict[key] for key in sorted(dict.keys())
     temp = json.dumps(dict_tmp)
     qss = Str_Replace(temp, [(',', ';'), ('"', ''), (': {', '{')])
-    return qss.strip("{}")
+    return qss.strip('{}')
 
 
 def groupby(iterobj, key):
@@ -284,22 +285,17 @@ def random_char(length=20):
     res_str = []
     for _ in range(length):
         x = random.randint(1, 2)
-        y = str(random.randint(0, 9)) if x == 1 else chr(
-            random.randint(97, 122))
+        y = str(random.randint(0, 9)) if x == 1 else chr(random.randint(97, 122))
         res_str.append(y)
     return ''.join(res_str)
 
 
 def class_add_dict(in_obj):
-    '''把对象转换成字典'''
+    """把对象转换成字典"""
     if not hasattr(in_obj, '__dict__'):
         in_obj.__dict__ = {}
 
-    in_obj.__dict__.update({
-        key: value
-        for key, value in vars(in_obj).items()
-        if not key.startswith('__') and not callable(value)
-    })
+    in_obj.__dict__.update({key: value for key, value in vars(in_obj).items() if not key.startswith('__') and not callable(value)})
 
     return in_obj.__dict__
 
@@ -315,16 +311,16 @@ if __name__ == '__main__':
     # test_str_replace()
 
     def test_str_clean():
-        test_str = "###hello?world"
-        result = Str_Clean(test_str, ["#", "?"])
+        test_str = '###hello?world'
+        result = Str_Clean(test_str, ['#', '?'])
 
-        assert result == "hello|world", result
+        assert result == 'hello|world', result
 
     # test_str_clean()
 
     def test_Re_Sub():
-        replacement = "This\n is \u2018a\u2019 test\ufeff string"
-        trims = [("\n", ""), ("\u2018", "'"), ("\u2019", "'"), ("\ufeff", "")]
+        replacement = 'This\n is \u2018a\u2019 test\ufeff string'
+        trims = [('\n', ''), ('\u2018', "'"), ('\u2019', "'"), ('\ufeff', '')]
         expected_result = "This is 'a' test string"
         result = Re_Sub(replacement, trims)
         assert result == expected_result, result
@@ -337,12 +333,12 @@ if __name__ == '__main__':
         result = Re_Compile(replacement, trims_list)
         print(result)
 
-    # test_Re_Compile()
-    str2 = "Powe, on；the 2333, 。哈哈 ！！\U0001f914看看可以吗？一行代码就可以了！^_^"
-    # print(remove_all_blank(str2, keep_blank=False))
-    # print(clean_invisible_chars(str2))
+    test_Re_Compile()
+    str2 = 'Powe, on；the 2333, 。哈哈 ！！\U0001f914看看可以吗？一行代码就可以了！^_^'
+    print(remove_all_blank(str2, keep_blank=False))
+    print(clean_invisible_chars(str2))
 
     # 测试
-    print(is_valid_id_number("230605197505032139"))  # True
-    print(is_valid_id_number("23060219750503213x"))  # True
-    print(is_valid_id_number("110101199003078017"))  # False
+    # print(is_valid_id_number('230605197505032139'))  # True
+    # print(is_valid_id_number('23060219750503213x'))  # True
+    # print(is_valid_id_number('110101199003078017'))  # False

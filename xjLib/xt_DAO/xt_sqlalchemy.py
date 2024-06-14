@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 ==============================================================
 Description  : 头部注释
@@ -13,7 +12,6 @@ Github       : https://github.com/sandorn/home
 """
 
 import pandas
-import sqlalchemy
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
@@ -21,30 +19,23 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import scoped_session, sessionmaker
 from xt_Class import typed_property
 from xt_DAO.cfg import connect_str
-from xt_DAO.xt_chemyMeta import Orm_Meta
+from xt_DAO.xt_chemyMeta import Orm_Meta, getModel
 
 
-def get_engine(key="default"):
+def get_engine(key='default'):
     engine = create_engine(connect_str(key))
     # session = sessionmaker(bind=engine)()  # 单线程
     # scoped_session类似单例模式,每次调用都是同一个session
-    session = scoped_session(
-        sessionmaker(bind=engine)
-    )  # autocommit=True, autoflush=True
+    session = scoped_session(sessionmaker(bind=engine))  # autocommit=True, autoflush=True
     return engine, session
 
 
 class SqlConnection(Orm_Meta):
-    # #限定参数类型
-    dbmodel = typed_property("dbmodel", DeclarativeMeta)
+    dbmodel = typed_property('dbmodel', DeclarativeMeta)  # 限定参数类型
 
-    def __init__(self, Base, key="default", tablename=None):
-        self.Base = Base  # orm基类
-        self.tablename = tablename or self.Base.__tablename__
-        # #设置self.params参数
-        self.params = {attr: getattr(self.Base, attr) for attr in self.Base.columns()}
+    def __init__(self, key='default', target_table_name=None, source_table_name=None):
         # 创建引擎
-        self.engine = create_engine(
+        engine = create_engine(
             connect_str(key),
             max_overflow=0,  # 超过连接池大小外最多创建的连接
             pool_size=5,  # 连接池大小
@@ -53,13 +44,17 @@ class SqlConnection(Orm_Meta):
             # echo=True,  # echo参数为True时,会显示每条执行的SQL语句
             # poolclass=NullPool, # 禁用池
         )
-        self.conn = self.engine.connect()  # pd使用
-        self.session = sessionmaker(bind=self.engine)()
-        self.Base.metadata.create_all(self.engine)  # 创建表
+        self.Base = getModel(engine, target_table_name, source_table_name)  # #获取orm基类,同时创建表
+        self.tablename = target_table_name or self.Base.__tablename__
+        # #设置self.params参数
+        self.params = {attr: getattr(self.Base, attr) for attr in self.Base.columns()}
+
+        self.conn = engine.connect()  # pd使用
+        self.session = sessionmaker(bind=engine)()  # 类直接生成实例
         self.query = self.session.query(self.Base)
         # self.Base.query = self.session.query()
         # 获取数据库名列表
-        self.insp = sqlalchemy.inspect(self.engine)
+        # self.insp = sqlalchemy.inspect(engine)
 
     def __enter__(self):
         return self.session
@@ -77,25 +72,21 @@ class SqlConnection(Orm_Meta):
         # self.Base.__table__.drop(self.engine)# 未生效
         # self.Base.metadata.drop_all(self.engine) # 未生效
         dbmodel = dbmodel or self.Base
-        drop_sql = f"DROP TABLE if exists {dbmodel.__tablename__}"
+        drop_sql = f'DROP TABLE if exists {dbmodel.__tablename__}'
         self.session.execute(drop_sql)
 
-    def insert(self, item_dict):
-        """传入字段与值对应的字典"""
-        item = self.Base(**item_dict)
-        self.session.add(item)
+    def insert(self, item_in):
+        if isinstance(item_in, dict):
+            """传入字段与值对应的字典"""
+            item = self.Base(**item_in)
+            self.session.add(item)
+        if isinstance(item_in, list):
+            """传入字段与值对应的字典所构成的list"""
+            item = [self.Base(**item_dict) for item_dict in item_in]
+            self.session.add_all(item)
         try:
-            return self.session.commit()
-        except BaseException:
-            self.session.rollback()
-            return 0
-
-    def insert_all(self, dict_list):
-        """传入字段与值对应的字典所构成的list"""
-        item = [self.Base(**dict1) for dict1 in dict_list]
-        self.session.add_all(item)
-        try:
-            return self.session.commit()
+            self.session.commit()
+            return self.session.count
         except BaseException:
             self.session.rollback()
             return 0
@@ -116,20 +107,12 @@ class SqlConnection(Orm_Meta):
         value_dict:更新数据字典:{'字段':字段值}
         """
         query = self.__条件筛选(conditions_dict)
-        updatevalue = {
-            self.params.get(key, None): value_dict.get(key)
-            for key in list(value_dict.keys())
-            if self.params.get(key, None)
-        }
+        updatevalue = {self.params.get(key, None): value_dict.get(key) for key in list(value_dict.keys()) if self.params.get(key, None)}
         return query.update(updatevalue)
 
     # TODO unitled in `delete` and `update`
     def __条件筛选(self, conditions_dict):
-        conditon_list = [
-            self.params.get(key) == conditions_dict.get(key)
-            for key in list(conditions_dict.keys())
-            if self.params.get(key, None)
-        ]
+        conditon_list = [self.params.get(key) == conditions_dict.get(key) for key in list(conditions_dict.keys()) if self.params.get(key, None)]
         result = self.query
         for condition in conditon_list:
             result = result.filter(condition)
@@ -143,22 +126,14 @@ class SqlConnection(Orm_Meta):
         return:处理后的list,内含dict(未选择列),或tuple(选择列)
         """
         if isinstance(Columns_list, (tuple, list)) and len(Columns_list) > 0:
-            __Columns_list = [
-                self.params.get(key)
-                for key in Columns_list
-                if self.params.get(key, None)
-            ]
+            __Columns_list = [self.params.get(key) for key in Columns_list if self.params.get(key, None)]
         else:
             __Columns_list = [self.Base]
 
         query = self.session.query(*__Columns_list)
 
         if isinstance(conditions_dict, dict):
-            conditon_list = [
-                self.params.get(key) == conditions_dict.get(key)
-                for key in list(conditions_dict.keys())
-                if self.params.get(key, None)
-            ]
+            conditon_list = [self.params.get(key) == conditions_dict.get(key) for key in list(conditions_dict.keys()) if self.params.get(key, None)]
             for __cond in conditon_list:
                 query = query.filter(__cond)
 
@@ -180,7 +155,7 @@ class SqlConnection(Orm_Meta):
 
     def pd_get_dict(self, table_name):
         result = pandas.read_sql_table(table_name, con=self.conn)
-        data_dict = result.to_dict(orient="records")
+        data_dict = result.to_dict(orient='records')
         return data_dict if len(data_dict) else False
 
     def pd_get_list(self, table_name, Columns):
@@ -189,26 +164,18 @@ class SqlConnection(Orm_Meta):
         return pd_list if len(pd_list) else False
 
 
-def create_orm(key, source_table_name, target_table_name=None):
-    from xt_DAO.xt_chemyMeta import getModel
-
-    engine, _ = get_engine(key)
-    _t = getModel(source_table_name, engine, target_table_name)  # #获取orm基类
-    return SqlConnection(Base=_t, key=key, tablename=_t.__tablename__)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Data_Model_2_py('uuu', 'd:/1.py', 'TXbook')  # 待测试
     item1 = {
-        "username": "刘新军",
-        "password": "234567",
-        "手机": "13910118122",
-        "代理人编码": "10005393",
-        "会员级别": "SSS",
-        "会员到期日": "9999-12-31 00:00:00",
+        'username': '刘新军',
+        'password': '234567',
+        '手机': '13910118122',
+        '代理人编码': '10005393',
+        '会员级别': 'SSS',
+        '会员到期日': '9999-12-31 00:00:00',
     }
-    sqlhelper = create_orm("TXbx", "users2")  # , 'user99')
-    res = sqlhelper.filter_by({"ID": 1})
+    sqlhelper = SqlConnection('TXbx', 'users2', 'u_model')
+    res = sqlhelper.filter_by({'ID': 1})
     print(res)
     # res = sqlhelper.select()
     # print(res)
@@ -219,8 +186,8 @@ if __name__ == "__main__":
     # print(resfrom_statement[0].to_json())
     # updateNum = sqlhelper.update({'ID': 2}, {'username': '刘新军'})
     # print(updateNum)
-    # insertNum = sqlhelper.insert(item1)
-    # print(insertNum)
+    insertNum = sqlhelper.insert(item1)
+    print(insertNum)
     # deleNum = sqlhelper.delete({'ID': 3})
     # print(deleNum)
     # res = sqlhelper.select({'username': '刘新军'}, ['ID', 'username'], 2)

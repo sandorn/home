@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
@@ -10,7 +9,7 @@ LastEditTime : 2023-01-16 23:43:22
 FilePath     : /CODE/xjLib/xt_Thread/thread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 import ctypes
 import inspect
@@ -23,7 +22,7 @@ from xt_Thread import Singleton_Mixin, singleton_wrap_return_class
 
 
 def stop_thread(thread):
-    '''外部停止线程'''
+    """外部停止线程"""
 
     def _async_raise(tid, exctype):
         """raises the exception, performs cleanup if needed"""
@@ -32,12 +31,12 @@ def stop_thread(thread):
             exctype = type(exctype)
         res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
         if res == 0:
-            raise ValueError("invalid thread id")
+            raise ValueError('invalid thread id')
         elif res != 1:
             # """if it returns a number greater than one, you're in trouble,
             # and you should call it again with exc=NULL to revert the effect"""
             ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
-            raise SystemError("PyThreadState_SetAsyncExc failed")
+            raise SystemError('PyThreadState_SetAsyncExc failed')
 
     _async_raise(thread.ident, SystemExit)
 
@@ -107,6 +106,7 @@ class CustomThread(Thread, item_get_Mixin):
 
 class CustomThread_Queue(Thread, item_get_Mixin):
     """单例多线程,继承自threading.Thread"""
+
     """采用queue传递工作任务"""
     all_Thread = []  # 线程列表,用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表

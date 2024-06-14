@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : 函数超时、函数默认值装饰、动态创建函数、重试装饰器2种、获取对象帮助
 #Develop      : VSCode
@@ -14,7 +13,7 @@
 拒绝重复造轮子!python实用工具类及函数大推荐! - 知乎
 https://zhuanlan.zhihu.com/p/31644562
 https://github.com/ShichaoMa
-'''
+"""
 
 import functools
 import logging
@@ -28,11 +27,10 @@ from typing import Any, Callable, Type
 
 
 class ExceptContext:
-
     def __init__(
         self,
         exception: Type[Exception] = Exception,
-        func_name: str = "",
+        func_name: str = '',
         errback=None,
         finalback=None,
     ):
@@ -70,8 +68,7 @@ class ExceptContext:
         """
         if isinstance(exc_val, self.exception):
             self.has_error = True
-            return_code = self.errback(self.func_name, exc_type, exc_val,
-                                       exc_tb)
+            return_code = self.errback(self.func_name, exc_type, exc_val, exc_tb)
         else:
             return_code = False
         self.finalback(self.has_error)
@@ -101,7 +98,7 @@ class ExceptContext:
         :param exc_tb: The traceback of the raised exception.
         :return: True if the exception was handled; False otherwise.
         """
-        logging.exception(f"Exception in {func_name}: {exc_val}")
+        logging.exception(f'Exception in {func_name}: {exc_val}')
         return True
 
     @staticmethod
@@ -120,9 +117,7 @@ def timeout0(timeout_time, default):
         pass
 
     def timeout_function(func):
-
         def function(*args):
-
             def timeout_handler(signum, frame):
                 raise DecoratorTimeout()
 
@@ -157,10 +152,8 @@ def timeout(timeout_time: int, default: Any):
         pass
 
     def timeout_function(func: Callable[..., Any]) -> Callable[..., Any]:
-
         @functools.wraps(func)
         def function(*args, **kwargs) -> Any:
-
             def timeout_handler(signum, frame):
                 raise DecoratorTimeout()
 
@@ -182,15 +175,14 @@ class signal_timeout_cleanup:
         self.signum = signum
         self.handler = handler
 
-    def __enter__(self):
-        ...
+    def __enter__(self): ...
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         signal.alarm(0)
         signal.signal(self.signum, self.handler)
 
 
-def call_later(callback, call_args=tuple(), immediately=True, interval=1):
+def call_later(callback, call_args=(), immediately=True, interval=1):
     """
     应用场景：
     被装饰的方法需要大量调用,随后需要调用保存方法,但是因为被装饰的方法访问量很高,而保存方法开销很大
@@ -204,7 +196,6 @@ def call_later(callback, call_args=tuple(), immediately=True, interval=1):
     """
 
     def decorate(func):
-
         @wraps(func)
         def wrapper(*args, **kwargs):
             self = args[0]
@@ -215,9 +206,9 @@ def call_later(callback, call_args=tuple(), immediately=True, interval=1):
                     getattr(self, callback)(*call_args)
                 else:
                     now = time.time()
-                    if now - self.__dict__.get("last_call_time", 0) > interval:
+                    if now - self.__dict__.get('last_call_time', 0) > interval:
                         getattr(self, callback)(*call_args)
-                        self.__dict__["last_call_time"] = now
+                        self.__dict__['last_call_time'] = now
 
         return wrapper
 
@@ -225,7 +216,7 @@ def call_later(callback, call_args=tuple(), immediately=True, interval=1):
 
 
 def freshdefault(func):
-    '''装饰函数,使可变对象可以作为默认值'''
+    """装饰函数,使可变对象可以作为默认值"""
     # 保存函数的默认值
     fdefaults = func.__defaults__
     # 保存函数注解
@@ -246,7 +237,7 @@ def freshdefault(func):
 
 
 def _create_func(code_body, **kwargs):
-    '''动态函数创建器'''
+    """动态函数创建器"""
     kwargs.setdefault('globals', {})
     filename = kwargs.pop('filename', 'xt_Tools._create_func')
     exmethod = kwargs.pop('exmethod', 'exec')
@@ -288,14 +279,15 @@ func_code_name_list = [
 
 
 def catch_wraps(func, bool=False):
-    '''捕捉异常的装饰器'''
+    """捕捉异常的装饰器"""
 
     def wrapper(*args, **keyargs):
         try:
             return func(*args, **keyargs)
         except Exception as err:
             print(f'catch_wraps: [{func.__name__}]\tError: {err!r}')
-            if bool: traceback.print_exc()
+            if bool:
+                traceback.print_exc()
             return None
 
     wrapper.__name__ = func.__name__
@@ -304,44 +296,34 @@ def catch_wraps(func, bool=False):
     return wrapper
 
 
-def try_except_wraps(fn=None,
-                     max_retries: int = 6,
-                     delay: float = 0.2,
-                     step: float = 0.1,
-                     exceptions: (BaseException, tuple, list) = BaseException,
-                     sleep=time.sleep,
-                     process=lambda ex: True,
-                     validate=None,
-                     callback=None,
-                     default=None):
+def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: float = 0.1, exceptions: (BaseException, tuple, list) = BaseException, sleep=time.sleep, process=lambda ex: True, validate=None, callback=None, default=None):
     """
-        函数执行出现异常时自动重试的简单装饰器
-        :param f: function 执行的函数。
-        :param max_retries: int 最多重试次数。
-        :param delay: int/float 每次重试的延迟,单位秒。
-        :param step: int/float 每次重试后延迟递增,单位秒。
-        :param exceptions: BaseException/tuple/list 触发重试的异常类型,单个异常直接传入异常类型,多个异常以tuple或list传入。
-        :param sleep: 实现延迟的方法,默认为time.sleep。
-        在一些异步框架,如tornado中,使用time.sleep会导致阻塞,可以传入自定义的方法来实现延迟。
-        自定义方法函数签名应与time.sleep相同,接收一个参数,为延迟执行的时间。
-        :param process: 处理函数,函数签名应接收一个参数,每次出现异常时,会将异常对象传入。
-        可用于记录异常日志,中断重试等。
-        如处理函数正常执行,并返回True,则表示告知重试装饰器异常已经处理,重试装饰器终止重试,并且不会抛出任何异常。
-        如处理函数正常执行,没有返回值或返回除True以外的结果,则继续重试。
-        如处理函数抛出异常,则终止重试,并将处理函数的异常抛出。
-        :param validate: 验证函数,用于验证执行结果,并确认是否继续重试。
-        函数签名应接收一个参数,每次被装饰的函数完成且未抛出任何异常时,调用验证函数,将执行的结果传入。
-        如验证函数正常执行,且返回False,则继续重试,即使被装饰的函数完成且未抛出任何异常。
-        如验证函数正常执行,没有返回值或返回除False以外的结果,则终止重试,并将函数执行结果返回。
-        如验证函数抛出异常,且异常属于被重试装饰器捕获的类型,则继续重试。
-        如验证函数抛出异常,且异常不属于被重试装饰器捕获的类型,则将验证函数的异常抛出。
-        :param callback: 回调函数,处理结果。
-        :param default: 默认值/默认值生成函数
-        :return: 被装饰函数的执行结果。
+    函数执行出现异常时自动重试的简单装饰器
+    :param f: function 执行的函数。
+    :param max_retries: int 最多重试次数。
+    :param delay: int/float 每次重试的延迟,单位秒。
+    :param step: int/float 每次重试后延迟递增,单位秒。
+    :param exceptions: BaseException/tuple/list 触发重试的异常类型,单个异常直接传入异常类型,多个异常以tuple或list传入。
+    :param sleep: 实现延迟的方法,默认为time.sleep。
+    在一些异步框架,如tornado中,使用time.sleep会导致阻塞,可以传入自定义的方法来实现延迟。
+    自定义方法函数签名应与time.sleep相同,接收一个参数,为延迟执行的时间。
+    :param process: 处理函数,函数签名应接收一个参数,每次出现异常时,会将异常对象传入。
+    可用于记录异常日志,中断重试等。
+    如处理函数正常执行,并返回True,则表示告知重试装饰器异常已经处理,重试装饰器终止重试,并且不会抛出任何异常。
+    如处理函数正常执行,没有返回值或返回除True以外的结果,则继续重试。
+    如处理函数抛出异常,则终止重试,并将处理函数的异常抛出。
+    :param validate: 验证函数,用于验证执行结果,并确认是否继续重试。
+    函数签名应接收一个参数,每次被装饰的函数完成且未抛出任何异常时,调用验证函数,将执行的结果传入。
+    如验证函数正常执行,且返回False,则继续重试,即使被装饰的函数完成且未抛出任何异常。
+    如验证函数正常执行,没有返回值或返回除False以外的结果,则终止重试,并将函数执行结果返回。
+    如验证函数抛出异常,且异常属于被重试装饰器捕获的类型,则继续重试。
+    如验证函数抛出异常,且异常不属于被重试装饰器捕获的类型,则将验证函数的异常抛出。
+    :param callback: 回调函数,处理结果。
+    :param default: 默认值/默认值生成函数
+    :return: 被装饰函数的执行结果。
     """
 
     def decorator(func):
-
         @wraps(func)
         def wrapper(*args, **kwargs):
             func_exc = None
@@ -383,19 +365,18 @@ def retry_on_exception(func, max_retry=3):
 if __name__ == '__main__':
 
     def trys():
-
         @catch_wraps
         def simple():
             return 5 / 0
 
         @catch_wraps
         def readFile(filename):
-            with open(filename, "r") as f:
+            with open(filename) as f:
                 print(len(f.readlines()))
 
         def add(a, b):
             with ExceptContext():
-                return (int(a) / int(b))
+                return int(a) / int(b)
 
         @try_except_wraps
         def assertSumIsPositive(*args):
@@ -410,7 +391,7 @@ if __name__ == '__main__':
                 raise ValueError('Number of key args should more than 3.')
 
         simple()
-        readFile("UnexistFile.txt")
+        readFile('UnexistFile.txt')
         print(add(1, 0))
         # assertSumIsPositive(1, 2, -3, -4)
         # checkLen(a=5, b=2)
@@ -449,6 +430,6 @@ if __name__ == '__main__':
             )
         print(_create_func.__dict__)
 
-    # trys()
-    # fre()
-    # fu()
+    trys()
+    fre()
+    fu()

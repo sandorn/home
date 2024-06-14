@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
@@ -10,11 +9,11 @@ LastEditTime : 2023-10-20 10:47:17
 FilePath     : /CODE/xjLib/xt_Class.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 
 class item_get_Mixin:
-    '''下标obj[key]'''
+    """下标obj[key]"""
 
     def __getitem__(self, key):
         # return getattr(self, key)
@@ -22,26 +21,27 @@ class item_get_Mixin:
 
 
 class item_set_Mixin:
-    '''下标obj[key]'''
+    """下标obj[key]"""
 
     def __setitem__(self, key, value):
         self.__dict__[key] = value
 
 
 class item_del_Mixin:
-    '''下标obj[key]'''
+    """下标obj[key]"""
 
     def __delitem__(self, key):
         return self.__dict__.pop(key)
 
 
 class item_Mixin(item_get_Mixin, item_set_Mixin, item_del_Mixin):
-    '''下标obj[key]'''
+    """下标obj[key]"""
+
     pass
 
 
 class attr_get_Mixin:
-    '''原点调用obj.key'''
+    """原点调用obj.key"""
 
     def __getattr__(self, key):
         # return super().__getattribute__(key)
@@ -49,44 +49,41 @@ class attr_get_Mixin:
 
 
 class attr_set_Mixin:
-    '''原点调用obj.key'''
+    """原点调用obj.key"""
 
     def __setattr__(self, key, value):
         return super().__setattr__(key, value)
 
 
 class attr_del_Mixin:
-    '''原点调用obj.key'''
+    """原点调用obj.key"""
 
     def __delattr__(self, key):
         return super().__delattr__(key)
 
 
 class attr_Mixin(attr_get_Mixin, attr_set_Mixin, attr_del_Mixin):
-    '''原点调用obj.key'''
+    """原点调用obj.key"""
+
     pass
 
 
 class dict_mothed_Mixin:
-    '''get_dict重新生成__dict__类字典,主要用于readonly限制'''
+    """get_dict重新生成__dict__类字典,主要用于readonly限制"""
 
     def get_dict(self):
-        '''把对象转换成字典'''
+        """把对象转换成字典"""
         if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
-            self.__dict__ = {
-                key: getattr(self, key)
-                for key in dir(self) if not key.startswith('__')
-                and not callable(getattr(self, key))
-            }
+            self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
         return self.__dict__
 
 
 class iter_Mixin(dict_mothed_Mixin):
-    '''
+    """
     # #迭代类,用于继承,不支持next
     from collections import Iterable
     isinstance(a, Iterable)
-    '''
+    """
 
     def __iter__(self):
         # yield from self.__dict__.iteritems()
@@ -97,7 +94,7 @@ class iter_Mixin(dict_mothed_Mixin):
 
 
 class repr_Mixin(dict_mothed_Mixin):
-    '''用于打印显示'''
+    """用于打印显示"""
 
     # __str__ = __repr__
     def __repr__(self):
@@ -107,12 +104,14 @@ class repr_Mixin(dict_mothed_Mixin):
 
 
 class Class_Meta(item_Mixin, iter_Mixin, repr_Mixin):
-    '''metaclass=abc.ABCMeta'''
+    """metaclass=abc.ABCMeta"""
+
     pass
 
 
 class SetOnce_Mixin:
     """限制key赋值一次,key不存在时可赋值"""
+
     __slots__ = ()
 
     def __setitem__(self, key, value):
@@ -123,15 +122,15 @@ class SetOnce_Mixin:
 
 class SetOnceDict(SetOnce_Mixin, dict):
     """自定义字典,限制key只能赋值一次,key不存在时可添加"""
+
     pass
 
 
 def typeassert(**kwargs):
-    '''Descriptor for a type-checked attribute
-    #限制属性赋值的类型,因使用__dict__,与slots冲突'''
+    """Descriptor for a type-checked attribute
+    #限制属性赋值的类型,因使用__dict__,与slots冲突"""
 
     class Typed:
-
         def __init__(self, name, expected_type):
             self.name = name
             self.expected_type = expected_type
@@ -157,7 +156,7 @@ def typeassert(**kwargs):
 
 
 def typed_property(name, expected_type):
-    '''class类property属性生成器,限制赋值类型'''
+    """class类property属性生成器,限制赋值类型"""
     storage_name = f'_{name}'
 
     @property
@@ -167,20 +166,20 @@ def typed_property(name, expected_type):
     @prop.setter
     def prop(self, value):
         if not isinstance(value, expected_type):
-            raise TypeError('{} must be a {}'.format(name, expected_type))
+            raise TypeError(f'{name} must be a {expected_type}')
         setattr(self, storage_name, value)
 
     return prop
 
 
 def readonly(name):
-    '''
+    """
     class类property只读属性生成器,隐藏真实属性名:name,
     #不在__dict__内,需要使用class_to_dict函数生成类__dict__
     #可配合@dataclass(init=False)
     # from dataclasses import asdict, dataclass
     @dataclass(frozen=True) #frozen=True,不可修改
-    '''
+    """
     storage_name = name
 
     @property
@@ -189,13 +188,13 @@ def readonly(name):
 
     @prop.setter
     def prop(self, value):
-        '''赋值:无操作,直接返回'''
+        """赋值:无操作,直接返回"""
         return
 
     return prop
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     def one():
         my_dict = SetOnceDict()
@@ -208,9 +207,7 @@ if __name__ == "__main__":
         print(99999, my_dict)
 
     def itre():
-
         class Animal(iter_Mixin, repr_Mixin):
-
             def __init__(self):
                 self.name = 'liuxinjun'
                 self.age = 12
@@ -223,9 +220,7 @@ if __name__ == "__main__":
             print(k.ljust(6), ':', v)
 
     def itat():
-
         class Anima(item_Mixin, attr_Mixin):
-
             def __init__(self):
                 self.name = 'na98888me'
                 self.age = 12
@@ -246,7 +241,7 @@ if __name__ == "__main__":
     # one()
     itre()
     # itat()
-'''
+"""
 参考见Alispeech/xt_Pygame.py
 xt_Thread/Custom.py
 xt_Singleon.py
@@ -268,4 +263,4 @@ ClassList = createClass(list)
 print(QThread.__mro__)
 (<class 'PyQt5.QtCore.QThread'>, <class 'PyQt5.QtCore.QObject'>, <class 'sip.wrapper'>, <class 'sip.simplewrapper'>, <class 'object'>)
 
-'''
+"""

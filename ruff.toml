@@ -1,0 +1,19 @@
+
+line-length = 320  # 代码最大行宽
+
+[lint]
+select = [         # 选择的规则
+    "C",
+    "F",
+    "E",
+    "W",
+    "UP",
+]
+ignore = ["E701"]  # 忽略的规则
+
+[format]
+quote-style = "single"
+docstring-code-format = true
+
+[pydocstyle]
+convention = "google"  # Accepts: "google", "numpy", or "pep257".

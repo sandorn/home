@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 ==============================================================
 Description  :
@@ -26,19 +25,19 @@ from xt_Class import item_Mixin
 class htmlResponse(item_Mixin):
     """封装网页抓取结果,使之标准化"""
 
-    __slots__ = ("raw", "clientResponse", "_content", "index", "encoding", "code_type")
+    __slots__ = ('raw', 'clientResponse', '_content', 'index', 'encoding', 'code_type')
 
     def __init__(self, response, content=None, index=None):
         if response is not None:
             self.raw = self.clientResponse = response
             self._content: bytes = content or response.content
             self.index: int = index or id(self)
-            self.encoding = (response.encoding if hasattr(response, "encoding") else "utf-8")
+            self.encoding = response.encoding if hasattr(response, 'encoding') else 'utf-8'
             # if isinstance(self._content, bytes): self.code_type = detect(self._content)['encoding'] or 'utf-8'
-            self.code_type = (detect(self._content)["encoding"] or "utf-8" if isinstance(self._content, bytes) else self.encoding)
+            self.code_type = detect(self._content)['encoding'] or 'utf-8' if isinstance(self._content, bytes) else self.encoding
 
     def __repr__(self):
-        return f"<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>"
+        return f'<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>'
 
     def __str__(self):
         return self.__repr__()
@@ -51,7 +50,7 @@ class htmlResponse(item_Mixin):
 
     @property
     def content(self):
-        return self._content.decode(self.code_type, "ignore")
+        return self._content.decode(self.code_type, 'ignore')
 
     @property
     def text(self):
@@ -60,19 +59,19 @@ class htmlResponse(item_Mixin):
         # except AttributeError:
         #     _text = self.content
         # return _text
-        _text = self.clientResponse.text.encode(self.encoding).decode(self.code_type, "ignore")
-        return _text if hasattr(self.clientResponse, "text") else self.content
+        _text = self.clientResponse.text.encode(self.encoding).decode(self.code_type, 'ignore')
+        return _text if hasattr(self.clientResponse, 'text') else self.content
 
     @property
     def elapsed(self):
-        if hasattr(self.clientResponse, "elapsed"):
+        if hasattr(self.clientResponse, 'elapsed'):
             return self.clientResponse.elapsed
         else:
             return None
 
     @property
     def seconds(self):
-        if hasattr(self.clientResponse, "elapsed"):
+        if hasattr(self.clientResponse, 'elapsed'):
             return self.clientResponse.elapsed.total_seconds()
         else:
             return 0
@@ -98,14 +97,13 @@ class htmlResponse(item_Mixin):
 
     @property
     def status(self):
-        if hasattr(self.clientResponse, "status"):
+        if hasattr(self.clientResponse, 'status'):
             return self.clientResponse.status
         else:
             return self.clientResponse.status_code
 
     @property
     def html(self):
-
         def _clean(filter):
             element = self.element
             trashs = element.xpath(filter)
@@ -113,7 +111,7 @@ class htmlResponse(item_Mixin):
                 item.getparent().remove(item)
             return element
 
-        return _clean("//script")
+        return _clean('//script')
 
     @property
     def element(self):
@@ -132,7 +130,7 @@ class htmlResponse(item_Mixin):
     def pyquery(self):
         return PyQuery(self.html)  # , parser='xml')
 
-    def xpath(self, selectors: str | list | tuple = ""):
+    def xpath(self, selectors: str | list | tuple = ''):
         """
         在元素上执行XPath选择。
         参数selectors: XPath选择器,可以是字符串或字符串的列表/元组。
@@ -142,7 +140,7 @@ class htmlResponse(item_Mixin):
             return []
 
         if isinstance(selectors, (str, list, tuple)):
-            selectors = (selectors if isinstance(selectors, (list, tuple)) else [selectors])
+            selectors = selectors if isinstance(selectors, (list, tuple)) else [selectors]
 
             return [self.element.xpath(selector) for selector in selectors if selector.strip()]
 
@@ -155,7 +153,7 @@ class htmlResponse(item_Mixin):
         return h.handle(self.raw.text)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     print(htmlResponse(None))
 """
     jxdm = response.xpath('//h3/a')

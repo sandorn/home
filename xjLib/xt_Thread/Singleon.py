@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : None
 #Develop      : VSCode
@@ -12,18 +11,19 @@ LastEditTime : 2020-12-08 12:30:49
 #Github       : https://github.com/sandorn/home
 #==============================================================
 单例，与线程无关
-'''
+"""
 
 from functools import wraps
 from threading import Lock
 
 
 class Singleton_Mixin:
-    '''
+    """
     单例模式基类,用于继承,可多次init,
     可用类调用 classmethod
     # 可通过self._intialed判断,设定初始化次数
-    '''
+    """
+
     _lock = Lock()  # 保护实例字典的线程锁
     _instance = {}  # 保存实例的字典
 
@@ -43,11 +43,11 @@ class Singleton_Mixin:
 
 
 class Singleton_Meta(type):
-    '''
+    """
     单例模式元类,构建类时调用
     class cls(parent_cls,metaclass=Singleton_Meta):,
     @ 单次init,可用类调用classmethod
-    '''
+    """
 
     _instances = {}
     _lock = Lock()
@@ -59,9 +59,10 @@ class Singleton_Meta(type):
 
 
 class singleton_wrap_class:
-    '''单例类装饰器,单次init,只能实例调用classmethod
+    """单例类装饰器,单次init,只能实例调用classmethod
     # @QThread可用
-    '''
+    """
+
     _lock = Lock()
 
     def __init__(self, cls):
@@ -76,17 +77,16 @@ class singleton_wrap_class:
 
 
 def singleton_wrap_return_class(_cls):
-    '''单例类装饰器,多次init,返回类,类属性及方法通用
-    # 可通过self._intialed判断,设定初始化次数'''
+    """单例类装饰器,多次init,返回类,类属性及方法通用
+    # 可通过self._intialed判断,设定初始化次数"""
 
     class class_wrapper(_cls):
-
         _lock = Lock()
         _instance = None
 
         def __new__(cls, *args, **kwargs):
             with cls._lock:
-                if not hasattr(cls, "_instance"):
+                if not hasattr(cls, '_instance'):
                     cls._instance = super().__new__(cls)
                     cls._instance.__qualname__ = _cls.__name__
                     cls._instance._intialed = False
@@ -100,8 +100,8 @@ def singleton_wrap_return_class(_cls):
 
 
 def singleton_wrap(cls):
-    '''单例装饰器,单次init,只能实例调用classmethod
-    命令行可用,装饰器形式需要类有parent_cls'''
+    """单例装饰器,单次init,只能实例调用classmethod
+    命令行可用,装饰器形式需要类有parent_cls"""
     _instance = {}
     _lock = Lock()
 
@@ -115,10 +115,9 @@ def singleton_wrap(cls):
     return _singleton
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     class sss:
-
         def __init__(self, string, age=12):
             self.name = string
             self.age = age
@@ -136,14 +135,12 @@ if __name__ == "__main__":
         pass
 
     @singleton_wrap_return_class
-    class singleton_wrap_return_class_f(sss):
-        ...
+    class singleton_wrap_return_class_f(sss): ...
 
     singleton_wrap_return_class_f_line = singleton_wrap_return_class(sss)
 
     @singleton_wrap
-    class singleton_wrap_f(sss):
-        ...
+    class singleton_wrap_f(sss): ...
 
     # singleton_wrap_f_line = singleton_wrap(sss)
 
