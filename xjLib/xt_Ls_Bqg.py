@@ -96,10 +96,7 @@ def 结果处理(resps):
     for resp in resps:
         if resp is None:
             continue
-        _xpath = (
-            '//h1/text()',
-            '//*[@id="content"]/text()',
-        )
+        _xpath = ('//h1/text()', '//*[@id="chaptercontent"]/text()')
         _title, _showtext = resp.xpath(_xpath)
         title = ''.join(_title).replace('\u3000', ' ').replace('\xa0', ' ').replace('\u00a0', ' ')
         content = clean_Content(_showtext)

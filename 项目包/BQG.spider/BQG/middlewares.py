@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Define here the models for your spider middleware
 #
 # See documentation in:
@@ -9,11 +7,11 @@ from scrapy import signals
 from xt_Head import Head
 
 
-class RandomUserAgentMiddlware(object):
-    '''随机更换User-Agent'''
+class RandomUserAgentMiddlware:
+    """随机更换User-Agent"""
 
     def __init__(self, crawler):
-        super(RandomUserAgentMiddlware, self).__init__()
+        super().__init__()
         self.ua = Head().ua
 
     @classmethod
@@ -21,10 +19,10 @@ class RandomUserAgentMiddlware(object):
         return cls(crawler)
 
     def process_request(self, request, spider):
-        request.headers.setdefault('User-Agent', Head().myhead)
+        request.headers.setdefault('User-Agent', Head().ua)
 
 
-class BqgSpiderMiddleware(object):
+class BqgSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
     # passed objects.
@@ -70,7 +68,7 @@ class BqgSpiderMiddleware(object):
         spider.logger.info(f'Spider opened: {spider.name}')
 
 
-class BqgDownloaderMiddleware(object):
+class BqgDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.

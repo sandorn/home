@@ -1,33 +1,34 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-09-22 16:16:31
+LastEditTime : 2024-06-14 14:57:38
 FilePath     : /CODE/项目包/BQG.spider/BQG/spiders/spilerByset.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
+
 import os
 import sys
 
-_p = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-sys.path.append(_p)
 import scrapy
-from items import BqgItem
 from xt_DAO.xt_mysql import DbEngine as mysql
 from xt_Ls_Bqg import clean_Content
 from xt_String import Str_Replace, align
+
+_p = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+sys.path.append(_p)
+
+from items import BqgItem  # noqa: E402
 
 
 class Spider(scrapy.Spider):
     name = 'spilerByset'  # 设置name
 
     custom_settings = {
-        #$ 使用数据库,判断重复入库
         'ITEM_PIPELINES': {
             'BQG.pipelines.Pipeline2Csv': 4,
             # 'BQG.pipelines.PipelineToSqlTwisted': 10,  # 25s
@@ -39,11 +40,10 @@ class Spider(scrapy.Spider):
         },
     }
 
+    # ... 其他代码
+
     start_urls = [
-        'https://www.biqukan8.cc/38_38836/',
-        # 'http://www.biqugse.com/96703/',
-        # 'http://www.biqugse.com/96717/',
-        # 'http://www.biqugse.com/2367/',
+        'https://www.biquge11.cc/read/11159/',
     ]
 
     # 编写爬取方法
@@ -56,29 +56,30 @@ class Spider(scrapy.Spider):
 
     def parse(self, response):
         # #获取书籍名称
-        # _BOOKNAME = response.xpath('//meta[@property="og:title"]//@content').extract_first()
-        _BOOKNAME = response.xpath('//h2/text()').extract_first()
-        if _BOOKNAME not in self.db:
+        # _bookname = response.xpath('//meta[@property="og:title"]//@content').extract_first()
+        _bookname = response.xpath('//h1/text()').extract_first()
+        if _bookname not in self.db:
             # 避免重复创建数据库
-            Csql = f'Create Table If Not Exists {_BOOKNAME}(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)'
+            Csql = f'Create Table If Not Exists {_bookname}(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)'
             self.connect.execute(Csql)
-            self.db.add(_BOOKNAME)
+            self.db.add(_bookname)
 
-        _result = self.connect.get_all_from_db(_BOOKNAME)
+        _result = self.connect.get_all_from_db(_bookname)
         assert isinstance(_result, (list, tuple))
         ZJHERF_list = [res[5] for res in _result]
 
         # 全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
         # titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
-        全部章节链接 = response.xpath(('//dt[2]/following-sibling::dd/a/@href')).extract()
+        全部章节链接 = response.xpath('//dt[1]/following-sibling::dd/a/@href').extract()
+        print(999, _bookname, 全部章节链接)
         # https://www.biqukan8.cc
         baseurl = '/'.join(response.url.split('/')[:-2])
         urls = [baseurl + item for item in 全部章节链接]  ## 章节链接
         for index in range(len(urls)):
             if urls[index] not in ZJHERF_list:
-                yield scrapy.Request(urls[index], meta={'index': index, 'name': _BOOKNAME}, callback=self.parse_content)
+                yield scrapy.Request(urls[index], meta={'index': index, 'name': _bookname}, callback=self.parse_content)
             else:
-                print(f'spilerByset-->《{align( _BOOKNAME, 16)}》\t{align(index, 6)}\t | 记录重复，剔除！！')
+                print(f'spilerByset-->《{align( _bookname, 16)}》\t{align(index, 6)}\t | 记录重复，剔除！！')
 
     def parse_content(self, response):
         item = BqgItem()
@@ -86,10 +87,10 @@ class Spider(scrapy.Spider):
         item['BOOKNAME'] = response.meta['name']  # @接收meta={}传递的参数
         item['INDEX'] = response.meta['index']  # @接收meta={}传递的参数
         item['ZJNAME'] = response.xpath('//h1/text()').extract_first()
-        item['ZJNAME'] = Str_Replace(item['ZJNAME'].strip('\r\n'), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
-        _ZJTEXT = response.xpath('//*[@id="content"]/text()').extract()
-        item['ZJTEXT'] = '\n'.join([st.strip("\r\n　  ") for st in _ZJTEXT])
-        item['ZJTEXT'] = Str_Replace(clean_Content(item['ZJTEXT']), [('%', '%%'), ("'", "\\\'"), ('"', '\\\"')])
+        item['ZJNAME'] = Str_Replace(item['ZJNAME'].strip('\r\n'), [('\u3000', ' '), ('\xa0', ' '), ('\u00a0', ' ')])
+        _ZJTEXT = response.xpath('//*[@id="chaptercontent"]/text()').extract()
+        item['ZJTEXT'] = '\n'.join([st.strip('\r\n　  ') for st in _ZJTEXT])
+        item['ZJTEXT'] = Str_Replace(clean_Content(item['ZJTEXT']), [('%', '%%'), ("'", "\\'"), ('"', '\\"')])
         item['ZJHERF'] = response.url
         yield item
 
@@ -103,7 +104,7 @@ if __name__ == '__main__':
     ScrapyRun(dirpath, 'spilerByset')
 
 ###############################################################################
-'''
+"""
 方法1
        全部章节节点 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a').extract()
 
@@ -117,4 +118,4 @@ if __name__ == '__main__':
         全部章节名称 = response.xpath('//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
         baseurl = '/'.join(response.url.split('/')[0:-2])
         urls = [baseurl + item for item in 全部章节链接]  ## 章节链接
-'''
+"""

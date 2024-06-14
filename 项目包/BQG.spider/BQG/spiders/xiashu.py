@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  :
 Develop      : VSCode
@@ -11,27 +10,26 @@ LastEditTime : 2023-01-03 14:06:48
 FilePath     : /项目包/BQG.spider/BQG/spiders/xiashu.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 import os
 import sys
+
+import scrapy
+from xt_Ls_Bqg import clean_Content
+from xt_String import Str_Replace
 
 # '***获取上级目录***'
 _p = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(_p)
 
-import scrapy
-from items import BqgItem
-from xt_Ls_Bqg import clean_Content
-from xt_String import Str_Replace
+from items import BqgItem  # noqa: E402
 
 
 class XiashuSpider(scrapy.Spider):
-
     name = 'xiashu'  # 设置name
 
     custom_settings = {
-        # 设置管道下载
         'ITEM_PIPELINES': {
             'BQG.pipelines.Pipeline2Csv': 40,
             # 'BQG.pipelines.PipelineToTxt': 100,
@@ -42,15 +40,14 @@ class XiashuSpider(scrapy.Spider):
     }
 
     start_urls = [
-        'http://www.biqugse.com/96703/',
-        # 'http://www.biqugse.com/96717/',
-        # 'http://www.biqugse.com/2367/',
+        'https://www.biquge11.cc/read/11159/',
     ]
 
     # 编写爬取方法
     def parse(self, response):
-        _bookname = response.xpath('//meta[@property="og:title"]//@content').extract_first()
-        全部章节链接 = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/@href').extract()
+        _bookname = response.xpath('//h1/text()').extract_first()
+        全部章节链接 = response.xpath('//dt[1]/following-sibling::dd/a/@href').extract()
+        print(999, _bookname, 全部章节链接)
         # titles = response.xpath('//*[@id="list"]/dl/dt[2]/following-sibling::dd/a/text()').extract()
 
         baseurl = '/'.join(response.url.split('/')[:-2])
@@ -65,9 +62,9 @@ class XiashuSpider(scrapy.Spider):
         item['BOOKNAME'] = response.meta['BOOKNAME']  # @接收meta={}传递的参数
         item['INDEX'] = response.meta['INDEX']  # @接收meta={}传递的参数
         item['ZJNAME'] = response.xpath('//h1/text()').extract_first()
-        item['ZJNAME'] = Str_Replace(item['ZJNAME'].strip('\r\n'), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
-        item['ZJTEXT'] = response.xpath('//*[@id="content"]/text()').extract()
-        item['ZJTEXT'] = Str_Replace(clean_Content(item['ZJTEXT']), [('%', '%%'), ("'", "\\\'"), ('"', '\\\"')])
+        item['ZJNAME'] = Str_Replace(item['ZJNAME'].strip('\r\n'), [('\u3000', ' '), ('\xa0', ' '), ('\u00a0', ' ')])
+        item['ZJTEXT'] = response.xpath('//*[@id="chaptercontent"]/text()').extract()
+        item['ZJTEXT'] = Str_Replace(clean_Content(item['ZJTEXT']), [('%', '%%'), ("'", "\\'"), ('"', '\\"')])
         item['ZJHERF'] = response.url
         yield item
 

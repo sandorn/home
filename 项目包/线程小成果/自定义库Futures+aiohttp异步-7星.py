@@ -1,17 +1,16 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2024-05-29 10:40:20
+LastEditTime : 2024-06-14 16:08:38
 FilePath     : /CODE/项目包/线程小成果/自定义库Futures+aiohttp异步-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-网站关闭，需要重新调整
-'''
+"""
+
 import os
 
 from xt_Ahttp import ahttpGetAll
@@ -26,7 +25,7 @@ from xt_Time import fn_timer
 def Aio_ahttp(bookname, urls):
     resps = ahttpGetAll(urls)
     texts = 结果处理(resps)
-    files = os.path.basename(__file__).split(".")[0]
+    files = os.path.basename(__file__).split('.')[0]
     savefile(f'{files}&{bookname}Aio_ahttp.txt', texts, br='\n')
 
 
@@ -37,7 +36,7 @@ def Aio_feach_run(bookname, urls):
     resps = myaio.wait_completed()
     texts = 结果处理(resps)
     texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split(".")[0]
+    files = os.path.basename(__file__).split('.')[0]
     savefile(f'{files}&{bookname}Aio_feach_run.txt', texts, br='\n')
 
 
@@ -50,9 +49,9 @@ def pool(url_list, func):
     mypool.wait_completed()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     url_list = [
         'https://www.biquge11.cc/read/11159/',
     ]
     # pool(url_list, Aio_ahttp)  # 卡死
-    pool(url_list, Aio_feach_run)  # AioCrawl 12s
+    pool(url_list[:1], Aio_feach_run)  # AioCrawl 12s

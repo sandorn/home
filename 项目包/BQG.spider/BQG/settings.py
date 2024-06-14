@@ -1,20 +1,21 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
-@Descripttion: 头部注释None
-@Develop: VSCode
-@Author: Even.Sand
-@Contact: sandorn@163.com
-@Github: https://github.com/sandorn/home
-@License: (C)Copyright 2009-2019, NewSea
-@Date: 2020-02-12 15:44:47
-#LastEditors  : Please set LastEditors
-#LastEditTime : 2020-07-08 20:24:16
-'''
+"""
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2024-06-14 15:42:27
+FilePath     : /CODE/项目包/BQG.spider/BQG/settings.py
+Github       : https://github.com/sandorn/home
+==============================================================
+"""
 
 import xlwt
-from scrapy.exporters import JsonLinesItemExporter  # 默认显示的中文是阅读性较差的Unicode字符
-from scrapy.exporters import BaseItemExporter
+from scrapy.exporters import (
+    BaseItemExporter,
+    JsonLinesItemExporter,  # 默认显示的中文是阅读性较差的Unicode字符
+)
 
 BOT_NAME = 'BQG'
 
@@ -23,10 +24,10 @@ NEWSPIDER_MODULE = 'BQG.spiders'
 
 # 修改默认的输出编码方式
 # 需要定义子类显示出原来的字符集（将父类的ensure_ascii属性设置为False即可）
-#FEED_EXPORT_ENCODING = 'gb18030'
+# FEED_EXPORT_ENCODING = 'gb18030'
 FEED_EXPORT_ENCODING = 'utf-8'
 
-#LOG_FILE = './scrapy.log'
+# LOG_FILE = './scrapy.log'
 # CRITICAL - 严重错误(critical)
 # ERROR - 一般错误(regular errors)
 # WARNING - 警告信息(warning messages)
@@ -36,9 +37,8 @@ LOG_LEVEL = 'ERROR'
 
 
 class CustomJsonLinesItemExporter(JsonLinesItemExporter):
-
     def __init__(self, file, **kwargs):
-        super(CustomJsonLinesItemExporter, self).__init__(file, encoding='utf-8', ensure_ascii=False, **kwargs)
+        super().__init__(file, encoding='utf-8', ensure_ascii=False, **kwargs)
 
     # 启用新定义的Exporter类\
     FEED_EXPORTERS = {
@@ -48,7 +48,7 @@ class CustomJsonLinesItemExporter(JsonLinesItemExporter):
 
 class ExcelExporter(BaseItemExporter):
     """
-    导出为Excel，在执行命令中指定输出格式为excel
+    导出为Excel,在执行命令中指定输出格式为excel
     e.g. scrapy crawl -t excel -o books.xls
     """
 
@@ -103,15 +103,15 @@ COOKIES_ENABLED = False
 
 DOWNLOADER_MIDDLEWARES = {
     'BQG.middlewares.RandomUserAgentMiddlware': 543,
-    #将middlewares中定义RandomUserAgentMiddlware添加到这里;
+    # 将middlewares中定义RandomUserAgentMiddlware添加到这里;
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-    #需要将scrapy默认的置为None不调用
+    # 需要将scrapy默认的置为None不调用
     # 'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
     # 'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': None,
     # 'middlewares.IPProxyMiddleware': 100,
     # 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 101,
 }
-ITEM_PIPELINES: {
+ITEM_PIPELINES = {
     'BQG.pipelines.PipelineToAiomysql': 20,
     'BQG.pipelines.PipelineToSqlalchemy': 20,
     'BQG.pipelines.PipelineToMysql': 20,
@@ -124,7 +124,7 @@ ITEM_PIPELINES: {
     'BQG.pipelines.Pipeline2Csv': 400,
     'BQG.pipelines.PipelineMysql2Txt': 500,
 }
-'''
+"""
 # PROXIES = [{'ip_port': '111.11.228.75:80', 'user_pass': ''}]
 
 # 可在spider中扩展设置
@@ -151,20 +151,20 @@ FEED_EXPORTERS_BASE = {
     'pickle': 'scrapy.exporters.PickleItemExporter',
 }
 
-# 需要实例化ItemLoader， 注意第一个参数必须是实例化的对象...
+# 需要实例化ItemLoader, 注意第一个参数必须是实例化的对象...
 atricleItemLoader = ItemLoader(item = articleDetailItem(), response=response)
-# 调用xpath选择器，提取title信息
+# 调用xpath选择器,提取title信息
 atricleItemLoader.add_xpath('title', '//div[@class="entry-header"]/h1/text()')
-# 调用css选择器，提取praise_nums信息
+# 调用css选择器,提取praise_nums信息
 atricleItemLoader.add_css('praise_nums', '.vote-post-up h10::text')
-# 直接给字段赋值，尤其需要注意，不管赋值的数据是什么，都会自动转换成list类型
+# 直接给字段赋值,尤其需要注意,不管赋值的数据是什么,都会自动转换成list类型
 atricleItemLoader.add_value('url', response.url)
 
 # 将提取好的数据load出来
 articleInfo = atricleItemLoader.load_item()
-# 三种方式填充的数据，均为List类型
+# 三种方式填充的数据,均为List类型
 
-'''
+"""
 
 # Scrapy settings for BQG project
 #
@@ -176,31 +176,31 @@ articleInfo = atricleItemLoader.load_item()
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'BQG (+http://www.yourdomain.com)'
+# USER_AGENT = 'BQG (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 # ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+# CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 0.25
-#DOWNLOAD_DELAY = 3
+# DOWNLOAD_DELAY = 3
 
 # The download delay setting will honor only one of:
 # 决定最大值
-# 下面两个二选一，一个是针对域名设置并发，一个是针对IP设置并发
+# 下面两个二选一,一个是针对域名设置并发,一个是针对IP设置并发
 # CONCURRENT_REQUESTS_PER_IP = 10
 # CONCURRENT_REQUESTS_PER_DOMAIN = 10
 
 # Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+# COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
-#TELNETCONSOLE_ENABLED = False
+# TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
 # DEFAULT_REQUEST_HEADERS = {
@@ -236,21 +236,21 @@ articleInfo = atricleItemLoader.load_item()
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-#AUTOTHROTTLE_ENABLED = True
+# AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-#AUTOTHROTTLE_START_DELAY = 5
+# AUTOTHROTTLE_START_DELAY = 5
 # The maximum download delay to be set in case of high latencies
-#AUTOTHROTTLE_MAX_DELAY = 60
+# AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-#AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+# AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # Enable showing throttling stats for every response received:
-#AUTOTHROTTLE_DEBUG = False
+# AUTOTHROTTLE_DEBUG = False
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
-#HTTPCACHE_ENABLED = True
-#HTTPCACHE_EXPIRATION_SECS = 0
-#HTTPCACHE_DIR = 'httpcache'
-#HTTPCACHE_IGNORE_HTTP_CODES = []
-#HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+# HTTPCACHE_ENABLED = True
+# HTTPCACHE_EXPIRATION_SECS = 0
+# HTTPCACHE_DIR = 'httpcache'
+# HTTPCACHE_IGNORE_HTTP_CODES = []
+# HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'

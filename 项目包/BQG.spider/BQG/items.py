@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  :
 Develop      : VSCode
@@ -11,15 +10,14 @@ FilePath     : /项目包/BQG.spider/BQG/items.py
 LastEditTime : 2022-11-19 00:48:52
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 # Define here the models for your scraped items
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
 
-from scrapy import Item,Field
-#from scrapy.loader.processors import MapCompose, TakeFirst
+from scrapy import Field, Item
 
 
 class BqgItem(Item):
@@ -28,4 +26,3 @@ class BqgItem(Item):
     ZJNAME = Field()  # output_processor=TakeFirst())
     ZJTEXT = Field()
     ZJHERF = Field()
-    pass

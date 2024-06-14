@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 @Descripttion: 头部注释None
 @Develop: VSCode
 @Author: Even.Sand
@@ -14,7 +13,8 @@
 # Define your item pipelines here#
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-'''
+"""
+
 import codecs
 import csv
 import json
@@ -27,7 +27,7 @@ from twisted.enterprise import adbapi
 from xt_DAO.cfg import DB_CONFIG
 from xt_DAO.xt_Aiomysql import AioMysql
 from xt_DAO.xt_AiomysqlPool import execute_aiomysql
-from xt_DAO.xt_AsynSqlOrm import AsynSqlOrm as aiorm
+from xt_DAO.xt_AsynSqlOrm import AsynSqlOrm
 from xt_DAO.xt_chemyMeta import Base_Model
 from xt_DAO.xt_mysql import DbEngine as mysql
 from xt_DAO.xt_sqlalchemy import SqlConnection
@@ -49,19 +49,20 @@ def make_model(_BOOKNAME):
         ZJHERF = Column(VARCHAR(255), nullable=False)
 
         def __repr__(self):
-            return f"({self.ID},{self.BOOKNAME},{self.INDEX},{self.ZJNAME},{self.ZJHERF})"
+            return f'({self.ID},{self.BOOKNAME},{self.INDEX},{self.ZJNAME},{self.ZJHERF})'
 
     return table_model
 
 
-class PipelineToSqlTwisted(object):
+class PipelineToSqlTwisted:
     # https://blog.51cto.com/u_15127513/4786890
     @classmethod
     def from_settings(cls, settings):
         # #用于获取settings配置文件中的信息
         config = deepcopy(DB_CONFIG['TXbook'])
-        if 'type' in config: config.pop('type')
-        dbpool = adbapi.ConnectionPool("MySQLdb", **config)
+        if 'type' in config:
+            config.pop('type')
+        dbpool = adbapi.ConnectionPool('MySQLdb', **config)
         return cls(dbpool)
 
     def __init__(self, dbpool):
@@ -85,8 +86,7 @@ class PipelineToSqlTwisted(object):
         cursor.execute(insert_sql)
 
 
-class PipelineToAiomysqlpool(object):
-
+class PipelineToAiomysqlpool:
     def __init__(self):
         self.sql_list = []
 
@@ -110,8 +110,7 @@ class PipelineToAiomysqlpool(object):
         execute_aiomysql('TXbook', self.sql_list)
 
 
-class PipelineToAsynorm(object):
-
+class PipelineToAsynorm:
     def __init__(self):
         self.db = set()
         self.sqlconn = None
@@ -122,34 +121,35 @@ class PipelineToAsynorm(object):
             self.db.add(self._BOOKNAME)
             self.DBtable = make_model(self._BOOKNAME)
         if self.sqlconn is None:
-            self.sqlconn = aiorm(self.DBtable, 'TXbook', self._BOOKNAME)
+            self.sqlconn = AsynSqlOrm(self.DBtable, 'TXbook', self._BOOKNAME)
 
         self.sqlconn.insert(dict(item), autorun=False)
 
         return item
 
     def close_spider(self, spider):
-        self.sqlconn.run_in_loop()
-        del self.db
+        if self.sqlconn is not None:
+            self.sqlconn.run_in_loop()
+            del self.db
 
 
-class PipelineToAiomysql(object):
-
+class PipelineToAiomysql:
     def __init__(self):
         self.sql_list = []
         self.AioMysql = None
 
     def process_item(self, item, spider):
-        if self.AioMysql is None: self.AioMysql = AioMysql('TXbook', item['BOOKNAME'])
+        if self.AioMysql is None:
+            self.AioMysql = AioMysql('TXbook', item['BOOKNAME'])
         self.AioMysql.insert(dict(item), autorun=False)
         return item
 
     def close_spider(self, spider):
-        self.AioMysql.run_in_loop()
+        if self.AioMysql is not None:
+            self.AioMysql.run_in_loop()
 
 
-class PipelineToSqlalchemy(object):
-
+class PipelineToSqlalchemy:
     def __init__(self):
         self.db = set()
 
@@ -168,8 +168,7 @@ class PipelineToSqlalchemy(object):
         del self.db
 
 
-class PipelineToMysql(object):
-
+class PipelineToMysql:
     def __init__(self):
         self.conn = mysql('TXbook', 'MySQLdb')
         self.db = set()
@@ -198,7 +197,6 @@ class PipelineToMysql(object):
 
 
 class PipelineToTxt:
-
     def __init__(self):
         self.content_list = []
         self.file = {}
@@ -206,7 +204,7 @@ class PipelineToTxt:
     def process_item(self, item, spider):
         bookname = item['BOOKNAME']
         self.file[bookname] = open(f'{bookname}.txt', 'w', encoding='utf-8')
-        self.file[bookname].write(f"-----------------------{bookname}-----------------------\n")
+        self.file[bookname].write(f'-----------------------{bookname}-----------------------\n')
         self.content_list.append(item)
         return item
 
@@ -222,7 +220,6 @@ class PipelineToTxt:
 
 
 class PipelineToJson:
-
     def __init__(self):
         self.file = any
 
@@ -259,7 +256,6 @@ class PipelineToJsonExp:
 
 
 class PipelineToCsv:
-
     def __init__(self):
         self.file = any
 
@@ -275,14 +271,13 @@ class PipelineToCsv:
 
 
 class Pipeline2Csv:
-
     def __init__(self):
         self.file = any
         self.writer = any
 
     def process_item(self, item, spider):
         self.file = open(item['BOOKNAME'] + '_2.csv', 'a', newline='')
-        self.writer = csv.writer(self.file, dialect="excel")  # csv写法
+        self.writer = csv.writer(self.file, dialect='excel')  # csv写法
         self.writer.writerow([item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT']])
         return item
 
