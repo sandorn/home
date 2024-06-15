@@ -1,13 +1,12 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-12-08 11:35:18
-FilePath     : /xjLib/xt_Thread/futures.py
-LastEditTime : 2022-10-22 11:07:45
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2024-06-16 01:34:21
+FilePath     : /CODE/xjLib/xt_Thread/futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -22,61 +21,21 @@ def create_future_pool(base_class):
             super().__init__()
             self._future_tasks = []
 
-        def add_map(self, func, *args_iter):
-            self.future_generator = self.map(func, *args_iter)
-
-        def add_sub(self, func, *args_iter, callback=None):
-            self._future_tasks += [self.submit(func, *item) for item in args_iter]
-            if callback:
-                (t.add_done_callback(callback) for t in self._future_tasks)
+        def add_tasks(self, func, *args_iter, callback=None):
+            for item in args_iter:
+                future = self.submit(func, *item)
+                if callback:
+                    future.add_done_callback(callback)
+                self._future_tasks.append(future)
 
         def wait_completed(self):
-            """返回结果,有序"""
-            if self._future_tasks:
-                return self._wait_sub_completed()
-            else:
-                return self._wait_map_completed()
+            return self.__wait_completed()
 
-        def _wait_map_completed(self):
-            """返回结果,有序"""
-            self.shutdown(wait=True)  # 新增
-            return list(self.future_generator)
-
-        def _wait_sub_completed(self):
-            """等待线程池结束,返回全部结果,有序"""
-            self.shutdown(wait=True)
-            result_list = []
-            for future in self._future_tasks:
-                try:
-                    res = future.result()
-                    result_list.append(res)
-                except Exception as err:
-                    print('exception :', err)
-            return result_list
-
-        def get_sub_result(self):
+        def __wait_completed(self):
             """获取结果,无序"""
             self.shutdown(wait=True)
-            result_list = []
-            for future in as_completed(self._future_tasks):  # 迭代生成器,统一结束'
-                try:
-                    resp = future.result()
-                    result_list.append(resp)
-                except Exception as err:
-                    print('exception :', err)
+            result_list = [future.result() for future in as_completed(self._future_tasks)]
             return result_list
-
-        def submit(self, fn, *args, **kwargs):
-            """AI编写，未验证。提交任务,返回future对象"""
-            future = super().submit(fn, *args, **kwargs)
-            self._futures.append(future)
-            return future
-
-        def wait(self, timeout=None):
-            """AI编写，未验证。"""
-            self.shutdown(wait=True)
-            for future in as_completed(self._futures, timeout=timeout):
-                future.result()
 
     FuturePool.__name__ = base_class.__name__  # 保留原类的名字
     return FuturePool
@@ -94,9 +53,8 @@ class FuncInThreadPool:
         self.loop = asyncio.new_event_loop()
         self.executor = ThreadPoolExecutor(max_workers=32)
         self.func, self.args, self.kwargs = func, args, kwargs
-        self.start()
-
-    def start(self):
+        #     self.start()
+        # def start(self):
         return self.loop.run_until_complete(self._work())
 
     async def _work(self):

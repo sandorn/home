@@ -5,13 +5,12 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 11:36:53
-LastEditTime : 2024-06-13 21:44:15
+LastEditTime : 2024-06-16 02:17:27
 FilePath     : /CODE/xjLib/xt_Thread/Process.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-import os
 from multiprocessing import Manager, Process, Semaphore
 
 
@@ -52,40 +51,3 @@ def Do_CustomProcess(func, *args, **kwargs):
     _ = [CustomProcess(return_dict, sem, func, *args_iter, **kwargs) for args_iter in list(zip(*args))]
     CustomProcess.wait_completed()
     return return_dict.values()
-
-
-if __name__ == '__main__':
-    from xt_File import savefile
-    from xt_Ls_Bqg import get_contents, get_download_url
-
-    def Custom():
-        url = 'https://www.biqukan8.cc/0_288/'
-        bookname, urls, titles = Do_CustomProcess(get_download_url, [url])[0]
-        res_list = Do_CustomProcess(get_contents, list(range(10)), urls[:10])
-        res_list.sort(key=lambda x: x[0])  # #排序
-        files = os.path.split(__file__)[-1].split('.')[0]
-        savefile(f'{files}&{bookname}&Do_CustomProcess.txt', res_list, br='\n')
-
-    Custom()  # 用时: 14s[10]
-
-    def Poolapply_async():
-        from multiprocessing import Pool
-
-        url = 'https://www.biqukan8.cc/0_288/'
-        bookname, urls, titles = Do_CustomProcess(get_download_url, [url])[0]
-
-        p = Pool(32)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
-        res_l = []
-
-        for i, url in enumerate(urls[:10]):
-            res = p.apply_async(get_contents, args=(i, url))  # 异步执行任务
-            res_l.append(res)
-        p.close()
-        p.join()
-        res_list = [res.get() for res in res_l]
-        res_list.sort(key=lambda x: x[0])  # #排序
-        # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
-        files = os.path.split(__file__)[-1].split('.')[0]
-        savefile(f'{files}&{bookname}&Poolapply_async.txt', res_list, br='\n')
-
-    Poolapply_async()  # 用时: 29s[10] 60s

@@ -35,7 +35,7 @@ def thr_sub(url):
     mypool = ThreadPool()
     bookname, urls, _ = get_download_url(url)
     args = [[i, u] for i, u in enumerate(urls[:20])]
-    mypool.add_sub(get_contents, *args)
+    mypool.add_tasks(get_contents, *args)
     text_list = mypool.wait_completed()
     # text_list = 结果处理(resps)
     text_list.sort(key=lambda x: x[0])  # #排序
@@ -46,14 +46,14 @@ def thr_sub(url):
 @fn_timer
 def multpool_thrsub(urls):
     mypool = ProcessPool()
-    mypool.add_map(thr_sub, urls)
+    mypool.add_tasks(thr_sub, urls)
     mypool.wait_completed()
 
 
 @fn_timer
 def thrPool_thrsub(urls):
     mypool = ThreadPool()
-    mypool.add_map(thr_sub, urls)
+    mypool.add_tasks(thr_sub, urls)
     mypool.wait_completed()
 
 
@@ -63,6 +63,6 @@ if __name__ == '__main__':
     ]
 
     # ahttp_All(urls[0])
-    # thr_sub(urls[0])
-    # multpool_thrsub(urls)  # 68sec
-    thrPool_thrsub(urls)  # 148sec
+    thr_sub(urls[0])
+    # multpool_thrsub(urls)
+    # thrPool_thrsub(urls)
