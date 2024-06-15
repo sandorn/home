@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 ==============================================================
 Description  :
@@ -35,15 +34,13 @@ def silence_event_loop_closed(func):
         try:
             return func(self, *args, **kwargs)
         except RuntimeError as e:
-            if str(e) != "Event loop is closed":
+            if str(e) != 'Event loop is closed':
                 raise
 
     return wrapper
 
 
-_ProactorBasePipeTransport.__del__ = silence_event_loop_closed(
-    _ProactorBasePipeTransport.__del__
-)
+_ProactorBasePipeTransport.__del__ = silence_event_loop_closed(_ProactorBasePipeTransport.__del__)
 
 
 def future_wrapper(func):
@@ -97,27 +94,23 @@ class AioCrawl:
     def __del__(self):
         self.loop.close()
 
-    async def _task_run(self, url, method="GET", index=None, *args, **kwargs):
+    async def _task_run(self, url, method='GET', index=None, *args, **kwargs):
         """运行任务"""
-        kwargs.setdefault("headers", Head().randua)
-        kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
-        cookies = kwargs.pop("cookies", {})
-        callback = kwargs.pop("callback", None)
+        kwargs.setdefault('headers', Head().randua)
+        kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))
+        cookies = kwargs.pop('cookies', {})
+        callback = kwargs.pop('callback', None)
 
         @TRETRY
         async def __fetch():
-            async with ClientSession(
-                cookies=cookies, connector=TCPConnector(ssl=False)
-            ) as session, session.request(
-                method, url, raise_for_status=True, *args, **kwargs
-            ) as response:
+            async with ClientSession(cookies=cookies, connector=TCPConnector(ssl=False)) as session, session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
                 content = await response.read()
                 return response, content
 
         try:
             response, content = await __fetch()
         except Exception as err:
-            print(f"AioCrawl_task_run:{self} | RetryErr:{err!r}")
+            print(f'AioCrawl_task_run:{self} | RetryErr:{err!r}')
             return err
         else:
             index = index or id(url)
@@ -126,23 +119,21 @@ class AioCrawl:
                 result = callback(result)
             return result
 
-    async def _issue_tasks(self, url_list, method="GET", *args, **kwargs):
+    async def _issue_tasks(self, url_list, method='GET', *args, **kwargs):
         """分发任务"""
-        callback = kwargs.pop("fu_callback", None)
+        callback = kwargs.pop('fu_callback', None)
 
         for index, url in enumerate(url_list, 1):
             if not isinstance(url, str):
                 continue
-            task = asyncio.create_task(
-                self._task_run(url, method=method, index=index, *args, **kwargs)
-            )
+            task = asyncio.create_task(self._task_run(url, method=method, index=index, *args, **kwargs))
             if callback:
                 task.add_done_callback(callback)
             self.future_list.append(task)
 
         return await asyncio.gather(*self.future_list, return_exceptions=True)
 
-    def add_tasks(self, url_list, method="GET", *args, **kwargs):
+    def add_tasks(self, url_list, method='GET', *args, **kwargs):
         """添加网址列表,异步并发爬虫"""
         _coroutine = self._issue_tasks(url_list, method=method, *args, **kwargs)
         return asyncio.run(_coroutine)
@@ -172,7 +163,7 @@ class AioCrawl:
     def wait_completed(self):
         while True:
             tmp = [fu._state for fu in self.future_list]
-            if "PENDING" in tmp:
+            if 'PENDING' in tmp:
                 continue
             else:
                 break
@@ -180,22 +171,22 @@ class AioCrawl:
         return self.__get_result()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     ...
     # $add_tasks#######################################################################
-    bb = AioCrawl()
-    bb.add_tasks(["https://httpbin.org/get"] * 3)
-    print(111111, bb.wait_completed())
-    bb.add_tasks(["https://httpbin.org/post"] * 3, method="post")
-    print(222222, bb.wait_completed())
+    # bb = AioCrawl()
+    # bb.add_tasks(['https://httpbin.org/get'] * 3)
+    # print(111111, bb.wait_completed())
+    # bb.add_tasks(['https://httpbin.org/post'] * 3, method='post')
+    # print(222222, bb.wait_completed())
     # $add_func########################################################
-    from xt_Requests import get_wraps
+    # from xt_Requests import get_wraps
 
-    aa = AioCrawl()
-    aa.add_func(get_wraps, ["https://httpbin.org/get"] * 3)
-    print(333333, aa.wait_completed())
-    aa.add_tasks(["https://httpbin.org/post"] * 3, method="post")
-    print(444444, aa.wait_completed())
+    # aa = AioCrawl()
+    # aa.add_func(get_wraps, ['https://httpbin.org/get'] * 3)
+    # print(333333, aa.wait_completed())
+    # aa.add_tasks(['https://httpbin.org/post'] * 3, method='post')
+    # print(444444, aa.wait_completed())
     # $装饰器##################################################################
     from xt_Requests import get_wraps
 
@@ -203,19 +194,17 @@ if __name__ == "__main__":
     def get_html(url):
         return get_wraps(url)
 
-    print(555555, get_html("https://httpbin.org/get"))
+    print(555555, get_html('https://httpbin.org/get'))
 
     @asyn_run_wrapper
     async def get_a_html(url):
         return get_wraps(url)
 
-    print(666666, get_a_html("https://httpbin.org/get"))
+    print(666666, get_a_html('https://httpbin.org/get'))
 
-    @asyn_run_wrapper
-    async def get_message():
-        async with ClientSession() as session, session.get(
-            "http://httpbin.org/headers"
-        ) as response:
-            return await response.text()
+    # @asyn_run_wrapper
+    # async def get_message():
+    #     async with ClientSession() as session, session.get('http://httpbin.org/headers') as response:
+    #         return await response.text()
 
-    print(777777, get_message())
+    # print(777777, get_message())
