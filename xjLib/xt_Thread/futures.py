@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 ==============================================================
 Description  :
@@ -29,7 +28,7 @@ def futuresPool(_cls):
         def add_sub(self, func, *args_iter, callback=None):
             self._future_tasks += [self.submit(func, *item) for item in args_iter]
             if callback:
-                map(lambda t: t.add_done_callback(callback), self._future_tasks)
+                (t.add_done_callback(callback) for t in self._future_tasks)
 
         def wait_completed(self):
             """返回结果,有序"""
@@ -52,7 +51,7 @@ def futuresPool(_cls):
                     res = future.result()
                     result_list.append(res)
                 except Exception as err:
-                    print("exception :", err)
+                    print('exception :', err)
             return result_list
 
         def get_sub_result(self):
@@ -64,7 +63,7 @@ def futuresPool(_cls):
                     resp = future.result()
                     result_list.append(resp)
                 except Exception as err:
-                    print("exception :", err)
+                    print('exception :', err)
 
             return result_list
 
@@ -86,23 +85,17 @@ class FuncInThreadPool:
         self.func, self.args, self.kwargs = func, args, kwargs
         self.start()
 
-    async def __work(self):
-        __args = list(zip(*self.args))
-        self.future_list = [
-            self.loop.run_in_executor(self.executor, self.func, *arg, **self.kwargs)
-            for arg in __args
-        ]
-        await asyncio.gather(*self.future_list)
-
-        self.result = [fu.result() for fu in self.future_list]
-        return self.result
-
     def start(self):
-        return self.loop.run_until_complete(self.__work())
+        return self.loop.run_until_complete(self._work())
+
+    async def _work(self):
+        _args = list(zip(*self.args))
+        self.result = await asyncio.gather(*[self.loop.run_in_executor(self.executor, self.func, *arg, **self.kwargs) for arg in _args])
+        # return self.result
 
 
-if __name__ == "__main__":
-    from xt_Requests import get_tretry
+if __name__ == '__main__':
+    from xt_Requests import get
 
-    res = FuncInThreadPool(get_tretry, ["http://httpbin.org/get"] * 3)
+    res = FuncInThreadPool(get, ['http://httpbin.org/get'] * 3)
     print(res.result)

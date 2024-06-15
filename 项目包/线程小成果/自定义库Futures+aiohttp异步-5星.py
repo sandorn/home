@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2024-06-14 16:08:38
-FilePath     : /CODE/项目包/线程小成果/自定义库Futures+aiohttp异步-7星.py
+LastEditTime : 2024-06-15 20:24:01
+FilePath     : /CODE/项目包/线程小成果/自定义库Futures+aiohttp异步-5星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -21,7 +21,6 @@ from xt_Thread import ProcessPool
 from xt_Time import fn_timer
 
 
-@fn_timer
 def Aio_ahttp(bookname, urls):
     resps = ahttpGetAll(urls)
     texts = 结果处理(resps)
@@ -29,7 +28,6 @@ def Aio_ahttp(bookname, urls):
     savefile(f'{files}&{bookname}Aio_ahttp.txt', texts, br='\n')
 
 
-@fn_timer
 def Aio_feach_run(bookname, urls):
     myaio = AioCrawl()
     myaio.add_tasks(urls)
@@ -40,18 +38,18 @@ def Aio_feach_run(bookname, urls):
     savefile(f'{files}&{bookname}Aio_feach_run.txt', texts, br='\n')
 
 
+@fn_timer
 def pool(url_list, func):
     mypool = ProcessPool()
 
     for url in url_list:
         bookname, urls, _ = get_download_url(url)
-        mypool.add_sub(func, [bookname, urls])
+        mypool.add_sub(func, [bookname, urls[:100]])
     mypool.wait_completed()
 
 
 if __name__ == '__main__':
-    url_list = [
-        'https://www.biquge11.cc/read/11159/',
-    ]
-    # pool(url_list, Aio_ahttp)  # 卡死
-    pool(url_list[:1], Aio_feach_run)  # AioCrawl 12s
+    url_list = ['https://www.bigee.cc/book/6909/']
+    # 'https://www.biquge11.cc/read/11159/',
+    pool(url_list[:100], Aio_ahttp)  # 1线程出错后崩溃
+    # pool(url_list, Aio_feach_run)

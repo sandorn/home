@@ -195,7 +195,7 @@ if __name__ == '__main__':
     print(res.dom.xpath('//title/text()'))
     print(res.html.xpath('//title/text()'))
     print(res.element.xpath('//title/text()'))
-    print(res.pyquery('title').text())
+    # print(res.pyquery('title').text())
     """
     ###############################################################
     # allow_redirects=False #取消重定向

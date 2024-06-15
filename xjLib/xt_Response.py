@@ -39,8 +39,8 @@ class htmlResponse(item_Mixin):
     def __repr__(self):
         return f'<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>'
 
-    def __str__(self):
-        return self.__repr__()
+    # def __str__(self):
+    #     return self.__repr__()
 
     def __bool__(self):
         return self.status == 200
@@ -130,21 +130,18 @@ class htmlResponse(item_Mixin):
     def pyquery(self):
         return PyQuery(self.html)  # , parser='xml')
 
-    def xpath(self, selectors: str | list | tuple = ''):
+    def xpath(self, selectors: str | list | tuple = '') -> list:
         """
         在元素上执行XPath选择。
         参数selectors: XPath选择器,可以是字符串或字符串的列表/元组。
         返回值: 选择的元素列表。
         """
-        if isinstance(selectors, str) and not selectors.strip():
-            return []
+        if isinstance(selectors, str):
+            selectors = [selectors] if selectors.strip() else []
+        elif isinstance(selectors, (list, tuple)):
+            selectors = [selector for selector in selectors if isinstance(selector, str) and selector.strip()]
 
-        if isinstance(selectors, (str, list, tuple)):
-            selectors = selectors if isinstance(selectors, (list, tuple)) else [selectors]
-
-            return [self.element.xpath(selector) for selector in selectors if selector.strip()]
-
-        return []
+        return [self.element.xpath(selector) for selector in selectors]
 
     @property
     def ctext(self):

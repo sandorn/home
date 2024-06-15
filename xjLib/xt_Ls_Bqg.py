@@ -11,9 +11,10 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from functools import partial
+
 from xt_Ahttp import ahttpGet
 from xt_Requests import get
-from xt_Response import htmlResponse
 from xt_String import Re_Sub, Str_Clean, Str_Replace
 
 
@@ -100,7 +101,6 @@ def 结果处理(resps):
         _title, _showtext = resp.xpath(_xpath)
         title = ''.join(_title).replace('\u3000', ' ').replace('\xa0', ' ').replace('\u00a0', ' ')
         content = clean_Content(_showtext)
-        # if len(content) < 10: print(resp, '||||||||||||||||||||||||||', resp.text)
         _texts.append([resp.index, title, content])
 
     _texts.sort(key=lambda x: x[0])
@@ -109,8 +109,7 @@ def 结果处理(resps):
 
 def get_download_url(target):
     resp = get(target)
-    assert isinstance(resp, htmlResponse)
-    # #pyquery
+    # pyquery
     # pr = resp.pyquery('.listmain dl dd:gt(11)').children() # 从第二个dt开始，获取后面所有的兄弟节点
     # pr = res.pyquery('dt').eq(1).nextAll()  # 从第二个dt开始，获取后面所有的兄弟节点
     # bookname = resp.pyquery('h2').text()
@@ -120,49 +119,40 @@ def get_download_url(target):
     _xpath = (
         # '//meta[@property="og:novel:book_name"]/@content',
         '//h1/text()',
-        '//dt[1]/following-sibling::dd/a/@href',
-        '//dt[1]/following-sibling::dd/a/text()',
+        "//dl/span/preceding-sibling::dd[not(@class='more pc_none')]/a/@href",
+        '//dl/span/dd/a/@href',
+        # '//dt[1]/following-sibling::dd/a/@href',
+        # '//dt[1]/following-sibling::dd/a/text()',
         # '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href',
     )
-    bookname, temp_urls, titles = resp.xpath(_xpath)
+    bookname, temp_urls, temp_urls2 = resp.xpath(_xpath)
+    temp_urls += temp_urls2
     bookname = bookname[0]
     urls = ['/'.join(target.split('/')[:-3]) + item for item in temp_urls]  # 章节链接
-    return bookname, urls, titles
+    return bookname, urls, None
 
 
-def get_contents(index, target):
-    resp = get(target)
-    assert isinstance(resp, htmlResponse)
+def get_contents(index, target, fn=get):
+    resp = fn(target)
 
-    # #pyquery
+    # pyquery
     title = resp.pyquery('h1').text()
     content = resp.pyquery('#chaptercontent').text()
-
-    # _xpath = ('//h1/text()','//*[@id="chaptercontent"]/text()')
-    # _title, content = resp.xpath(_xpath)
+    # _xpath = ['//h1/text()', '//*[@id="chaptercontent"]/text()']
+    # title, content = resp.xpath(_xpath)
 
     title = ''.join(Str_Clean(''.join(title), ['\u3000', '\xa0', '\u00a0']))
     content = clean_Content(content).strip()
     return [index, title, content]
 
 
-def ahttp_get_contents(args):
-    index, target = args
-    resp = ahttpGet(target)
-    assert isinstance(resp, htmlResponse)
-    _xpath = [
-        '//h1/text()',
-        '//*[@id="chaptercontent"]/text()',
-    ]
-    title, content = resp.xpath(_xpath)
-    title = ''.join(Str_Clean(''.join(title), ['\u3000', '\xa0', '\u00a0']))
-    content = clean_Content(content)
-    return [index, title, content]
+ahttp_get_contents = partial(get_contents, fn=ahttpGet)
 
 
 if __name__ == '__main__':
-    url = 'https://www.biquge11.cc/read/11159/'
+    url = 'https://www.bigee.cc/book/6909/'
+    # 'https://www.biquge11.cc/read/11159/'
     bookname, urls, titles = get_download_url(url)
-    print(bookname, urls[0], titles[0])
+    # print(bookname, urls, titles)
     res = get_contents(0, urls[0])
     print(res)
