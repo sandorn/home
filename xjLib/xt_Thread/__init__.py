@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
@@ -10,9 +10,9 @@ LastEditTime : 2023-01-13 23:33:24
 FilePath     : /CODE/xjLib/xt_Thread/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
+
 from .futures import FuncInThreadPool, ProcessPool, ThreadPool
-from .manage import WorkManager, thread_pool
 from .Process import CustomProcess, Do_CustomProcess
 from .Singleon import (
     Singleton_Meta,

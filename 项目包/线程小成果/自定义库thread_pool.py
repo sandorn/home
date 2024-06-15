@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  :
 Develop      : VSCode
@@ -11,7 +10,7 @@ LastEditTime : 2023-01-13 18:42:56
 FilePath     : /项目包/线程小成果/自定义库thread_pool.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 import os
 
@@ -32,9 +31,9 @@ def get_contents(index, target):
 
     assert isinstance(resp, htmlResponse)
     _title = resp.pyquery('h1').text()
-    _showtext = resp.pyquery('#content').text()
+    _showtext = resp.pyquery('#chaptercontent').text()
 
-    title = Str_Replace("".join(_title), [(u'\u3000', u' '), (u'\xa0', u' '), (u'\u00a0', u' ')])
+    title = Str_Replace(''.join(_title), [('\u3000', ' '), ('\xa0', ' '), ('\u00a0', ' ')])
     content = clean_Content(_showtext)
     return [index, title, content]
 
@@ -42,14 +41,13 @@ def get_contents(index, target):
 @fn_timer
 def main(target):
     bookname, urls, _ = get_download_url(target)
-    for index, url in enumerate(urls):
+    for index, url in enumerate(urls[:20]):
         get_contents(index, url)
     text_list = pool.wait_completed()
     text_list.sort(key=lambda x: x[0])  # #排序
-    files = os.path.split(__file__)[-1].split(".")[0]
+    files = os.path.split(__file__)[-1].split('.')[0]
     savefile(f'{files}&{bookname}&thread_pool.txt', text_list, br='\n')
 
 
-if __name__ == "__main__":
-
-    main('https://www.biqukan8.cc/0_288/')
+if __name__ == '__main__':
+    main('https://www.bigee.cc/book/6909/')
