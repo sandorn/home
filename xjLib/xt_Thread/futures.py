@@ -16,8 +16,8 @@ import asyncio
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
 
-def futuresPool(_cls):
-    class FuturesPoolCls(_cls):
+def create_future_pool(base_class):
+    class FuturePool(base_class):
         def __init__(self):
             super().__init__()
             self._future_tasks = []
@@ -64,16 +64,27 @@ def futuresPool(_cls):
                     result_list.append(resp)
                 except Exception as err:
                     print('exception :', err)
-
             return result_list
 
-    FuturesPoolCls.__name__ = _cls.__name__  # 保留原类的名字
-    return FuturesPoolCls
+        def submit(self, fn, *args, **kwargs):
+            """AI编写，未验证。提交任务,返回future对象"""
+            future = super().submit(fn, *args, **kwargs)
+            self._futures.append(future)
+            return future
+
+        def wait(self, timeout=None):
+            """AI编写，未验证。"""
+            self.shutdown(wait=True)
+            for future in as_completed(self._futures, timeout=timeout):
+                future.result()
+
+    FuturePool.__name__ = base_class.__name__  # 保留原类的名字
+    return FuturePool
 
 
 # #使用类工厂,动态生成基于线程或进程的类
-ThreadPool = futuresPool(ThreadPoolExecutor)
-ProcessPool = futuresPool(ProcessPoolExecutor)
+ThreadPool = create_future_pool(ThreadPoolExecutor)
+ProcessPool = create_future_pool(ProcessPoolExecutor)
 
 
 class FuncInThreadPool:
