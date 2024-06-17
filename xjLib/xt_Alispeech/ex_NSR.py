@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  :
 Develop      : VSCode
@@ -11,7 +10,7 @@ FilePath     : /xjLib/xt_Alispeech/ex_NSR.py
 LastEditTime : 2022-11-28 17:23:18
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 from threading import Semaphore, Thread
 
@@ -26,7 +25,8 @@ Sem = Semaphore(2)  # 限制线程并发数
 
 
 class NSR(on_state_cls):
-    '''语音转文字  NlsSpeechRecognizer'''
+    """语音转文字  NlsSpeechRecognizer"""
+
     all_Thread = []
     result_dict = {}
 
@@ -37,7 +37,7 @@ class NSR(on_state_cls):
         self.start()
 
     def start(self):
-        self.__data = open(self.__file_name, "rb").read()
+        self.__data = open(self.__file_name, 'rb').read()
         self.__th.start()
         self.all_Thread.append(self.__th)
 
@@ -81,7 +81,7 @@ class NSR(on_state_cls):
             print(f'{self.__id}: session start')
 
             _NSR_.start(
-                aformat="pcm",
+                aformat='pcm',
                 enable_intermediate_result=True,
                 enable_punctuation_prediction=True,
                 enable_inverse_text_normalization=True,
@@ -92,9 +92,7 @@ class NSR(on_state_cls):
                 ping_timeout=None,
                 ex={},
             )
-            slices = [
-                self.__data[i:i + 640] for i in range(0, len(self.__data), 640)
-            ]
+            slices = [self.__data[i : i + 640] for i in range(0, len(self.__data), 640)]
             # slices = zip(*(iter(self.__data), ) * 640)
             for __s in slices:
                 _NSR_.send_audio(bytes(__s))
@@ -109,15 +107,13 @@ def TODO_NSR(_in_file_list):
     elif isinstance(_in_file_list, list):
         _ = [NSR(file, index + 1) for index, file in enumerate(_in_file_list)]
     else:
-        raise TypeError(
-            f"TODO_NSR: {_in_file_list} is not a file | file list.")
+        raise TypeError(f'TODO_NSR: {_in_file_list} is not a file | file list.')
 
     res_list, dictMerged = NSR.wait_completed()
     return res_list, dictMerged
 
 
 if __name__ == '__main__':
-
     _in_file_list = [
         'D:/11.wav',
     ]

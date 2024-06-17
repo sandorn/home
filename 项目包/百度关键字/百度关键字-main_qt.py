@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 @Descripttion: 头部注释None
 @Develop: VSCode
 @Author: Even.Sand
@@ -10,14 +9,15 @@
 @Date: 2019-05-21 14:40:30
 #LastEditors  : Please set LastEditors
 #LastEditTime : 2020-06-30 15:50:19
-'''
+"""
+
 import sys
 import time
 from urllib.parse import unquote
 
 from baidu_key_UI import Ui_MainWindow
-from PyQt5.QtCore import QEventLoop, Qt, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QFileDialog, QTableWidgetItem, qApp
+from PyQt6.QtCore import pyqtSignal, pyqtSlot
+from PyQt6.QtWidgets import QApplication, QFileDialog, QTableWidgetItem
 from xt_Ahttp import ahttpGetAll
 from xt_File import savefile
 from xt_Requests import get
@@ -40,7 +40,7 @@ class MyWindow(Ui_MainWindow):
 
     def step_valueChanged(self):
         self.pbar.setValue(int(self.step))
-        self.label.setText(f"进度：{self.step}/{self.pbar.maximum()}")
+        self.label.setText(f'进度：{self.step}/{self.pbar.maximum()}')
 
     @EventLoop
     def update(self, item):
@@ -112,7 +112,7 @@ class MyWindow(Ui_MainWindow):
         # 构建urls
         pages = self.lineEdit.value()
 
-        self.urls = [f"https://www.baidu.com/s?wd={key}&pn={page * 10}" for key in self.keys for page in range(pages)]
+        self.urls = [f'https://www.baidu.com/s?wd={key}&pn={page * 10}' for key in self.keys for page in range(pages)]
 
         self.status_bar.showMessage('抓取百度检索信息......')
 
@@ -136,16 +136,16 @@ class MyWindow(Ui_MainWindow):
 
         for response in resp_list:
             url = str(response.url)
-            key = unquote(url.split("?")[1].split("&")[0].split('=')[1]).replace('+', ' ')
-            pages = url.split("?")[1].split("&")[1].split('=')[1]
+            key = unquote(url.split('?')[1].split('&')[0].split('=')[1]).replace('+', ' ')
+            pages = url.split('?')[1].split('&')[1].split('=')[1]
 
-            搜索结果 = response.element.xpath("//h3/a")
+            搜索结果 = response.element.xpath('//h3/a')
             for index, each in enumerate(搜索结果):
                 # #获取显示字符和网页链接
-                href = each.xpath("@href")[0]
-                title = each.xpath("string(.)").strip()
+                href = each.xpath('@href')[0]
+                title = each.xpath('string(.)').strip()
                 # # 剔除百度自营内容
-                if '百度' in title or not href.startswith('http') or href.startswith("http://www.baidu.com/baidu.php?"):
+                if '百度' in title or not href.startswith('http') or href.startswith('http://www.baidu.com/baidu.php?'):
                     continue
 
                 # #获取真实网址
@@ -175,7 +175,7 @@ class MyWindow(Ui_MainWindow):
         self.enable_actions()  # 启用动作按钮
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = QApplication(sys.argv)
     w = MyWindow()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

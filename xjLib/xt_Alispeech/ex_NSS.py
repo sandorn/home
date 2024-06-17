@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
@@ -10,7 +9,7 @@ LastEditTime : 2023-10-20 10:22:36
 FilePath     : /CODE/xjLib/xt_Alispeech/ex_NSS.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 import os
 from threading import Semaphore, Thread
@@ -29,7 +28,8 @@ Sem = Semaphore(2)  # 限制线程并发数
 
 
 class NSS(on_state_cls):
-    '''文字转语音  NlsSpeechSynthesizer'''
+    """文字转语音  NlsSpeechSynthesizer"""
+
     all_Thread = []  # 类属性或类变量,实例公用
     data_list = []  # 类属性或类变量,实例公用
 
@@ -44,7 +44,7 @@ class NSS(on_state_cls):
         self.start()
 
     def start(self):
-        self.__f = open(self.__file_name, "wb")  # #无文件则创建
+        self.__f = open(self.__file_name, 'wb')  # #无文件则创建
         self.__th.start()
         self.all_Thread.append(self.__th)
 
@@ -70,7 +70,7 @@ class NSS(on_state_cls):
             self.__f.write(data)
             QThread.msleep(100)
         except Exception as e:
-            print("write data failed:", e)
+            print('write data failed:', e)
 
     def _on_completed(self, message, *args):
         res = [self.__id, self.__file_name]
@@ -82,7 +82,7 @@ class NSS(on_state_cls):
 
     def __thread_run(self):
         with Sem:
-            print(f"thread {self.__id}: start..")
+            print(f'thread {self.__id}: start..')
 
             _NSS_ = nls.NlsSpeechSynthesizer(
                 token=_ACCESS_TOKEN,
@@ -125,16 +125,14 @@ def TODO_TTS(_in_text, readonly=False, merge=False, **kwargs):
     assert isinstance(_in_text, list)
 
     # $运行主程序
-    _ = [
-        NSS(text, tid=index + 1, args=args)
-        for index, text in enumerate(_in_text)
-    ]
+    _ = [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
     voice_data_list = NSS.wait_completed()
 
     # $处理结果
     voice_data_list.sort(key=lambda x: x[0])
 
-    if readonly: return get_voice_data(voice_data_list)
+    if readonly:
+        return get_voice_data(voice_data_list)
     elif merge:
         return merge_sound_file(voice_data_list, args=args)
     else:
@@ -142,16 +140,16 @@ def TODO_TTS(_in_text, readonly=False, merge=False, **kwargs):
 
 
 if __name__ == '__main__':
-
-    _text = '''
+    _text = """
     我家过亿的资产全是借来的
     我爸每天都会向亲朋好友借几十万块钱
-    '''
+    """
 
     def read():
         out_file = TODO_TTS(_text, readonly=True, aformat='wav')
 
-        from xt_Alispeech.Play import QThread, Qthread_play, Thread_play
+        from xt_Alispeech.Play import Thread_play
+
         for oufile in out_file:
             # task = Qthread_play(oufile[1])
             # task.join()
