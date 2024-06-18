@@ -100,13 +100,13 @@ def main_map(max, bookname, urls):
 if __name__ == '__main__':
     url = 'https://www.bigee.cc/book/6909/'
     bookname, urls, _ = get_download_url(url)
-    urls = urls[:20]
-    main_map(60, bookname, urls)
-    main_wait(200, bookname, urls)
-    main_completed(32, bookname, urls)
-    main_callback(200, bookname, urls)
+    urls = urls
+    # main_map(60, bookname, urls)
+    main_wait(200, bookname, urls[:20])
+    # main_completed(32, bookname, urls)
+    # main_callback(200, bookname, urls)
 
-"""
+r"""
 1、建立线程池:executor = ThreadPoolExecutor(max_workers= )
 2、提交执行函数到线程池:task = executor.submit(func,(args))
 3、获取执行结果:task.result()

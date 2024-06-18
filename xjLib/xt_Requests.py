@@ -17,6 +17,7 @@ from functools import partial
 import requests
 from tenacity import retry, stop_after_attempt, wait_random
 from xt_Head import MYHEAD, RETRY_TIME, TIMEOUT, Head
+from xt_Log import log_decorator
 from xt_Response import htmlResponse
 from xt_Tools import try_except_wraps
 
@@ -33,6 +34,7 @@ def _setKw(kwargs):
     return kwargs
 
 
+@log_decorator
 def _request_parse(method, url, *args, **kwargs):
     """自实现重试"""
     attempts = RETRY_TIME
@@ -45,7 +47,6 @@ def _request_parse(method, url, *args, **kwargs):
         try:
             func_exc = False
             response = requests.request(method, url, *args, **kwargs)
-            response.raise_for_status()
             assert response.status_code in [200, 201, 302]
         except Exception as err:
             attempts -= 1
@@ -55,14 +56,14 @@ def _request_parse(method, url, *args, **kwargs):
         else:
             # #返回正确结果
             result = htmlResponse(response)
-            if callable(callback):
-                result = callback(result)
-            return result
+            return callback(result) if callable(callback) else result
+
     # #错误返回None
     if func_exc:
         return ret_err
 
 
+@log_decorator
 def _request_wraps(method, url, *args, **kwargs):
     """利用自编重试装饰器,实现重试"""
     kwargs = _setKw(kwargs)
@@ -71,14 +72,14 @@ def _request_wraps(method, url, *args, **kwargs):
     @try_except_wraps()
     def __fetch_run():
         response = requests.request(method, url, *args, **kwargs)
-        response.raise_for_status()
         return response
 
     response = __fetch_run()
     result = htmlResponse(response)
-    return callback(result) if callback else result
+    return callback(result) if callable(callback) else result
 
 
+@log_decorator
 def _request_tretry(method, url, *args, **kwargs):
     """利用TRETRY三方库实现重试"""
     kwargs = _setKw(kwargs)
@@ -87,13 +88,13 @@ def _request_tretry(method, url, *args, **kwargs):
     @TRETRY
     def __fetch_run():
         response = requests.request(method, url, *args, **kwargs)
-        response.raise_for_status()
+        # response.raise_for_status()
         return response
 
     try:
         response = __fetch_run()
         result = htmlResponse(response)
-        return callback(result) if callback else result
+        return callback(result) if callable(callback) else result
     except Exception as err:
         print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
         return err
@@ -116,10 +117,10 @@ class SessionClient:
         self.sson = requests.session()
         self.response = None
 
+    @log_decorator
     @TRETRY
     def _request(self):
         self.response = self.sson.request(self.method, self.url, *self.args, **self.kwargs)
-        self.response.raise_for_status()
         return self.response
 
     def start_fetch_run(self):
@@ -129,12 +130,9 @@ class SessionClient:
             print(f'SessionClient request:<{self.url}>; Err:{err!r}')
             return None
         else:
-            # assert isinstance(self.response, requests.Response)
             self.update_cookies(self.response.cookies)
             result = htmlResponse(self.response)
-            if callable(self.callback):
-                result = self.callback(result)
-            return result
+            return self.callback(result) if callable(self.callback) else result
 
     def __create_params(self, method, *args, **kwargs):
         self.method = method  # 保存请求方法

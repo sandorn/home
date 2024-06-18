@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-14 23:30:44
-LastEditTime : 2024-06-15 19:52:46
+LastEditTime : 2024-06-18 17:44:07
 FilePath     : /CODE/项目包/线程小成果/自定义库Ahttp-Aiocarw异步-6星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -34,11 +34,10 @@ def Aio_feach_run(bookname, urls):
 
 
 def handle_back_ait(resp):
-    if not isinstance(resp, htmlResponse) and resp is not None:
-        return [resp.text]
+    if not isinstance(resp, htmlResponse):
+        return [0, '', '']
 
     index = resp.index
-
     _title = resp.pyquery('h1').text()
     title = _title.strip('\r\n').replace('\u3000', ' ').replace('\xa0', ' ')
     _showtext = resp.pyquery('#chaptercontent').text()
@@ -59,8 +58,6 @@ def Aio_feach_back(bookname, urls):
 @fn_timer
 def ahttp_run(bookname, urls):
     texts = ahttpGetAll(urls, callback=handle_back_ait)
-    # #callback=handle_resp处理以后的结果
-    texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split('.')[0]
     savefile(f'{files}&{bookname}ahttp_run.txt', texts, br='\n')
 
@@ -89,9 +86,8 @@ if __name__ == '__main__':
     url = 'https://www.bigee.cc/book/6909/'
     # 'https://www.biquge11.cc/read/11159/'
     bookname, urls, _ = get_download_url(url)
-    urls = urls[:20]
     # Aio_feach_run(bookname, urls)
     # Aio_feach_back(bookname, urls)
     # ahttp_run(bookname, urls)
     # Aio_add_func(bookname, urls)
-    func_ThreadPool(bookname, urls)
+    # func_ThreadPool(bookname, urls)

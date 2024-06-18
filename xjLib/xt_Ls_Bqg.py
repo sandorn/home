@@ -15,6 +15,7 @@ from functools import partial
 
 from xt_Ahttp import ahttpGet
 from xt_Requests import get
+from xt_Response import htmlResponse
 from xt_String import Re_Sub, Str_Clean, Str_Replace
 
 
@@ -95,7 +96,7 @@ def 结果处理(resps):
     _texts = []
 
     for resp in resps:
-        if resp is None:
+        if not isinstance(resp, htmlResponse):
             continue
         _xpath = ('//h1/text()', '//*[@id="chaptercontent"]/text()')
         _title, _showtext = resp.xpath(_xpath)
@@ -134,7 +135,6 @@ def get_download_url(target):
 
 def get_contents(index, target, fn=get):
     resp = fn(target)
-
     # pyquery
     title = resp.pyquery('h1').text()
     content = resp.pyquery('#chaptercontent').text()

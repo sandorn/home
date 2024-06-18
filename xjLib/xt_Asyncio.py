@@ -21,9 +21,16 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_Head import TIMEOUT, Head
-from xt_Requests import TRETRY
+from tenacity import retry, stop_after_attempt, wait_random
+from xt_Head import RETRY_TIME, TIMEOUT, Head
+from xt_Log import log_decorator
 from xt_Response import htmlResponse
+
+TRETRY = retry(
+    reraise=True,  # 保留最后一次错误
+    stop=stop_after_attempt(RETRY_TIME),
+    wait=wait_random(min=0, max=1),
+)
 
 
 def silence_event_loop_closed(func):
@@ -89,17 +96,19 @@ class AioCrawl:
         self.future_list = []
         self.result_list = []
         self.loop = loop or asyncio.new_event_loop()
-        # or asyncio.get_event_loop()
+        asyncio.set_event_loop(self.loop)
 
     def __del__(self):
         self.loop.close()
 
+    @log_decorator
     async def _task_run(self, url, method='GET', index=None, *args, **kwargs):
         """运行任务"""
         kwargs.setdefault('headers', Head().randua)
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))
         cookies = kwargs.pop('cookies', {})
         callback = kwargs.pop('callback', None)
+        index = index or id(url)
 
         @TRETRY
         async def __fetch():
@@ -109,15 +118,11 @@ class AioCrawl:
 
         try:
             response, content = await __fetch()
+            result = htmlResponse(response, content, index)
+            return callback(result) if callable(callback) else result
         except Exception as err:
             print(f'AioCrawl_task_run:{self} | RetryErr:{err!r}')
-            return err
-        else:
-            index = index or id(url)
-            result = htmlResponse(response, content, index)
-            if callback:
-                result = callback(result)
-            return result
+            return [index, err, '']  # @
 
     async def _issue_tasks(self, url_list, method='GET', *args, **kwargs):
         """分发任务"""
@@ -174,9 +179,9 @@ class AioCrawl:
 if __name__ == '__main__':
     ...
     # $add_tasks#######################################################################
-    # bb = AioCrawl()
-    # bb.add_tasks(['https://httpbin.org/get'] * 3)
-    # print(111111, bb.wait_completed())
+    bb = AioCrawl()
+    bb.add_tasks(['https://httpbin.org/get'] * 3)
+    print(111111, bb.wait_completed())
     # bb.add_tasks(['https://httpbin.org/post'] * 3, method='post')
     # print(222222, bb.wait_completed())
     # $add_func########################################################
@@ -188,19 +193,19 @@ if __name__ == '__main__':
     # aa.add_tasks(['https://httpbin.org/post'] * 3, method='post')
     # print(444444, aa.wait_completed())
     # $装饰器##################################################################
-    from xt_Requests import get_wraps
+    # from xt_Requests import get_wraps
 
-    @asyn_run_wrapper
-    def get_html(url):
-        return get_wraps(url)
+    # @asyn_run_wrapper
+    # def get_html(url):
+    #     return get_wraps(url)
 
-    print(555555, get_html('https://httpbin.org/get'))
+    # print(555555, get_html('https://httpbin.org/get'))
 
-    @asyn_run_wrapper
-    async def get_a_html(url):
-        return get_wraps(url)
+    # @asyn_run_wrapper
+    # async def get_a_html(url):
+    #     return get_wraps(url)
 
-    print(666666, get_a_html('https://httpbin.org/get'))
+    # print(666666, get_a_html('https://httpbin.org/get'))
 
     # @asyn_run_wrapper
     # async def get_message():

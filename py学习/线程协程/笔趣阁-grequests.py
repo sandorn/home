@@ -1,14 +1,12 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-12 14:19:20
-FilePath     : /py学习/线程协程/笔趣阁-grequests.py
+LastEditTime : 2024-06-18 09:03:23
+FilePath     : /CODE/py学习/线程协程/笔趣阁-grequests.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 grequests.map()参数说明：
@@ -19,13 +17,13 @@ exception_handler	异常处理函数	用于处理单个请求出现异常的函�
 gtimeout	设置所有请求的超时时间
 grequests的底层是request,所以它也支持回调函数：
 链接:https://www.jianshu.com/p/01dc9e8c21b6
-'''
+"""
 
 import os
 
 import grequests
 from xt_File import savefile
-from xt_Ls_Bqg import clean_Content, get_biqugse_download_url
+from xt_Ls_Bqg import clean_Content, get_download_url
 from xt_Response import htmlResponse
 from xt_Time import fn_timer
 
@@ -34,21 +32,22 @@ texts = []
 
 @fn_timer
 def main(url):
-    bookname, urls, _ = get_biqugse_download_url(url)
+    bookname, urls, _ = get_download_url(url)
     print(bookname)
     rets = grequests.map([grequests.get(_url) for _url in urls])
 
     for index in range(len(rets)):
-        if rets[index] is None: continue
+        if rets[index] is None:
+            continue
         response = htmlResponse(rets[index], None, index).element
-        _title = "".join(response.xpath('//h1/text()'))
-        title = _title.strip('\r\n').replace(u'\u3000', u' ').replace(u'\xa0', u' ')
+        _title = ''.join(response.xpath('//h1/text()'))
+        title = _title.strip('\r\n').replace('\u3000', ' ').replace('\xa0', ' ')
         _showtext = response.xpath('//*[@id="content"]/text()')
         content = clean_Content(_showtext)
         texts.append([index, title, content])
 
     texts.sort(key=lambda x: x[0])  # #排序
-    files = os.path.basename(__file__).split(".")[0]
+    files = os.path.basename(__file__).split('.')[0]
     savefile(f'{files}&{bookname}.txt', texts, br='\n')
 
 

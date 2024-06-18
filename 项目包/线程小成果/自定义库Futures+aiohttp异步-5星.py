@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2024-06-15 20:24:01
+LastEditTime : 2024-06-18 17:56:12
 FilePath     : /CODE/项目包/线程小成果/自定义库Futures+aiohttp异步-5星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -44,12 +44,12 @@ def pool(url_list, func):
 
     for url in url_list:
         bookname, urls, _ = get_download_url(url)
-        mypool.add_sub(func, [bookname, urls[:100]])
+        mypool.add_tasks(func, [bookname, urls])
     mypool.wait_completed()
 
 
 if __name__ == '__main__':
     url_list = ['https://www.bigee.cc/book/6909/']
     # 'https://www.biquge11.cc/read/11159/',
-    pool(url_list[:100], Aio_ahttp)  # 1线程出错后崩溃
+    pool(url_list, Aio_ahttp)
     # pool(url_list, Aio_feach_run)

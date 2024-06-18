@@ -17,17 +17,24 @@ from functools import partial
 from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_Head import TIMEOUT, Head
-from xt_Requests import TRETRY
+from tenacity import retry, stop_after_attempt, wait_random
+from xt_Head import RETRY_TIME, TIMEOUT, Head
+from xt_Log import log_decorator
 from xt_Response import htmlResponse
+
+TRETRY = retry(
+    reraise=True,  # 保留最后一次错误
+    stop=stop_after_attempt(RETRY_TIME),
+    wait=wait_random(min=0, max=1),
+)
 
 __all__ = (
     'get',
     'post',
     'head',
+    'options',
     'put',
     'delete',
-    'options',
     'trace',
     'connect',
     'patch',
@@ -38,89 +45,29 @@ __all__ = (
 )
 
 
-def _unil_session_method(method, *args, **kwargs):
-    session = SessionMeta()
-    method_dict: dict = {
-        'get': session.get,
-        'post': session.post,
-        'head': session.head,
-        'options': session.options,
-        'put': session.put,
-        'delete': session.delete,
-        'trace': session.trace,
-        'connect': session.connect,
-        'patch': session.patch,
-    }
-
-    if method in [
-        'get',
-        'post',
-        'head',
-        'options',
-        'put',
-        'delete',
-        'trace',
-        'connect',
-        'patch',
-    ]:
-        return method_dict.get(method)(*args, **kwargs)
-
-
-# #使用偏函数 Partial,快速构建多个函数
-get = partial(_unil_session_method, 'get')
-post = partial(_unil_session_method, 'post')
-head = partial(_unil_session_method, 'head')  # 结果正常，无ReqResult
-options = partial(_unil_session_method, 'options')
-put = partial(_unil_session_method, 'put')
-delete = partial(_unil_session_method, 'delete')
-trace = partial(_unil_session_method, 'trace')  # 有命令，服务器未响应
-connect = partial(_unil_session_method, 'connect')  # 有命令，服务器未响应
-patch = partial(_unil_session_method, 'patch')
-
-
-class SessionMeta:
-    def __getattr__(self, name):
-        if name in [
-            'get',
-            'post',
-            'head',
-            'options',
-            'put',
-            'delete',
-            'trace',
-            'connect',
-            'patch',
-        ]:
-            new_AsyncTask = AsyncTask()
-            return new_AsyncTask.__getattr__(name)  # @ 设置方法
+Method_List = ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']
 
 
 class AsyncTask:
     def __init__(self, *args, **kwargs):
         self.index = id(self)
 
+    def __getitem__(self, name):
+        if name in Method_List:
+            self.method = name  # @ 设置方法
+            return self._make_params  # @ 设置参数
+
     def __getattr__(self, name):
-        if name in [
-            'get',
-            'post',
-            'head',
-            'options',
-            'put',
-            'delete',
-            'trace',
-            'connect',
-            'patch',
-        ]:
+        if name in Method_List:
             self.method = name  # @ 设置方法
             return self._make_params  # @ 设置参数
 
     def __repr__(self):
-        return f'<AsyncTask | Method:[{self.method}] | Index:[{self.index}] | Session:{id(self.session)}] | Url:[{self.url}]>'
+        return f'<AsyncTask | Method:[{self.method}] | Index:[{self.index}] | Session:[{id(self.session)}] | URL:[{self.url}]>'
 
     def _make_params(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
-
         kwargs.setdefault('headers', Head().randua)
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
         self.cookies = kwargs.pop('cookies', {})
@@ -136,6 +83,7 @@ class AsyncTask:
         return await _async_fetch(self)
 
 
+@log_decorator
 async def _async_fetch(self):
     """单任务和多任务均调用此方法"""
 
@@ -147,27 +95,43 @@ async def _async_fetch(self):
 
     try:
         await _fetch_run()
-    except Exception as err:
-        print(f'Async_fetch:{self} | RetryErr:{err!r}')
-        self.response = self.content = None
-        self.result = err
-        return self
-    else:
-        # #返回结果,不管是否正确
         self.result = htmlResponse(self.response, self.content, index=self.index)
         if self.callback:
             self.result = self.callback(self.result)
         return self.result
+    except Exception as err:
+        print(f'Async_fetch:{self} | RetryErr:{err!r}')
+        self.response = self.content = None
+        self.result = [self.index, err, '']
+        return self
+
+
+def __session_method(method, *args, **kwargs):
+    session = AsyncTask()
+    method = method.lower()
+    if method in Method_List:
+        return session[method](*args, **kwargs)
+
+
+get = partial(__session_method, 'get')
+post = partial(__session_method, 'post')
+head = partial(__session_method, 'head')  # 结果正常，无ReqResult
+options = partial(__session_method, 'options')
+put = partial(__session_method, 'put')
+delete = partial(__session_method, 'delete')
+trace = partial(__session_method, 'trace')  # 有命令，服务器未响应
+connect = partial(__session_method, 'connect')  # 有命令，服务器未响应
+patch = partial(__session_method, 'patch')
 
 
 async def create_gather_task(tasks):
     """异步单线程,使用同一个session"""
-    new_tasks = []
+    tasks_list = []
     for index, task in enumerate(tasks, 1):
         task.index = index
         _coroutine = task.start()
-        new_tasks.append(_coroutine)
-    return await asyncio.gather(*new_tasks, return_exceptions=True)
+        tasks_list.append(_coroutine)
+    return await asyncio.gather(*tasks_list, return_exceptions=True)
 
 
 async def create_threads_task(coroes):
@@ -175,28 +139,28 @@ async def create_threads_task(coroes):
     threadsafe_loop = asyncio.new_event_loop()
     Thread(target=threadsafe_loop.run_forever, name='ThreadSafe', daemon=True).start()
 
-    new_tasks = []
+    tasks_list = []
     for index, coro in enumerate(coroes, 1):
         coro.index = index
         _coroutine = coro.start()
-        new_tasks.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
+        tasks_list.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
 
-    return [task.result() for task in new_tasks]
+    return [task.result() for task in tasks_list]
 
 
 def aiohttp_parse(method, url, *args, **kwargs):
+    method = method.lower()
     task = eval(method)(url, *args, **kwargs)
     _coroutine = task.start()
-    loop = asyncio.new_event_loop()  # asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     return loop.run_until_complete(_coroutine)
 
 
 def aiohttp__issue(method, urls, *args, **kwargs):
+    method = method.lower()
     coroes = [eval(method)(url, *args, **kwargs) for url in urls]
     _coroutine = create_threads_task(coroes) if kwargs.pop('threadsafe', True) else create_gather_task(coroes)
-    # return asyncio.run(_coroutine)  # 3.7+ 方式 , threadsafe:单线程或者多线程
-    loop = asyncio.new_event_loop()  # asyncio.get_event_loop()
-    return loop.run_until_complete(_coroutine)
+    return asyncio.run(_coroutine)
 
 
 ahttpGet = partial(aiohttp_parse, 'get')
@@ -209,14 +173,14 @@ if __name__ == '__main__':
     url_post = 'https://httpbin.org/post'
     url_headers = 'https://httpbin.org/headers'
 
+    # res = ahttpGet(url_get)
+    # print(res)
     # res = ahttpPost(url_post, data=b'data')
-
-    res = ahttpGet(url_get)
-    print(res)
+    # print(res)
     res = ahttpGetAll([url_headers, url_get])
     print(res)
     #######################################################################################################
-    print(get('http://httpbin.org/headers').run().headers)
+    # print(get('http://httpbin.org/headers').run().headers)
     # print(put('http://httpbin.org/put', data=b'data').start())
     # print(delete('http://httpbin.org/delete').start())
     # print(options('http://httpbin.org/get').start().headers)
