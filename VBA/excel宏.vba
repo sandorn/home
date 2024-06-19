@@ -127,9 +127,22 @@ Function 检查并创建文件夹(strFullPath)
         MkDir (strFullPath)
     End If
 End Function
-
-Sub Macro1()
-    检查并创建文件夹 "d:\1\"
-    创建并写入文件 "d:\1", "3.txt", Cells(4, 4).Value
+Sub 读取文件内容(path, filename)
+    Set fso = CreateObject("Scripting.FileSystemObject") '创建文件需要使用Scripting.FileSystemObject对象
+    Set myTxt = fso.OpenTextFile(path & "\" & filename, 1) '使用OpenTextFile打开文件
+    Do While myTxt.AtEndOfStream <> True
+        MsgBox myTxt.ReadLine
+    Loop
+    myTxt.Close
 End Sub
 
+Sub 读取文件内容2(path, filename)
+    Dim fso As Object
+    Dim myTxt As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set myTxt = fso.OpenTextFile(path & "\" & filename, 1)
+    Do While Not myTxt.AtEndOfStream
+        MsgBox myTxt.ReadLine
+    Loop
+    myTxt.Close
+End Sub

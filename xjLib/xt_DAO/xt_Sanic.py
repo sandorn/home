@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-06-13 13:07:45
+LastEditTime : 2024-06-19 09:15:12
 FilePath     : /CODE/xjLib/xt_DAO/xt_Sanic.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -16,7 +16,7 @@ import asyncio
 from sanicdb import SanicDB
 
 
-async def index(loop=None, sql=None):
+async def sanic_go(sql, loop=None):
     loop = loop or asyncio.get_event_loop()
     db = SanicDB(
         host='localhost',
@@ -26,10 +26,9 @@ async def index(loop=None, sql=None):
         loop=loop,
         port=3306,  # 非默认，需明确
     )
-    sql = 'select * from users2' if not sql else sql
     data = await db.query(sql)
     print(data)
 
 
 if __name__ == '__main__':
-    asyncio.run(index(sql='select * from users2 limit 2'))
+    asyncio.run(sanic_go(sql='select * from users2'))

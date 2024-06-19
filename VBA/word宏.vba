@@ -1,14 +1,4 @@
-'/***
- ' @Description  :
- ' @Develop      : VSCode
- ' @Author       : Even.Sand
- ' @Contact      : sandorn@163.com
- ' @Date         : 2021-11-03 17:29:14
- ' @FilePath     : /VBA/word宏.bas
- ' @LastEditTime : 2021-11-03 17:35:45
- ' @Github       : https://github.com/sandorn/home
- '***/
-Sub 代码简写()
+Function 代码简写()
     '功能：全文查找文字A，全部替换为文字B
     '标准：
     ActiveDocument.Content.Find.Execute FindText:="A", ReplaceWith:="B", Replace:=wdReplaceAll
@@ -140,7 +130,7 @@ Sub 代码简写()
     For Each r In .Rows
         If Len(Replace(Replace(r.Range, vbCr, ""), Chr(7), "")) = 0 Then r.Delete
     Next
-End Sub
+End Function
 Function MoveToCurrentLineStart()
     ' 移动光标至当前行首
     Selection.HomeKey unit:=wdLine    '简写:Selection.HomeKey 5
@@ -366,11 +356,11 @@ Sub 转换为自动编号()
                 oRang.Style = ActiveDocument.Styles("条目自动") '样式名称
             End If
             Index = "": Subject = "": m = 0: n = 0: Set oRang = Nothing
-        End If '判断非表格内
-    Next '按段落循环
+        End If
+    Next
     Application.ScreenUpdating = True
 End Sub
-Sub 自动设置公文格式()
+Sub 设置公文格式()
     '将全文逐段设置格式为"GB2312"，并修改章节条的格式
     Application.ScreenUpdating = False
     Dim t: t = Timer
@@ -406,9 +396,8 @@ Sub 自动设置公文格式()
                 End If
                 Index = "": Subject = "": m = 0: n = 0: Set oRang = Nothing
             Next i
-        End If  '表格判断
-    Next '按段落循环
-
+        End If
+    Next
     Call 替换字符串("条　", "条 ")
     MoveToDocStart '光标移动到文档最前端
     Selection.Style = myStyle
@@ -552,7 +541,7 @@ Sub 表格设为美观()
                 .WrapAroundText = False '取消文字环绕
                 .AllowBreakAcrossPages = False '不允许行断页
                 .HeadingFormat = True '设置标题行
-                .HeightRule = wdRowHeightExactly '行高设为最小值   wdRowHeightAuto '行高设为自动
+                .HeightRule = wdRowHeightAuto  'wdRowHeightExactly  '行高设为最小值   wdRowHeightAuto '行高设为自动
                 .Height = CentimetersToPoints(0) '上面缩进量为0
                 .LeftIndent = CentimetersToPoints(0) '左面缩进量为0
             End With
@@ -594,8 +583,8 @@ Sub 表格设为美观()
                     .BaseLineAlignment = wdBaselineAlignAuto
                 End With
                 With .Font '字体格式
-                    .Name = "仿宋"
-                    .Name = "仿宋"
+                    .Name = "宋体"
+                    .Name = "宋体"
                     .Size = 12
                     .Bold = False
                     '.DisableCharacterSpaceGrid = True
@@ -605,10 +594,13 @@ Sub 表格设为美观()
 
             End With
 
+
             '设置首行格式
-            With .Rows.First.Range ' 操作第一行  'row(1).range
+            With .Rows.First.Range ' 指定第一行
                 .Font.Bold = True
-                .Shading.BackgroundPatternColor = -603923969 '首行底纹填充--浅灰色
+                .Shading.Texture = wdTextureNone
+                ' .Shading.ForegroundPatternColor = wdColorAutomatic  'wdColorLightGray
+                ' .Shading.BackgroundPatternColor = -570359809  '-603923969
             End With
 
             '自动调整表格
@@ -658,7 +650,7 @@ Sub 表格设为网格()
                 .WrapAroundText = False '取消文字环绕
                 .AllowBreakAcrossPages = False '不允许行断页
                 .HeadingFormat = True '设置标题行
-                .HeightRule = wdRowHeightExactly '行高设为最小值
+                .HeightRule = wdRowHeightAuto  'wdRowHeightExactly  '行高设为最小值   wdRowHeightAuto '行高设为自动
                 .Height = CentimetersToPoints(0) '上面缩进量为0
                 .LeftIndent = CentimetersToPoints(0) '左面缩进量为0
             End With
@@ -700,8 +692,8 @@ Sub 表格设为网格()
                     .BaseLineAlignment = wdBaselineAlignAuto
                 End With
                 With .Font '字体格式
-                    .Name = "仿宋"
-                    .Name = "仿宋"
+                    .Name = "宋体"
+                    .Name = "宋体"
                     .Size = 12
                     .Bold = False
                 End With
@@ -710,9 +702,13 @@ Sub 表格设为网格()
 
             End With
 
+
             '设置首行格式
             With .Rows.First.Range ' 指定第一行
                 .Font.Bold = True
+                .Shading.Texture = wdTextureNone
+                ' .Shading.ForegroundPatternColor = wdColorAutomatic  'wdColorLightGray
+                ' .Shading.BackgroundPatternColor = -570359809  '-603923969
             End With
 
             '自动调整表格
@@ -729,9 +725,9 @@ Sub 表格设为网格()
     Application.DisplayAlerts = True  '开启提示
     Application.ScreenUpdating = True   '开启屏幕刷新
 End Sub
-Function 调整标题样式()
-    'Set myStyle = ActiveDocument.Styles.Add(Name:="标题", Type:=wdStyleTypeParagraph)
-    Set myStyle = ActiveDocument.Styles("标题")
+Function 调整标题1样式()
+    'Set myStyle = ActiveDocument.Styles.Add(Name:="标题 1", Type:=wdStyleTypeParagraph)
+    Set myStyle = ActiveDocument.Styles("标题 1")
     With myStyle
         .AutomaticallyUpdate = True
         .BaseStyle = "正文"
@@ -836,8 +832,8 @@ Function 调整标题样式()
     myStyle.Frame.Delete
 
 End Function
-Function 调整标题1样式()
-    Set myStyle = ActiveDocument.Styles("标题 1")
+Function 调整标题2样式()
+    Set myStyle = ActiveDocument.Styles("标题 2")
 
     With myStyle
         .AutomaticallyUpdate = True
@@ -941,8 +937,8 @@ Function 调整标题1样式()
     myStyle.Frame.Delete
 
 End Function
-Function 调整标题2样式()
-    Set myStyle = ActiveDocument.Styles("标题 2")
+Function 调整标题3样式()
+    Set myStyle = ActiveDocument.Styles("标题 3")
 
     With myStyle
         .AutomaticallyUpdate = True
@@ -1001,111 +997,6 @@ Function 调整标题2样式()
         .Hyphenation = True
         .FirstLineIndent = CentimetersToPoints(0.35)
         .OutlineLevel = wdOutlineLevel3
-        .CharacterUnitLeftIndent = 0
-        .CharacterUnitRightIndent = 0
-        .CharacterUnitFirstLineIndent = 2
-        .LineUnitBefore = 0
-        .LineUnitAfter = 0
-        .MirrorIndents = False
-        .TextboxTightWrap = wdTightNone
-        .CollapsedByDefault = False
-        .AutoAdjustRightIndent = True
-        .DisableLineHeightGrid = False
-        .FarEastLineBreakControl = True
-        .WordWrap = True
-        .HangingPunctuation = True
-        .HalfWidthPunctuationOnTopOfLine = False
-        .AddSpaceBetweenFarEastAndAlpha = True
-        .AddSpaceBetweenFarEastAndDigit = True
-        .BaseLineAlignment = wdBaselineAlignAuto
-    End With
-    myStyle.NoSpaceBetweenParagraphsOfSameStyle = False
-    myStyle.ParagraphFormat.TabStops.ClearAll
-
-    With myStyle.ParagraphFormat
-        With .Shading
-            .Texture = wdTextureNone
-            .ForegroundPatternColor = wdColorAutomatic
-            .BackgroundPatternColor = wdColorAutomatic
-        End With
-        .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
-        .Borders(wdBorderRight).LineStyle = wdLineStyleNone
-        .Borders(wdBorderTop).LineStyle = wdLineStyleNone
-        .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
-        With .Borders
-            .DistanceFromTop = 1
-            .DistanceFromLeft = 4
-            .DistanceFromBottom = 1
-            .DistanceFromRight = 4
-            .Shadow = False
-        End With
-    End With
-
-    myStyle.LanguageID = wdSimplifiedChinese
-    myStyle.NoProofing = False
-    myStyle.Frame.Delete
-
-End Function
-Function 调整标题3样式()
-    Set myStyle = ActiveDocument.Styles("标题 3")
-
-    With myStyle
-        .AutomaticallyUpdate = True
-        .BaseStyle = "正文"
-        .NextParagraphStyle = "正文"
-    End With
-
-    With myStyle.Font
-        .NameFarEast = "仿宋"  '"仿宋_GB2312"
-        .NameAscii = "仿宋"
-        .NameOther = "仿宋"
-        .Name = "仿宋"
-        .Size = 16
-        .Bold = False
-        .Italic = False
-        .Underline = wdUnderlineNone
-        .UnderlineColor = wdColorAutomatic
-        .StrikeThrough = False
-        .DoubleStrikeThrough = False
-        .Outline = False
-        .Emboss = False
-        .Shadow = False
-        .Hidden = False
-        .SmallCaps = False
-        .AllCaps = False
-        .Color = wdColorAutomatic
-        .Engrave = False
-        .Superscript = False
-        .Subscript = False
-        .Scaling = 100
-        .Kerning = 1
-        .Animation = wdAnimationNone
-        .DisableCharacterSpaceGrid = False
-        .EmphasisMark = wdEmphasisMarkNone
-        .Ligatures = wdLigaturesNone
-        .NumberSpacing = wdNumberSpacingDefault
-        .NumberForm = wdNumberFormDefault
-        .StylisticSet = wdStylisticSetDefault
-        .ContextualAlternates = 0
-    End With
-    With myStyle.ParagraphFormat
-        .LeftIndent = CentimetersToPoints(0)
-        .RightIndent = CentimetersToPoints(0)
-        .SpaceBefore = 0
-        .SpaceBeforeAuto = False
-        .SpaceAfter = 0
-        .SpaceAfterAuto = False
-        .LineSpacingRule = wdLineSpaceExactly
-        .LineSpacing = 29
-        .Alignment = wdAlignParagraphJustify
-        .WidowControl = True
-        .KeepWithNext = True
-        .KeepTogether = True
-        .PageBreakBefore = False
-        .NoLineNumber = False
-        .Hyphenation = True
-        .FirstLineIndent = CentimetersToPoints(0.35)
-        .OutlineLevel = wdOutlineLevel4
         .CharacterUnitLeftIndent = 0
         .CharacterUnitRightIndent = 0
         .CharacterUnitFirstLineIndent = 2
@@ -1210,7 +1101,7 @@ Function 调整标题4样式()
         .NoLineNumber = False
         .Hyphenation = True
         .FirstLineIndent = CentimetersToPoints(0.35)
-        .OutlineLevel = wdOutlineLevel5
+        .OutlineLevel = wdOutlineLevel4
         .CharacterUnitLeftIndent = 0
         .CharacterUnitRightIndent = 0
         .CharacterUnitFirstLineIndent = 2
@@ -1258,6 +1149,111 @@ Function 调整标题4样式()
 End Function
 Function 调整标题5样式()
     Set myStyle = ActiveDocument.Styles("标题 5")
+
+    With myStyle
+        .AutomaticallyUpdate = True
+        .BaseStyle = "正文"
+        .NextParagraphStyle = "正文"
+    End With
+
+    With myStyle.Font
+        .NameFarEast = "仿宋"  '"仿宋_GB2312"
+        .NameAscii = "仿宋"
+        .NameOther = "仿宋"
+        .Name = "仿宋"
+        .Size = 16
+        .Bold = False
+        .Italic = False
+        .Underline = wdUnderlineNone
+        .UnderlineColor = wdColorAutomatic
+        .StrikeThrough = False
+        .DoubleStrikeThrough = False
+        .Outline = False
+        .Emboss = False
+        .Shadow = False
+        .Hidden = False
+        .SmallCaps = False
+        .AllCaps = False
+        .Color = wdColorAutomatic
+        .Engrave = False
+        .Superscript = False
+        .Subscript = False
+        .Scaling = 100
+        .Kerning = 1
+        .Animation = wdAnimationNone
+        .DisableCharacterSpaceGrid = False
+        .EmphasisMark = wdEmphasisMarkNone
+        .Ligatures = wdLigaturesNone
+        .NumberSpacing = wdNumberSpacingDefault
+        .NumberForm = wdNumberFormDefault
+        .StylisticSet = wdStylisticSetDefault
+        .ContextualAlternates = 0
+    End With
+    With myStyle.ParagraphFormat
+        .LeftIndent = CentimetersToPoints(0)
+        .RightIndent = CentimetersToPoints(0)
+        .SpaceBefore = 0
+        .SpaceBeforeAuto = False
+        .SpaceAfter = 0
+        .SpaceAfterAuto = False
+        .LineSpacingRule = wdLineSpaceExactly
+        .LineSpacing = 29
+        .Alignment = wdAlignParagraphJustify
+        .WidowControl = True
+        .KeepWithNext = True
+        .KeepTogether = True
+        .PageBreakBefore = False
+        .NoLineNumber = False
+        .Hyphenation = True
+        .FirstLineIndent = CentimetersToPoints(0.35)
+        .OutlineLevel = wdOutlineLevel5
+        .CharacterUnitLeftIndent = 0
+        .CharacterUnitRightIndent = 0
+        .CharacterUnitFirstLineIndent = 2
+        .LineUnitBefore = 0
+        .LineUnitAfter = 0
+        .MirrorIndents = False
+        .TextboxTightWrap = wdTightNone
+        .CollapsedByDefault = False
+        .AutoAdjustRightIndent = True
+        .DisableLineHeightGrid = False
+        .FarEastLineBreakControl = True
+        .WordWrap = True
+        .HangingPunctuation = True
+        .HalfWidthPunctuationOnTopOfLine = False
+        .AddSpaceBetweenFarEastAndAlpha = True
+        .AddSpaceBetweenFarEastAndDigit = True
+        .BaseLineAlignment = wdBaselineAlignAuto
+    End With
+    myStyle.NoSpaceBetweenParagraphsOfSameStyle = False
+    myStyle.ParagraphFormat.TabStops.ClearAll
+
+    With myStyle.ParagraphFormat
+        With .Shading
+            .Texture = wdTextureNone
+            .ForegroundPatternColor = wdColorAutomatic
+            .BackgroundPatternColor = wdColorAutomatic
+        End With
+        .Borders(wdBorderLeft).LineStyle = wdLineStyleNone
+        .Borders(wdBorderRight).LineStyle = wdLineStyleNone
+        .Borders(wdBorderTop).LineStyle = wdLineStyleNone
+        .Borders(wdBorderBottom).LineStyle = wdLineStyleNone
+        With .Borders
+            .DistanceFromTop = 1
+            .DistanceFromLeft = 4
+            .DistanceFromBottom = 1
+            .DistanceFromRight = 4
+            .Shadow = False
+        End With
+    End With
+
+    myStyle.LanguageID = wdSimplifiedChinese
+    myStyle.NoProofing = False
+    myStyle.Frame.Delete
+
+End Function
+Function 调整标题6样式()
+    Set myStyle = ActiveDocument.Styles("标题 6")
 
     With myStyle
         .AutomaticallyUpdate = True
@@ -1573,12 +1569,12 @@ Function 调整列表段落样式()
 
 End Function
 Sub 公文样式()
-    Call 调整标题样式
     Call 调整标题1样式
     Call 调整标题2样式
     Call 调整标题3样式
     Call 调整标题4样式
     Call 调整标题5样式
+    Call 调整标题6样式
     Call 调整列表段落样式 '自动条目
     Call 调整正文样式
 End Sub
