@@ -754,12 +754,10 @@ class xt_QTextBrowser(QTextBrowser):
 
     def scroll_to_bottom_event(self):
         # 在滚动到底部时触发的函数
-        # print("滚动到底部")
         ...
 
     def scroll_to_top_event(self):
-        # 在滚动到底部时触发的函数
-        # print("滚动到顶部")
+        # 在滚动到顶部时触发的函数
         ...
 
     def decrease_text_size(self):

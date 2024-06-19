@@ -122,15 +122,18 @@ def get_download_url(target):
         '//h1/text()',
         "//dl/span/preceding-sibling::dd[not(@class='more pc_none')]/a/@href",
         '//dl/span/dd/a/@href',
+        "//dl/span/preceding-sibling::dd[not(@class='more pc_none')]/a/text()",
+        '//dl/span/dd/a/text()',
         # '//dt[1]/following-sibling::dd/a/@href',
         # '//dt[1]/following-sibling::dd/a/text()',
         # '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href',
     )
-    bookname, temp_urls, temp_urls2 = resp.xpath(_xpath)
+    bookname, temp_urls, temp_urls2, titles, titles2 = resp.xpath(_xpath)
+    titles += titles2
     temp_urls += temp_urls2
     bookname = bookname[0]
-    urls = ['/'.join(target.split('/')[:-3]) + item for item in temp_urls]  # 章节链接
-    return bookname, urls, None
+    urls = ['/'.join(target.split('/')[:-4]) + item for item in temp_urls]  # 章节链接
+    return bookname, urls, titles
 
 
 def get_contents(index, target, fn=get):

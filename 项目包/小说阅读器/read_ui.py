@@ -1,63 +1,61 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-10-19 10:12:00
+LastEditTime : 2024-06-19 16:05:53
 FilePath     : /CODE/项目包/小说阅读器/read_ui.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
+
 import os
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import QMetaObject, Qt
-from PyQt5.QtWidgets import QHBoxLayout, QSplitter, QVBoxLayout
-from xt_Ui import (
-    QIcon,
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import QMetaObject, Qt
+from PyQt6.QtWidgets import QHBoxLayout, QSplitter, QVBoxLayout
+from xt_Ui.part import (
     xt_QCheckBox,
     xt_QLabel,
     xt_QLineEdit,
     xt_QListWidget,
-    xt_QMainWindow,
     xt_QPushButton,
     xt_QTextBrowser,
 )
+from xt_Ui.wins import QIcon, xt_QMainWindow
 
 
 class Ui_Window(xt_QMainWindow):
-
     def __init__(self):
-        super().__init__("小说阅读器", tool=True, menu=True, status=True)
+        super().__init__('小说阅读器', tool=True, menu=True, status=True)
         self.setupUi()
         self.retranslateUi()
         QMetaObject.connectSlotsByName(self)
 
     def setupUi(self):
         self.basepath = os.path.dirname(__file__)
-        self.setWindowIcon(QIcon(f"{self.basepath}/book.png"))
+        self.setWindowIcon(QIcon(f'{self.basepath}/book.png'))
         self.centralwidget = QtWidgets.QWidget()
-        self.label = xt_QLabel("小说书号：")
+        self.label = xt_QLabel('小说书号：')
         self.lineEdit = xt_QLineEdit()
-        self.okB = xt_QPushButton("&OK 确定")
-        self.okB.setObjectName("okB")
+        self.okB = xt_QPushButton('&OK 确定')
+        self.okB.setObjectName('okB')
         self.listWidget = xt_QListWidget()
-        self.listWidget.setObjectName("listWidget")
+        self.listWidget.setObjectName('listWidget')
         self.QTextEdit = xt_QTextBrowser()
-        self.readB = xt_QPushButton("&Read")
-        self.readB.setObjectName("readB")
-        self.upB = xt_QPushButton("上一章")
-        self.upB.setObjectName("upB")
-        self.downB = xt_QPushButton("下一章")
-        self.downB.setObjectName("downB")
-        self.jiaB = xt_QPushButton("＋")
-        self.jiaB.setObjectName("jiaB")
-        self.jianB = xt_QPushButton("－")
-        self.jianB.setObjectName("jianB")
-        self.checkbox = xt_QCheckBox("自动翻页")
+        self.readB = xt_QPushButton('&Read')
+        self.readB.setObjectName('readB')
+        self.upB = xt_QPushButton('上一章')
+        self.upB.setObjectName('upB')
+        self.downB = xt_QPushButton('下一章')
+        self.downB.setObjectName('downB')
+        self.jiaB = xt_QPushButton('＋')
+        self.jiaB.setObjectName('jiaB')
+        self.jianB = xt_QPushButton('－')
+        self.jianB.setObjectName('jianB')
+        self.checkbox = xt_QCheckBox('自动翻页')
         self.splitter = QSplitter(self)
 
     def retranslateUi(self):

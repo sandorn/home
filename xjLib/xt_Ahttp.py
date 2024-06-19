@@ -52,20 +52,21 @@ class AsyncTask:
     def __init__(self, *args, **kwargs):
         self.index = id(self)
 
-    def __getitem__(self, name):
-        if name in Method_List:
-            self.method = name  # @ 设置方法
-            return self._make_params  # @ 设置参数
+    def __getitem__(self, method):
+        method = method.lower()
+        if method in Method_List:
+            self.method = method  # 保存请求方法
+            return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
 
-    def __getattr__(self, name):
-        if name in Method_List:
-            self.method = name  # @ 设置方法
-            return self._make_params  # @ 设置参数
+    def __getattr__(self, method):
+        if method in Method_List:
+            self.method = method  # 保存请求方法
+            return self.__create_params  # @ 设置参数
 
     def __repr__(self):
         return f'<AsyncTask | Method:[{self.method}] | Index:[{self.index}] | Session:[{id(self.session)}] | URL:[{self.url}]>'
 
-    def _make_params(self, *args, **kwargs):
+    def __create_params(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
         kwargs.setdefault('headers', Head().randua)
@@ -110,7 +111,8 @@ def __session_method(method, *args, **kwargs):
     session = AsyncTask()
     method = method.lower()
     if method in Method_List:
-        return session[method](*args, **kwargs)
+        # return session[method](*args, **kwargs) #__getitem__
+        return getattr(session, method)(*args, **kwargs)  # getattr
 
 
 get = partial(__session_method, 'get')
@@ -173,10 +175,10 @@ if __name__ == '__main__':
     url_post = 'https://httpbin.org/post'
     url_headers = 'https://httpbin.org/headers'
 
-    # res = ahttpGet(url_get)
-    # print(res)
-    # res = ahttpPost(url_post, data=b'data')
-    # print(res)
+    res = ahttpGet(url_get)
+    print(res)
+    res = ahttpPost(url_post, data=b'data')
+    print(res)
     res = ahttpGetAll([url_headers, url_get])
     print(res)
     #######################################################################################################

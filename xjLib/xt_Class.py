@@ -239,7 +239,7 @@ if __name__ == '__main__':
         print(id(b.__dict__), b.__dict__, b.age, id(b))
 
     # one()
-    itre()
+    # itre()
     # itat()
 """
 参考见Alispeech/xt_Pygame.py

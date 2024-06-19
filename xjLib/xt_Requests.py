@@ -21,6 +21,8 @@ from xt_Log import log_decorator
 from xt_Response import htmlResponse
 from xt_Tools import try_except_wraps
 
+Method_List = ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']
+
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
     stop=stop_after_attempt(RETRY_TIME),
@@ -134,8 +136,7 @@ class SessionClient:
             result = htmlResponse(self.response)
             return self.callback(result) if callable(self.callback) else result
 
-    def __create_params(self, method, *args, **kwargs):
-        self.method = method  # 保存请求方法
+    def __create_params(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
 
@@ -147,15 +148,16 @@ class SessionClient:
         return self.start_fetch_run()
 
     def __getattr__(self, method):
-        if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'patch']:
-            return lambda *args, **kwargs: self.__create_params(method, *args, **kwargs)
+        method = method.lower()
+        if method in Method_List:
+            self.method = method  # 保存请求方法
+            return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
 
     def __getitem__(self, method):
-        if method in ['get', 'post', 'head', 'options', 'put', 'delete', 'patch']:
-            return lambda *args, **kwargs: self.__create_params(method, *args, **kwargs)
-            # self.method = method
-            # @不带括号,传递*args, **kwargs参数
-            # return self.__create_params
+        method = method.lower()
+        if method in Method_List:
+            self.method = method  # 保存请求方法
+            return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
 
     def update_cookies(self, cookie_dict):
         self.sson.cookies.update(cookie_dict)
@@ -165,9 +167,8 @@ class SessionClient:
 
 
 if __name__ == '__main__':
-    # sion = SessionClient()
-    # print(sion['get']('https://cn.bing.com'))
-    # print(sion.head('http://httpbin.org/headers').headers)
+    sion = SessionClient()
+    print(sion.head('http://httpbin.org/headers').headers)
     # print(sion.put('http://httpbin.org/put', data=b'data'))
     # print(sion.delete('http://httpbin.org/delete'))
     # print(sion.options('http://httpbin.org/get').headers)
@@ -184,15 +185,15 @@ if __name__ == '__main__':
     # for url in urls:
     # ...
     # print(get_wraps('http://www.baidu.com').cookies)
-    res = get('http://www.163.com')
-    print(res.xpath('//title/text()'))
-    print(res.xpath(['//title/text()', '//title/text()']))
-    print(res.xpath())
-    print(res.xpath(' '))
-    print(res.xpath(''))
-    print(res.dom.xpath('//title/text()'))
-    print(res.html.xpath('//title/text()'))
-    print(res.element.xpath('//title/text()'))
+    # res = get('http://www.163.com')
+    # print(res.xpath('//title/text()'))
+    # print(res.xpath(['//title/text()', '//title/text()']))
+    # print(res.xpath())
+    # print(res.xpath(' '))
+    # print(res.xpath(''))
+    # print(res.dom.xpath('//title/text()'))
+    # print(res.html.xpath('//title/text()'))
+    # print(res.element.xpath('//title/text()'))
     # print(res.pyquery('title').text())
     """
     ###############################################################
