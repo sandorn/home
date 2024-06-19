@@ -20,7 +20,6 @@ fn multiply(a: i32, b: i32) -> i32 {
     a * b
 }
 
-
 fn main() {
     println!(
         "程序运算的值为: {}    {}    {}",
