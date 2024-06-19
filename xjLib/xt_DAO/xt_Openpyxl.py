@@ -161,39 +161,28 @@ class ExcelHandler:
 if __name__ == '__main__':
     with ExcelHandler('d:/1.xlsx', 'Sheet1') as he:
         he.write_cell(1, 2, '2019年')
-        rows = he.read_all()
-        he.append(rows)
         # print(he.read_all_dict())
         # print(he.read_row(1))
-        print(he.read_cell(1, 1))
-        print(he.sh_name_list)
-        # he2 = ExcelHandler("d:/2.xlsx")
-        # he2.append(rows)
-        print(he.read_col(2))
-        # he.createsheet()
+        print(1111, he.read_cell(1, 1))
+        print(2222, he.sh_name_list)
+        print(3333, he.read_col(2))
         he.append(
             [
                 [
-                    1111,
-                    2222,
-                    3333,
-                    4444,
-                    5555,
+                    'AAA',
+                    'BBB',
+                    'CCC',
+                    'DDD',
+                    'EEEE',
                 ],
             ]
         )
         he.write_cell(28, 1, 9876)
-####################################################
-# he = ExcelHandler("d:/1.xlsx", "Sheet1")
-# he.write_cell(1, 2, '2019年')
-# rows = he.read_all()
-# # he.append(rows)
-# # print(he.read_dict())
-# print(he.read_header())
-# # print(he.read_cell(1, 3))
-# print(he.sh_name_list)
-# he2 = ExcelHandler("d:/2.xlsx", "Sheet99")
-# he2.append(rows)
+        rows = he.read_all()
+        print(4444, rows)
+        print(5555, he.read_header())
+        print(6666, he.read_row_dict(1))
+
 """
 Openpyxl库对excel的常规处理详解_sweet tea111的博客-CSDN博客_load_work openpyxl
 https://blog.csdn.net/weixin_44390373/article/details/118153901

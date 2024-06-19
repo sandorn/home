@@ -118,7 +118,7 @@ class DelegateMetaClass(type):
                 return func
 
             attrs[m] = make_func(m)
-        return super(DelegateMetaClass, cls).__new__(cls, name, bases, attrs)
+        return super().__new__(cls, name, bases, attrs)
 
 
 class Delegate(metaclass=DelegateMetaClass):
@@ -170,9 +170,9 @@ if __name__ == '__main__':
             print('Foo.__new__')
             return object.__new__(cls)
 
-    # di = ImmutableList([1, 1, 2, 3, 4])
-    # print(type(di), dir(di), di)
-    # for a in di:
-    #     print(a)
+    di = ImmutableList([1, 1, 2, 3, 4])
+    print(type(di), dir(di), di)
+    for a in di:
+        print(a)
     foo = Foo('foo')
     print(Foo.__mro__)
