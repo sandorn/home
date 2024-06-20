@@ -18,7 +18,6 @@ from xt_Asyncio import AioCrawl
 from xt_File import savefile
 from xt_Ls_Bqg import clean_Content, get_contents, get_download_url, 结果处理
 from xt_Response import htmlResponse
-from xt_Thread import FuncInThreadPool
 from xt_Time import fn_timer
 
 
@@ -73,15 +72,6 @@ def Aio_add_func(bookname, urls):
     savefile(f'{files}&{bookname}Aio_add_func.txt', texts, br='\n')
 
 
-@fn_timer
-def func_ThreadPool(bookname, urls):
-    indexes = list(range(len(urls)))
-    texts = FuncInThreadPool(get_contents, indexes, urls).result
-    texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split('.')[0]
-    savefile(f'{files}&{bookname}func_ThreadPool.txt', texts, br='\n')
-
-
 if __name__ == '__main__':
     url = 'https://www.bigee.cc/book/6909/'
     # 'https://www.biquge11.cc/read/11159/'
@@ -90,4 +80,3 @@ if __name__ == '__main__':
     # Aio_feach_back(bookname, urls)
     # ahttp_run(bookname, urls)
     # Aio_add_func(bookname, urls)
-    # func_ThreadPool(bookname, urls)

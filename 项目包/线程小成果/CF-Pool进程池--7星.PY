@@ -102,9 +102,9 @@ if __name__ == '__main__':
     bookname, urls, _ = get_download_url(url)
     urls = urls
     # main_map(60, bookname, urls)
-    main_wait(200, bookname, urls[:20])
+    # main_wait(200, bookname, urls[:20])
     # main_completed(32, bookname, urls)
-    # main_callback(200, bookname, urls)
+    main_callback(200, bookname, urls)
 
 r"""
 1、建立线程池:executor = ThreadPoolExecutor(max_workers= )

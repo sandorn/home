@@ -11,7 +11,7 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from .futures import FuncInThreadPool, ProcessPool, ThreadPool
+from .futures import FnInThreadPool, ThreadPool
 from .Process import CustomProcess, Do_CustomProcess
 from .Singleon import (
     Singleton_Meta,
