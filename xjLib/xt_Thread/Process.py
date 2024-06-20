@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 11:36:53
-LastEditTime : 2024-06-16 02:17:27
+LastEditTime : 2024-06-20 15:16:31
 FilePath     : /CODE/xjLib/xt_Thread/Process.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -46,7 +46,7 @@ class CustomProcess(Process):
 
 def Do_CustomProcess(func, *args, **kwargs):
     """调用CustomProcess,Manager.dict()返回结果"""
-    sem = Semaphore(24)
+    sem = Semaphore(6)
     return_dict = Manager().dict()
     _ = [CustomProcess(return_dict, sem, func, *args_iter, **kwargs) for args_iter in list(zip(*args))]
     CustomProcess.wait_completed()

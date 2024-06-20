@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-03 12:52:03
-LastEditTime : 2024-06-16 02:20:02
+LastEditTime : 2024-06-20 14:58:04
 FilePath     : /CODE/项目包/线程小成果/CustomProcess+CustomThread爬虫.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -33,15 +33,15 @@ def Custom(url):
 def Poolapply_async(url):
     bookname, urls, titles = Do_CustomProcess(get_download_url, [url])[0]
 
-    p = Pool(32)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
-    res_l = []
+    p = Pool(6)  # 进程池中从无到有创建三个进程,以后一直是这三个进程在执行任务
+    task_list = []
 
     for i, url in enumerate(urls[:20]):
         res = p.apply_async(get_contents, args=(i, url))  # 异步执行任务
-        res_l.append(res)
+        task_list.append(res)
     p.close()
     p.join()
-    res_list = [res.get() for res in res_l]
+    res_list = [res.get() for res in task_list]
     res_list.sort(key=lambda x: x[0])  # #排序
     # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
     files = os.path.split(__file__)[-1].split('.')[0]

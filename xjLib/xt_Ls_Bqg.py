@@ -110,6 +110,8 @@ def 结果处理(resps):
 
 def get_download_url(target):
     resp = get(target)
+    if not isinstance(resp, htmlResponse):
+        return None
     # pyquery
     # pr = resp.pyquery('.listmain dl dd:gt(11)').children() # 从第二个dt开始，获取后面所有的兄弟节点
     # pr = res.pyquery('dt').eq(1).nextAll()  # 从第二个dt开始，获取后面所有的兄弟节点
@@ -132,12 +134,14 @@ def get_download_url(target):
     titles += titles2
     temp_urls += temp_urls2
     bookname = bookname[0]
-    urls = ['/'.join(target.split('/')[:-4]) + item for item in temp_urls]  # 章节链接
+    urls = ['/'.join(target.split('/')[:-3]) + item for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
 
 def get_contents(index, target, fn=get):
     resp = fn(target)
+    if not isinstance(resp, htmlResponse):
+        return [0, resp, '']
     # pyquery
     title = resp.pyquery('h1').text()
     content = resp.pyquery('#chaptercontent').text()
@@ -158,4 +162,4 @@ if __name__ == '__main__':
     bookname, urls, titles = get_download_url(url)
     # print(bookname, urls, titles)
     res = get_contents(0, urls[0])
-    print(res)
+    # print(res)

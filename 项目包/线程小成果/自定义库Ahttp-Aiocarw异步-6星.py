@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-14 23:30:44
-LastEditTime : 2024-06-18 17:44:07
+LastEditTime : 2024-06-20 09:09:22
 FilePath     : /CODE/项目包/线程小成果/自定义库Ahttp-Aiocarw异步-6星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -35,7 +35,7 @@ def Aio_feach_run(bookname, urls):
 
 def handle_back_ait(resp):
     if not isinstance(resp, htmlResponse):
-        return [0, '', '']
+        return [0, resp, '']
 
     index = resp.index
     _title = resp.pyquery('h1').text()
