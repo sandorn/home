@@ -1,13 +1,12 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2023-01-13 18:42:56
-FilePath     : /项目包/线程小成果/自定义库thread_pool.py
+LastEditTime : 2024-06-21 13:21:48
+FilePath     : /CODE/项目包/线程小成果/自定义库thread_pool.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -41,7 +40,7 @@ def get_contents(index, target):
 @fn_timer
 def main(target):
     bookname, urls, _ = get_download_url(target)
-    for index, url in enumerate(urls[:20]):
+    for index, url in enumerate(urls):
         get_contents(index, url)
     text_list = pool.wait_completed()
     text_list.sort(key=lambda x: x[0])  # #排序
@@ -50,4 +49,4 @@ def main(target):
 
 
 if __name__ == '__main__':
-    main('https://www.bigee.cc/book/6909/')
+    main('https://www.bigee.cc/book/6909/')  # |time: 76.25 sec|processtime: 45.08 sec

@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2024-06-20 17:17:56
-FilePath     : /CODE/项目包/线程小成果/自定义库Futures+fninthreadpool异步-5星.py
+LastEditTime : 2024-06-21 15:09:20
+FilePath     : /CODE/项目包/线程小成果/自定义库fninthreadpool异步-5星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -56,5 +56,5 @@ def FnInPool(bookname, urls):
 if __name__ == '__main__':
     url_list = ['https://www.bigee.cc/book/6909/']
     bookname, urls, _ = get_download_url(url_list[0])
-    get_ThreadPool(bookname, urls, new_get_contents)
-    # FnInPool(bookname, urls)
+    # get_ThreadPool(bookname, urls, new_get_contents)  # |time: 157.20 sec|processtime: 55.11 sec
+    FnInPool(bookname, urls)  # |time: 109.40 sec|processtime: 49.75 sec

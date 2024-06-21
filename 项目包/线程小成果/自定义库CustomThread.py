@@ -22,7 +22,7 @@ from xt_Time import fn_timer
 @fn_timer
 def main_thread(target):
     bookname, urls, _ = get_download_url(target)
-    urls = urls[:100]
+    # urls = urls[:100]
     _ = [CustomThread(get_contents, index, urls[index]) for index in range(len(urls))]
     text_list = CustomThread.getAllResult()
     text_list.sort(key=lambda x: x[0])  # #排序
@@ -32,5 +32,4 @@ def main_thread(target):
 
 
 if __name__ == '__main__':
-    main_thread('https://www.bigee.cc/book/6909/')
-    # time: 18.47 sec|processtime: 35.41 sec
+    main_thread('https://www.bigee.cc/book/6909/')  # |time: 74.06 sec|processtime: 40.77 sec

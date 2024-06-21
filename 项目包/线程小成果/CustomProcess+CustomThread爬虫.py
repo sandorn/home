@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-03 12:52:03
-LastEditTime : 2024-06-20 14:58:04
+LastEditTime : 2024-06-21 13:20:49
 FilePath     : /CODE/项目包/线程小成果/CustomProcess+CustomThread爬虫.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -50,5 +50,5 @@ def Poolapply_async(url):
 
 if __name__ == '__main__':
     url = 'https://www.bigee.cc/book/6909/'
-    # Custom(url)
-    Poolapply_async(url)
+    Custom(url)
+    # Poolapply_async(url)
