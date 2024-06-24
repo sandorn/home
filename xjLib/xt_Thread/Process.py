@@ -19,22 +19,22 @@ class CustomProcess(Process):
 
     all_Process = []  # 类属性或类变量,实例公用
 
-    def __init__(self, result_dict, sem, target, *args, **kwargs):
+    def __init__(self, result_dict, semaphore, fn, *args, **kwargs):
         super().__init__()
         self.result_dict = result_dict
         self.index = len(self.all_Process)
+        self.semaphore = semaphore  # @有问题，进程太多导致电脑卡死
         self.daemon = True
-        self.target = target
+        self.fn = fn
         self.args = args
         self.kwargs = kwargs
-        self.sem = sem
         self.start()
         self.all_Process.append(self)
 
     def run(self):
         # print(f'Pid: {os.getpid()} \t|\t {multiprocessing.current_process()}|{self.pid}|{self.name}')
-        with self.sem:
-            self.result_dict[self.pid] = self.target(*self.args, **self.kwargs)
+        with self.semaphore:  # @有问题，进程太多导致电脑卡死
+            self.result_dict[self.pid] = self.fn(*self.args, **self.kwargs)
 
     @classmethod
     def wait_completed(cls):
@@ -44,10 +44,12 @@ class CustomProcess(Process):
             prc.join()
 
 
-def Do_CustomProcess(func, *args, **kwargs):
+def Do_CustomProcess(fn, *args, **kwargs):
     """调用CustomProcess,Manager.dict()返回结果"""
-    sem = Semaphore(6)
+    max_processes = 3  # 同时运行的进程数量
+    semaphore = Semaphore(max_processes)
     return_dict = Manager().dict()
-    _ = [CustomProcess(return_dict, sem, func, *args_iter, **kwargs) for args_iter in list(zip(*args))]
+    for args_iter in list(zip(*args)):
+        CustomProcess(return_dict, semaphore, fn, *args_iter, **kwargs)
     CustomProcess.wait_completed()
     return return_dict.values()

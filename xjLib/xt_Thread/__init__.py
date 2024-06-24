@@ -20,7 +20,7 @@ from .Singleon import (
     singleton_wrap_class,
     singleton_wrap_return_class,
 )
-from .thread import CustomThread, CustomThread_Queue, SigThread, SigThreadQ, SingletonThread, stop_thread, thread_pool
+from .thread import CustomThread, CustomThread_Queue, SigThread, SigThreadQ, SingletonThread, stop_thread, ThreadPoolWraps
 from .wraps import (
     QThread_wrap,
     Thread_wrap,

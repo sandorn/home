@@ -22,8 +22,8 @@ from xt_Class import item_get_Mixin
 from xt_Thread import Singleton_Mixin, singleton_wrap_return_class
 
 
-class thread_pool:
-    """仿写vthread,线程装饰器,thread_pool(200)"""
+class ThreadPoolWraps:
+    """仿写vthread,线程装饰器,ThreadPoolWraps(200)"""
 
     def __init__(self, pool_num=32):
         self._pool_queue = Queue()  # #任务存储,组内queue

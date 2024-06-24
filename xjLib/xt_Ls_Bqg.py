@@ -111,7 +111,7 @@ def 结果处理(resps):
 def get_download_url(target):
     resp = get(target)
     if not isinstance(resp, htmlResponse):
-        return None
+        return '', '', ''
     # pyquery
     # pr = resp.pyquery('.listmain dl dd:gt(11)').children() # 从第二个dt开始，获取后面所有的兄弟节点
     # pr = res.pyquery('dt').eq(1).nextAll()  # 从第二个dt开始，获取后面所有的兄弟节点
