@@ -147,17 +147,17 @@ class SessionClient:
         self.kwargs = kwargs
         return self.start_fetch_run()
 
-    def __getattr__(self, method):
-        method = method.lower()
-        if method in Method_List:
-            self.method = method  # 保存请求方法
-            return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
-
     def __getitem__(self, method):
         method = method.lower()
         if method in Method_List:
             self.method = method  # 保存请求方法
             return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
+
+    def __getattr__(self, method):
+        method = method.lower()
+        if method in Method_List:
+            self.method = method  # 保存请求方法
+            return self.__create_params  # @ 设置参数
 
     def update_cookies(self, cookie_dict):
         self.sson.cookies.update(cookie_dict)

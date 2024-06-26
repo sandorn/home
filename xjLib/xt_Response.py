@@ -127,7 +127,7 @@ class htmlResponse(item_Mixin):
         return html
 
     @property
-    def pyquery(self):
+    def query(self):
         return PyQuery(self.html)  # , parser='xml')
 
     def xpath(self, selectors: str | list | tuple = '') -> list:

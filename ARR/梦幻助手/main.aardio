@@ -176,7 +176,7 @@ winform.BindRun.oncommand = function(id, event) {
     listener.dm("UnBindWindow", )
     thrdTable.hwnd = winex.waitVisible("贪玩游戏盒", , "com\.zx\.box")
     listener.bind(thrdTable.hwnd)
-    winex.orphanWindow(winform.custom,thrdTable.hwnd)
+    winex.orphanWindow(winform.custom, thrdTable.hwnd)
     winform.BindRun.disabled = true
     winform.BindStop.disabled = false
 }

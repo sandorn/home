@@ -143,8 +143,8 @@ def get_contents(index, target, fn=get):
     if not isinstance(resp, htmlResponse):
         return [0, resp, '']
     # pyquery
-    title = resp.pyquery('h1').text()
-    content = resp.pyquery('#chaptercontent').text()
+    title = resp.query('h1').text()
+    content = resp.query('#chaptercontent').text()
     # _xpath = ['//h1/text()', '//*[@id="chaptercontent"]/text()']
     # title, content = resp.xpath(_xpath)
 

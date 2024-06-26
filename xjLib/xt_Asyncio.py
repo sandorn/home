@@ -1,13 +1,12 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-01-10 17:03:29
-FilePath     : /xjLib/xt_Asyncio.py
+LastEditTime : 2024-06-26 09:47:33
+FilePath     : /CODE/xjLib/xt_Asyncio.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 aiohttp笔记 - happy_codes - 博客园
@@ -16,7 +15,6 @@ https://www.cnblogs.com/haoabcd2010/p/10615364.html
 
 import asyncio
 from asyncio.coroutines import iscoroutinefunction
-from asyncio.proactor_events import _ProactorBasePipeTransport
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
@@ -32,7 +30,7 @@ TRETRY = retry(
     wait=wait_random(min=0, max=1),
 )
 
-
+'''
 def silence_event_loop_closed(func):
     """解决event loop is closed问题"""
 
@@ -48,9 +46,10 @@ def silence_event_loop_closed(func):
 
 
 _ProactorBasePipeTransport.__del__ = silence_event_loop_closed(_ProactorBasePipeTransport.__del__)
+'''
 
 
-def future_wrapper(func):
+def future_decorator(func):
     """future装饰器"""
 
     @wraps(func)
@@ -63,28 +62,58 @@ def future_wrapper(func):
     return __future
 
 
-def async_wrapper(func):
+def coroutine_decorator(func):
     """异步装饰器,装饰普通函数,返回coroutine"""
 
     @wraps(func)
     async def _wrapper(*args, **kwargs):
-        await asyncio.sleep(0.01)
-        return func(*args, **kwargs)
+        await asyncio.sleep(0)
 
-    return func if iscoroutinefunction(func) else _wrapper
+        if iscoroutinefunction(func):
+            return await func(*args, **kwargs)
+        else:
+            return func(*args, **kwargs)
+
+    return _wrapper
 
 
-def asyn_run_wrapper(func):
-    """异步装饰器,装饰函数和async函数,直接运行,返回结果"""
+def async_inexecutor_decorator(func):
+    """异步运行装饰器,装饰普通函数或async函数,运行并返回结果"""
 
     @wraps(func)
     def _wrapper(*args, **kwargs):
         @wraps(func)
         async def __wrapper(*args, **kwargs):
             if iscoroutinefunction(func):
-                return await asyncio.create_task(func(*args, **kwargs))
+                result = await func(*args, **kwargs)
             else:
-                return await asyncio.create_task(async_wrapper(func)(*args, **kwargs))
+                loop = asyncio.get_event_loop()
+                result = await loop.run_in_executor(None, func, *args, **kwargs)
+            return result
+
+        return asyncio.run(__wrapper(*args, **kwargs))
+
+    return _wrapper
+
+
+def async_run_decorator(func):
+    """异步装饰器,装饰函数或async函数,直接运行,返回结果"""
+
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        @wraps(func)
+        async def __wrapper(*args, **kwargs):
+            callback = kwargs.pop('fu_callback', None)
+
+            if iscoroutinefunction(func):
+                task = asyncio.create_task(func(*args, **kwargs))
+                if callback:
+                    task.add_done_callback(callback)
+            else:
+                task = asyncio.create_task(coroutine_decorator(func)(*args, **kwargs))
+                if callback:
+                    task.add_done_callback(callback)
+            return await asyncio.gather(task, return_exceptions=True)
 
         return asyncio.run(__wrapper(*args, **kwargs))
 
@@ -94,15 +123,20 @@ def asyn_run_wrapper(func):
 class AioCrawl:
     def __init__(self, loop=None):
         self.future_list = []
-        self.result_list = []
         self.loop = loop or asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
+
+    def __enter__(self):
+        return self
 
     def __del__(self):
         self.loop.close()
 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.loop.close()
+
     @log_decorator
-    async def _task_run(self, url, method='GET', index=None, *args, **kwargs):
+    async def __add_tasks(self, url, method, index=None, *args, **kwargs):
         """运行任务"""
         kwargs.setdefault('headers', Head().randua)
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))
@@ -121,17 +155,15 @@ class AioCrawl:
             result = htmlResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:
-            print(f'AioCrawl_task_run:{self} | RetryErr:{err!r}')
-            return [index, err, '']  # @
+            print(f'AioCrawl_run_task:{self} | RetryErr:{err!r}')
+            return [index, err, '']
 
-    async def _issue_tasks(self, url_list, method='GET', *args, **kwargs):
+    async def _add_tasks(self, url_list, method, *args, **kwargs):
         """分发任务"""
         callback = kwargs.pop('fu_callback', None)
 
         for index, url in enumerate(url_list, 1):
-            if not isinstance(url, str):
-                continue
-            task = asyncio.create_task(self._task_run(url, method=method, index=index, *args, **kwargs))
+            task = asyncio.create_task(self.__add_tasks(url, method=method, index=index, *args, **kwargs))
             if callback:
                 task.add_done_callback(callback)
             self.future_list.append(task)
@@ -139,77 +171,79 @@ class AioCrawl:
         return await asyncio.gather(*self.future_list, return_exceptions=True)
 
     def add_tasks(self, url_list, method='GET', *args, **kwargs):
-        """添加网址列表,异步并发爬虫"""
-        _coroutine = self._issue_tasks(url_list, method=method, *args, **kwargs)
-        return asyncio.run(_coroutine)
-        # self.loop.run_until_complete(_coroutine)  # 异常中断
+        """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
+        return self.loop.run_until_complete(self._add_tasks(url_list, method=method, *args, **kwargs))
+        # return asyncio.run(self._add_tasks(url_list, method=method, *args, **kwargs))
 
-    async def _func_run(self, func, *args, **kwargs):
-        executor = ThreadPoolExecutor(32)
-        args = list(zip(*args))
-        for arg in args:
-            task = self.loop.run_in_executor(executor, func, *arg, **kwargs)
-            self.future_list.append(task)
-        await asyncio.gather(*self.future_list)
+    async def _add_pool(self, func, *args, **kwargs):
+        callback = kwargs.pop('fu_callback', None)
+        with ThreadPoolExecutor(32) as executor:
+            for arg in list(zip(*args)):
+                task = self.loop.run_in_executor(executor, func, *arg, **kwargs)
+                if callback:
+                    task.add_done_callback(callback)
+                self.future_list.append(task)
 
-    def add_func(self, func, *args, **kwargs):
-        """添加函数及参数,异步运行"""
-        self.loop.run_until_complete(self._func_run(func, *args, **kwargs))
+        return await asyncio.gather(*self.future_list, return_exceptions=True)
 
-    def __get_result(self):
-        while self.future_list:
-            future = self.future_list.pop()
-            res = future.result()
-            self.result_list.append(res)
-
-        res, self.result_list = self.result_list, []
-        return res
+    def add_pool(self, func, *args, **kwargs):
+        """添加函数及参数,异步运行，可用wait_completed取结果"""
+        return self.loop.run_until_complete(self._add_pool(func, *args, **kwargs))
+        # return asyncio.run(self._add_pool(func, *args, **kwargs))
 
     def wait_completed(self):
-        while True:
-            tmp = [fu._state for fu in self.future_list]
-            if 'PENDING' in tmp:
-                continue
-            else:
-                break
+        if len(self.future_list) == 0:
+            return []
+        while any(fu._state == 'PENDING' for fu in self.future_list):
+            continue
+        result_list = [fu.result() for fu in self.future_list]
+        self.future_list.clear()
+        return result_list
 
-        return self.__get_result()
+    async def __go(self, fn, *args, **kwargs):
+        """分发任务"""
+        for arg in list(zip(*args)):
+            task = asyncio.create_task(coroutine_decorator(fn)(*arg, **kwargs))
+            self.future_list.append(task)
+
+        return await asyncio.gather(*self.future_list, return_exceptions=True)
+
+    def go(self, func, *args, **kwargs):
+        """运行函数,返回结果"""
+        return self.loop.run_until_complete(self.__go(func, *args, **kwargs))
 
 
 if __name__ == '__main__':
     ...
-    # $add_tasks#######################################################################
-    bb = AioCrawl()
-    bb.add_tasks(['https://httpbin.org/get'] * 3)
-    print(111111, bb.wait_completed())
-    # bb.add_tasks(['https://httpbin.org/post'] * 3, method='post')
-    # print(222222, bb.wait_completed())
+    # $add_tasks#######################################################
+    myaio = AioCrawl()
+    url_list = ['https://www.163.com', 'https://www.126.com', 'https://www.qq.com']
+    # print(111111, myaio.add_tasks(url_list * 1))
+    # print(111111, myaio.wait_completed())
+    # print(222222, myaio.add_tasks(url_list * 1))
+    # print(222222, myaio.wait_completed())
     # $add_func########################################################
-    # from xt_Requests import get_wraps
+    from xt_Requests import get
 
-    # aa = AioCrawl()
-    # aa.add_func(get_wraps, ['https://httpbin.org/get'] * 3)
-    # print(333333, aa.wait_completed())
-    # aa.add_tasks(['https://httpbin.org/post'] * 3, method='post')
-    # print(444444, aa.wait_completed())
-    # $装饰器##################################################################
-    # from xt_Requests import get_wraps
+    print(333333, myaio.go(get, ['https://httpbin.org/get'] * 3))
+    # print(333333, myaio.wait_completed())
 
-    # @asyn_run_wrapper
-    # def get_html(url):
-    #     return get_wraps(url)
+    # $装饰器##########################################################
+    @async_inexecutor_decorator
+    def get_html(url):
+        return get(url)
 
-    # print(555555, get_html('https://httpbin.org/get'))
+    # print(444444, get_html('https://www.baidu.com'))
 
-    # @asyn_run_wrapper
-    # async def get_a_html(url):
-    #     return get_wraps(url)
+    @async_inexecutor_decorator
+    async def get_a_html(url):
+        return get(url)
 
-    # print(666666, get_a_html('https://httpbin.org/get'))
+    # print(555555, get_a_html('https://cn.bing.com/'))
 
-    # @asyn_run_wrapper
-    # async def get_message():
-    #     async with ClientSession() as session, session.get('http://httpbin.org/headers') as response:
-    #         return await response.text()
+    @async_inexecutor_decorator
+    async def get_message():
+        async with ClientSession() as session, session.get('https://httpbin.org/get') as response:
+            return await response.text()
 
-    # print(777777, get_message())
+    # print(666666, get_message())

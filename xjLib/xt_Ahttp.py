@@ -49,11 +49,10 @@ Method_List = ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'conn
 
 
 class AsyncTask:
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self.index = id(self)
 
     def __getitem__(self, method):
-        method = method.lower()
         if method in Method_List:
             self.method = method  # 保存请求方法
             return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
@@ -111,8 +110,8 @@ def __session_method(method, *args, **kwargs):
     session = AsyncTask()
     method = method.lower()
     if method in Method_List:
-        # return session[method](*args, **kwargs) #__getitem__
-        return getattr(session, method)(*args, **kwargs)  # getattr
+        return session[method](*args, **kwargs)  # __getitem__
+        # return getattr(session, method)(*args, **kwargs)
 
 
 get = partial(__session_method, 'get')
@@ -124,6 +123,20 @@ delete = partial(__session_method, 'delete')
 trace = partial(__session_method, 'trace')  # 有命令，服务器未响应
 connect = partial(__session_method, 'connect')  # 有命令，服务器未响应
 patch = partial(__session_method, 'patch')
+
+
+def __parse(method, url, *args, **kwargs):
+    method = method.lower()
+    if method in Method_List:
+        task = AsyncTask()[method](url, *args, **kwargs)
+    # task = eval(method)(url, *args, **kwargs)
+    _coroutine = task.start()
+    loop = asyncio.new_event_loop()
+    return loop.run_until_complete(_coroutine)
+
+
+ahttpGet = partial(__parse, 'get')
+ahttpPost = partial(__parse, 'post')
 
 
 async def create_gather_task(tasks):
@@ -142,7 +155,7 @@ async def create_threads_task(coroes):
     Thread(target=threadsafe_loop.run_forever, name='ThreadSafe', daemon=True).start()
 
     tasks_list = []
-    for index, coro in enumerate(coroes, 1):
+    for index, coro in enumerate(coroes, start=1):
         coro.index = index
         _coroutine = coro.start()
         tasks_list.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
@@ -150,25 +163,18 @@ async def create_threads_task(coroes):
     return [task.result() for task in tasks_list]
 
 
-def aiohttp_parse(method, url, *args, **kwargs):
+def __gather_parse(method, urls, *args, **kwargs):
     method = method.lower()
-    task = eval(method)(url, *args, **kwargs)
-    _coroutine = task.start()
-    loop = asyncio.new_event_loop()
-    return loop.run_until_complete(_coroutine)
-
-
-def aiohttp__issue(method, urls, *args, **kwargs):
-    method = method.lower()
-    coroes = [eval(method)(url, *args, **kwargs) for url in urls]
+    if method in Method_List:
+        coroes = [AsyncTask()[method](url, *args, **kwargs) for url in urls]
+    # coroes = [eval(method)(url, *args, **kwargs) for url in urls]
     _coroutine = create_threads_task(coroes) if kwargs.pop('threadsafe', True) else create_gather_task(coroes)
     return asyncio.run(_coroutine)
 
 
-ahttpGet = partial(aiohttp_parse, 'get')
-ahttpPost = partial(aiohttp_parse, 'post')
-ahttpGetAll = partial(aiohttp__issue, 'get')
-ahttpPostAll = partial(aiohttp__issue, 'post')
+ahttpGetAll = partial(__gather_parse, 'get')
+ahttpPostAll = partial(__gather_parse, 'post')
+
 
 if __name__ == '__main__':
     url_get = 'https://httpbin.org/get'
@@ -177,10 +183,10 @@ if __name__ == '__main__':
 
     res = ahttpGet(url_get)
     print(res)
-    res = ahttpPost(url_post, data=b'data')
-    print(res)
-    res = ahttpGetAll([url_headers, url_get])
-    print(res)
+    # res = ahttpPost(url_post, data=b'data')
+    # print(res)
+    # res = ahttpGetAll([url_headers, url_get])
+    # print(res)
     #######################################################################################################
     # print(get('http://httpbin.org/headers').run().headers)
     # print(put('http://httpbin.org/put', data=b'data').start())
