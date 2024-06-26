@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2024-06-23 15:03:34
+LastEditTime : 2024-06-26 15:20:48
 FilePath     : /CODE/项目包/线程小成果/自定义库thread_pool+CustomThread-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -18,17 +18,15 @@ from xt_Ls_Bqg import get_contents, get_download_url
 from xt_Thread import CustomThread, ThreadPoolWraps
 from xt_Time import fn_timer
 
-pool = ThreadPoolWraps(200)
-
-get_contentss = pool(get_contents)
+tpw = ThreadPoolWraps(200)
 
 
 @fn_timer
 def ByThreadPoolWraps(target):
     bookname, urls, _ = get_download_url(target)
     for index, url in enumerate(urls):
-        get_contentss(index, url)
-    text_list = pool.wait_completed()
+        tpw(get_contents)(index, url)
+    text_list = tpw.wait_completed()
     text_list.sort(key=lambda x: x[0])  # #排序
     files = os.path.split(__file__)[-1].split('.')[0]
     savefile(f'{files}&{bookname}&ByThreadPoolWraps.txt', text_list, br='\n')
@@ -47,5 +45,5 @@ def ByCustomThread(target):
 
 
 if __name__ == '__main__':
-    # ByThreadPoolWraps('https://www.bigee.cc/book/6909/')  # |time: 77.21 sec|processtime: 44.44 sec
-    ByCustomThread('https://www.bigee.cc/book/6909/')  # |time: 78.45 sec|processtime: 42.20 sec
+    ByThreadPoolWraps('https://www.bigee.cc/book/6909/')  # |time: 77.21 sec|processtime: 44.44 sec
+    # ByCustomThread('https://www.bigee.cc/book/6909/')  # |time: 78.45 sec|processtime: 42.20 sec

@@ -1,12 +1,11 @@
 """
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
+Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2022-12-29 00:45:59
-FilePath     : /项目包/线程小成果/CF-Pool进程池.PY
+LastEditTime : 2024-06-26 15:32:10
+FilePath     : /CODE/项目包/线程小成果/CF-Pool进程池--7星.PY
 Github       : https://github.com/sandorn/home
 ==============================================================
 python线程池ThreadPoolExecutor与进程池ProcessPoolExecutor - Harvard_Fly - 博客园
@@ -92,24 +91,5 @@ if __name__ == '__main__':
     urls = urls
     # main_map(60, bookname, urls)  # |time: 74.27 sec|processtime: 43.34 sec
     # main_wait(60, bookname, urls)  # |time: 72.38 sec|processtime: 39.00 sec
-    # main_completed(60, bookname, urls)  # |time: 71.88 sec|processtime: 40.38 sec
+    main_completed(60, bookname, urls)  # |time: 71.88 sec|processtime: 40.38 sec
     # main_callback(60, bookname, urls)  # |time: 74.23 sec|processtime: 42.19 sec
-
-r"""
-1、建立线程池:executor = ThreadPoolExecutor(max_workers= )
-2、提交执行函数到线程池:task = executor.submit(func,(args))
-3、获取执行结果:task.result()
-4、判断线程是否完成:task.done()
-5、取消还没执行的线程:task.cancel()
-6、利用as_completed获取线程完成结果
-all_task = [executor.submit(get_html,(url)) for url in urls]
-for future in as_completed(all_task):
-    data = future.result()
-    print("get page {}".format(data))
-
-7、通过executor的map获取已经完成的task值
-for data in executor.map(get_html,urls):
-    print(data)
-
-8、使用wait()方法阻塞线程
-"""
