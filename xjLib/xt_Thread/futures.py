@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-06-20 16:25:48
+LastEditTime : 2024-06-26 14:44:52
 FilePath     : /CODE/xjLib/xt_Thread/futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -28,9 +28,6 @@ class ThreadPool(ThreadPoolExecutor):
             self._future_tasks.append(future)
 
     def wait_completed(self):
-        return self.__wait_completed()
-
-    def __wait_completed(self):
         """获取结果,无序"""
         self.shutdown(wait=True)
         result_list = [future.result() for future in as_completed(self._future_tasks)]
@@ -47,17 +44,18 @@ class FnInThreadPool:
         return self.loop.run_until_complete(self._work())
 
     async def _work(self):
-        _args = list(zip(*self.args))
-        self.result = await asyncio.gather(*[self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs) for arg in _args])
-        # return self.result
+        self.result = await asyncio.gather(
+            *[self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs) for arg in list(zip(*self.args))],
+        )
 
 
 if __name__ == '__main__':
-    from xt_Requests import get
+    pass
 
-    # res = FnInThreadPool(get, ['http://httpbin.org/get', 'http://httpbin.org/get', 'http://httpbin.org/get'])
-    # print(res.result)
-    POOL = ThreadPool()
-    POOL.add_tasks(get, ('http://httpbin.org/get', 'http://httpbin.org/get', 'http://httpbin.org/get'))
-    res = POOL.wait_completed()
-    print(res)
+    # url_list = ['http://httpbin.org/get']
+    # res = FnInThreadPool(get, url_list * 3)
+    # print(111111, res.result)
+    # POOL = ThreadPool()
+    # POOL.add_tasks(get, url_list * 3)
+    # res = POOL.wait_completed()
+    # print(222222,res)
