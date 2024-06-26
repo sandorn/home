@@ -30,24 +30,6 @@ TRETRY = retry(
     wait=wait_random(min=0, max=1),
 )
 
-'''
-def silence_event_loop_closed(func):
-    """解决event loop is closed问题"""
-
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        try:
-            return func(self, *args, **kwargs)
-        except RuntimeError as e:
-            if str(e) != 'Event loop is closed':
-                raise
-
-    return wrapper
-
-
-_ProactorBasePipeTransport.__del__ = silence_event_loop_closed(_ProactorBasePipeTransport.__del__)
-'''
-
 
 def future_decorator(func):
     """future装饰器"""
@@ -200,18 +182,6 @@ class AioCrawl:
         self.future_list.clear()
         return result_list
 
-    async def __go(self, fn, *args, **kwargs):
-        """分发任务"""
-        for arg in list(zip(*args)):
-            task = asyncio.create_task(coroutine_decorator(fn)(*arg, **kwargs))
-            self.future_list.append(task)
-
-        return await asyncio.gather(*self.future_list, return_exceptions=True)
-
-    def go(self, func, *args, **kwargs):
-        """运行函数,返回结果"""
-        return self.loop.run_until_complete(self.__go(func, *args, **kwargs))
-
 
 if __name__ == '__main__':
     ...
@@ -225,7 +195,7 @@ if __name__ == '__main__':
     # $add_func########################################################
     from xt_Requests import get
 
-    print(333333, myaio.go(get, ['https://httpbin.org/get'] * 3))
+    print(333333, myaio.add_pool(get, ['https://httpbin.org/get'] * 3))
     # print(333333, myaio.wait_completed())
 
     # $装饰器##########################################################
