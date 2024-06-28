@@ -28,17 +28,16 @@ class htmlResponse(item_Mixin):
     __slots__ = ('raw', 'clientResponse', '_content', 'index', 'encoding', 'code_type')
 
     def __init__(self, response, content=None, index=None):
+        self.index: int = index or id(self)
         if response is not None:
             self.raw = self.clientResponse = response
             self._content: bytes = response.content if content is None else content
-            self.index: int = index or id(self)
             self.encoding = response.encoding if hasattr(response, 'encoding') else 'utf-8'
             # if isinstance(self._content, bytes): self.code_type = detect(self._content)['encoding'] or 'utf-8'
             self.code_type = detect(self._content)['encoding'] or 'utf-8' if isinstance(self._content, bytes) else self.encoding
         else:
             self.raw = self.clientResponse = None
             self._content = b''
-            self.index = index or id(self)
             self.encoding = 'utf-8'
             self.code_type = 'utf-8'
 
