@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : None
 #Develop      : VSCode
@@ -11,20 +10,18 @@
 #LastEditTime : 2020-07-11 11:16:57
 #Github       : https://github.com/sandorn/home
 #==============================================================
-'''
-from xt_Ahttp import ahttpGet, ahttpGetAll
-from xt_Requests import SessionClient, get, get_parse, get_wraps
-from xt_Asyncio import AioCrawl
-import asyncio
+"""
+
+from xt_Requests import SessionClient, get_wraps
 
 s = SessionClient()
 urls = [
-    "https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async",  # 0 s:[400]
-    "https://httpbin.org/get",  # 1 返回head及ip等信息
-    "https://httpbin.org/post",  #2 返回head及ip等信息
-    "https://httpbin.org/cookies",  #3 返回head及ip等信息
-    "http://g.cn",  # 4 # status:[400]
-    "http://www.google.com",  # 5 Timeout
+    'https://nls-gateway.cn-shanghai.aliyuncs.com/rest/v1/tts/async',  # 0 s:[400]
+    'https://httpbin.org/get',  # 1 返回head及ip等信息
+    'https://httpbin.org/post',  # 2 返回head及ip等信息
+    'https://httpbin.org/cookies',  # 3 返回head及ip等信息
+    'http://g.cn',  # 4 # status:[400]
+    'http://www.google.com',  # 5 Timeout
     # "https://www.biqukan.com/38_38836/",
     # "https://www.biqukan.com/38_38836/497577681.html",
 ]

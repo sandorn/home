@@ -102,7 +102,7 @@ def async_run_decorator(func):
     return _wrapper
 
 
-class AioCrawl:
+class AioHttpCrawl:
     def __init__(self, loop=None):
         self.future_list = []
         self.loop = loop or asyncio.new_event_loop()
@@ -190,7 +190,7 @@ class AioCrawl:
 if __name__ == '__main__':
     ...
     # $add_tasks#######################################################
-    myaio = AioCrawl()
+    myaio = AioHttpCrawl()
     url_list = ['https://www.163.com', 'https://www.126.com', 'https://www.qq.com']
     print(111111, myaio.add_tasks(url_list * 1))
     # print(111111, myaio.wait_completed())
