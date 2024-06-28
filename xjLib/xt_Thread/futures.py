@@ -50,12 +50,12 @@ class FnInThreadPool:
 
 
 if __name__ == '__main__':
-    pass
+    from xt_Requests import get
 
-    # url_list = ['http://httpbin.org/get']
-    # res = FnInThreadPool(get, url_list * 3)
-    # print(111111, res.result)
-    # POOL = ThreadPool()
-    # POOL.add_tasks(get, url_list * 3)
-    # res = POOL.wait_completed()
-    # print(222222,res)
+    url_list = ['http://httpbin.org/get']
+    res = FnInThreadPool(get, url_list * 3)
+    print(111111, res.result)
+    POOL = ThreadPool()
+    POOL.add_tasks(get, url_list * 3)
+    res = POOL.wait_completed()
+    print(222222, res)
