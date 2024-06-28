@@ -113,7 +113,7 @@ post = partial(_request_tretry, 'post')
 class SessionClient:
     """封装session,保存cookies,利用TRETRY三方库实现重试"""
 
-    __slots__ = ('sson', 'method', 'url', 'args', 'kwargs', 'response', 'callback')
+    __slots__ = ['sson', 'method', 'url', 'args', 'kwargs', 'response', 'callback']
 
     def __init__(self):
         self.sson = requests.session()

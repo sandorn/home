@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-03 12:52:03
-LastEditTime : 2024-06-23 11:53:36
+LastEditTime : 2024-06-28 13:06:18
 FilePath     : /CODE/项目包/线程小成果/自定义库CustomProcess.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -34,7 +34,7 @@ def Custom(url):
 def Poolapply_async(url):
     bookname, urls, titles = get_download_url(url)
 
-    p = Pool(36)  # 设置进程池的最大进程数量
+    p = Pool(32)  # 设置进程池的最大进程数量
     task_list = []
 
     for i, url in enumerate(urls):

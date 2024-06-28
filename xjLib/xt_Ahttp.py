@@ -31,13 +31,6 @@ TRETRY = retry(
 __all__ = (
     'get',
     'post',
-    'head',
-    'options',
-    'put',
-    'delete',
-    'trace',
-    'connect',
-    'patch',
     'ahttpGet',
     'ahttpGetAll',
     'ahttpPost',
@@ -103,7 +96,8 @@ async def _async_fetch(self):
         print(f'Async_fetch:{self} | RetryErr:{err!r}')
         self.response = self.content = None
         self.result = [self.index, err, '']
-        return self
+    finally:
+        return self.result
 
 
 def __session_method(method, *args, **kwargs):

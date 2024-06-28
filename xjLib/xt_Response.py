@@ -30,17 +30,25 @@ class htmlResponse(item_Mixin):
     def __init__(self, response, content=None, index=None):
         if response is not None:
             self.raw = self.clientResponse = response
-            self._content: bytes = content or response.content
+            self._content: bytes = response.content if content is None else content
             self.index: int = index or id(self)
             self.encoding = response.encoding if hasattr(response, 'encoding') else 'utf-8'
             # if isinstance(self._content, bytes): self.code_type = detect(self._content)['encoding'] or 'utf-8'
             self.code_type = detect(self._content)['encoding'] or 'utf-8' if isinstance(self._content, bytes) else self.encoding
+        else:
+            self.raw = self.clientResponse = None
+            self._content = b''
+            self.index = index or id(self)
+            self.encoding = 'utf-8'
+            self.code_type = 'utf-8'
 
     def __repr__(self):
+        if self.raw is None:
+            return f'<htmlResponse [None] | ID:[{self.index}]>'
         return f'<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>'
 
-    # def __str__(self):
-    #     return self.__repr__()
+    def __str__(self):
+        return self.__repr__()
 
     def __bool__(self):
         return self.status == 200
@@ -55,38 +63,41 @@ class htmlResponse(item_Mixin):
     @property
     def text(self):
         # try:
-        #     _text = self.clientResponse.text.encode(self.encoding).decode(self.code_type, 'ignore')
+        #     _text = self.raw.text.encode(self.encoding).decode(self.code_type, 'ignore')
         # except AttributeError:
         #     _text = self.content
         # return _text
-        _text = self.clientResponse.text.encode(self.encoding).decode(self.code_type, 'ignore')
-        return _text if hasattr(self.clientResponse, 'text') else self.content
+        try:
+            _text = self.raw.text
+            _text = _text.encode(self.encoding).decode(self.code_type, 'ignore')
+        finally:
+            return _text if hasattr(self.raw, 'text') else self.content
 
     @property
     def elapsed(self):
-        if hasattr(self.clientResponse, 'elapsed'):
-            return self.clientResponse.elapsed
+        if hasattr(self.raw, 'elapsed'):
+            return self.raw.elapsed
         else:
             return None
 
     @property
     def seconds(self):
-        if hasattr(self.clientResponse, 'elapsed'):
-            return self.clientResponse.elapsed.total_seconds()
+        if hasattr(self.raw, 'elapsed'):
+            return self.raw.elapsed.total_seconds()
         else:
             return 0
 
     @property
     def url(self):
-        return self.clientResponse.url
+        return self.raw.url
 
     @property
     def cookies(self):
-        return self.clientResponse.cookies
+        return self.raw.cookies
 
     @property
     def headers(self):
-        return self.clientResponse.headers
+        return self.raw.headers
 
     @property
     def json(self):
@@ -97,10 +108,10 @@ class htmlResponse(item_Mixin):
 
     @property
     def status(self):
-        if hasattr(self.clientResponse, 'status'):
-            return self.clientResponse.status
+        if hasattr(self.raw, 'status'):
+            return self.raw.status
         else:
-            return self.clientResponse.status_code
+            return self.raw.status_code
 
     @property
     def html(self):
@@ -123,7 +134,7 @@ class htmlResponse(item_Mixin):
         返回requests_html对象,支持html对象操作:find, xpath, render(先安装chromium浏览器)
         """
         html = HTML(html=self._content)
-        html.url = self.clientResponse.url
+        html.url = self.raw.url
         return html
 
     @property
@@ -152,14 +163,3 @@ class htmlResponse(item_Mixin):
 
 if __name__ == '__main__':
     print(htmlResponse(None))
-"""
-    jxdm = response.xpath('//h3/a')
-    for each in jxdm:
-        href = each.xpath("@href")[0] #获取属性方法1
-        href = each.attrib['href']  #获取属性方法2
-        href = each.get('href')  #获取属性方法3
-
-        text = each.xpath("string(.)").strip()  #获取文本方法1,全
-        text = each.text.strip()  #获取文本方法2,可能不全
-
-"""
