@@ -19,7 +19,7 @@ from datetime import datetime
 from functools import wraps
 from time import perf_counter
 
-from xt_Thread import Singleton_Mixin
+from xt_Singleon import Singleton_Mixin
 
 standard_format = '[%(asctime)s][%(threadName)s:%(thread)d][%(name)s][%(filename)s->%(funcName)s:%(lineno)d]\t[%(levelname)s]\t[%(message)s]'  # 其中name为getlogger指定的名字
 simple_format = '[%(asctime)s][%(filename)s:%(lineno)d]%(message)s'

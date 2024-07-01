@@ -90,4 +90,4 @@ if __name__ == '__main__':
     # Aio_add_pool(bookname, urls)  # |time: 87.61 sec|processtime: 38.48 sec
     # Aio_add_task_back(bookname, urls)  # |time: 52.35 sec|processtime: 34.19 sec
     # ahttp_run(bookname, urls)  # |time: 64.91 sec|processtime: 40.31 sec
-    # AioHttpClient_run(bookname, urls)  # |time: 42.82 sec|processtime: 28.95 sec #@ 8星
+    AioHttpClient_run(bookname, urls)  # |time: 42.82 sec|processtime: 28.95 sec #@ 8星

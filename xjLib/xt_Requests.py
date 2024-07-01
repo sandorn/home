@@ -164,8 +164,8 @@ class SessionClient:
 
 
 if __name__ == '__main__':
-    sion = SessionClient()
-    print(sion.get('http://httpbin.org/headers'))
+    # sion = SessionClient()
+    # print(sion.get('http://httpbin.org/headers'))
     # print(sion.put('http://httpbin.org/put', data=b'data'))
     # print(sion.delete('http://httpbin.org/delete'))
     # print(sion.options('http://httpbin.org/get').headers)
@@ -182,30 +182,30 @@ if __name__ == '__main__':
     # for url in urls:
     # ...
     # print(get_wraps('http://www.baidu.com').cookies)
-    # res = get('http://www.163.com')
-    # print(res.xpath('//title/text()'))
-    # print(res.xpath(['//title/text()', '//title/text()']))
-    # print(res.xpath())
-    # print(res.xpath(' '))
-    # print(res.xpath(''))
-    # print(res.dom.xpath('//title/text()'))
-    # print(res.html.xpath('//title/text()'))
-    # print(res.element.xpath('//title/text()'))
-    # print(res.pyquery('title').text())
+    res = get('http://www.163.com')
+    print(res.xpath('//title/text()'))
+    print(res.xpath(['//title/text()', '//title/text()']))
+    print(res.xpath())
+    print(res.xpath(' '))
+    print(res.xpath(''))
+    print(res.dom.xpath('//title/text()'))
+    print(res.html.xpath('//title/text()'))
+    print(res.element.xpath('//title/text()'))
+    print(res.query('title').text())
     """
     ###############################################################
     # allow_redirects=False #取消重定向
     res = get_wraps('https://www.biqukan8.cc/38_38163/')
-    pr = res.pyquery('.listmain dl dd:gt(11)').children()
-    bookname = res.pyquery('h2').text()
+    pr = res.query('.listmain dl dd:gt(11)').children()
+    bookname = res.query('h2').text()
     temp_urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
     titles = [i.text() for i in pr.items()]
     res2 = get_wraps(temp_urls[0])
-    title = res2.pyquery('h1').text()
-    content = res2.pyquery('#content').text()
+    title = res2.query('h1').text()
+    content = res2.query('#content').text()
     # print(bookname, title, '\n', content)
-    # pr = res.pyquery('.listmain dl dt+dd~dd')
-    div = res.pyquery('dt').eq(1).nextAll()
+    # pr = res.query('.listmain dl dt+dd~dd')
+    div = res.query('dt').eq(1).nextAll()
     urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
     titles = [i.text() for i in pr.items()]
     print(len(urls), len(titles))

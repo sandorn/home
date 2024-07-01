@@ -29,12 +29,12 @@ class htmlResponse(item_Mixin):
 
     def __init__(self, response, content=None, index=None):
         self.index: int = index or id(self)
+
         if response is not None:
             self.raw = self.clientResponse = response
-            self._content: bytes = response.content if content is None else content
-            self.encoding = response.encoding if hasattr(response, 'encoding') else 'utf-8'
-            # if isinstance(self._content, bytes): self.code_type = detect(self._content)['encoding'] or 'utf-8'
-            self.code_type = detect(self._content)['encoding'] or 'utf-8' if isinstance(self._content, bytes) else self.encoding
+            self._content: bytes = content if content is not None else response.content
+            self.encoding = getattr(response, 'encoding', 'utf-8')
+            self.code_type = detect(self._content)['encoding'] if isinstance(self._content, bytes) else self.encoding or 'utf-8'
         else:
             self.raw = self.clientResponse = None
             self._content = b''
@@ -107,10 +107,7 @@ class htmlResponse(item_Mixin):
 
     @property
     def status(self):
-        if hasattr(self.raw, 'status'):
-            return self.raw.status
-        else:
-            return self.raw.status_code
+        return getattr(self.raw, 'status', self.raw.status_code)
 
     @property
     def html(self):

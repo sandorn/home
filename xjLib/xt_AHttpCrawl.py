@@ -199,7 +199,7 @@ if __name__ == '__main__':
     # $add_func########################################################
     from xt_Requests import get
 
-    print(333333, myaio.add_pool(get, ['https://httpbin.org/get'] * 3))
+    # print(333333, myaio.add_pool(get, ['https://httpbin.org/get'] * 3))
     # print(333333, myaio.wait_completed())
 
     # $装饰器##########################################################
@@ -215,7 +215,7 @@ if __name__ == '__main__':
 
     # print(555555, get_a_html('https://cn.bing.com/'))
 
-    @async_inexecutor_decorator
+    @async_run_decorator
     async def get_message():
         async with ClientSession() as session, session.get('https://httpbin.org/get') as response:
             return await response.text()
