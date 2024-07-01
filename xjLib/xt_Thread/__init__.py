@@ -13,20 +13,12 @@ Github       : https://github.com/sandorn/home
 
 from .futures import FnInThreadPool, ThreadPool
 from .Process import CustomProcess, Do_CustomProcess
-from .Singleon import (
-    Singleton_Meta,
-    Singleton_Mixin,
-    singleton_wrap,
-    singleton_wrap_class,
-    singleton_wrap_return_class,
-)
 from .thread import CustomThread, CustomThread_Queue, SigThread, SigThreadQ, SingletonThread, stop_thread, ThreadPoolWraps
-from .wraps import (
+from .threadwraps import (
     QThread_wrap,
     Thread_wrap,
-    Thread_wrap_class,
     create_mixin_class,
-    run_in_threadpool,
+    parallelize_decorator,
     thread_print,
     thread_safe,
 )

@@ -19,7 +19,7 @@ from threading import Event, Thread, enumerate, main_thread
 from time import sleep, time
 
 from xt_Class import item_get_Mixin
-from xt_Thread import Singleton_Mixin, singleton_wrap_return_class
+from xt_Singleon import Singleton_Mixin, singleton_wrap_return_class
 
 
 class ThreadPoolWraps:

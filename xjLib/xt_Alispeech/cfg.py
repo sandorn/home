@@ -20,7 +20,7 @@ appKey = 'Ofm34215thIUdSIX'
 
 from nls.token import getToken
 from xt_Class import dict_mothed_Mixin
-from xt_Thread.Singleon import Singleton_Mixin
+from xt_Singleon import Singleton_Mixin
 
 _ACCESS_APPKEY = 'Ofm34215thIUdSIX'
 _ACCESS_KeyId = 'LTAI4G5TRjsGy8BNKPtctjXQ'

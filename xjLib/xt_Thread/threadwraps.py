@@ -19,18 +19,18 @@ from threading import Lock, Thread
 from PyQt6.QtCore import QThread
 
 
-def thread_safe(func):
+def thread_safe(fn):
     """函数的线程安全化,需要lock"""
 
-    @wraps(func)
+    @wraps(fn)
     def wrapper(*args, **kwargs):
         with Lock() as _:
-            return func(*args, **kwargs)
+            return fn(*args, **kwargs)
 
     return wrapper
 
 
-def run_in_threadpool(func):
+def parallelize_decorator(func):
     """
     数据科学通常涉及模型训练或超参数调整等任务的并行处理。
     @parallelize_decorator 使用多个 CPU 核心并行化函数调用。
@@ -200,19 +200,19 @@ if __name__ == '__main__':
         print('QThread_wrap in func c : ', i, i * 11)
         return i * 11
 
-    aa = a(8)
-    cc = b(40)
-    cc = c(3, callback=lambda x: x * 100)
-    print('Result:', cc.Result)
-    print('callback:', cc.callback)
-    print('daemon:', cc.daemon)
-    print('objectName:', cc.objectName())
-    print(thread_print.__name__)
-    thread_print('hello world')
+    # aa = a(8)
+    # cc = b(40)
+    # cc = c(3, callback=lambda x: x * 100)
+    # print('Result:', cc.Result)
+    # print('callback:', cc.callback)
+    # print('daemon:', cc.daemon)
+    # print('objectName:', cc.objectName())
+    # print(thread_print.__name__)
+    # thread_print('hello world')
 
-    @run_in_threadpool
+    @parallelize_decorator
     def parallel_task(x):
         return x**2
 
-    re = parallel_task(list(range(100)))
+    re = parallel_task(list(range(10)))
     print(re)

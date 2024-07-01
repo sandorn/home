@@ -5,14 +5,15 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-06-16 02:28:04
+LastEditTime : 2024-07-01 10:50:56
 FilePath     : /CODE/xjLib/xt_Thread/qThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
 from PyQt6.QtCore import QThread
-from xt_Thread import Singleton_Mixin, create_mixin_class, singleton_wrap_class
+from xt_Singleon import Singleton_Mixin, singleton_wrap_class
+from xt_Thread import create_mixin_class
 
 
 class CustomQThread(QThread):
