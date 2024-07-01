@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-06-26 14:44:52
+LastEditTime : 2024-07-01 09:30:04
 FilePath     : /CODE/xjLib/xt_Thread/futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -52,10 +52,10 @@ class FnInThreadPool:
 if __name__ == '__main__':
     from xt_Requests import get
 
-    url_list = ['http://httpbin.org/get']
-    res = FnInThreadPool(get, url_list * 3)
+    url_list = ['http://httpbin.org/get'] * 3
+    res = FnInThreadPool(get, url_list)
     print(111111, res.result)
-    POOL = ThreadPool()
-    POOL.add_tasks(get, url_list * 3)
-    res = POOL.wait_completed()
-    print(222222, res)
+    # POOL = ThreadPool()
+    # POOL.add_tasks(get, url_list)
+    # res = POOL.wait_completed()
+    # print(222222, res)

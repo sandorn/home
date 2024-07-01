@@ -192,14 +192,14 @@ if __name__ == '__main__':
     # $add_tasks#######################################################
     myaio = AioHttpCrawl()
     url_list = ['https://www.163.com', 'https://www.126.com', 'https://www.qq.com']
-    print(111111, myaio.add_tasks(url_list * 1))
+    # print(111111, myaio.add_tasks(url_list * 1))
     # print(111111, myaio.wait_completed())
     # print(222222, myaio.add_tasks(url_list * 1))
     # print(222222, myaio.wait_completed())
     # $add_func########################################################
     from xt_Requests import get
 
-    # print(333333, myaio.add_pool(get, ['https://httpbin.org/get'] * 3))
+    print(333333, myaio.add_pool(get, ['https://httpbin.org/get'] * 3))
     # print(333333, myaio.wait_completed())
 
     # $装饰器##########################################################

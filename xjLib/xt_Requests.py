@@ -89,9 +89,8 @@ def _request_tretry(method, url, *args, **kwargs):
 
     @TRETRY
     def __fetch_run():
-        response = requests.request(method, url, *args, **kwargs)
+        return requests.request(method, url, *args, **kwargs)
         # response.raise_for_status()
-        return response
 
     try:
         response = __fetch_run()
@@ -113,28 +112,26 @@ post = partial(_request_tretry, 'post')
 class SessionClient:
     """封装session,保存cookies,利用TRETRY三方库实现重试"""
 
-    __slots__ = ['sson', 'method', 'url', 'args', 'kwargs', 'response', 'callback']
+    __slots__ = ['session', 'method', 'url', 'args', 'kwargs', 'response', 'callback']
 
     def __init__(self):
-        self.sson = requests.session()
-        self.response = None
+        self.session = requests.session()
+        # self.response = None
 
     @log_decorator
     @TRETRY
     def _request(self):
-        self.response = self.sson.request(self.method, self.url, *self.args, **self.kwargs)
-        return self.response
+        return self.session.request(self.method, self.url, *self.args, **self.kwargs)
 
     def start_fetch_run(self):
         try:
-            self._request()
-        except requests.exceptions.RequestException as err:
-            print(f'SessionClient request:<{self.url}>; Err:{err!r}')
-            return None
-        else:
+            self.response = self._request()
             self.update_cookies(self.response.cookies)
             result = htmlResponse(self.response)
             return self.callback(result) if callable(self.callback) else result
+        except requests.exceptions.RequestException as err:
+            print(f'SessionClient request:<{self.url}>; Err:{err!r}')
+            return err
 
     def __create_params(self, *args, **kwargs):
         self.url = args[0]
@@ -160,15 +157,15 @@ class SessionClient:
             return self.__create_params  # @ 设置参数
 
     def update_cookies(self, cookie_dict):
-        self.sson.cookies.update(cookie_dict)
+        self.session.cookies.update(cookie_dict)
 
     def update_headers(self, header_dict):
-        self.sson.headers.update(header_dict)
+        self.session.headers.update(header_dict)
 
 
 if __name__ == '__main__':
     sion = SessionClient()
-    print(sion.head('http://httpbin.org/headers').headers)
+    print(sion.get('http://httpbin.org/headers'))
     # print(sion.put('http://httpbin.org/put', data=b'data'))
     # print(sion.delete('http://httpbin.org/delete'))
     # print(sion.options('http://httpbin.org/get').headers)

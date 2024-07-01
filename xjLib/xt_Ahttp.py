@@ -88,15 +88,13 @@ async def _async_fetch(self):
 
     try:
         await _fetch_run()
-        self.result = htmlResponse(self.response, self.content, index=self.index)
-        if self.callback:
-            self.result = self.callback(self.result)
+        _result = htmlResponse(self.response, self.content, index=self.index)
+        self.result = self.callback(self.result) if callable(self.callback) else _result
         return self.result
     except Exception as err:
         print(f'Async_fetch:{self} | RetryErr:{err!r}')
         self.response = self.content = None
         self.result = [self.index, err, '']
-    finally:
         return self.result
 
 
