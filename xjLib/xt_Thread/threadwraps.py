@@ -24,8 +24,27 @@ def thread_safe(fn):
 
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        with Lock() as _:
+        with Lock():
             return fn(*args, **kwargs)
+
+    return wrapper
+
+
+def thread_safe_for_method_in_class(func):
+    """
+    对类中的方法进行线程安全包装
+    :param func:
+    :return:
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        self = args[0]
+        try:
+            self.lock.acquire()
+            return func(*args, **kwargs)
+        finally:
+            self.lock.release()
 
     return wrapper
 

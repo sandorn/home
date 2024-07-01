@@ -1,17 +1,16 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-11-26 19:38:49
-FilePath     : /xjLib/xt_ScrapyRun.py
-LastEditTime : 2022-11-14 22:23:00
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2024-07-01 13:24:31
+FilePath     : /CODE/xjLib/xt_ScrapyRun.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
+
 import os
 import sys
 

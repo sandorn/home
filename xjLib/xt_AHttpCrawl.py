@@ -23,6 +23,7 @@ from tenacity import retry, stop_after_attempt, wait_random
 from xt_Head import RETRY_TIME, TIMEOUT, Head
 from xt_Log import log_decorator
 from xt_Response import htmlResponse
+from xt_Thread import parallelize_decorator
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
@@ -203,17 +204,17 @@ if __name__ == '__main__':
     # print(333333, myaio.wait_completed())
 
     # $装饰器##########################################################
-    @async_inexecutor_decorator
+    @parallelize_decorator
     def get_html(url):
         return get(url)
 
-    # print(444444, get_html('https://www.baidu.com'))
+    print(444444, get_html(['https://www.baidu.com'] * 3))
 
     @async_inexecutor_decorator
     async def get_a_html(url):
         return get(url)
 
-    # print(555555, get_a_html('https://cn.bing.com/'))
+    print(555555, get_a_html('https://www.baidu.com'))
 
     @async_run_decorator
     async def get_message():

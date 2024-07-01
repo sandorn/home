@@ -188,7 +188,7 @@ def Re_Sub(replacement: str, trims: list[list | tuple]):
     trims[0]:查找字符串,trims[1]:替换字符串
     """
     # lamda表达式,参数与输入值顺序相反
-    if trims is None or not trims:
+    if not trims:
         return replacement
 
     return reduce(
@@ -298,6 +298,36 @@ def class_add_dict(in_obj):
     in_obj.__dict__.update({key: value for key, value in vars(in_obj).items() if not key.startswith('__') and not callable(value)})
 
     return in_obj.__dict__
+
+
+def format_html_string(replacement):
+    """
+    格式化html, 去掉多余的字符，类，script等。
+    :param html:
+    :return:
+    """
+    trim_list = [
+        (r'\n', ''),
+        (r'\t', ''),
+        (r'\r', ''),
+        (r'  ', ''),
+        (r'\u2018', "'"),
+        (r'\u2019', "'"),
+        (r'\ufeff', ''),
+        (r'\u2022', ':'),
+        (r'<([a-z][a-z0-9]*)\ [^>]*>', r'<\g<1>>'),
+        (r'<\s*script[^>]*>[^<]*<\s*/\s*script\s*>', ''),
+        (r'</?a.*?>', ''),
+    ]
+    return reduce(
+        lambda str_tmp, item: re.sub(
+            item[0],
+            item[1],
+            str_tmp,
+        ),
+        trim_list,
+        replacement,
+    )
 
 
 if __name__ == '__main__':
