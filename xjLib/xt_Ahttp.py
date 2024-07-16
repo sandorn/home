@@ -28,17 +28,9 @@ TRETRY = retry(
     wait=wait_random(min=0, max=1),
 )
 
-__all__ = (
-    'get',
-    'post',
-    'ahttpGet',
-    'ahttpGetAll',
-    'ahttpPost',
-    'ahttpPostAll',
-)
+__all__ = ("ahttpGet", "ahttpGetAll", "ahttpPost", "ahttpPostAll")
 
-
-Method_List = ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']
+Method_List = ["get", "post"]
 
 
 class AsyncTask:
@@ -56,15 +48,15 @@ class AsyncTask:
             return self.__create_params  # @ 设置参数
 
     def __repr__(self):
-        return f'<AsyncTask | Method:[{self.method}] | Index:[{self.index}] | Session:[{id(self.session)}] | URL:[{self.url}]>'
+        return f"<AsyncTask | Method:[{self.method}] | Index:[{self.index}] | Session:[{id(self.session)}] | URL:[{self.url}]>"
 
     def __create_params(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
-        kwargs.setdefault('headers', Head().randua)
-        kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))  # @超时
-        self.cookies = kwargs.pop('cookies', {})
-        self.callback = kwargs.pop('callback', None)
+        kwargs.setdefault("headers", Head().randua)
+        kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))  # @超时
+        self.cookies = kwargs.pop("cookies", {})
+        self.callback = kwargs.pop("callback", None)
         self.kwargs = kwargs
         return self
 
@@ -92,43 +84,28 @@ async def _async_fetch(self):
         self.result = self.callback(self.result) if callable(self.callback) else _result
         return self.result
     except Exception as err:
-        print(f'Async_fetch:{self} | RetryErr:{err!r}')
+        print(f"Async_fetch:{self} | RetryErr:{err!r}")
         self.response = self.content = None
-        self.result = [self.index, err, '']
+        self.result = htmlResponse("", err, index=self.index)
         return self.result
 
 
 def __session_method(method, *args, **kwargs):
     session = AsyncTask()
-    method = method.lower()
-    if method in Method_List:
-        return session[method](*args, **kwargs)  # __getitem__
-        # return getattr(session, method)(*args, **kwargs)
-
-
-get = partial(__session_method, 'get')
-post = partial(__session_method, 'post')
-head = partial(__session_method, 'head')  # 结果正常，无ReqResult
-options = partial(__session_method, 'options')
-put = partial(__session_method, 'put')
-delete = partial(__session_method, 'delete')
-trace = partial(__session_method, 'trace')  # 有命令，服务器未响应
-connect = partial(__session_method, 'connect')  # 有命令，服务器未响应
-patch = partial(__session_method, 'patch')
+    if method.lower() in Method_List:
+        return getattr(session, method.lower())(*args, **kwargs)
 
 
 def __parse(method, url, *args, **kwargs):
-    method = method.lower()
-    if method in Method_List:
-        task = AsyncTask()[method](url, *args, **kwargs)
-    # task = eval(method)(url, *args, **kwargs)
+    if method.lower() in Method_List:
+        task = partial(__session_method, method.lower())(url, *args, **kwargs)
     _coroutine = task.start()
     loop = asyncio.new_event_loop()
     return loop.run_until_complete(_coroutine)
 
 
-ahttpGet = partial(__parse, 'get')
-ahttpPost = partial(__parse, 'post')
+ahttpGet = partial(__parse, "get")
+ahttpPost = partial(__parse, "post")
 
 
 async def create_gather_task(tasks):
@@ -144,7 +121,7 @@ async def create_gather_task(tasks):
 async def create_threads_task(coroes):
     """异步多线程,使用不同session"""
     threadsafe_loop = asyncio.new_event_loop()
-    Thread(target=threadsafe_loop.run_forever, name='ThreadSafe', daemon=True).start()
+    Thread(target=threadsafe_loop.run_forever, name="ThreadSafe", daemon=True).start()
 
     tasks_list = []
     for index, coro in enumerate(coroes, start=1):
@@ -158,20 +135,20 @@ async def create_threads_task(coroes):
 def __gather_parse(method, urls, *args, **kwargs):
     method = method.lower()
     if method in Method_List:
-        coroes = [AsyncTask()[method](url, *args, **kwargs) for url in urls]
-    # coroes = [eval(method)(url, *args, **kwargs) for url in urls]
-    _coroutine = create_threads_task(coroes) if kwargs.pop('threadsafe', True) else create_gather_task(coroes)
+        # coroes = [AsyncTask()[method](url, *args, **kwargs) for url in urls]
+        coroes = [partial(__session_method, method.lower())(url, *args, **kwargs) for url in urls]
+    _coroutine = create_threads_task(coroes) if kwargs.pop("threadsafe", True) else create_gather_task(coroes)
     return asyncio.run(_coroutine)
 
 
-ahttpGetAll = partial(__gather_parse, 'get')
-ahttpPostAll = partial(__gather_parse, 'post')
+ahttpGetAll = partial(__gather_parse, "get")
+ahttpPostAll = partial(__gather_parse, "post")
 
-
-if __name__ == '__main__':
-    url_get = 'https://httpbin.org/get'
-    url_post = 'https://httpbin.org/post'
-    url_headers = 'https://httpbin.org/headers'
+if __name__ == "__main__":
+    url1 = "http://www.163.com"
+    url_get = "https://httpbin.org/get"
+    url_post = "https://httpbin.org/post"
+    url_headers = "https://httpbin.org/headers"
 
     res = ahttpGet(url_get)
     print(res)
