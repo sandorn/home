@@ -12,8 +12,6 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-import json
-
 from chardet import detect
 from html2text import HTML2Text
 from lxml import etree
@@ -25,26 +23,26 @@ from xt_Class import item_Mixin
 class htmlResponse(item_Mixin):
     """封装网页抓取结果,使之标准化"""
 
-    __slots__ = ('raw', 'clientResponse', '_content', 'index', 'encoding', 'code_type')
+    __slots__ = ("raw", "_content", "index", "encoding", "code_type")
 
     def __init__(self, response, content=None, index=None):
         self.index: int = index or id(self)
 
         if response is not None:
-            self.raw = self.clientResponse = response
-            self._content: bytes = content if content is not None else response.content
-            self.encoding = getattr(response, 'encoding', 'utf-8')
-            self.code_type = detect(self._content)['encoding'] if isinstance(self._content, bytes) else self.encoding or 'utf-8'
+            self.raw = response
+            self._content: bytes = content if content else response.content
+            self.encoding = getattr(response, "encoding", "utf-8")
+            self.code_type = detect(self._content)["encoding"] if isinstance(self._content, bytes) else self.encoding
         else:
-            self.raw = self.clientResponse = None
-            self._content = b''
-            self.encoding = 'utf-8'
-            self.code_type = 'utf-8'
+            self.raw = None
+            self._content = b""
+            self.encoding = "utf-8"
+            self.code_type = "utf-8"
 
     def __repr__(self):
         if self.raw is None:
-            return f'<htmlResponse [None] | ID:[{self.index}]>'
-        return f'<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>'
+            return f"<htmlResponse [None] | ID:[{self.index}]>"
+        return f"<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>"
 
     def __str__(self):
         return self.__repr__()
@@ -53,72 +51,64 @@ class htmlResponse(item_Mixin):
         return self.status == 200
 
     def __len__(self):
-        return len(self.text)
+        if self.text:
+            return len(self.text)
+        else:
+            return 0
 
     @property
     def content(self):
-        return self._content.decode(self.code_type, 'ignore')
+        if isinstance(self.code_type, str):
+            return self._content.decode(self.code_type, "ignore")
 
     @property
     def text(self):
-        # try:
-        #     _text = self.raw.text.encode(self.encoding).decode(self.code_type, 'ignore')
-        # except AttributeError:
-        #     _text = self.content
-        # return _text
-        try:
-            _text = self.raw.text
-            _text = _text.encode(self.encoding).decode(self.code_type, 'ignore')
-        finally:
-            return _text if hasattr(self.raw, 'text') else self.content
+        if self.raw:
+            return self.raw.text.encode(self.encoding).decode(self.code_type, "ignore")
+        else:
+            return self.content
 
     @property
     def elapsed(self):
-        if hasattr(self.raw, 'elapsed'):
+        if self.raw and hasattr(self.raw, "elapsed"):
             return self.raw.elapsed
         else:
             return None
 
     @property
     def seconds(self):
-        if hasattr(self.raw, 'elapsed'):
+        if self.raw and hasattr(self.raw, "elapsed"):
             return self.raw.elapsed.total_seconds()
         else:
             return 0
 
     @property
     def url(self):
-        return self.raw.url
+        if self.raw and hasattr(self.raw, "url"):
+            return self.raw.url
 
     @property
     def cookies(self):
-        return self.raw.cookies
+        if self.raw and hasattr(self.raw, "cookies"):
+            return self.raw.cookies
 
     @property
     def headers(self):
-        return self.raw.headers
-
-    @property
-    def json(self):
-        try:
-            return json.loads(self.text)
-        except ValueError:
-            return None
+        if self.raw and hasattr(self.raw, "headers"):
+            return self.raw.headers
 
     @property
     def status(self):
-        return getattr(self.raw, 'status', self.raw.status_code)
+        if self.raw:
+            return getattr(self.raw, "status", self.raw.status_code)
 
     @property
-    def html(self):
-        def _clean(filter):
-            element = self.element
-            trashs = element.xpath(filter)
-            for item in trashs:
-                item.getparent().remove(item)
-            return element
-
-        return _clean('//script')
+    def html(self, filter="//script"):
+        element = self.element
+        trashs = element.xpath(filter)
+        for item in trashs:
+            item.getparent().remove(item)
+        return element
 
     @property
     def element(self):
@@ -130,14 +120,14 @@ class htmlResponse(item_Mixin):
         返回requests_html对象,支持html对象操作:find, xpath, render(先安装chromium浏览器)
         """
         html = HTML(html=self._content)
-        html.url = self.raw.url
+        setattr(html, "url", self.url)
         return html
 
     @property
     def query(self):
         return PyQuery(self.html)  # , parser='xml')
 
-    def xpath(self, selectors: str | list | tuple = '') -> list:
+    def xpath(self, selectors: str | list | tuple = "") -> list:
         """
         在元素上执行XPath选择。
         参数selectors: XPath选择器,可以是字符串或字符串的列表/元组。
@@ -145,7 +135,7 @@ class htmlResponse(item_Mixin):
         """
         if isinstance(selectors, str):
             selectors = [selectors] if selectors.strip() else []
-        elif isinstance(selectors, (list, tuple)):
+        elif isinstance(selectors, list | tuple):
             selectors = [selector for selector in selectors if isinstance(selector, str) and selector.strip()]
 
         return [self.element.xpath(selector) for selector in selectors]
@@ -154,8 +144,9 @@ class htmlResponse(item_Mixin):
     def ctext(self):
         h = HTML2Text()
         h.ignore_links = True
-        return h.handle(self.raw.text)
+        if self.raw:
+            return h.handle(self.raw.text)
 
 
-if __name__ == '__main__':
-    print(htmlResponse(None))
+if __name__ == "__main__":
+    print(htmlResponse(None).text)

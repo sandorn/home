@@ -15,9 +15,9 @@ Github       : https://github.com/sandorn/home
 # __init__.py
 
 # author of the package
-__author__ = 'Even.Sand'
+__author__ = "Even.Sand"
 
 # software license used for the package
-__license__ = 'NewSea'
+__license__ = "NewSea"
 
-LIB_VERSION = '1.2'
+LIB_VERSION = "1.2"

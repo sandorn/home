@@ -24,7 +24,7 @@ from xt_DAO.untilsql import get_insert_sql, get_update_sql
 
 
 class AioMysql(item_Mixin):
-    def __init__(self, key='default', tablename=None):
+    def __init__(self, key="default", tablename=None):
         self.coro_list = []
         if tablename:
             self.tablename = tablename
@@ -34,13 +34,13 @@ class AioMysql(item_Mixin):
 
     async def create_engine(self, key, autocommit=True):
         if key not in DB_CONFIG:
-            raise ValueError(f'错误提示:检查数据库配置:{key}')
+            raise ValueError(f"错误提示:检查数据库配置:{key}")
         conf = deepcopy(DB_CONFIG[key])
-        conf.pop('type', None)
+        conf.pop("type", None)
         try:
             self.engine = await aio_sa.create_engine(autocommit=autocommit, **conf)
         except Exception as err:
-            print('connect error:', err)
+            print("connect error:", err)
 
     def run_in_loop(self, coro_list=None):
         coro_list = coro_list or self.coro_list
@@ -108,12 +108,12 @@ class AioMysql(item_Mixin):
                     print(traceback.format_exc())
 
 
-if __name__ == '__main__':
-    query_list = ['SELECT users2.ID FROM users2', 'SELECT * FROM  users2']
+if __name__ == "__main__":
+    query_list = ["SELECT users2.ID FROM users2", "SELECT * FROM  users2"]
 
-    item1 = {'username': '刘新军', 'password': '234567', '手机': '13910118122', '代理人编码': '10005393', '会员级别': 'SSS', '会员到期日': '9999-12-31 00:00:00'}
+    item1 = {"username": "刘新军", "password": "234567", "手机": "13910118122", "代理人编码": "10005393", "会员级别": "SSS", "会员到期日": "9999-12-31 00:00:00"}
 
-    aio = AioMysql('TXbx', 'users2')
+    aio = AioMysql("TXbx", "users2")
     # res = aio.insert([item1])
     # print(res)
     # res = aio.insert([item1, item1], autorun=False)

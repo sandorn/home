@@ -15,73 +15,43 @@ https://zhuanlan.zhihu.com/p/31644562
 https://github.com/ShichaoMa
 """
 
-import functools
 import logging
-import signal
 import time
 import traceback
 from copy import deepcopy
-from functools import reduce, wraps
+from functools import wraps
 from types import FunctionType
-from typing import Any, Callable, Type
 
 
 class ExceptContext:
-    def __init__(
-        self,
-        exception: Type[Exception] = Exception,
-        func_name: str = '',
-        errback=None,
-        finalback=None,
-    ):
-        """
-        Initialize the ExceptContext object.
-        :param exception: The type of exception to monitor.
-        :param func_name: The name of the current function being traced.
-        :param errback: A callback function to be called when the specified exception occurs.
-        :param finalback: A final callback function to be executed after all processing is done.
-        """
-        if errback is None:
-            errback = self.default_errback
-        if finalback is None:
-            finalback = self.default_finalback
-        self.errback = errback
-        self.finalback = finalback
+
+    def __init__(self,
+                 exception=Exception,
+                 func_name="",
+                 errback=None,
+                 finalback=None):
+        self.errback = errback or self.default_errback
+        self.finalback = finalback or self.default_finalback
         self.exception = exception
         self.has_error = False
         self.func_name = func_name
 
     def __enter__(self):
-        """
-        Enter the context block.
-        :return: The ExceptContext object itself.
-        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        Exit the context block.
-        :param exc_type: The type of the raised exception.
-        :param exc_val: The value of the raised exception.
-        :param exc_tb: The traceback of the raised exception.
-        :return: True if the exception was handled; False otherwise.
-        """
         if isinstance(exc_val, self.exception):
             self.has_error = True
-            return_code = self.errback(self.func_name, exc_type, exc_val, exc_tb)
+            return_code = self.errback(self.func_name, exc_type, exc_val,
+                                       exc_tb)
         else:
             return_code = False
         self.finalback(self.has_error)
         return return_code
 
     def __call__(self, func):
-        """
-        Use the ExceptContext object as a decorator.
-        :param func: The function to be decorated.
-        :return: The decorated function.
-        """
 
-        @functools.wraps(func)
+        @wraps(func)
         def wrapper(*args, **kwargs):
             with self:
                 return func(*args, **kwargs)
@@ -90,96 +60,12 @@ class ExceptContext:
 
     @staticmethod
     def default_errback(func_name, exc_type, exc_val, exc_tb):
-        """
-        The default callback function for handling exceptions.
-        :param func_name: The name of the function where the exception occurred.
-        :param exc_type: The type of the raised exception.
-        :param exc_val: The value of the raised exception.
-        :param exc_tb: The traceback of the raised exception.
-        :return: True if the exception was handled; False otherwise.
-        """
-        logging.exception(f'Exception in {func_name}: {exc_val}')
+        logging.exception(f"Exception in {func_name}: {exc_val}")
         return True
 
     @staticmethod
     def default_finalback(has_error: bool):
-        """
-        The default callback function for final processing.
-        :param has_error: Whether an exception occurred or not.
-        """
-        pass
-
-
-def timeout0(timeout_time, default):
-    """超时器,装饰函数并指定其超时时间"""
-
-    class DecoratorTimeout(Exception):
-        pass
-
-    def timeout_function(func):
-        def function(*args):
-            def timeout_handler(signum, frame):
-                raise DecoratorTimeout()
-
-            old_handler = signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(timeout_time)
-            try:
-                result = func(*args)
-            except DecoratorTimeout:
-                return default
-            finally:
-                signal.signal(signal.SIGALRM, old_handler)
-            signal.alarm(0)
-            return result
-
-        return function
-
-    return timeout_function
-
-
-def timeout(timeout_time: int, default: Any):
-    """超时装饰器，用于为被装饰的函数设置超时时间。
-
-    Args:
-        timeout_time (int): 超时时间，以秒为单位。
-        default (Any): 默认返回值。
-
-    Returns:
-        Callable[..., Any]: 被装饰后的函数。
-    """
-
-    class DecoratorTimeout(Exception):
-        pass
-
-    def timeout_function(func: Callable[..., Any]) -> Callable[..., Any]:
-        @functools.wraps(func)
-        def function(*args, **kwargs) -> Any:
-            def timeout_handler(signum, frame):
-                raise DecoratorTimeout()
-
-            old_handler = signal.signal(signal.SIGINT, timeout_handler)
-            signal.alarm(timeout_time)
-
-            with signal_timeout_cleanup(signal.SIGINT, old_handler):
-                return func(*args, **kwargs)
-
-        return function
-
-    return timeout_function
-
-
-class signal_timeout_cleanup:
-    """Context manager to ensure a signal is set back to its original state."""
-
-    def __init__(self, signum, handler):
-        self.signum = signum
-        self.handler = handler
-
-    def __enter__(self): ...
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        signal.alarm(0)
-        signal.signal(self.signum, self.handler)
+        ...
 
 
 def call_later(callback, call_args=(), immediately=True, interval=1):
@@ -196,6 +82,7 @@ def call_later(callback, call_args=(), immediately=True, interval=1):
     """
 
     def decorate(func):
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             self = args[0]
@@ -206,9 +93,9 @@ def call_later(callback, call_args=(), immediately=True, interval=1):
                     getattr(self, callback)(*call_args)
                 else:
                     now = time.time()
-                    if now - self.__dict__.get('last_call_time', 0) > interval:
+                    if now - self.__dict__.get("last_call_time", 0) > interval:
                         getattr(self, callback)(*call_args)
-                        self.__dict__['last_call_time'] = now
+                        self.__dict__["last_call_time"] = now
 
         return wrapper
 
@@ -216,11 +103,9 @@ def call_later(callback, call_args=(), immediately=True, interval=1):
 
 
 def freshdefault(func):
-    """装饰函数,使可变对象可以作为默认值"""
-    # 保存函数的默认值
-    fdefaults = func.__defaults__
-    # 保存函数注解
-    ftypes = func.__annotations__
+    """装饰函数,使可变对象[list|dict]可以作为默认值"""
+    fdefaults = func.__defaults__  # 保存函数的默认值
+    ftypes = func.__annotations__  # 保存函数注解
 
     def refresher(*args, **kwds):
         if fdefaults:
@@ -238,9 +123,9 @@ def freshdefault(func):
 
 def _create_func(code_body, **kwargs):
     """动态函数创建器"""
-    kwargs.setdefault('globals', {})
-    filename = kwargs.pop('filename', 'xt_Tools._create_func')
-    exmethod = kwargs.pop('exmethod', 'exec')
+    kwargs.setdefault("globals", {})
+    filename = kwargs.pop("filename", "xt_Tools._create_func")
+    exmethod = kwargs.pop("exmethod", "exec")
     module_code = compile(code_body, filename, exmethod)
     return FunctionType(module_code.co_consts[0], **kwargs)
 
@@ -249,54 +134,62 @@ def _create_func(code_body, **kwargs):
 
 func_attr_name_list = [
     # #函数的内置属性
-    '__closure__',
-    '__code__',
-    '__defaults__',
-    '__dict__',
-    '__doc__',
-    '__globals__',
-    '__name__',
+    "__closure__",
+    "__code__",
+    "__defaults__",
+    "__dict__",
+    "__doc__",
+    "__globals__",
+    "__name__",
 ]
 func_code_name_list = [
     # #函数.__code__的内置属性
-    'co_argcount',
-    'co_cellvars',
-    'co_code',
-    'co_consts',
-    'co_filename',
-    'co_firstlineno',
-    'co_flags',
-    'co_freevars',
-    'co_kwonlyargcount',
-    'co_lnotab',
-    'co_name',
-    'co_names',
-    'co_nlocals',
-    'co_posonlyargcount',
-    'co_stacksize',
-    'co_varnames',
+    "co_argcount",
+    "co_cellvars",
+    "co_code",
+    "co_consts",
+    "co_filename",
+    "co_firstlineno",
+    "co_flags",
+    "co_freevars",
+    "co_kwonlyargcount",
+    "co_lnotab",
+    "co_name",
+    "co_names",
+    "co_nlocals",
+    "co_posonlyargcount",
+    "co_stacksize",
+    "co_varnames",
 ]
 
 
 def catch_wraps(func, bool=False):
     """捕捉异常的装饰器"""
 
+    @wraps(func)
     def wrapper(*args, **keyargs):
         try:
             return func(*args, **keyargs)
         except Exception as err:
-            print(f'catch_wraps: [{func.__name__}]\tError: {err!r}')
-            if bool:
-                traceback.print_exc()
+            print(f"catch_wraps: [{func.__name__}]\tError: {err!r}")
+            if bool: traceback.print_exc()
             return None
 
-    wrapper.__name__ = func.__name__
-    wrapper.__doc__ = func.__doc__
-    wrapper.__dict__.update(func.__dict__)
     return wrapper
 
 
-def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: float = 0.1, exceptions: (BaseException, tuple, list) = BaseException, sleep=time.sleep, process=lambda ex: True, validate=None, callback=None, default=None):
+def try_except_wraps(fn=None,
+                     max_retries: int = 6,
+                     delay: float = 0.2,
+                     step: float = 0.1,
+                     exceptions: type[BaseException]
+                     | tuple[type[BaseException], ...]
+                     | list[type[BaseException]] = BaseException,
+                     sleep=time.sleep,
+                     process=lambda ex: True,
+                     validate=None,
+                     callback=None,
+                     default=None):
     """
     函数执行出现异常时自动重试的简单装饰器
     :param f: function 执行的函数。
@@ -324,6 +217,7 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
     """
 
     def decorator(func):
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             func_exc = None
@@ -332,13 +226,12 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
                     result = func(*args, **kwargs)
                     if callable(validate) and validate(result) is False:
                         continue
-                    # #回调函数,处理结果
                     return callback(result) if callable(callback) else result
-                except exceptions as ex:
+                except Exception as ex:
                     func_exc, _ = ex, traceback.format_exc()
                     sleep(delay + step * index)  # #延迟重试
             # #重试次数使用完毕,结果错误,返回默认值
-            print(f'try_except_wraps: [{func.__name__}]\tError: {func_exc!r}')
+            print(f"try_except_wraps: [{func.__name__}]\tError: {func_exc!r}")
             if callable(process) and process(func_exc) is True:
                 return default() if callable(default) else default
 
@@ -347,66 +240,64 @@ def try_except_wraps(fn=None, max_retries: int = 6, delay: float = 0.2, step: fl
     return decorator(fn) if callable(fn) else decorator
 
 
-def retry_on_exception(func, max_retry=3):
+def retry_on_exception(fn=None, max_retry=3):
     """Retry 3 times if the function throws an exception."""
 
-    def wrapper(*args, **kwargs):
-        for _ in range(max_retry):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                print(e)
-                time.sleep(1)
-        return None
+    def decorator(func, max_retry=max_retry):
 
-    return wrapper
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for _ in range(max_retry):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as err:
+                    print(
+                        f"retry_on_exception: [{func.__name__}]\tError: {err!r}"
+                    )
+                    time.sleep(0.01)
+            return None
+
+        return wrapper
+
+    return decorator(fn) if callable(fn) else decorator
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    def trys():
-        @catch_wraps
-        def simple():
-            return 5 / 0
+    @catch_wraps
+    def simple():
+        """简单函数"""
+        return 6 / 3
 
-        @catch_wraps
-        def readFile(filename):
-            with open(filename) as f:
-                print(len(f.readlines()))
+    @catch_wraps
+    def readFile(filename):
+        with open(filename) as f:
+            print(len(f.readlines()))
 
-        def add(a, b):
-            with ExceptContext():
-                return int(a) / int(b)
+    def add(a, b):
+        with ExceptContext():
+            return int(a) + int(b)
 
-        @try_except_wraps
-        def assertSumIsPositive(*args):
-            print('222222,assertSumIsPositive')
-            _sum = reduce(add, *args)
-            assert _sum >= 0
+    @try_except_wraps
+    def assertSumIsPositive(a, b):
+        return int(a) / int(b)
 
-        @try_except_wraps()
-        def checkLen(**keyargs):
-            print('333333,checkLen')
-            if len(keyargs) < 3:
-                raise ValueError('Number of key args should more than 3.')
-
-        simple()
-        readFile('UnexistFile.txt')
-        print(add(1, 0))
-        # assertSumIsPositive(1, 2, -3, -4)
-        # checkLen(a=5, b=2)
+    @retry_on_exception
+    def checkLen(**keyargs):
+        print("333333,checkLen")
+        if len(keyargs) < 3:
+            raise ValueError("Number of key args should more than 3.")
 
     def fre():
         # 可变对象默认装饰器
         @freshdefault
         def extend_list(v, li=[]):
             li.append(v)
-            # print(li)
             return li
 
         list1 = extend_list(10)
-        list2 = extend_list(123, [])
-        list3 = extend_list('a')
+        list2 = extend_list([1, 2, 3, 4], [])
+        list3 = extend_list("a")
         print(list1)
         print(list2)
         print(list3)
@@ -415,21 +306,24 @@ if __name__ == '__main__':
 
     def fu():
         # #函数创建器
-        foo_func = _create_func('def foo():a=3;return 3')
+        foo_func = _create_func("def foo():a=3;return 3")
 
         print(foo_func())
 
         for attr in func_attr_name_list:
-            print(attr, ':', getattr(foo_func, attr))
+            print(attr, ":", getattr(foo_func, attr))
 
         for attr in func_code_name_list:
-            print(
-                f'foo_func.__code__.{attr.ljust(33)}',
-                ':',
-                getattr(foo_func.__code__, attr),
-            )
+            print(f"foo_func.__code__.{attr.ljust(33)}", ":",
+                  getattr(foo_func.__code__, attr))
         print(_create_func.__dict__)
 
-    trys()
-    fre()
-    fu()
+    # print(simple())
+    # readFile('UnexistFile.txt')
+
+    # print(add(123, 0))
+    # print(assertSumIsPositive(6, 0))
+    checkLen(a=5, b=2)
+
+    # fre()
+    # fu()

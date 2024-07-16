@@ -21,7 +21,7 @@ from xt_Log import log_decorator
 from xt_Response import htmlResponse
 from xt_Tools import try_except_wraps
 
-Method_List = ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']
+Method_List = ["get", "post", "head", "options", "put", "delete", "trace", "connect", "patch"]
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
@@ -31,8 +31,8 @@ TRETRY = retry(
 
 
 def _setKw(kwargs):
-    kwargs.setdefault('headers', Head().randua)
-    kwargs.setdefault('timeout', TIMEOUT)  # @超时
+    kwargs.setdefault("headers", Head().randua)
+    kwargs.setdefault("timeout", TIMEOUT)  # @超时
     return kwargs
 
 
@@ -43,7 +43,7 @@ def _request_parse(method, url, *args, **kwargs):
     response = None
     func_exc = ret_err = False
     kwargs = _setKw(kwargs)
-    callback = kwargs.pop('callback', None)
+    callback = kwargs.pop("callback", None)
 
     while attempts:
         try:
@@ -54,7 +54,7 @@ def _request_parse(method, url, *args, **kwargs):
             attempts -= 1
             func_exc = True
             ret_err = err
-            print(f'_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}')
+            print(f"_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}")
         else:
             # #返回正确结果
             result = htmlResponse(response)
@@ -69,7 +69,7 @@ def _request_parse(method, url, *args, **kwargs):
 def _request_wraps(method, url, *args, **kwargs):
     """利用自编重试装饰器,实现重试"""
     kwargs = _setKw(kwargs)
-    callback = kwargs.pop('callback', None)
+    callback = kwargs.pop("callback", None)
 
     @try_except_wraps()
     def __fetch_run():
@@ -85,7 +85,7 @@ def _request_wraps(method, url, *args, **kwargs):
 def _request_tretry(method, url, *args, **kwargs):
     """利用TRETRY三方库实现重试"""
     kwargs = _setKw(kwargs)
-    callback = kwargs.pop('callback', None)
+    callback = kwargs.pop("callback", None)
 
     @TRETRY
     def __fetch_run():
@@ -97,22 +97,22 @@ def _request_tretry(method, url, *args, **kwargs):
         result = htmlResponse(response)
         return callback(result) if callable(callback) else result
     except Exception as err:
-        print(f'_request_tretry.{method}:<{url}>; Err:{err!r}')
-        return err
+        print(f"_request_tretry.{method}:<{url}>; Err:{err!r}")
+        return htmlResponse(None)
 
 
-get_parse = partial(_request_parse, 'get')
-post_parse = partial(_request_parse, 'post')
-get_wraps = partial(_request_wraps, 'get')
-post_wraps = partial(_request_wraps, 'post')
-get = partial(_request_tretry, 'get')
-post = partial(_request_tretry, 'post')
+get_parse = partial(_request_parse, "get")
+post_parse = partial(_request_parse, "post")
+get_wraps = partial(_request_wraps, "get")
+post_wraps = partial(_request_wraps, "post")
+get = partial(_request_tretry, "get")
+post = partial(_request_tretry, "post")
 
 
 class SessionClient:
     """封装session,保存cookies,利用TRETRY三方库实现重试"""
 
-    __slots__ = ['session', 'method', 'url', 'args', 'kwargs', 'response', 'callback']
+    __slots__ = ["session", "method", "url", "args", "kwargs", "response", "callback"]
 
     def __init__(self):
         self.session = requests.session()
@@ -130,17 +130,17 @@ class SessionClient:
             result = htmlResponse(self.response)
             return self.callback(result) if callable(self.callback) else result
         except requests.exceptions.RequestException as err:
-            print(f'SessionClient request:<{self.url}>; Err:{err!r}')
+            print(f"SessionClient request:<{self.url}>; Err:{err!r}")
             return err
 
     def __create_params(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
 
-        self.update_headers(kwargs.pop('headers', MYHEAD))
-        self.update_cookies(kwargs.pop('cookies', {}))
-        self.callback = kwargs.pop('callback', None)
-        kwargs.setdefault('timeout', TIMEOUT)
+        self.update_headers(kwargs.pop("headers", MYHEAD))
+        self.update_cookies(kwargs.pop("cookies", {}))
+        self.callback = kwargs.pop("callback", None)
+        kwargs.setdefault("timeout", TIMEOUT)
         self.kwargs = kwargs
         return self.start_fetch_run()
 
@@ -163,7 +163,7 @@ class SessionClient:
         self.session.headers.update(header_dict)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # sion = SessionClient()
     # print(sion.get('http://httpbin.org/headers'))
     # print(sion.put('http://httpbin.org/put', data=b'data'))
@@ -182,16 +182,18 @@ if __name__ == '__main__':
     # for url in urls:
     # ...
     # print(get_wraps('http://www.baidu.com').cookies)
-    res = get('http://www.163.com')
-    print(res.xpath('//title/text()'))
-    print(res.xpath(['//title/text()', '//title/text()']))
-    print(res.xpath())
-    print(res.xpath(' '))
-    print(res.xpath(''))
-    print(res.dom.xpath('//title/text()'))
-    print(res.html.xpath('//title/text()'))
-    print(res.element.xpath('//title/text()'))
-    print(res.query('title').text())
+
+    from xt_String import align
+
+    res = get("http://www.163.com")
+    print(align("1:", 20), res.xpath("//title/text()"))
+    print(align("2:", 20), res.xpath(["//title/text()", "//title/text()"]))
+    print(align("space:", 20), res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]))
+    print(align("dom:", 20), res.dom.xpath("//title/text()"))
+    print(align("html:", 20), res.html.xpath("//title/text()"))
+    print(align("element:", 20), res.element.xpath("//title/text()"))
+    print(align("query:", 20), res.query("title").text())
+    print(align("json:", 20), res.raw)
     """
     ###############################################################
     # allow_redirects=False #取消重定向
