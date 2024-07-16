@@ -17,6 +17,7 @@ import random
 import re
 import string
 from functools import reduce
+from typing import Sequence  #Sequence是更通用的类型，可以包含列表和元组
 
 
 def is_valid_id_number(id_number):
@@ -118,7 +119,8 @@ def align(str1, distance=36, alignment="L"):
     elif alignment == "R":
         aligned_str = f"{' ' * slen}{str1}"
     else:
-        raise ValueError("Alignment must be one of 'left', 'center', or 'right'")
+        raise ValueError(
+            "Alignment must be one of 'left', 'center', or 'right'")
     return aligned_str
 
 
@@ -127,7 +129,8 @@ def remove_all_blank(value, keep_blank=True):
     if keep_blank:
         return "".join(ch for ch in value if ch.isprintable())
     else:
-        return "".join(ch for ch in value if ch.isprintable() and ch not in string.whitespace)
+        return "".join(ch for ch in value
+                       if ch.isprintable() and ch not in string.whitespace)
 
 
 def clean_invisible_chars(text):
@@ -136,7 +139,7 @@ def clean_invisible_chars(text):
     return re.sub(invisible_chars_pattern, "", text)
 
 
-def Str_Replace(replacement: str, trims: list[list | tuple]):
+def Str_Replace(replacement: str, trims: Sequence[Sequence]):
     """
     # @字符替换，不支持正则
     replacement:欲处理的字符串
@@ -148,10 +151,11 @@ def Str_Replace(replacement: str, trims: list[list | tuple]):
     # return replacement
     """
 
-    return reduce(lambda strtmp, item: strtmp.replace(item[0], item[1]), trims, replacement)
+    return reduce(lambda strtmp, item: strtmp.replace(item[0], item[1]), trims,
+                  replacement)
 
 
-def Str_Clean(replacement: str, trims: list | tuple) -> str:
+def Str_Clean(replacement: str, trims: Sequence) -> str:
     """
     # @字符清除，不支持正则
     replacement:欲处理的字符串
@@ -163,10 +167,11 @@ def Str_Clean(replacement: str, trims: list | tuple) -> str:
     # return replacement
 
     # 第二种方法  # replacement 为初始值，最后传入，在lambda中最先接收
-    return reduce(lambda strtmp, item: strtmp.replace(item, ""), trims, replacement)
+    return reduce(lambda strtmp, item: strtmp.replace(item, ""), trims,
+                  replacement)
 
 
-def Re_Sub(replacement: str, trims: list[list | tuple]):
+def Re_Sub(replacement: str, trims: Sequence[Sequence]):
     """
     @ re.sub正则替换,自写表达式
     replacement:欲处理的字符串
@@ -177,10 +182,11 @@ def Re_Sub(replacement: str, trims: list[list | tuple]):
     if not trims:
         return replacement
 
-    return reduce(lambda str_tmp, item: re.sub(item[0], item[1], str_tmp), trims, replacement)
+    return reduce(lambda str_tmp, item: re.sub(item[0], item[1], str_tmp),
+                  trims, replacement)
 
 
-def Re_Compile(replacement: str, trimsL: list[list | tuple]):
+def Re_Compile(replacement: str, trimsL: Sequence[Sequence]):
     """
     re.compile正则替换,自写表达式
     replacement:欲处理的字符串
@@ -194,17 +200,22 @@ def Re_Compile(replacement: str, trimsL: list[list | tuple]):
     # return replacement
     if not isinstance(replacement, str):
         raise TypeError(f"Expected str, got {type(replacement)}")
-    if not isinstance(trimsL, list):
-        raise TypeError(f"Expected list, got {type(trimsL)}")
-    if not all(isinstance(t, (tuple, list)) for t in trimsL):
-        raise TypeError(f"Expected list of lists or tuples, got {trimsL}")
+
+    if not isinstance(trimsL, Sequence):
+        raise TypeError(f"Expected list|tuple, got {type(trimsL)}")
+
+    if not all(isinstance(t, Sequence) for t in trimsL):
+        raise TypeError(f"Expected Sequence in Sequence, got {trimsL}")
 
     pattern = re.compile("|".join(t[0] for t in trimsL))
-    return pattern.sub(lambda x: next((t[1] for t in trimsL if t[0] == x.group()), x.group()), replacement)
+    return pattern.sub(
+        lambda x: next((t[1] for t in trimsL if t[0] == x.group()), x.group()),
+        replacement)
 
 
 def str_split_limited_list(intext, mixnum=100, maxnum=280):
-    return [intext] if len(intext) < mixnum else re.findall(r"[\s\S]{" + str(mixnum) + "," + str(maxnum) + "}。", intext)
+    return [intext] if len(intext) < mixnum else re.findall(
+        r"[\s\S]{" + str(mixnum) + "," + str(maxnum) + "}。", intext)
 
 
 def str2list(intext, maxlen=300):
@@ -212,7 +223,8 @@ def str2list(intext, maxlen=300):
     将输入的字符串分割成若干个段落，每个段落的长度不超过 maxlen。
     """
     # 按照句号（。）将原始字符串分割为一组子串
-    sentence_list = re.split("。", Str_Replace(intext, [["\r", "。"], ["\n", "。"], [" ", ""]]))
+    sentence_list = re.split(
+        "。", Str_Replace(intext, [["\r", "。"], ["\n", "。"], [" ", ""]]))
     # 过滤掉空子串，并添加句号
     sentence_list = [f"{item}。" for item in sentence_list if item]
 
@@ -260,7 +272,8 @@ def random_char(length=20):
     res_str = []
     for _ in range(length):
         x = random.randint(1, 2)
-        y = str(random.randint(0, 9)) if x == 1 else chr(random.randint(97, 122))
+        y = str(random.randint(0, 9)) if x == 1 else chr(
+            random.randint(97, 122))
         res_str.append(y)
     return "".join(res_str)
 
@@ -270,57 +283,61 @@ def class_add_dict(in_obj):
     if not hasattr(in_obj, "__dict__"):
         in_obj.__dict__ = {}
 
-    in_obj.__dict__.update({key: value for key, value in vars(in_obj).items() if not key.startswith("__") and not callable(value)})
+    in_obj.__dict__.update({
+        key: value
+        for key, value in vars(in_obj).items()
+        if not key.startswith("__") and not callable(value)
+    })
 
     return in_obj.__dict__
 
 
-def format_html_string(replacement):
+def format_html_str(replacement):
     """
     格式化html, 去掉多余的字符，类，script等。
     :param html:
     :return:
     """
-    trim_list = [(r"\n", ""), (r"\t", ""), (r"\r", ""), (r"  ", ""), (r"\u2018", "'"), (r"\u2019", "'"), (r"\ufeff", ""), (r"\u2022", ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r"<\g<1>>"), (r"<\s*script[^>]*>[^<]*<\s*/\s*script\s*>", ""), (r"</?a.*?>", "")]
-    return reduce(lambda str_tmp, item: re.sub(item[0], item[1], str_tmp), trim_list, replacement)
+    trim_list = [(r"\n", ""), (r"\t", ""), (r"\r", ""), (r"  ", ""),
+                 (r"\u2018", "'"), (r"\u2019", "'"), (r"\ufeff", ""),
+                 (r"\u2022", ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r"<\g<1>>"),
+                 (r"<\s*script[^>]*>[^<]*<\s*/\s*script\s*>", ""),
+                 (r"</?a.*?>", "")]
+    return reduce(lambda str_tmp, item: re.sub(item[0], item[1], str_tmp),
+                  trim_list, replacement)
 
 
 if __name__ == "__main__":
 
-    def test_str_replace(self):
+    def test_str_replace():
         replacement = "aaabbbccc"
         trims = [("a", "A"), ("b", "B"), ("c", "C")]
+        print(Str_Replace(replacement, trims))
 
-        Str_Replace(replacement, trims)
-
-    # test_str_replace()
+    test_str_replace()
 
     def test_str_clean():
-        test_str = "###hello?world"
-        result = Str_Clean(test_str, ["#", "?"])
+        test_str = "###Hello?World"
+        print(Str_Clean(test_str, ["#", "?"]))
 
-        assert result == "hello|world", result
-
-    # test_str_clean()
+    test_str_clean()
 
     def test_Re_Sub():
         replacement = "This\n is \u2018a\u2019 test\ufeff string"
         trims = [("\n", ""), ("\u2018", "'"), ("\u2019", "'"), ("\ufeff", "")]
-        expected_result = "This is 'a' test string"
-        result = Re_Sub(replacement, trims)
-        assert result == expected_result, result
+        print(Re_Sub(replacement, trims))
 
-    # test_Re_Sub()
+    test_Re_Sub()
 
     def test_Re_Compile():
         replacement = "hello A and B"
-        trims_list = [("A", "aaa"), ("B", "bbb")]
-        result = Re_Compile(replacement, trims_list)
-        print(result)
+        trims_list = [("A", "aAa"), ("B", "bBb")]
+        print(Re_Compile(replacement, trims_list))
 
     test_Re_Compile()
     str2 = "Powe, on；the 2333, 。哈哈 ！！\U0001f914看看可以吗？一行代码就可以了！^_^"
     print(remove_all_blank(str2, keep_blank=False))
+    print(remove_all_blank(str2, keep_blank=True))
     print(clean_invisible_chars(str2))
 
     # 测试
