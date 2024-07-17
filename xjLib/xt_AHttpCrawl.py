@@ -86,7 +86,7 @@ def async_run_decorator(func):
     def _wrapper(*args, **kwargs):
         @wraps(func)
         async def __wrapper(*args, **kwargs):
-            callback = kwargs.pop('fu_callback', None)
+            callback = kwargs.pop("fu_callback", None)
 
             if iscoroutinefunction(func):
                 task = asyncio.create_task(func(*args, **kwargs))
@@ -119,52 +119,52 @@ class AioHttpCrawl:
         self.loop.close()
 
     @log_decorator
-    async def __add_tasks(self, session, url, method, index=None, *args, **kwargs):
+    async def __add_tasks(self, url, method, index=None, *args, **kwargs):
         """运行任务"""
-        kwargs.setdefault('headers', Head().randua)
-        kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))
-        # cookies = kwargs.pop('cookies', {})
-        callback = kwargs.pop('callback', None)
+        kwargs.setdefault("headers", Head().randua)
+        kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
+        cookies = kwargs.pop("cookies", {})
+        callback = kwargs.pop("callback", None)
         index = index or id(url)
 
         @TRETRY
-        async def __fetch(session):
-            # async with ClientSession(cookies=cookies, connector=TCPConnector(ssl=False)) as session,session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
-            async with session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
+        async def __fetch():
+            async with ClientSession(cookies=cookies, connector=TCPConnector(ssl=False)) as session, session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
+                # async with session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
                 content = await response.read()
                 return response, content
 
         try:
-            response, content = await __fetch(session)
+            response, content = await __fetch()
             result = htmlResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:
-            print(f'AioCrawl_run_task:{self} | RetryErr:{err!r}')
-            return [index, err, '']
+            print(f"AioCrawl_run_task:{self} | RetryErr:{err!r}")
+            return [index, err, ""]
 
     async def _add_tasks(self, url_list, method, *args, **kwargs):
         """分发任务"""
-        callback = kwargs.pop('fu_callback', None)
-        cookies = kwargs.pop('cookies', {})
-        _session = ClientSession(cookies=cookies, connector=TCPConnector(ssl=False))
+        callback = kwargs.pop("fu_callback", None)
+        # cookies = kwargs.pop("cookies", {})
+        # _session = ClientSession(cookies=cookies, connector=TCPConnector(ssl=False))
 
         for index, url in enumerate(url_list, 1):
-            task = asyncio.create_task(self.__add_tasks(_session, url, method=method, index=index, *args, **kwargs))
+            task = asyncio.create_task(self.__add_tasks(url, method=method, index=index, *args, **kwargs))
             if callback:
                 task.add_done_callback(callback)
             self.future_list.append(task)
 
         result = await asyncio.gather(*self.future_list, return_exceptions=True)
-        await _session.close()
+        # await _session.close()
 
         return result
 
-    def add_tasks(self, url_list, method='GET', *args, **kwargs):
+    def add_tasks(self, url_list, method="GET", *args, **kwargs):
         """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
         return self.loop.run_until_complete(self._add_tasks(url_list, method=method, *args, **kwargs))
 
     async def _add_pool(self, func, *args, **kwargs):
-        callback = kwargs.pop('fu_callback', None)
+        callback = kwargs.pop("fu_callback", None)
         with ThreadPoolExecutor(32) as executor:
             for arg in list(zip(*args)):
                 task = self.loop.run_in_executor(executor, func, *arg, **kwargs)
@@ -181,22 +181,22 @@ class AioHttpCrawl:
     def wait_completed(self):
         if len(self.future_list) == 0:
             return []
-        while any(fu._state == 'PENDING' for fu in self.future_list):
+        while any(fu._state == "PENDING" for fu in self.future_list):
             continue
         result_list = [fu.result() for fu in self.future_list]
         self.future_list.clear()
         return result_list
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     ...
     # $add_tasks#######################################################
     myaio = AioHttpCrawl()
-    url_list = ['https://www.163.com', 'https://www.126.com', 'https://www.qq.com']
-    # print(111111, myaio.add_tasks(url_list * 1))
-    # print(111111, myaio.wait_completed())
-    # print(222222, myaio.add_tasks(url_list * 1))
-    # print(222222, myaio.wait_completed())
+    url_list = ["https://www.163.com", "https://www.126.com", "https://www.qq.com"]
+    print(111111, myaio.add_tasks(url_list * 1, "get"))
+    print(111111, myaio.wait_completed())
+    print(222222, myaio.add_tasks(url_list * 1))
+    print(222222, myaio.wait_completed())
     # $add_func########################################################
     from xt_Requests import get
 
@@ -208,17 +208,17 @@ if __name__ == '__main__':
     def get_html(url):
         return get(url)
 
-    print(444444, get_html(['https://www.baidu.com'] * 3))
+    # print(444444, get_html(['https://www.baidu.com'] * 3))
 
     @async_inexecutor_decorator
     async def get_a_html(url):
         return get(url)
 
-    print(555555, get_a_html('https://www.baidu.com'))
+    # print(555555, get_a_html('https://www.baidu.com'))
 
     @async_run_decorator
     async def get_message():
-        async with ClientSession() as session, session.get('https://httpbin.org/get') as response:
+        async with ClientSession() as session, session.get("https://httpbin.org/get") as response:
             return await response.text()
 
     # print(666666, get_message())

@@ -13,7 +13,7 @@ Github       : https://github.com/sandorn/home
 
 import asyncio
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, TCPConnector
 from tenacity import retry, stop_after_attempt, wait_random
 from xt_Head import RETRY_TIME
 from xt_Log import log_decorator
@@ -25,7 +25,7 @@ TRETRY = retry(
     wait=wait_random(min=0, max=1),
 )
 
-Method_List = ['get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch']
+Method_List = ["get", "post", "head", "options", "put", "delete", "trace", "connect", "patch"]
 
 
 class AioHttpClient:
@@ -33,10 +33,11 @@ class AioHttpClient:
         self.loop = loop or asyncio.get_event_loop_policy().new_event_loop()
         asyncio.set_event_loop(self.loop)
         self._session = None
+        self.cookies = {}
 
     async def _init_session(self):
         if self._session is None:
-            self._session = ClientSession()
+            self._session = ClientSession(cookies=self.cookies, connector=TCPConnector(ssl=False))
 
     def __enter__(self):
         return self
@@ -58,18 +59,16 @@ class AioHttpClient:
         self.loop.run_until_complete(self.close_session())
 
     def __getitem__(self, method):
-        method = method.lower()
-        if method in Method_List:
-            self.method = method  # 保存请求方法
-            return lambda *args, **kwargs: self.make_method(*args, **kwargs)
+        if method.lower() in Method_List:
+            self.method = method.lower()  # 保存请求方法
+            return lambda *args, **kwargs: self._make_method(*args, **kwargs)
 
     def __getattr__(self, method):
-        method = method.lower()
-        if method in Method_List:
-            self.method = method  # 保存请求方法
-            return self.make_method  # 调用方法
+        if method.lower() in Method_List:
+            self.method = method.lower()  # 保存请求方法
+            return self._make_method  # 调用方法
 
-    def make_method(self, *args, **kwargs):
+    def _make_method(self, *args, **kwargs):
         return self.loop.run_until_complete(self.request(*args, **kwargs))
 
     @TRETRY
@@ -81,11 +80,11 @@ class AioHttpClient:
             return htmlResponse(response, _content, index)
 
     def getall(self, *args, **kwargs):
-        self.method = 'get'  # 保存请求方法
+        self.method = "get"  # 保存请求方法
         return self.__all(*args, **kwargs)
 
     def postall(self, *args, **kwargs):
-        self.method = 'post'  # 保存请求方法
+        self.method = "post"  # 保存请求方法
         return self.__all(*args, **kwargs)
 
     def __all(self, *args, **kwargs):
@@ -93,11 +92,11 @@ class AioHttpClient:
         return self.loop.run_until_complete(asyncio.gather(*task_list))
 
 
-if __name__ == '__main__':
-    url = 'https://httpbin.org/get'
+if __name__ == "__main__":
+    url = "https://httpbin.org/get"
     with AioHttpClient() as AHC:
-        # res = AHC.get(url)
-        # print(111111, res.headers)
+        res = AHC.get(url)
+        print(111111, res.headers)
         res = AHC.getall([url, url, url])
         print(222222, res)
     # AHC = AioHttpClient()

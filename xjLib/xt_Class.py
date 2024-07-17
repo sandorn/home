@@ -20,65 +20,45 @@ class item_get_Mixin:
         return self.__dict__.get(key)
 
 
-class item_set_Mixin:
+class item_Mixin:
     """下标obj[key]"""
+
+    def __getitem__(self, key):
+        # return getattr(self, key)
+        return self.__dict__.get(key)
 
     def __setitem__(self, key, value):
         self.__dict__[key] = value
-
-
-class item_del_Mixin:
-    """下标obj[key]"""
 
     def __delitem__(self, key):
         return self.__dict__.pop(key)
 
 
-class item_Mixin(item_get_Mixin, item_set_Mixin, item_del_Mixin):
-    """下标obj[key]"""
-
-    pass
-
-
-class attr_get_Mixin:
+class attr_Mixin:
     """原点调用obj.key"""
 
     def __getattr__(self, key):
         # return super().__getattribute__(key)
         return self.__dict__.get(key)
 
-
-class attr_set_Mixin:
-    """原点调用obj.key"""
-
     def __setattr__(self, key, value):
         return super().__setattr__(key, value)
-
-
-class attr_del_Mixin:
-    """原点调用obj.key"""
 
     def __delattr__(self, key):
         return super().__delattr__(key)
 
 
-class attr_Mixin(attr_get_Mixin, attr_set_Mixin, attr_del_Mixin):
-    """原点调用obj.key"""
-
-    pass
-
-
-class dict_mothed_Mixin:
+class remake_dict_Mixin:
     """get_dict重新生成__dict__类字典,主要用于readonly限制"""
 
     def get_dict(self):
         """把对象转换成字典"""
-        if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
-            self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
+        if not hasattr(self, "__dict__") or len(self.__dict__) == 0:
+            self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith("__") and not callable(getattr(self, key))}
         return self.__dict__
 
 
-class iter_Mixin(dict_mothed_Mixin):
+class iter_Mixin:
     """
     # #迭代类,用于继承,不支持next
     from collections import Iterable
@@ -86,14 +66,11 @@ class iter_Mixin(dict_mothed_Mixin):
     """
 
     def __iter__(self):
-        # yield from self.__dict__.iteritems()
-
-        # for attr, value in self.__dict__.items():
-        #     yield attr, value
-        return iter(self.get_dict().items())
+        yield from self.__dict__.items()
+        # return iter(self.get_dict().items())
 
 
-class repr_Mixin(dict_mothed_Mixin):
+class repr_Mixin(remake_dict_Mixin):
     """用于打印显示"""
 
     # __str__ = __repr__
@@ -103,10 +80,7 @@ class repr_Mixin(dict_mothed_Mixin):
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
 
-class Class_Meta(item_Mixin, iter_Mixin, repr_Mixin):
-    """metaclass=abc.ABCMeta"""
-
-    pass
+class Class_Meta(item_Mixin, iter_Mixin, repr_Mixin): ...  # metaclass=abc.ABCMeta
 
 
 class SetOnce_Mixin:
@@ -117,13 +91,10 @@ class SetOnce_Mixin:
     def __setitem__(self, key, value):
         if key not in self:
             return super().__setitem__(key, value)
-        raise ValueError(f'{str(key)} already set')
+        raise ValueError(f"key:`{key}`, already set!")
 
 
-class SetOnceDict(SetOnce_Mixin, dict):
-    """自定义字典,限制key只能赋值一次,key不存在时可添加"""
-
-    pass
+class SetOnceDict(SetOnce_Mixin, dict): ...  # 自定义字典,限制key只能赋值一次,key不存在时可添加
 
 
 def typeassert(**kwargs):
@@ -157,7 +128,7 @@ def typeassert(**kwargs):
 
 def typed_property(name, expected_type):
     """class类property属性生成器,限制赋值类型"""
-    storage_name = f'_{name}'
+    storage_name = f"_{name}"
 
     @property
     def prop(self):
@@ -166,7 +137,7 @@ def typed_property(name, expected_type):
     @prop.setter
     def prop(self, value):
         if not isinstance(value, expected_type):
-            raise TypeError(f'{name} must be a {expected_type}')
+            raise TypeError(f"{name} must be a {expected_type}")
         setattr(self, storage_name, value)
 
     return prop
@@ -194,52 +165,52 @@ def readonly(name):
     return prop
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    def one():
+    def 赋值一次的字典():
         my_dict = SetOnceDict()
         try:
-            my_dict['username'] = '333'
-            my_dict['me'] = 'sand'
-            my_dict['username'] = 'sandorny'
+            my_dict["username"] = "333"
+            my_dict["me"] = "sand"
+            my_dict["username"] = "sandorny"
         except Exception as err:
             print(err)
         print(99999, my_dict)
 
-    def itre():
+    def 可迭代对象():
         class Animal(iter_Mixin, repr_Mixin):
             def __init__(self):
-                self.name = 'liuxinjun'
+                self.name = "liuxinjun"
                 self.age = 12
                 self._i = 787
-                self.姓名 = '行云流水'
+                self.姓名 = "行云流水"
 
         bb = Animal()
         print(bb)
         for k, v in bb:
-            print(k.ljust(6), ':', v)
+            print(k.ljust(16), ":", v)
 
     def itat():
         class Anima(item_Mixin, attr_Mixin):
             def __init__(self):
-                self.name = 'na98888me'
+                self.name = "na98888me"
                 self.age = 12
                 self._i = 787
-                self.姓名 = '行云流水'
+                self.姓名 = "行云流水"
 
         a = Anima()
-        a['name'] = '张三李四'
-        print(a['names'])
-        del a['_i']
+        a["name"] = "张三李四"
+        print(a["names"])
+        del a["姓名"]
         b = Anima()
         b._i = 567
         print(a.name555s)
         del b.name
-        print(a.__dict__, a['age'], id(a))
-        print(id(b.__dict__), b.__dict__, b.age, id(b))
+        print(a.__dict__, id(a))
+        print(b.__dict__, id(b))
 
-    # one()
-    # itre()
+    赋值一次的字典()
+    # 可迭代对象()
     # itat()
 """
 参考见Alispeech/xt_Pygame.py

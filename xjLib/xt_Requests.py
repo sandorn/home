@@ -21,10 +21,7 @@ from xt_Log import log_decorator
 from xt_Response import htmlResponse
 from xt_Tools import try_except_wraps
 
-Method_List = [
-    "get", "post", "head", "options", "put", "delete", "trace", "connect",
-    "patch"
-]
+Method_List = ["get", "post", "head", "options", "put", "delete", "trace", "connect", "patch"]
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
@@ -57,9 +54,7 @@ def _request_parse(method, url, *args, **kwargs):
             attempts -= 1
             func_exc = True
             ret_err = err
-            print(
-                f"_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}"
-            )
+            print(f"_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}")
         else:
             # #返回正确结果
             result = htmlResponse(response)
@@ -117,19 +112,22 @@ post = partial(_request_tretry, "post")
 class SessionClient:
     """封装session,保存cookies,利用TRETRY三方库实现重试"""
 
-    __slots__ = [
-        "session", "method", "url", "args", "kwargs", "response", "callback"
-    ]
+    __slots__ = ["session", "method", "url", "args", "kwargs", "response", "callback"]
 
     def __init__(self):
         self.session = requests.session()
         # self.response = None
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.session.close()
+
     @log_decorator
     @TRETRY
     def _request(self):
-        return self.session.request(self.method, self.url, *self.args,
-                                    **self.kwargs)
+        return self.session.request(self.method, self.url, *self.args, **self.kwargs)
 
     def start_fetch_run(self):
         try:
@@ -139,7 +137,7 @@ class SessionClient:
             return self.callback(result) if callable(self.callback) else result
         except requests.exceptions.RequestException as err:
             print(f"SessionClient request:<{self.url}>; Err:{err!r}")
-            return err
+            return htmlResponse("", err)
 
     def __create_params(self, *args, **kwargs):
         self.url = args[0]
@@ -153,16 +151,13 @@ class SessionClient:
         return self.start_fetch_run()
 
     def __getitem__(self, method):
-        method = method.lower()
-        if method in Method_List:
-            self.method = method  # 保存请求方法
-            return lambda *args, **kwargs: self.__create_params(
-                *args, **kwargs)
+        if method.lower() in Method_List:
+            self.method = method.lower()  # 保存请求方法
+            return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
 
     def __getattr__(self, method):
-        method = method.lower()
-        if method in Method_List:
-            self.method = method  # 保存请求方法
+        if method.lower() in Method_List:
+            self.method = method.lower()  # 保存请求方法
             return self.__create_params  # @ 设置参数
 
     def update_cookies(self, cookie_dict):
@@ -174,13 +169,10 @@ class SessionClient:
 
 if __name__ == "__main__":
     # sion = SessionClient()
-    # print(sion.get('http://httpbin.org/headers'))
-    # print(sion.put('http://httpbin.org/put', data=b'data'))
-    # print(sion.delete('http://httpbin.org/delete'))
-    # print(sion.options('http://httpbin.org/get').headers)
-    # 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-    # print(sion.options('https://cn.bing.com'))
-    # print(sion.patch('http://httpbin.org/patch', data=b'data'))
+    # print(sion.get("http://httpbin.org/headers"))
+    with SessionClient() as sion:
+        res = sion.get("http://www.163.com")
+        print("9".ljust(10), ":", res.xpath("//title/text()"))
     # urls = [
     # 'http://www.baidu.com',
     # 'http://www.163.com',
@@ -192,20 +184,14 @@ if __name__ == "__main__":
     # ...
     # print(get_wraps('http://www.baidu.com').cookies)
 
-    from xt_String import align
-
     res = get("http://www.163.com")
-    print(999999999999999, res.encoding)
-    print(align("1:", 20), res.xpath("//title/text()"))
-    print(align("2:", 20), res.xpath(["//title/text()", "//title/text()"]))
-    print(
-        align("space:", 20),
-        res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]))
-    print(align("dom:", 20), res.dom.xpath("//title/text()"))
-    print(align("html:", 20), res.html.xpath("//title/text()"))
-    print(align("element:", 20), res.element.xpath("//title/text()"))
-    print(align("query:", 20), res.query("title").text())
-    print(align("json:", 20), res.raw)
+    print("1".ljust(10), ":", res.xpath("//title/text()"))
+    # print("2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
+    # print("space".ljust(10), ":", res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]))
+    # print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
+    # print("html".ljust(10), ":", res.html.xpath("//title/text()"))
+    # print("element".ljust(10), ":", res.element.xpath("//title/text()"))
+    # print("query".ljust(10), ":", res.query("title").text())
     """
     ###############################################################
     # allow_redirects=False #取消重定向

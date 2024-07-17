@@ -30,7 +30,7 @@ TRETRY = retry(
 
 __all__ = ("ahttpGet", "ahttpGetAll", "ahttpPost", "ahttpPostAll")
 
-Method_List = ["get", "post"]
+Method_List = ["get", "post", "head", "options", "put", "delete", "trace", "connect", "patch"]
 
 
 class AsyncTask:
@@ -38,17 +38,17 @@ class AsyncTask:
         self.index = id(self)
 
     def __getitem__(self, method):
-        if method in Method_List:
-            self.method = method  # 保存请求方法
+        if method.lower() in Method_List:
+            self.method = method.lower()  # 保存请求方法
             return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
 
     def __getattr__(self, method):
-        if method in Method_List:
-            self.method = method  # 保存请求方法
+        if method.lower() in Method_List:
+            self.method = method.lower()  # 保存请求方法
             return self.__create_params  # @ 设置参数
 
     def __repr__(self):
-        return f"<AsyncTask | Method:[{self.method}] | Index:[{self.index}] | Session:[{id(self.session)}] | URL:[{self.url}]>"
+        return f"《 AsyncTask | Method:[{self.method}] | Index:[{self.index}] | URL:[{self.url}] 》"
 
     def __create_params(self, *args, **kwargs):
         self.url = args[0]
@@ -91,14 +91,12 @@ async def _async_fetch(self):
 
 
 def __session_method(method, *args, **kwargs):
-    session = AsyncTask()
-    if method.lower() in Method_List:
-        return getattr(session, method.lower())(*args, **kwargs)
+    return getattr(AsyncTask(), method)(*args, **kwargs)
 
 
 def __parse(method, url, *args, **kwargs):
-    if method.lower() in Method_List:
-        task = partial(__session_method, method.lower())(url, *args, **kwargs)
+    """单任务"""
+    task = partial(__session_method, method)(url, *args, **kwargs)
     _coroutine = task.start()
     loop = asyncio.new_event_loop()
     return loop.run_until_complete(_coroutine)
@@ -109,7 +107,7 @@ ahttpPost = partial(__parse, "post")
 
 
 async def create_gather_task(tasks):
-    """异步单线程,使用同一个session"""
+    """异步,使用相同session"""
     tasks_list = []
     for index, task in enumerate(tasks, 1):
         task.index = index
@@ -118,25 +116,24 @@ async def create_gather_task(tasks):
     return await asyncio.gather(*tasks_list, return_exceptions=True)
 
 
-async def create_threads_task(coroes):
-    """异步多线程,使用不同session"""
+async def create_threads_task(tasks):
+    """异步线程安全,使用不同session"""
     threadsafe_loop = asyncio.new_event_loop()
     Thread(target=threadsafe_loop.run_forever, name="ThreadSafe", daemon=True).start()
 
     tasks_list = []
-    for index, coro in enumerate(coroes, start=1):
-        coro.index = index
-        _coroutine = coro.start()
+    for index, task in enumerate(tasks, start=1):
+        task.index = index
+        _coroutine = task.start()
         tasks_list.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
 
     return [task.result() for task in tasks_list]
 
 
 def __gather_parse(method, urls, *args, **kwargs):
-    method = method.lower()
-    if method in Method_List:
-        # coroes = [AsyncTask()[method](url, *args, **kwargs) for url in urls]
-        coroes = [partial(__session_method, method.lower())(url, *args, **kwargs) for url in urls]
+    """多任务"""
+    # coroes = [AsyncTask()[method](url, *args, **kwargs) for url in urls]
+    coroes = [partial(__session_method, method)(url, *args, **kwargs) for url in urls]
     _coroutine = create_threads_task(coroes) if kwargs.pop("threadsafe", True) else create_gather_task(coroes)
     return asyncio.run(_coroutine)
 
@@ -150,18 +147,9 @@ if __name__ == "__main__":
     url_post = "https://httpbin.org/post"
     url_headers = "https://httpbin.org/headers"
 
-    res = ahttpGet(url_get)
-    print(res)
+    # res = ahttpGet(url_get)
+    # print(res)
     # res = ahttpPost(url_post, data=b'data')
     # print(res)
-    # res = ahttpGetAll([url_headers, url_get])
-    # print(res)
-    #######################################################################################################
-    # print(get('http://httpbin.org/headers').run().headers)
-    # print(put('http://httpbin.org/put', data=b'data').start())
-    # print(delete('http://httpbin.org/delete').start())
-    # print(options('http://httpbin.org/get').start().headers)
-    # #'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-    # print(trace('http://www.baidu.com').start().headers)
-    # print(connect('http://www.baidu.com').start())
-    # print(patch('http://httpbin.org/patch', data=b'data').start())
+    res = ahttpGetAll([url_headers, url_get])
+    print(res)
