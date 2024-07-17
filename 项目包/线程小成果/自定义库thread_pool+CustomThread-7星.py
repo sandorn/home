@@ -28,8 +28,8 @@ def ByThreadPoolWraps(target):
         tpw(get_contents)(index, url)
     text_list = tpw.wait_completed()
     text_list.sort(key=lambda x: x[0])  # #排序
-    files = os.path.split(__file__)[-1].split('.')[0]
-    savefile(f'{files}&{bookname}&ByThreadPoolWraps.txt', text_list, br='\n')
+    files = os.path.split(__file__)[-1].split(".")[0]
+    savefile(f"{files}&{bookname}&ByThreadPoolWraps.txt", text_list, br="\n")
 
 
 @fn_timer
@@ -40,10 +40,10 @@ def ByCustomThread(target):
     text_list = CustomThread.getAllResult()
     text_list.sort(key=lambda x: x[0])  # #排序
     # aftertexts = [[row[i] for i in range(1, 3)] for row in texts]
-    files = os.path.split(__file__)[-1].split('.')[0]
-    savefile(f'{files}&{bookname}&ByCustomThread.txt', text_list, br='\n')
+    files = os.path.split(__file__)[-1].split(".")[0]
+    savefile(f"{files}&{bookname}&ByCustomThread.txt", text_list, br="\n")
 
 
-if __name__ == '__main__':
-    ByThreadPoolWraps('https://www.bigee.cc/book/6909/')  # |time: 77.21 sec|processtime: 44.44 sec
-    # ByCustomThread('https://www.bigee.cc/book/6909/')  # |time: 78.45 sec|processtime: 42.20 sec
+if __name__ == "__main__":
+    # ByThreadPoolWraps('https://www.bigee.cc/book/6909/')  # |time: 77.21 sec|processtime: 44.44 sec
+    ByCustomThread("https://www.bigee.cc/book/6909/")  # |time: 78.45 sec|processtime: 42.20 sec

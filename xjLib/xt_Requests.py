@@ -36,7 +36,6 @@ def _setKw(kwargs):
     return kwargs
 
 
-@log_decorator
 def _request_parse(method, url, *args, **kwargs):
     """自实现重试"""
     attempts = RETRY_TIME
@@ -65,7 +64,6 @@ def _request_parse(method, url, *args, **kwargs):
         return ret_err
 
 
-@log_decorator
 def _request_wraps(method, url, *args, **kwargs):
     """利用自编重试装饰器,实现重试"""
     kwargs = _setKw(kwargs)
@@ -81,7 +79,6 @@ def _request_wraps(method, url, *args, **kwargs):
     return callback(result) if callable(callback) else result
 
 
-@log_decorator
 def _request_tretry(method, url, *args, **kwargs):
     """利用TRETRY三方库实现重试"""
     kwargs = _setKw(kwargs)
