@@ -48,7 +48,7 @@ class AsyncTask:
             return self.__create_params  # @ 设置参数
 
     def __repr__(self):
-        return f"《 AsyncTask | Method:[{self.method}] | Index:[{self.index}] | URL:[{self.url}] 》"
+        return f"AsyncTask | Method:[{self.method}] | Index:[{self.index}] | URL:[{self.url}]"
 
     def __create_params(self, *args, **kwargs):
         self.url = args[0]
