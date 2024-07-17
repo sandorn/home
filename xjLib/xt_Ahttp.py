@@ -107,7 +107,7 @@ ahttpPost = partial(__parse, "post")
 
 
 async def create_gather_task(tasks):
-    """异步,使用相同session"""
+    """异步,使用不同session"""
     tasks_list = []
     for index, task in enumerate(tasks, 1):
         task.index = index

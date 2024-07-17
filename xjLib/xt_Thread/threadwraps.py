@@ -14,45 +14,30 @@
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
+from inspect import isfunction
 from threading import Lock, Thread
 
 from PyQt6.QtCore import QThread
 
 
 def thread_safe(fn):
-    """函数的线程安全化,需要lock"""
+    """
+    函数的线程安全化，可以装饰普通函数和类中的方法
+    """
 
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        with Lock():
+        lock = getattr(args[0], "lock", Lock()) if args and not isfunction(args[0]) else Lock()
+        """若第一个参数是类实例，且有lock属性，则使用该属性；否则创建新的Lock对象"""
+        with lock:
             return fn(*args, **kwargs)
-
-    return wrapper
-
-
-def thread_safe_for_method_in_class(func):
-    """
-    对类中的方法进行线程安全包装
-    :param func:
-    :return:
-    """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        self = args[0]
-        try:
-            self.lock.acquire()
-            return func(*args, **kwargs)
-        finally:
-            self.lock.release()
 
     return wrapper
 
 
 def parallelize_decorator(func):
     """
-    数据科学通常涉及模型训练或超参数调整等任务的并行处理。
-    @parallelize_decorator 使用多个 CPU 核心并行化函数调用。
+    使用多个 CPU 核心并行化函数调用。
     """
 
     @wraps(func)
@@ -64,13 +49,13 @@ def parallelize_decorator(func):
     return wrapper
 
 
-class _MyThread(Thread):
+class _ThreadMeta(Thread):
     """不单独使用,供线程装饰器调用"""
 
     def __init__(self, func, name, *args, **kwargs):
         super().__init__(target=func, name=name, args=args, kwargs=kwargs)
         self._running = True
-        self.callback = self._kwargs.pop('callback', None)
+        self.callback = self._kwargs.pop("callback", None)
         self.Result = None
 
     def run(self):
@@ -98,17 +83,12 @@ def Thread_wrap(func=None, *args, **kwargs):
     """函数的线程装饰器,返回线程实例,有无括号都可以,getResult获取结果,\n
     可在调用被装饰函数添加daemon=True,callback等参数"""
 
-    def wrapper(fun):
+    def wrapper(func):
         def inner(*args, **kwargs):
-            _mythr = _MyThread(
-                fun,
-                fun.__name__,
-                *args,
-                **kwargs,
-            )
-            _mythr.daemon = kwargs.pop('daemon', False)
+            _mythr = _ThreadMeta(func, func.__name__, *args, **kwargs)
+            _mythr.daemon = kwargs.pop("daemon", False)
             _mythr.start()
-            print(f'{_mythr} start with thread_wrap...')
+            thread_print(f"func '{func.__name__}' in Thread start with Thread_wrap...")
             return _mythr
 
         return inner
@@ -124,14 +104,13 @@ def QThread_wrap(func=None, *args, **kwargs):
     def wrapper(fun):
         def inner(*args, **kwargs):
             _mythr = QThread()
-            _mythr.daemon = kwargs.pop('daemon', True)
-            _mythr.callback = kwargs.pop('callback', None)
+            _mythr.daemon = kwargs.pop("daemon", True)
+            _mythr.callback = kwargs.pop("callback", None)
             _mythr.setObjectName(fun.__name__)
             _mythr.join = _mythr.wait
             _mythr.run = fun
-            print(f'{_mythr} | {fun.__name__} start with QThread_wrap...')
-
             _mythr.Result = _mythr.run(*args, **kwargs)
+            thread_print(f"func '{func.__name__}' in QThread start with QThread_wrap...")
             if callable(_mythr.callback):
                 _mythr.Result = _mythr.callback(_mythr.Result)
 
@@ -145,9 +124,9 @@ def QThread_wrap(func=None, *args, **kwargs):
 
 
 class Thread_wrap_class:
-    """无特别用处，暂停使用
+    """无特别用处，暂停使用,Thread_wrap无差异
     函数的线程装饰器,无括号(),返回线程实例,
-    getResult获取结果,类或实例getAllResult获取结果集合,
+    getResult获取结果,getAllResult获取结果集合,
     可在调用被装饰函数添加daemon=True,callback等参数"""
 
     Result_dict = {}
@@ -157,17 +136,11 @@ class Thread_wrap_class:
         self.func = func
 
     def __call__(self, *args, **kwargs):
-        kwargs['Result_dict'] = Thread_wrap_class.Result_dict
-        _mythr = _MyThread(
-            self.func,
-            self.func.__name__,
-            *args,
-            **kwargs,
-        )
-
-        print(f'{_mythr} start with thread_wrap_class...')
-        _mythr.daemon = kwargs.pop('daemon', False)
+        kwargs["Result_dict"] = Thread_wrap_class.Result_dict
+        _mythr = _ThreadMeta(self.func, self.func.__name__, *args, **kwargs)
+        _mythr.daemon = kwargs.pop("daemon", False)
         _mythr.start()
+        print(f"func    `{self.func.__name__}` in Thread start with Thread_wrap_class...")
         self.thread_dict[_mythr.ident] = _mythr
         return _mythr
 
@@ -180,18 +153,6 @@ class Thread_wrap_class:
         return res
 
 
-class Thread_wrap_simple:
-    # 简单的线程装饰器,无括号(),返回线程实例,不返回结果
-    def __init__(self, func):  # 接受函数
-        self.func = func
-
-    def __call__(self, *args, **kwargs):  # 接受任意参数
-        _thr = Thread(target=self.func, args=args, kwargs=kwargs)
-        _thr.start()
-        _thr.join()
-        return _thr
-
-
 def create_mixin_class(name, cls, meta, **kwargs):
     """type动态混入继承,实质是调整 bases"""
     return type(name, (cls, meta), kwargs)
@@ -199,39 +160,39 @@ def create_mixin_class(name, cls, meta, **kwargs):
 
 thread_print = thread_safe(print)
 
-if __name__ == '__main__':
-
-    @Thread_wrap_simple
-    def a(i):
-        print('Thread_wrap_simple in func a : ', i, i * 2)
-        return i * 2
+if __name__ == "__main__":
 
     @Thread_wrap
     def b(i):
-        print('Thread_wrap in func b : ', i, i * 5)
         return i * 5
-
-    import time
 
     @QThread_wrap
     def c(i):
-        time.sleep(2)
-        print('QThread_wrap in func c : ', i, i * 11)
         return i * 11
 
-    # aa = a(8)
-    # cc = b(40)
+    bb = b(8)
+    thread_print(bb.Result)
+    # thread_print(bb)
+
     # cc = c(3, callback=lambda x: x * 100)
-    # print('Result:', cc.Result)
-    # print('callback:', cc.callback)
-    # print('daemon:', cc.daemon)
-    # print('objectName:', cc.objectName())
-    # print(thread_print.__name__)
-    # thread_print('hello world')
+    # thread_print("Result:", cc.Result)
+    # thread_print("callback:", cc.callback,"daemon:", cc.daemon,"objectName:", cc.objectName())
 
     @parallelize_decorator
     def parallel_task(x):
-        return x**2
+        return x**3
 
-    re = parallel_task(list(range(10)))
-    print(re)
+    # thread_print(parallel_task(list(range(10))))
+
+    class MyClass:
+        def __init__(self):
+            self.lock = Lock()
+
+        @thread_safe
+        def my_thread_safe_method(self, message):
+            print(f"Thread-safe method called with message: {message}")
+
+    my_instance = MyClass()
+
+    for i in range(5):
+        t = my_instance.my_thread_safe_method(f"Thread {i}")

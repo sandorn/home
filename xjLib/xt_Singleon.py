@@ -31,8 +31,7 @@ class Singleton_Mixin:
         with cls._lock:
             if cls not in cls._instance:
                 # 调用基类的__new__方法，创建实例，并将其添加到实例字典
-                instance = super().__new__(cls)
-                # 为实例添加一个标志，用于跟踪是否初始化
+                instance = super().__new__(cls)  # 为实例添加一个标志，用于跟踪是否初始化
                 instance._intialed = False
                 cls._instance[cls] = instance
 
@@ -86,7 +85,7 @@ def singleton_wrap_return_class(_cls):
 
         def __new__(cls, *args, **kwargs):
             with cls._lock:
-                if not hasattr(cls, '_instance'):
+                if not hasattr(cls, "_instance"):
                     cls._instance = super().__new__(cls)
                     cls._instance.__qualname__ = _cls.__name__
                     cls._instance._intialed = False
@@ -115,14 +114,14 @@ def singleton_wrap(cls):
     return _singleton
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     class sss:
         def __init__(self, string, age=12):
             self.name = string
             self.age = age
 
-    super_sss = type('super_sss', (sss, Singleton_Mixin), {})
+    super_sss = type("super_sss", (sss, Singleton_Mixin), {})
 
     class sample(sss, metaclass=Singleton_Meta):
         pass
@@ -162,6 +161,6 @@ if __name__ == '__main__':
     # print(22222, sample.__base__)
     # print(33333, sample.__bases__)
     # print(44444, sample.__mro__)
-    t1 = singleton_wrap_f('习近平')
-    t2 = super_sss('胡锦涛')
+    t1 = singleton_wrap_f("习近平")
+    t2 = super_sss("胡锦涛")
     print(t1 is t2, t1.__dict__, t2.__dict__)

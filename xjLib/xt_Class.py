@@ -73,10 +73,8 @@ class iter_Mixin:
 class repr_Mixin(remake_dict_Mixin):
     """用于打印显示"""
 
-    # __str__ = __repr__
     def __repr__(self):
-        dic = self.__dict__
-        # # __class__.__name__
+        dic = self.get_dict()
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
 
@@ -209,8 +207,8 @@ if __name__ == "__main__":
         print(a.__dict__, id(a))
         print(b.__dict__, id(b))
 
-    赋值一次的字典()
-    # 可迭代对象()
+    # 赋值一次的字典()
+    可迭代对象()
     # itat()
 """
 参考见Alispeech/xt_Pygame.py
