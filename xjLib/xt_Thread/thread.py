@@ -20,70 +20,71 @@ from time import sleep, time
 import wrapt
 from xt_class import ItemGetMetaMixin
 from xt_singleon import SingletonMixin, singleton_decorator_class
+from xt_thread import thread_print
 
 
 class ThreadPoolWraps:
     """仿写vthread,线程装饰器,ThreadPoolWraps(200)"""
 
     def __init__(self, pool_num=32):
-        self._pool_queue = Queue()  # #任务存储,组内queue
-        self.main_monitor()  # # 开启监视器线程
-        self._pool_max_num = pool_num  # #最大线程数,字典存储
-        self._run(pool_num)  # #运行伺服线程
-        self._result_list = []  # #任务结果存储
+        self._task_queue = Queue()  # 任务存储,组内queue
+        self._max_threads = pool_num  # 最大线程数,字典存储
+        self._result_list = []  # 任务结果存储
+        # 开启监视器线程
+        self._MainMonitor = Thread(target=self._monitor_function, name="Monitor")
+        self._MainMonitor.start()
+        self._start_servo_threads(self._max_threads)  # 运行伺服线程
 
     @wrapt.decorator
     def __call__(self, func, instance, args, kwargs):
-        self._pool_queue.put((func, args, kwargs))
+        self._task_queue.put([func, args, kwargs])
 
     def change_thread_num(self, num):
-        x = self._pool_max_num - num
+        """改变线程数量"""
+        x = self._max_threads - num
+        abs_x = abs(x)
         if x < 0:
-            self._run(abs(x))
+            self._start_servo_threads(abs_x)
         if x > 0:
-            for _ in range(abs(x)):
-                self._pool_queue.put("KillThreadParams")
-        self._pool_max_num = num
+            for _ in range(abs_x):
+                self._task_queue.put("KillThreadParams")
+        self._max_threads = num
 
-    def _run(self, num):
-        def _pools_pull():
-            while True:
-                args_list = self._pool_queue.get()
-                if args_list == "KillThreadParams":
-                    return
-                try:
-                    func, args, kw = args_list
-                    Result = func(*args, **kw)  # 获取结果
-                    self._result_list.append(Result)
-                except BaseException as e:
-                    print(" - thread stop_by_error - ", e)
-                    break
-                finally:
-                    self._pool_queue.task_done()  # 发出此队列完成信号
+    def _servo_function(self):
+        while True:
+            args_list = self._task_queue.get()
+            if args_list == "KillThreadParams":
+                return
+            try:
+                func, args, kw = args_list
+                Result = func(*args, **kw)
+                self._result_list.append(Result)
+            except BaseException as e:
+                print(f"[thread stop_with_error:{e}]")
+                break
+            finally:
+                self._task_queue.task_done()  # 发出此队列完成信号
 
-        # 线程的开启
+    def _start_servo_threads(self, num):
+        """开启伺服线程"""
         for _ in range(num):
-            thread = Thread(target=_pools_pull, daemon=True)
+            thread = Thread(target=self._servo_function, name="servo", daemon=True)
             thread.start()
 
-    def main_monitor(self):
-        def _func():
-            _main_thr = main_thread()
-            while True:
-                sleep(0.2)
-                if not _main_thr.is_alive():
-                    self.close_all()
-                    break
-
-        self._MainMonitor = Thread(target=_func, name="MainMonitor")
-        self._MainMonitor.start()
+    def _monitor_function(self):
+        _main_thr = main_thread()
+        while True:
+            sleep(0.2)
+            if not _main_thr.is_alive():
+                self.close_all()
+                break
 
     def joinall(self):
-        self._pool_queue.join()
+        self._task_queue.join()
 
     def wait_completed(self):
         """等待全部线程结束，返回结果"""
-        self._pool_queue.join()
+        self._task_queue.join()
         return self._result_list
 
     def close_all(self):
@@ -323,8 +324,16 @@ if __name__ == "__main__":
 
     @ThreadPoolWraps(200)
     def aaa(x):
-        print(x)
+        thread_print(22222222222222222222, x)
         return x
 
     for i in range(10):
-        aaa(i)
+        thread_print(111111111111111111111, aaa(i))
+
+    """
+    tpool = ThreadPoolWraps(200)
+
+    for index, arg in enumerate(args,start=1):
+        tpool(func)(arg, kwargs)
+    text_list = tpool.wait_completed()
+    """

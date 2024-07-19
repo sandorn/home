@@ -71,21 +71,33 @@ def clean_Content(in_str):
     return in_str
 
 
+def handle_back_ait(resp):
+    if not isinstance(resp, htmlResponse):
+        return [0, resp, ""]
+
+    index = resp.index
+    title = resp.query("h1").text()
+    content = resp.query("#chaptercontent").text()
+    title = "".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
+    content = clean_Content(content).strip()
+    return [index, title, content]
+
+
 def 结果处理(resps):
     """传入的是爬虫数据包的集合"""
-    _texts = []
+    texts = []
 
     for resp in resps:
         if not isinstance(resp, htmlResponse):
             continue
         _xpath = ("//h1/text()", '//*[@id="chaptercontent"]/text()')
-        _title, _showtext = resp.xpath(_xpath)
-        title = "".join(_title).replace("\u3000", " ").replace("\xa0", " ").replace("\u00a0", " ")
-        content = clean_Content(_showtext)
-        _texts.append([resp.index, title, content])
+        title, content = resp.xpath(_xpath)
+        title = "".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
+        content = clean_Content(content).strip()
+        texts.append([resp.index, title, content])
 
-    _texts.sort(key=lambda x: x[0])
-    return _texts
+    texts.sort(key=lambda x: x[0])
+    return texts
 
 
 def get_download_url(target):

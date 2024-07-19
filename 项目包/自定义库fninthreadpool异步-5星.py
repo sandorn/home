@@ -14,7 +14,7 @@ Github       : https://github.com/sandorn/home
 import os
 
 from xt_file import savefile
-from xt_ls_bqg import clean_Content, get_contents, get_download_url
+from xt_ls_bqg import clean_Content, get_download_url
 from xt_requests import get
 from xt_response import htmlResponse
 from xt_str import Str_Clean
@@ -27,34 +27,34 @@ def new_get_contents(args):
     resp = get(target)
     if not isinstance(resp, htmlResponse):
         return [0, resp, ""]
-    title = resp.pyquery("h1").text()
-    content = resp.pyquery("#chaptercontent").text()
+    _xpath = ["//h1/text()", '//*[@id="chaptercontent"]/text()']
+    title, content = resp.xpath(_xpath)
     title = "".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
     content = clean_Content(content).strip()
     return [index, title, content]
 
 
 @fn_timer
-def get_ThreadPool(bookname, urls, fn):
+def ThreadPool_add_tasks(bookname, urls, fn):
     mypool = ThreadPool()
-    args = [[i, u] for i, u in enumerate(urls, start=1)]
+    args = [[index, url] for index, url in enumerate(urls, start=1)]
     mypool.add_tasks(fn, args)
     texts = mypool.wait_completed()
     files = os.path.basename(__file__).split(".")[0]
-    savefile(f"{files}&{bookname}get_contents.txt", texts, br="\n")
+    savefile(f"{files}&{bookname}ThreadPool_add_tasks.txt", texts, br="\n")
 
 
 @fn_timer
 def FnInPool(bookname, urls):
-    indexes = list(range(len(urls)))
-    texts = FnInThreadPool(get_contents, indexes, urls).result
+    args = [[index, url] for index, url in enumerate(urls, start=1)]
+    texts = FnInThreadPool(new_get_contents, args).result
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(f"{files}&{bookname}func_ThreadPool.txt", texts, br="\n")
+    savefile(f"{files}&{bookname}FnInPool.txt", texts, br="\n")
 
 
 if __name__ == "__main__":
     url_list = ["https://www.bigee.cc/book/6909/"]
     bookname, urls, _ = get_download_url(url_list[0])
-    # get_ThreadPool(bookname, urls, new_get_contents)  # |time: 157.20 sec|processtime: 55.11 sec
-    FnInPool(bookname, urls)  # |time: 109.40 sec|processtime: 49.75 sec
+    # ThreadPool_add_tasks(bookname, urls, new_get_contents)  # |perf_counter: 153.21s|process_time: 53.72s
+    FnInPool(bookname, urls)  # |perf_counter: 86.14s|process_time: 37.39s

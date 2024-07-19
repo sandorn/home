@@ -99,7 +99,7 @@ def qthread_decorator(func=None, *args, **kwargs):
             _mythr.setObjectName(fun.__name__)
             _mythr.join = _mythr.wait
             _mythr.run = fun
-            _mythr.Result = _mythr.run(*args, **kwargs)
+            setattr(_mythr, "Result", _mythr.run(*args, **kwargs))
             thread_print(f"func '{func.__name__}' in QThread start with qthread_decorator...")
             if callable(_mythr.callback):
                 _mythr.Result = _mythr.callback(_mythr.Result)
@@ -160,12 +160,12 @@ if __name__ == "__main__":
     def c(i):
         return i * 11
 
-    bb = b(8)
-    thread_print(bb.Result)
+    # bb = b(8)
+    # thread_print(bb.Result)
     # thread_print(bb)
 
-    # cc = c(3, callback=lambda x: x * 100)
-    # thread_print("Result:", cc.Result)
+    cc = c(3, callback=lambda x: x * 100)
+    thread_print("Result:", cc.Result)
     # thread_print("callback:", cc.callback, "daemon:", cc.daemon, "objectName:", cc.objectName())
 
     @parallelize_decorator
@@ -181,7 +181,7 @@ if __name__ == "__main__":
         def MyClass_method(self, message):
             print(f"MyClass func with message: {message}")
 
-    my_instance = MyClass()
+    # my_instance = MyClass()
 
-    for i in range(3):
-        t = my_instance.MyClass_method(f"Thread {i}")
+    # for i in range(3):
+    #     t = my_instance.MyClass_method(f"Thread {i}")

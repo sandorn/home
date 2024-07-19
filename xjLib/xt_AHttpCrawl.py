@@ -153,7 +153,7 @@ class AioHttpCrawl:
 
     async def _add_pool(self, func, *args, **kwargs):
         callback = kwargs.pop("fu_callback", None)
-        with ThreadPoolExecutor(32) as executor:
+        with ThreadPoolExecutor(200) as executor:
             for arg in list(zip(*args)):
                 task = self.loop.run_in_executor(executor, func, *arg, **kwargs)
                 if callback:

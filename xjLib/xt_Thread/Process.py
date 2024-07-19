@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 11:36:53
-LastEditTime : 2024-06-20 15:16:31
-FilePath     : /CODE/xjLib/xt_Thread/Process.py
+LastEditTime : 2024-07-19 15:36:26
+FilePath     : /CODE/xjLib/xt_thread/Process.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -15,17 +15,18 @@ from multiprocessing import Manager, Process, Semaphore
 
 
 class CustomProcess(Process):
-    """多进程,继承自multiprocessing.Process,用Manager返回结果"""
+    """
+    进程内顺序执行,继承自multiprocessing.Process,用Manager返回结果
+    """
 
     all_Process = []  # 类属性或类变量,实例公用
 
-    def __init__(self, result_dict, semaphore, fn, *args, **kwargs):
+    def __init__(self, result_dict, maxsem, func, *args, **kwargs):
         super().__init__()
         self.result_dict = result_dict
-        self.index = len(self.all_Process)
-        self.semaphore = semaphore  # @有问题，进程太多导致电脑卡死
+        self.semaphore = Semaphore(maxsem)
         self.daemon = True
-        self.fn = fn
+        self.func = func
         self.args = args
         self.kwargs = kwargs
         self.start()
@@ -33,8 +34,9 @@ class CustomProcess(Process):
 
     def run(self):
         # print(f'Pid: {os.getpid()} \t|\t {multiprocessing.current_process()}|{self.pid}|{self.name}')
-        with self.semaphore:  # @有问题，进程太多导致电脑卡死
-            self.result_dict[self.pid] = self.fn(*self.args, **self.kwargs)
+        with self.semaphore:
+            for index, args_iter in enumerate(list(zip(*self.args)), start=1):
+                self.result_dict[index] = self.func(*args_iter, **self.kwargs)
 
     @classmethod
     def wait_completed(cls):
@@ -44,12 +46,9 @@ class CustomProcess(Process):
             prc.join()
 
 
-def Do_CustomProcess(fn, *args, **kwargs):
+def Do_CustomProcess(func, maxsem=12, *args, **kwargs):
     """调用CustomProcess,Manager.dict()返回结果"""
-    max_processes = 3  # 同时运行的进程数量
-    semaphore = Semaphore(max_processes)
-    return_dict = Manager().dict()
-    for args_iter in list(zip(*args)):
-        CustomProcess(return_dict, semaphore, fn, *args_iter, **kwargs)
+    result_dict = Manager().dict()
+    CustomProcess(result_dict, maxsem, func, *args, **kwargs)
     CustomProcess.wait_completed()
-    return return_dict.values()
+    return result_dict.values()

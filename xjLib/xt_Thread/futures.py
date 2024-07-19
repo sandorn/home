@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-01 09:30:04
-FilePath     : /CODE/xjLib/xt_Thread/futures.py
+LastEditTime : 2024-07-19 17:00:24
+FilePath     : /CODE/xjLib/xt_thread/futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -41,7 +41,7 @@ class FnInThreadPool:
         self.loop = asyncio.new_event_loop()
         self.executor = ThreadPoolExecutor(max_workers=32)
         self.fn, self.args, self.kwargs = fn, args, kwargs
-        return self.loop.run_until_complete(self._work())
+        self.loop.run_until_complete(self._work())
 
     async def _work(self):
         self.result = await asyncio.gather(*[self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs) for arg in list(zip(*self.args))])

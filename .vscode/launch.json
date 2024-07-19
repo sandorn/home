@@ -5,21 +5,8 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "go Launch",
-            "type": "go",
-            "request": "launch",
-            "mode": "debug",
-            "remotePath": "",
-            //"port": 2345,
-            //"host": "127.0.0.1",
-            "program": "${fileDirname}", //workspaceRoot
-            "env": {},
-            "args": [],
-            "showLog": true
-        },
-        {
             "name": "Python3",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "cwd": "${workspaceRoot}",
@@ -28,7 +15,7 @@
         },
         {
             "name": "Python:内置终端",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "stopOnEntry": false,
             "program": "${file}",

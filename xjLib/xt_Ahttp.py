@@ -40,7 +40,7 @@ class AsyncTask:
     def __getitem__(self, method):
         if method.lower() in Method_List:
             self.method = method.lower()  # 保存请求方法
-            return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
+            return self.__create_params
 
     def __getattr__(self, method):
         if method.lower() in Method_List:
@@ -80,8 +80,8 @@ async def _async_fetch(self):
 
     try:
         await _fetch_run()
-        _result = htmlResponse(self.response, self.content, index=self.index)
-        self.result = self.callback(self.result) if callable(self.callback) else _result
+        _result = htmlResponse(self.response, self.content, self.index)
+        self.result = self.callback(_result) if callable(self.callback) else _result
         return self.result
     except Exception as err:
         print(f"Async_fetch:{self} | RetryErr:{err!r}")
@@ -151,5 +151,9 @@ if __name__ == "__main__":
     # print(res)
     # res = ahttpPost(url_post, data=b'data')
     # print(res)
-    res = ahttpGetAll([url_headers, url_get])
+    def handle_back_ait(resp):
+        if isinstance(resp, htmlResponse):
+            return resp.status
+
+    res = ahttpGetAll([url_headers, url_get], callback=handle_back_ait)
     print(res)
