@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : None
 #Develop      : VSCode
@@ -11,12 +10,13 @@
 #LastEditTime : 2020-06-17 10:17:58
 #Github       : https://github.com/sandorn/home
 #==============================================================
-'''
-import pandas
-from xt_DAO.xt_mysql import engine
+"""
 
-with engine('Jkdoc', 'pymysql') as myDb:
-    a = myDb.has_tables('jkdoc')
+import pandas
+from xt_database.xt_mysql import DbEngine
+
+with DbEngine("Jkdoc", "pymysql") as myDb:
+    a = myDb.has_tables("jkdoc")
     print(11111, a)
     sql = "select * from jkdoc;"
 
@@ -28,7 +28,7 @@ with engine('Jkdoc', 'pymysql') as myDb:
         print(33333, i, type(dic[0][i]))  # .decode('utf-8'))
 
 
-'''
+"""
         # 查询语句，选出 users 表中的所有数据
         sql = "select * from users;"
         # read_sql_query的两个参数: sql语句， 数据库连接
@@ -132,4 +132,4 @@ finally:
     cursor.close()
     # 关闭数据库连接
     conn.close()
-'''
+"""

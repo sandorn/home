@@ -15,15 +15,13 @@ https://blog.csdn.net/ydyang1126/article/details/78226701/
 
 import asyncio
 import traceback
-from copy import deepcopy
 
 import aiomysql.sa as aio_sa
-from xt_Class import item_Mixin
-from xt_DAO.cfg import DB_CONFIG
-from xt_DAO.untilsql import get_insert_sql, get_update_sql
+from xt_database.cfg import DB_CFG
+from xt_database.untilsql import make_insert_sql, make_update_sql
 
 
-class AioMysql(item_Mixin):
+class AioMysql:
     def __init__(self, key="default", tablename=None):
         self.coro_list = []
         if tablename:
@@ -33,12 +31,12 @@ class AioMysql(item_Mixin):
         self.run_in_loop([self.create_engine(key)])
 
     async def create_engine(self, key, autocommit=True):
-        if key not in DB_CONFIG:
+        if key not in DB_CFG:
             raise ValueError(f"错误提示:检查数据库配置:{key}")
-        conf = deepcopy(DB_CONFIG[key])
-        conf.pop("type", None)
+        cfg = DB_CFG[key]
+        cfg.pop("type", None)
         try:
-            self.engine = await aio_sa.create_engine(autocommit=autocommit, **conf)
+            self.engine = await aio_sa.create_engine(autocommit=autocommit, **cfg)
         except Exception as err:
             print("connect error:", err)
 
@@ -77,7 +75,7 @@ class AioMysql(item_Mixin):
             self.coro_list.extend(_coro)
 
     async def __insert(self, data_dict_list, tablename):
-        insert_sql = get_insert_sql(data_dict_list, tablename)
+        insert_sql = make_insert_sql(data_dict_list, tablename)
         async with self.engine.acquire() as conn:
             # 注意: 执行的执行必须开启一个事务, 否则数据是不会进入到数据库中的
             async with conn.begin():
@@ -98,7 +96,7 @@ class AioMysql(item_Mixin):
             self.coro_list.extend(_coro)
 
     async def __update(self, data_dict_list, whrere_dict, tablename):
-        update_sql = get_update_sql(data_dict_list, whrere_dict, tablename)
+        update_sql = make_update_sql(data_dict_list, whrere_dict, tablename)
         async with self.engine.acquire() as conn:
             async with conn.begin():
                 try:
@@ -125,10 +123,7 @@ if __name__ == "__main__":
     print(res)
     # res = aio.query(query_list[0])
     # print(res)
-    update_sql = [
-        "UPDATE users2 set username='刘澈' WHERE ID = '1'",
-        "UPDATE users2 set username='刘新军' WHERE ID = '2'",
-    ]
+    update_sql = ["UPDATE users2 set username='刘澈' WHERE ID = '1'", "UPDATE users2 set username='刘新军' WHERE ID = '2'"]
     res = aio.query(update_sql)
     print(res)
     # res = aio.update(

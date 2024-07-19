@@ -18,9 +18,9 @@ import qdarkstyle
 from PyQt6.QtCore import QMetaObject, QSize, Qt, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QProgressBar, QStatusBar
-from xt_File import qsstools
-from xt_Ui import EventLoop
-from xt_Ui.part import xt_QLabel
+from xt_file import qsstools
+from xt_pyqt import event_loop
+from xt_pyqt.part import xt_QLabel
 
 
 class xt_QStatusBar(QStatusBar):
@@ -33,7 +33,7 @@ class xt_QStatusBar(QStatusBar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setObjectName(f'xt_QStatusBar_{id(self)}')
+        self.setObjectName(f"xt_QStatusBar_{id(self)}")
         self.setSizeGripEnabled(False)  # 是否显示右边的大小控制点
 
 
@@ -42,13 +42,13 @@ class xt_QProgressBar(QProgressBar):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setObjectName(f'xt_QProgressBar_{id(self)}')
+        self.setObjectName(f"xt_QProgressBar_{id(self)}")
         self.step.connect(self.step_by_step)
         # 主UI界面 self.signal.emit(value)  # 传递信号
         # #self.setInvertedAppearance(True) # 逆序
         # #self.setOrientation(Qt.Vertical)  # 垂直
 
-    @EventLoop
+    @event_loop
     def step_by_step(self, value):
         if isinstance(value, int) and value > self.maximum():
             value = self.maximum()
@@ -60,7 +60,7 @@ class xt_QProgressBar(QProgressBar):
 
 
 class xt_QMainWindow(QMainWindow):
-    def __init__(self, title='MainWindow', action=True, tool=True, menu=True, status=True, *args, **kwargs):
+    def __init__(self, title="MainWindow", action=True, tool=True, menu=True, status=True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.basepath = os.path.dirname(__file__)
         # #窗体title,setupUI
@@ -68,10 +68,10 @@ class xt_QMainWindow(QMainWindow):
         self.setWindowTitle(title)
         self.setupUI()
 
-        self.action_init() if action else ''
-        self.tool_init() if tool else ''
-        self.menu_init() if menu else ''
-        self.status_progress_init() if status else ''
+        self.action_init() if action else ""
+        self.tool_init() if tool else ""
+        self.menu_init() if menu else ""
+        self.status_progress_init() if status else ""
 
         QMetaObject.connectSlotsByName(self)  # @ 自动绑定信号和函数
         # !关键,用于自动绑定信号和函数  on_ObjectName_triggered
@@ -84,7 +84,7 @@ class xt_QMainWindow(QMainWindow):
 
     def setupUI(self):
         # #窗体icon,size...
-        self.setWindowIcon(QIcon(f'{self.basepath}/ico/ico.ico'))
+        self.setWindowIcon(QIcon(f"{self.basepath}/ico/ico.ico"))
         availableGeometry = self.screen().availableGeometry()
         screen_width, screen_height = availableGeometry.width(), availableGeometry.height()
         self.resize(int(screen_width * 0.618), int(screen_height * 0.618))
@@ -93,23 +93,23 @@ class xt_QMainWindow(QMainWindow):
         self.setStyleSheet(qss)
 
     def action_init(self):  # #QAction
-        self.Run_action = QAction(QIcon(f'{self.basepath}/ico/Execute.png'), '&Execute', self)
-        self.Do_action = QAction(QIcon(f'{self.basepath}/ico/Performing.png'), '&Performing', self)
-        self.Theme_action = QAction(QIcon(f'{self.basepath}/ico/color.ico'), '&Theme', self)
-        self.Run_action.setObjectName('Run')
-        self.Do_action.setObjectName('Do')
-        self.Theme_action.setObjectName('Theme')
-        self.Close_action = QAction(QIcon(f'{self.basepath}/ico/close.ico'), '&Quit', self)
-        self.Run_action.setShortcut('Ctrl+E')
-        self.Do_action.setShortcut('Ctrl+P')
-        self.Theme_action.setShortcut('Ctrl+T')
-        self.Close_action.setShortcut('Ctrl+Q')
+        self.Run_action = QAction(QIcon(f"{self.basepath}/ico/Execute.png"), "&Execute", self)
+        self.Do_action = QAction(QIcon(f"{self.basepath}/ico/Performing.png"), "&Performing", self)
+        self.Theme_action = QAction(QIcon(f"{self.basepath}/ico/color.ico"), "&Theme", self)
+        self.Run_action.setObjectName("Run")
+        self.Do_action.setObjectName("Do")
+        self.Theme_action.setObjectName("Theme")
+        self.Close_action = QAction(QIcon(f"{self.basepath}/ico/close.ico"), "&Quit", self)
+        self.Run_action.setShortcut("Ctrl+E")
+        self.Do_action.setShortcut("Ctrl+P")
+        self.Theme_action.setShortcut("Ctrl+T")
+        self.Close_action.setShortcut("Ctrl+Q")
         # self.Close_action.setToolTip('Close the window')
         # self.Close_action.setStatusTip('Close the window')
         self.Close_action.triggered.connect(QApplication.quit)
 
     def tool_init(self):  # #工具栏
-        self.file_toolbar = self.addToolBar('')
+        self.file_toolbar = self.addToolBar("")
         self.file_toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         """
         Qt.ToolButtonIconOnly：仅显示图标，没有文本。
@@ -128,13 +128,13 @@ class xt_QMainWindow(QMainWindow):
         self.file_toolbar.setMovable(False)
         self.file_toolbar.setFloatable(False)
         self.file_toolbar.setIconSize(QSize(36, 36))
-        self.file_toolbar.setStyleSheet('QToolBar{spacing:16px;}')
+        self.file_toolbar.setStyleSheet("QToolBar{spacing:16px;}")
         self.file_toolbar.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # ActionsContextMenu
 
     def menu_init(self):  # #菜单栏
         menubar = self.menuBar()
         menubar.setNativeMenuBar(False)  # 全平台一致的效果
-        self.file_menu = menubar.addMenu('菜单')
+        self.file_menu = menubar.addMenu("菜单")
         self.file_menu.addAction(self.Run_action)
         self.file_menu.addAction(self.Do_action)
         self.file_menu.addAction(self.Theme_action)
@@ -152,7 +152,7 @@ class xt_QMainWindow(QMainWindow):
         _statusBar.addWidget(self.status2, stretch=1)
         _statusBar.addWidget(self.status3, stretch=1)
         _statusBar.addWidget(self.pbar, stretch=1)
-        self.status1.showMessage('Ready to compose')
+        self.status1.showMessage("Ready to compose")
 
     @pyqtSlot()
     def on_Run_triggered(self):
@@ -166,20 +166,13 @@ class xt_QMainWindow(QMainWindow):
 
     def on_Theme_triggered(self):
         # print('on_Theme_triggered')
-        qss_list = [
-            f'{self.basepath}/qss/blue.qss',
-            f'{self.basepath}/qss/css.qss',
-            f'{self.basepath}/qss/dark_orange.qss',
-            f'{self.basepath}/qss/dark.qss',
-            f'{self.basepath}/qss/grey.qss',
-            f'{self.basepath}/qss/qdark.qss',
-        ]
+        qss_list = [f"{self.basepath}/qss/blue.qss", f"{self.basepath}/qss/css.qss", f"{self.basepath}/qss/dark_orange.qss", f"{self.basepath}/qss/dark.qss", f"{self.basepath}/qss/grey.qss", f"{self.basepath}/qss/qdark.qss"]
         file_name = random.choice(qss_list)
-        self.setWindowTitle(f'{self.title}--' + file_name.split('/')[-1].split('.')[0])
+        self.setWindowTitle(f"{self.title}--" + file_name.split("/")[-1].split(".")[0])
         qsstools.set(file_name, self)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
 
     from PyQt6.QtWidgets import QApplication, QMainWindow, QProgressBar, QStatusBar

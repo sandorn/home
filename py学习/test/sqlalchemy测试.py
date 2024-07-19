@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : None
 #Develop      : VSCode
@@ -11,28 +10,29 @@ FilePath     : /xjLib/test/sqlalchemy测试.py
 LastEditTime : 2020-11-05 14:22:56
 #Github       : https://github.com/sandorn/home
 #==============================================================
-'''
+"""
 
 from sqlalchemy import Table
-from xt_DAO.xt_chemyMeta import (Base_Model, inherit_table_cls, parent_model_Mixin)
-from xt_DAO.xt_sqlalchemy import (INTEGER, Column, DateTime, Enum, SqlConnection, String, text, validates)
+from xt_database.xt_chemymeta import Base_Model, inherit_table_cls, parent_model_Mixin
+from xt_database.xt_sqlalchemy import INTEGER, Column, DateTime, Enum, SqlConnection, String, text, validates
+
 # TIMESTAMP,Integer, Numeric
 
 
 class Users(Base_Model):
-    __tablename__ = 'users2'
+    __tablename__ = "users2"
 
     ID = Column(INTEGER(6), primary_key=True, autoincrement=True)
     username = Column(String(24), nullable=False)
-    password = Column(String(16), nullable=False, server_default='123456')
+    password = Column(String(16), nullable=False, server_default="123456")
     手机 = Column(String(11), nullable=False)
     代理人编码 = Column(String(8))
-    会员级别 = Column(Enum('SSS', 'SS', 'S', 'A', "\\\\'B", 'C'), server_default='C')
+    会员级别 = Column(Enum("SSS", "SS", "S", "A", "\\\\'B", "C"), server_default="C")
     会员到期日 = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     登陆次数 = Column(INTEGER(2))
     备注 = Column(String(255))  # db.ForeignKey('roles.id') 外键
 
-    @validates('手机')  # 对字段的校验
+    @validates("手机")  # 对字段的校验
     def validate_手机(self, key, 手机):
         assert len(手机) == 11
         return 手机
@@ -40,21 +40,21 @@ class Users(Base_Model):
 
 class Users_two(Base_Model):
     __table__ = Table(
-        'users2',
+        "users2",
         Base_Model.metadata,
-        Column('ID', INTEGER(6), primary_key=True),
-        Column('username', String(24), nullable=False),
-        Column('password', String(16), nullable=False, server_default='123456'),
-        Column('手机', String(11), nullable=False),
-        Column('代理人编码', String(8)),
-        Column('会员级别', Enum('SSS', 'SS', 'S', 'A', "\\\\'B", 'C'), server_default='C'),
-        Column('会员到期日', DateTime, server_default=text("CURRENT_TIMESTAMP")),
-        Column('登陆次数', INTEGER(2)),
-        Column('备注', String(255)),
+        Column("ID", INTEGER(6), primary_key=True),
+        Column("username", String(24), nullable=False),
+        Column("password", String(16), nullable=False, server_default="123456"),
+        Column("手机", String(11), nullable=False),
+        Column("代理人编码", String(8)),
+        Column("会员级别", Enum("SSS", "SS", "S", "A", "\\\\'B", "C"), server_default="C"),
+        Column("会员到期日", DateTime, server_default=text("CURRENT_TIMESTAMP")),
+        Column("登陆次数", INTEGER(2)),
+        Column("备注", String(255)),
         extend_existing=True,
     )
 
-    @validates('手机')  # 对字段的校验
+    @validates("手机")  # 对字段的校验
     def validate_手机(self, key, 手机):
         assert len(手机) == 11
         return 手机
@@ -64,20 +64,8 @@ def sqlalchemy测试():
     print(repr(Users))
     print(Users.columns())
     print(Users._c)
-    sqlhelper = SqlConnection(Users, 'TXbx')
+    sqlhelper = SqlConnection(Users, "TXbx")
     # sqlhelper = SqlConnection(Users_two, 'TXbx')
-
-    user2 = [{
-        'username': '刘澈',
-        'password': '234567',
-        '手机': '17610786502',
-        '代理人编码': '10005393',
-        '会员级别': 'SSS',
-        '会员到期日': '8888,12,31',
-    }, {
-        'username': '刘新军',
-        '手机': '13910118122',
-    }]
 
     # sqlhelper.insert_all(user2)
     # sqlhelper.update({'手机': '17610786502'}, {'会员到期日': '7777,12,31'})
@@ -85,7 +73,7 @@ def sqlalchemy测试():
     res = sqlhelper.filter_by({"username": "刘澈"})
     print(1111, res)
 
-    res[0]['会员级别'] = 'A'
+    res[0]["会员级别"] = "A"
     sqlhelper.session.commit()
 
     # for row in sqlhelper.select(conditions={"username": "刘澈"}):
@@ -118,30 +106,30 @@ def sqlalchemy测试():
 class tab(Base_Model, parent_model_Mixin):
     ID = Column(INTEGER(6), primary_key=True)
     username = Column(String(24), nullable=False)
-    password = Column(String(16), nullable=False, server_default='123456')
+    password = Column(String(16), nullable=False, server_default="123456")
     手机 = Column(String(11), nullable=False)
     代理人编码 = Column(String(8))
-    会员级别 = Column(Enum('SSS', 'SS', 'S', 'A', "\\\\'B", 'C'), server_default='C')
+    会员级别 = Column(Enum("SSS", "SS", "S", "A", "\\\\'B", "C"), server_default="C")
     会员到期日 = Column(DateTime, server_default=text("CURRENT_TIMESTAMP"))
     登陆次数 = Column(INTEGER(2))
     备注 = Column(String(255))  # db.ForeignKey('roles.id') 外键
 
-    @validates('手机')  # 对字段的校验
+    @validates("手机")  # 对字段的校验
     def validate_手机(self, key, 手机):
         assert len(手机) == 11
         return 手机
 
 
 def ceshi2():
-    cls = inherit_table_cls('users', tab)
+    cls = inherit_table_cls("users", tab)
     print(cls, str(cls), repr(cls))
     # print(cls, type(cls), cls.__class__)
     # print(cls.__tablename__, cls.__mro__)
-    sqlhelper = SqlConnection(cls, 'TXbx')
+    sqlhelper = SqlConnection(cls, "TXbx")
     res = sqlhelper.select()
     print(2222, res)
-    cls2 = inherit_table_cls('users2', tab)
-    sqlhelper = SqlConnection(cls2, 'TXbx')
+    cls2 = inherit_table_cls("users2", tab)
+    sqlhelper = SqlConnection(cls2, "TXbx")
     res = sqlhelper.select()
     print(3333, res)
 

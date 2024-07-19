@@ -44,15 +44,13 @@ class FnInThreadPool:
         return self.loop.run_until_complete(self._work())
 
     async def _work(self):
-        self.result = await asyncio.gather(
-            *[self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs) for arg in list(zip(*self.args))],
-        )
+        self.result = await asyncio.gather(*[self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs) for arg in list(zip(*self.args))])
 
 
-if __name__ == '__main__':
-    from xt_Requests import get
+if __name__ == "__main__":
+    from xt_requests import get
 
-    url_list = ['http://httpbin.org/get'] * 3
+    url_list = ["http://httpbin.org/get"] * 3
     res = FnInThreadPool(get, url_list)
     print(111111, res.result)
     # POOL = ThreadPool()

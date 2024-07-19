@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-17 17:25:15
-FilePath     : /CODE/xjLib/xt_Log.py
+LastEditTime : 2024-07-18 14:39:12
+FilePath     : /CODE/xjLib/xt_log.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -19,7 +19,7 @@ from datetime import datetime
 from functools import wraps
 from time import perf_counter
 
-from xt_Singleon import Singleton_Mixin
+from xt_singleon import SingletonMixin
 
 standard_format = "[%(asctime)s][%(threadName)s:%(thread)d]\t%(message)s"  # 其中name为getlogger指定的名字
 simple_format = "[%(asctime)s]\t%(message)s"
@@ -27,12 +27,11 @@ simple_format = "[%(asctime)s]\t%(message)s"
 _levelToName = {50: "critical", 40: "error", 30: "warning", 20: "info", 10: "debug", 0: "NOTSET"}
 
 
-class LogCls(Singleton_Mixin):
+class LogCls(SingletonMixin):
     def __init__(self, level=logging.DEBUG, logger=__name__, pyfile=None):
         pyfile = pyfile or "MyLog"
         self.level = level
         self.filename = f'{pyfile}--{datetime.now().strftime('%Y%m%d')}.log'
-
         # #定义字典
         self.conf_dic = {
             "version": 1,

@@ -17,10 +17,9 @@ from html2text import HTML2Text
 from lxml import etree
 from pyquery import PyQuery
 from requests_html import HTML
-from xt_Class import item_Mixin
 
 
-class htmlResponse(item_Mixin):
+class htmlResponse:
     """封装网页抓取结果,使之标准化"""
 
     __slots__ = ("raw", "_content", "index", "encoding", "code_type")

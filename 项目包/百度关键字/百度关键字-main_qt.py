@@ -18,10 +18,10 @@ from urllib.parse import unquote
 from baidu_key_UI import Ui_MainWindow
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QApplication, QFileDialog, QTableWidgetItem
-from xt_Ahttp import ahttpGetAll
-from xt_File import savefile
-from xt_Requests import get
-from xt_Ui import EventLoop
+from xt_ahttp import ahttpGetAll
+from xt_file import savefile
+from xt_pyqt import EventLoop
+from xt_requests import get
 
 
 class MyWindow(Ui_MainWindow):
@@ -32,7 +32,7 @@ class MyWindow(Ui_MainWindow):
         super().__init__()
         self.keys = []  # 关键字
         self.urls = []  # url_list
-        self._name = ''  # 文件名
+        self._name = ""  # 文件名
         self.texts = []  # 用于存放结果
         self.step = 0
         self._step.connect(self.step_valueChanged)
@@ -40,7 +40,7 @@ class MyWindow(Ui_MainWindow):
 
     def step_valueChanged(self):
         self.pbar.setValue(int(self.step))
-        self.label.setText(f'进度：{self.step}/{self.pbar.maximum()}')
+        self.label.setText(f"进度：{self.step}/{self.pbar.maximum()}")
 
     @EventLoop
     def update(self, item):
@@ -57,11 +57,11 @@ class MyWindow(Ui_MainWindow):
     def on_openObject_triggered(self):
         # 打开关键字文件并导入
         self.disable_actions()  # 禁用动作按钮
-        filename, _ = QFileDialog.getOpenFileName(self, 'Open file')
+        filename, _ = QFileDialog.getOpenFileName(self, "Open file")
 
         if filename:
             self.clear_keys_table()  # 清空关键字表格
-            self.status_bar.showMessage('导入关键字......')
+            self.status_bar.showMessage("导入关键字......")
             self._name = self.get_file_name_without_extension(filename)
 
             with open(filename) as myFile:
@@ -69,7 +69,7 @@ class MyWindow(Ui_MainWindow):
 
             self.write_to_table_widget()  # 将关键字写入表格
 
-        self.status_bar.showMessage('导入关键字完毕!')
+        self.status_bar.showMessage("导入关键字完毕!")
         self.enable_actions()  # 启用动作按钮
 
     def disable_actions(self):
@@ -81,7 +81,7 @@ class MyWindow(Ui_MainWindow):
         self.keysTable.setRowCount(0)
 
     def get_file_name_without_extension(self, filename):
-        return '.'.join(filename.split('.')[:-1])
+        return ".".join(filename.split(".")[:-1])
 
     def get_sorted_unique_nonempty_rows(self, file):
         return sorted({row.strip() for row in file if row.strip()})
@@ -102,7 +102,7 @@ class MyWindow(Ui_MainWindow):
     @EventLoop
     def on_runObject_triggered(self):
         if len(self.keys) == 0:
-            self.status_bar.showMessage('请先导入关键字！！！')
+            self.status_bar.showMessage("请先导入关键字！！！")
             return
         self.disable_actions()  # 禁用动作按钮
 
@@ -112,9 +112,9 @@ class MyWindow(Ui_MainWindow):
         # 构建urls
         pages = self.lineEdit.value()
 
-        self.urls = [f'https://www.baidu.com/s?wd={key}&pn={page * 10}' for key in self.keys for page in range(pages)]
+        self.urls = [f"https://www.baidu.com/s?wd={key}&pn={page * 10}" for key in self.keys for page in range(pages)]
 
-        self.status_bar.showMessage('抓取百度检索信息......')
+        self.status_bar.showMessage("抓取百度检索信息......")
 
         self.texts = []  # #清空结果库
         resp_list = ahttpGetAll(self.urls)
@@ -124,7 +124,7 @@ class MyWindow(Ui_MainWindow):
         self.getdatas(resp_list)
         self.texts.sort(key=lambda x: x[0])  # #排序
 
-        self.status_bar.showMessage('抓取百度检索信息完毕')
+        self.status_bar.showMessage("抓取百度检索信息完毕")
 
         self.enable_actions()  # 启用动作按钮
 
@@ -136,21 +136,21 @@ class MyWindow(Ui_MainWindow):
 
         for response in resp_list:
             url = str(response.url)
-            key = unquote(url.split('?')[1].split('&')[0].split('=')[1]).replace('+', ' ')
-            pages = url.split('?')[1].split('&')[1].split('=')[1]
+            key = unquote(url.split("?")[1].split("&")[0].split("=")[1]).replace("+", " ")
+            pages = url.split("?")[1].split("&")[1].split("=")[1]
 
-            搜索结果 = response.element.xpath('//h3/a')
+            搜索结果 = response.element.xpath("//h3/a")
             for index, each in enumerate(搜索结果):
                 # #获取显示字符和网页链接
-                href = each.xpath('@href')[0]
-                title = each.xpath('string(.)').strip()
+                href = each.xpath("@href")[0]
+                title = each.xpath("string(.)").strip()
                 # # 剔除百度自营内容
-                if '百度' in title or not href.startswith('http') or href.startswith('http://www.baidu.com/baidu.php?'):
+                if "百度" in title or not href.startswith("http") or href.startswith("http://www.baidu.com/baidu.php?"):
                     continue
 
                 # #获取真实网址
-                real_url = get(href, allow_redirects=False).headers['Location']  # 网页原始地址
-                if real_url.startswith('http') and '.baidu.com' not in real_url:
+                real_url = get(href, allow_redirects=False).headers["Location"]  # 网页原始地址
+                if real_url.startswith("http") and ".baidu.com" not in real_url:
                     _item = [key, pages, index, title, real_url]
                     self._signal.emit(_item)  # 传递更新结果数据表信号
                     self.texts.append(_item)
@@ -163,19 +163,19 @@ class MyWindow(Ui_MainWindow):
     @pyqtSlot()
     def on_saveObject_triggered(self):
         if len(self.texts) == 0:
-            self.status_bar.showMessage('没有发现需要保存的内容！！！')
+            self.status_bar.showMessage("没有发现需要保存的内容！！！")
             return
 
         self.disable_actions()  # 禁用动作按钮
 
-        savefile(f'{self._name}_百度词频.txt', self.texts, br='\t')
+        savefile(f"{self._name}_百度词频.txt", self.texts, br="\t")
         self.texts = []
-        self.status_bar.showMessage(f'[{self._name}_百度词频.txt]保存完成。')
+        self.status_bar.showMessage(f"[{self._name}_百度词频.txt]保存完成。")
 
         self.enable_actions()  # 启用动作按钮
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     w = MyWindow()
     sys.exit(app.exec())

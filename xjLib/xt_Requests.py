@@ -16,10 +16,10 @@ from functools import partial
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_random
-from xt_Head import MYHEAD, RETRY_TIME, TIMEOUT, Head
-from xt_Log import log_decorator
-from xt_Response import htmlResponse
-from xt_Tools import try_except_wraps
+from xt_head import MYHEAD, RETRY_TIME, TIMEOUT, Head
+from xt_log import log_decorator
+from xt_response import htmlResponse
+from xt_tools import catch_wraps
 
 Method_List = ["get", "post", "head", "options", "put", "delete", "trace", "connect", "patch"]
 
@@ -69,7 +69,7 @@ def _request_wraps(method, url, *args, **kwargs):
     kwargs = _setKw(kwargs)
     callback = kwargs.pop("callback", None)
 
-    @try_except_wraps()
+    @catch_wraps
     def __fetch_run():
         response = requests.request(method, url, *args, **kwargs)
         return response
@@ -81,6 +81,7 @@ def _request_wraps(method, url, *args, **kwargs):
 
 def _request_tretry(method, url, *args, **kwargs):
     """利用TRETRY三方库实现重试"""
+    # print(f"_request_tretry.{method}:<{url}>,{args},{kwargs}")
     kwargs = _setKw(kwargs)
     callback = kwargs.pop("callback", None)
 
@@ -165,11 +166,8 @@ class SessionClient:
 
 
 if __name__ == "__main__":
-    # sion = SessionClient()
-    # print(sion.get("http://httpbin.org/headers"))
-    with SessionClient() as sion:
-        res = sion.get("http://www.163.com")
-        print("9".ljust(10), ":", res.xpath("//title/text()"))
+    sion = SessionClient()
+    print(getattr(sion, "get")("http://httpbin.org/headers"))
     # urls = [
     # 'http://www.baidu.com',
     # 'http://www.163.com',

@@ -17,12 +17,12 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 
 # , declarative_base 类工厂
 from sqlalchemy.orm import scoped_session, sessionmaker
-from xt_Class import typed_property
-from xt_DAO.cfg import connect_str
-from xt_DAO.xt_chemyMeta import Orm_Meta, getModel
+from xt_class import typed_property
+from xt_database.cfg import connect_str
+from xt_database.xt_chemymeta import ErrorMetaClass, get_db_model
 
 
-def get_engine(key='default'):
+def get_engine(key="default"):
     engine = create_engine(connect_str(key))
     # session = sessionmaker(bind=engine)()  # 单线程
     # scoped_session类似单例模式,每次调用都是同一个session
@@ -30,10 +30,10 @@ def get_engine(key='default'):
     return engine, session
 
 
-class SqlConnection(Orm_Meta):
-    dbmodel = typed_property('dbmodel', DeclarativeMeta)  # 限定参数类型
+class SqlConnection(ErrorMetaClass):
+    dbmodel = typed_property("dbmodel", DeclarativeMeta)  # 限定参数类型
 
-    def __init__(self, key='default', target_table_name=None, source_table_name=None):
+    def __init__(self, key="default", target_table_name=None, source_table_name=None):
         # 创建引擎
         engine = create_engine(
             connect_str(key),
@@ -44,7 +44,7 @@ class SqlConnection(Orm_Meta):
             # echo=True,  # echo参数为True时,会显示每条执行的SQL语句
             # poolclass=NullPool, # 禁用池
         )
-        self.Base = getModel(engine, target_table_name, source_table_name)  # #获取orm基类,同时创建表
+        self.Base = get_db_model(engine, target_table_name, source_table_name)  # #获取orm基类,同时创建表
         self.tablename = target_table_name or self.Base.__tablename__
         # #设置self.params参数
         self.params = {attr: getattr(self.Base, attr) for attr in self.Base.columns()}
@@ -72,7 +72,7 @@ class SqlConnection(Orm_Meta):
         # self.Base.__table__.drop(self.engine)# 未生效
         # self.Base.metadata.drop_all(self.engine) # 未生效
         dbmodel = dbmodel or self.Base
-        drop_sql = f'DROP TABLE if exists {dbmodel.__tablename__}'
+        drop_sql = f"DROP TABLE if exists {dbmodel.__tablename__}"
         self.session.execute(drop_sql)
 
     def insert(self, item_in):
@@ -155,7 +155,7 @@ class SqlConnection(Orm_Meta):
 
     def pd_get_dict(self, table_name):
         result = pandas.read_sql_table(table_name, con=self.conn)
-        data_dict = result.to_dict(orient='records')
+        data_dict = result.to_dict(orient="records")
         return data_dict if len(data_dict) else False
 
     def pd_get_list(self, table_name, Columns):
@@ -164,21 +164,14 @@ class SqlConnection(Orm_Meta):
         return pd_list if len(pd_list) else False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Data_Model_2_py('uuu', 'd:/1.py', 'TXbook')  # 待测试
-    item1 = {
-        'username': '刘新军',
-        'password': '234567',
-        '手机': '13910118122',
-        '代理人编码': '10005393',
-        '会员级别': 'SSS',
-        '会员到期日': '9999-12-31 00:00:00',
-    }
-    sqlhelper = SqlConnection('TXbx', 'users2', 'u_model')
-    res = sqlhelper.filter_by({'ID': 1})
+    item1 = {"username": "刘新军", "password": "234567", "手机": "13910118122", "代理人编码": "10005393", "会员级别": "SSS", "会员到期日": "9999-12-31 00:00:00"}
+    sqlhelper = SqlConnection("TXbx", "users2", "u_model")
+    res = sqlhelper.filter_by({"ID": 1})
     print(res)
-    # res = sqlhelper.select()
-    # print(res)
+    res = sqlhelper.select()
+    print(res)
     # resfrom_statement = sqlhelper.from_statement('select * from users2 where id=:id', {'id': 1})
     # print(resfrom_statement)
     # print(sqlhelper.Base.make_dict(resfrom_statement))

@@ -18,12 +18,12 @@ from asyncio.coroutines import iscoroutinefunction
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
+import wrapt
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from tenacity import retry, stop_after_attempt, wait_random
-from xt_Head import RETRY_TIME, TIMEOUT, Head
-from xt_Log import log_decorator
-from xt_Response import htmlResponse
-from xt_Thread import parallelize_decorator
+from xt_head import RETRY_TIME, TIMEOUT, Head
+from xt_log import log_decorator
+from xt_response import htmlResponse
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
@@ -32,40 +32,33 @@ TRETRY = retry(
 )
 
 
-def future_decorator(func):
+@wrapt.decorator
+def future_decorator(func, instance, args, kwargs):
     """future装饰器"""
-
-    @wraps(func)
-    def __future(*args, **kwargs):
-        future = asyncio.Future()
-        result = func(*args, **kwargs)
-        future.set_result(result)
-        return future
-
-    return __future
+    future = asyncio.Future()
+    result = func(*args, **kwargs)
+    future.set_result(result)
+    return future
 
 
 def coroutine_decorator(func):
-    """异步装饰器,装饰普通函数,返回coroutine"""
+    """异步装饰器，装饰普通函数，返回coroutine"""
 
-    @wraps(func)
-    async def _wrapper(*args, **kwargs):
-        await asyncio.sleep(0)
+    @wrapt.decorator
+    async def wrapper(wrapped, instance, args, kwargs):
+        async def async_func(*args, **kwargs):
+            return wrapped(*args, **kwargs)
 
-        if iscoroutinefunction(func):
-            return await func(*args, **kwargs)
-        else:
-            return func(*args, **kwargs)
+        return await async_func(*args, **kwargs)
 
-    return _wrapper
+    return func if iscoroutinefunction(func) else wrapper(func)
 
 
 def async_inexecutor_decorator(func):
     """异步运行装饰器,装饰普通函数或async函数,运行并返回结果"""
 
-    @wraps(func)
-    def _wrapper(*args, **kwargs):
-        @wraps(func)
+    @wrapt.decorator
+    def _wrapper(func, instance, args, kwargs):
         async def __wrapper(*args, **kwargs):
             if iscoroutinefunction(func):
                 result = await func(*args, **kwargs)
@@ -76,7 +69,7 @@ def async_inexecutor_decorator(func):
 
         return asyncio.run(__wrapper(*args, **kwargs))
 
-    return _wrapper
+    return _wrapper(func)
 
 
 def async_run_decorator(func):
@@ -88,14 +81,9 @@ def async_run_decorator(func):
         async def __wrapper(*args, **kwargs):
             callback = kwargs.pop("fu_callback", None)
 
-            if iscoroutinefunction(func):
-                task = asyncio.create_task(func(*args, **kwargs))
-                if callback:
-                    task.add_done_callback(callback)
-            else:
-                task = asyncio.create_task(coroutine_decorator(func)(*args, **kwargs))
-                if callback:
-                    task.add_done_callback(callback)
+            task = asyncio.create_task(coroutine_decorator(func)(*args, **kwargs))
+            if callback:
+                task.add_done_callback(callback)
             return await asyncio.gather(task, return_exceptions=True)
 
         return asyncio.run(__wrapper(*args, **kwargs))
@@ -191,34 +179,35 @@ class AioHttpCrawl:
 if __name__ == "__main__":
     ...
     # $add_tasks#######################################################
-    myaio = AioHttpCrawl()
+    # myaio = AioHttpCrawl()
     url_list = ["https://www.163.com", "https://www.126.com", "https://www.qq.com"]
-    print(111111, myaio.add_tasks(url_list * 1, "get"))
-    print(111111, myaio.wait_completed())
-    print(222222, myaio.add_tasks(url_list * 1))
-    print(222222, myaio.wait_completed())
+    # print(111111, myaio.add_tasks(url_list * 1, "get"))
+    # print(111111, myaio.wait_completed())
+    # print(222222, myaio.add_tasks(url_list * 1))
+    # print(222222, myaio.wait_completed())
     # $add_func########################################################
-    from xt_Requests import get
+    from xt_requests import get
 
     # print(333333, myaio.add_pool(get, ['https://httpbin.org/get'] * 3))
     # print(333333, myaio.wait_completed())
-
     # $装饰器##########################################################
-    @parallelize_decorator
+
+    @async_inexecutor_decorator
     def get_html(url):
         return get(url)
 
-    # print(444444, get_html(['https://www.baidu.com'] * 3))
+    print(444444, res := get_html("https://www.baidu.com"))
 
-    @async_inexecutor_decorator
+    @async_run_decorator
     async def get_a_html(url):
         return get(url)
 
-    # print(555555, get_a_html('https://www.baidu.com'))
+    print(555555, res := get_a_html("https://www.baidu.com"))
 
     @async_run_decorator
     async def get_message():
         async with ClientSession() as session, session.get("https://httpbin.org/get") as response:
-            return await response.text()
+            await response.text()
+            return response
 
-    # print(666666, get_message())
+    print(666666, res := get_message())

@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 ==============================================================
 Description  : 头部注释
@@ -14,17 +13,9 @@ Github       : https://github.com/sandorn/home
 
 from PyQt6.QtCore import Qt, QThread, pyqtSlot
 from PyQt6.QtWidgets import QApplication, QSplitter
-from xt_Alispeech.cfg import VIOCE
-from xt_Alispeech.ex_NSS import TODO_TTS
-from xt_Ui import (
-    EventLoop,
-    QMessageBox,
-    xt_QLineEdit,
-    xt_QMainWindow,
-    xt_QSpinBox,
-    xt_QTableView,
-    xt_QTextEdit,
-)
+from xt_alispeech.cfg import VIOCE
+from xt_alispeech.ex_NSS import TODO_TTS
+from xt_pyqt import EventLoop, QMessageBox, xt_QLineEdit, xt_QMainWindow, xt_QSpinBox, xt_QTableView, xt_QTextEdit
 
 
 class Ui_MainWindow(xt_QMainWindow):
@@ -37,19 +28,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.bindTable()
 
     def setupUi(self):
-        self.tableWidget = xt_QTableView(
-            [
-                "名称",
-                "参数值",
-                "类型",
-                "适用场景",
-                "支持语言",
-                "采样率",
-                "时间戳",
-                "儿化音",
-                "声音品质",
-            ]
-        )
+        self.tableWidget = xt_QTableView(["名称", "参数值", "类型", "适用场景", "支持语言", "采样率", "时间戳", "儿化音", "声音品质"])
         self.FilePath = xt_QLineEdit()
         self.QTextEdit = xt_QTextEdit()
         self.splitter = QSplitter(self)
@@ -104,12 +83,7 @@ class Ui_MainWindow(xt_QMainWindow):
         self.args_dict.update({"speech_rate": self.QSpinBox1.value()})
         self.args_dict.update({"pitch_rate": self.QSpinBox2.value()})
         nowthread = QThread()
-        nowthread.run = TODO_TTS(
-            self.text,
-            readonly=False,
-            merge=True,
-            **self.args_dict,
-        )  # type: ignore #
+        nowthread.run = TODO_TTS(self.text, readonly=False, merge=True, **self.args_dict)  # type: ignore #
 
         QApplication.restoreOverrideCursor()  # 恢复鼠标样式
         QApplication.processEvents()  # 交还控制权

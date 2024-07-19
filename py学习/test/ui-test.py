@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : None
 #Develop      : VSCode
@@ -11,14 +11,16 @@
 #LastEditTime : 2020-06-18 10:09:19
 #Github       : https://github.com/sandorn/home
 #==============================================================
-'''
+"""
+
 import sys
-from xt_Ui import EventLoop, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser, xt_QCheckBox, xt_QTreeWidget, xt_QTableWidget
+from xt_pyqt import EventLoop, xt_QLabel, xt_QLineEdit, xt_QListWidget, xt_QMainWindow, xt_QPushButton, xt_QTableView, xt_QTabWidget, xt_QTextBrowser, xt_QCheckBox, xt_QTreeWidget, xt_QTableWidget
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, qApp, QWidget
 from PyQt5.QtCore import QMetaObject, QThread, pyqtSlot
 import random
 from pysnooper import snoop
 from xt_Log import log
+
 log = log()
 snooper = snoop(log.filename)
 print = log.debug
@@ -31,14 +33,13 @@ class Example(xt_QMainWindow):
         self.retranslateUi()
 
     def create_UI(self):
-        self.btn = xt_QPushButton('Start==', self)
-        self.btn1 = xt_QPushButton('Start!=', self)
-        self.btn3 = xt_QPushButton('<-Start->', self)
-        self.tree = xt_QTreeWidget(['aaa', 'b', 'cc'])
-        self.tree.addItem(['child1', 'name11', 'name22'])
+        self.btn = xt_QPushButton("Start==", self)
+        self.btn1 = xt_QPushButton("Start!=", self)
+        self.btn3 = xt_QPushButton("<-Start->", self)
+        self.tree = xt_QTreeWidget(["aaa", "b", "cc"])
+        self.tree.addItem(["child1", "name11", "name22"])
         for index in range(1, 20):
-            self.tree.addItem(
-                ['child' + str(index * 10), 'name1' + str(index * 10)])
+            self.tree.addItem(["child" + str(index * 10), "name1" + str(index * 10)])
         self.table = xt_QTableWidget([1, 2, 3], 10, 5)
         self.tabw = xt_QTabWidget(2)
         self.btn.move(40, 80)
@@ -69,7 +70,7 @@ class Example(xt_QMainWindow):
 
     def getDatas(self):
         for i in range(50):
-            self.pbar.step.emit('adfrgagaew')
+            self.pbar.step.emit("adfrgagaew")
             self.pbar.step.emit(None)
 
         QThread.msleep(200)
@@ -83,27 +84,19 @@ class Example(xt_QMainWindow):
 
     def tabls(self):
         self.table.empty()
-        self.table.appendItem(['1', '记录一'])
-        self.table.appendItem(['2', '记录2', 2, 3, 4, 5])
-        self.table.appendItems(
-            [['3', '记录3'], ['4', '记录4'],
-             ['5', '记录5', 'djahd', 'ihviairh' * 5, 'ohv7384' * 3]])
+        self.table.appendItem(["1", "记录一"])
+        self.table.appendItem(["2", "记录2", 2, 3, 4, 5])
+        self.table.appendItems([["3", "记录3"], ["4", "记录4"], ["5", "记录5", "djahd", "ihviairh" * 5, "ohv7384" * 3]])
         r = []
         for i in range(10):
-            ran_str = ''.join(
-                random.sample(
-                    'zyxwvutsrqponmlkjihgfedcba0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()',
-                    5))
-            ran_str_2 = ''.join(
-                random.sample(
-                    'zyxwvutsrqponmlkjihgfedcba0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()',
-                    27))
-            r.append([i * 10, '记录' + ran_str, ran_str_2])
+            ran_str = "".join(random.sample("zyxwvutsrqponmlkjihgfedcba0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", 5))
+            ran_str_2 = "".join(random.sample("zyxwvutsrqponmlkjihgfedcba0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", 27))
+            r.append([i * 10, "记录" + ran_str, ran_str_2])
             # self.table.appendItem([i * 10, '记录' + str(i * 10)])
         # print(r)
         self.table.appendItems(r)
-        self.table.setColumnName(0, '张三')
-        self.table.setRowName(0, '张4')
+        self.table.setColumnName(0, "张三")
+        self.table.setRowName(0, "张4")
         self.table.setColumnWidth(0, 60)
         self.table.setColumnWidth(1, 200)
         self.table.setColumnWidth(2, 150)
@@ -112,8 +105,8 @@ class Example(xt_QMainWindow):
 
     def tabls2(self):
         # self.table.columnsNameShow()
-        self.table.setColumnsName(['A', 'B', 'C', 'DD'])
-        self.table.setRowsName(['A', 'B', 'C', 'DDDDDDDDDD'])
+        self.table.setColumnsName(["A", "B", "C", "DD"])
+        self.table.setRowsName(["A", "B", "C", "DDDDDDDDDD"])
 
 
 app = QApplication(sys.argv)

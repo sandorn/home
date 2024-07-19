@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
@@ -11,22 +11,20 @@ FilePath     : /CODE/py学习/数据/sqlalchemy-asyncio异步orm.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html
-'''
+"""
+
 import asyncio
 
 from sqlalchemy import Column, MetaData, String, Table, select
 from sqlalchemy.ext.asyncio import create_async_engine
-from xt_DAO.cfg import connect_str
+from xt_database.cfg import connect_str
 
 meta = MetaData()
 t1 = Table("t1", meta, Column("name", String(50), primary_key=True))
 
 
 async def async_main() -> None:
-    engine = create_async_engine(
-        connect_str('TXbx', 'aiomysql'),
-        echo=True,
-    )
+    engine = create_async_engine(connect_str("TXbx", "aiomysql"), echo=True)
 
     async with engine.begin() as conn:
         await conn.run_sync(meta.create_all)
@@ -46,7 +44,7 @@ async def async_main() -> None:
 
 
 asyncio.run(async_main())
-'''
+"""
 https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html
 
 with Session(engine) as session_obj:
@@ -101,4 +99,4 @@ async def connect_query():
         result = await conn.execute(stmt)
         for row in result:
             print(f"x: {row.x}  y: {row.y}")
-'''
+"""

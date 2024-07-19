@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-11-08 09:18:15
-LastEditTime : 2024-06-28 17:30:18
+LastEditTime : 2024-07-18 11:35:25
 FilePath     : /CODE/xjLib/xt_xfspeech/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -14,13 +14,12 @@ APISecret = OWI0NGJmYmQxZTA1OTI1Yjg5MTM4OGUy
 APIKey = 5206d42c6146ead1ee5411b106965114
 SDK调用方式只需APPID。APIKey或APISecret适用于WebAPI调用方式。
 https://console.xfyun.cn/services/tts
-
 在线语音合成(流式版)API:"wss://tts-api.xfyun.cn/v2/tts"
 """
 
-APPID = '2269c784'
-APISecret = 'OWI0NGJmYmQxZTA1OTI1Yjg5MTM4OGUy'
-APIKey = '5206d42c6146ead1ee5411b106965114'
+APPID = "2269c784"
+APISecret = "OWI0NGJmYmQxZTA1OTI1Yjg5MTM4OGUy"
+APIKey = "5206d42c6146ead1ee5411b106965114"
 
 """
 业务参数说明(business)

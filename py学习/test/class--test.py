@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 #==============================================================
 #Descripttion : None
 #Develop      : VSCode
@@ -16,21 +15,14 @@ https://www.w3cschool.cn/youshq/ciy5nozt.html
 Python3.7 dataclass使用指南 - apocelipes - 博客园
 https://www.cnblogs.com/apocelipes/p/10284346.html
 
-'''
+"""
 
 from dataclasses import dataclass
 from functools import partial
 
 from pysnooper import snoop
-
-from xt_Class import readonly, typeassert, typed_property, Class_Meta, item_MixIn, attr_MixIn, iter_MixIn, repr_MixIn, dict_MixIn
-from xt_Log import log
-from xt_String import class_to_dict
-log = log()
-snooper = snoop(log.filename)
-# print = log.debug
-
-from dataclasses import dataclass
+from xt_class import iter_MixIn, readonly, repr_MixIn, typeassert, typed_property
+from xt_str import class_add_dict as class_to_dict
 
 
 def flatten(nested):
@@ -38,15 +30,14 @@ def flatten(nested):
         # 不要迭代类似字符串的对象：
         # if isinstance(variate,(list,tuple)):
         try:
-            nested + ''
+            nested + ""
         except TypeError:
             pass
         else:
             raise TypeError
 
         for sublist in nested:
-            for element in flatten(sublist):
-                yield element
+            yield from flatten(sublist)
     except TypeError:
         yield nested
 
@@ -64,23 +55,24 @@ def example1():
     Integer = partial(typed_property, expected_type=int)
 
     class Person:
-        name = typed_property('name', str)
-        age = Integer('age')
+        name = typed_property("name", str)
+        age = Integer("age")
 
         def __init__(self, name, age):
             self.name = name
             self.age = age
 
         def __repr__(self):
-            return "Person [name={}, age={}]".format(self.name, self.age)
+            return f"Person [name={self.name}, age={self.age}]"
 
-    a = Person('张三', 44)
-    a.name = '二狗子'
+    a = Person("张三", 44)
+    a.name = "二狗子"
     print(a)
 
 
 def example2():
-    '''只能限制类型'''
+    """只能限制类型"""
+
     @typeassert(name=str, shares=int, price=float)
     class Stock:
         def __init__(self, name, shares, price):
@@ -91,11 +83,11 @@ def example2():
         def __repr__(self):
             return f"{self.__class__.__name__}('name': '{self.name}', 'shares': '{self.shares}', 'price': '{self.price}')"
 
-    zsy = Stock('中国石油', 600987, 4.02)
+    zsy = Stock("中国石油", 600987, 4.02)
     print(zsy)
     zsy.shares = 260987
     zsy.price = 48.32
-    zsy.name = '中国石化'
+    zsy.name = "中国石化"
     print(zsy)
     print(zsy.__dict__)
     print(dir(zsy))
@@ -103,9 +95,9 @@ def example2():
 
 def example3():
     class Stock:
-        __slots__ = ('__name', '__shares', 'price')
-        name = readonly('_Stock__name')
-        shares = readonly('_Stock__shares')
+        __slots__ = ("__name", "__shares", "price")
+        name = readonly("_Stock__name")
+        shares = readonly("_Stock__shares")
 
         def __init__(self, name, shares, price):
             self.__name = name
@@ -118,11 +110,11 @@ def example3():
         def _change_name(self, value):
             self.__name = value
 
-    zsy = Stock('中国石油', 600987, 4.02)
+    zsy = Stock("中国石油", 600987, 4.02)
     print(zsy)
     zsy.shares = 260987
     zsy.price = 48.32
-    zsy._change_name('中国石化')
+    zsy._change_name("中国石化")
     print(zsy)
     # print(zsy.__dict__)  # 报错,__slots__影响
     print(dir(zsy))
@@ -131,20 +123,20 @@ def example3():
 def example4():
     @dataclass
     class Stock:
-        name = readonly('_Stock__name')
-        shares = readonly('_Stock__shares')
-        __name: str = ''
+        name = readonly("_Stock__name")
+        shares = readonly("_Stock__shares")
+        __name: str = ""
         __shares: int = 600987
         price: float = 8.72
 
         def _change_name(self, value):
             self.__name = value
 
-    zsy = Stock('中国石油', 600987, 4.02)
+    zsy = Stock("中国石油", 600987, 4.02)
     print(zsy)
     zsy.shares = 260987
     zsy.price = 48.32
-    zsy._change_name('中国石化')
+    zsy._change_name("中国石化")
     print(zsy)
     # print(zsy.__dict__) # 报错
     print(dir(zsy))
@@ -172,11 +164,11 @@ def example5():
         def __repr__(self):
             return f"{self.__class__.__name__}('name': '{self.name}', 'shares': '{self.shares}', 'price': '{self.price}')"
 
-    zsy = Stock('中国石油', 600987, 4.02)
+    zsy = Stock("中国石油", 600987, 4.02)
     print(zsy)
     # zsy.shares = 260987 #报错
     zsy.price = 48.32
-    zsy._change_name('中国石化')
+    zsy._change_name("中国石化")
     print(zsy)
     print(zsy.__dict__)
     print(dir(zsy))
@@ -184,14 +176,10 @@ def example5():
 
 def type_make_class():
     # # Class_Meta, item_MixIn, attr_MixIn, iter_MixIn, repr_MixIn
-    objclass = type('Trick', (iter_MixIn, repr_MixIn), {
-        'name': readonly('_name'),
-        '_name': 'liuxinjun',
-        'pass': '123456',
-    })
+    objclass = type("Trick", (iter_MixIn, repr_MixIn), {"name": readonly("_name"), "_name": "liuxinjun", "pass": "123456"})
     obj = objclass()
     print(obj.__dict__)
-    obj._name = 'xuhuayin'
+    obj._name = "xuhuayin"
     print(class_to_dict(obj))
     for item in obj:
         print(item)
@@ -205,15 +193,16 @@ def alispeech():
 
     @dataclass(init=False)
     class SpeechArgs:
-        '''默认参数'''
-        appkey = readonly('_appkey')
-        token = readonly('_token')
+        """默认参数"""
+
+        appkey = readonly("_appkey")
+        token = readonly("_token")
 
         _appkey: str = Constant().appKey
         _token: str = Constant().token
-        format: str = 'wav'
+        format: str = "wav"
         sample_rate: int = 16000
-        voice: str = 'Aida'
+        voice: str = "Aida"
         volume: int = 100
         speech_rate: int = 0
         pitch_rate: int = 0

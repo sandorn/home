@@ -23,7 +23,7 @@ import aiohttp
 import aiomysql
 from lxml import etree
 from pyquery import PyQuery
-from xt_DAO.cfg import DB_CONFIG
+from xt_database.cfg import DB_CONFIG
 
 pool = ''
 # sem = asyncio.Semaphore(4)  用来控制并发数，不指定会全速运行

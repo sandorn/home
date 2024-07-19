@@ -16,23 +16,21 @@ https://blog.csdn.net/ydyang1126/article/details/78226701/
 
 import asyncio
 import traceback
-from copy import deepcopy
 from functools import partial
 
 import aiomysql
-from xt_Class import item_Mixin
-from xt_DAO.cfg import DB_CONFIG
+from xt_database.cfg import DB_CFG
 
 
-class AioMysql(item_Mixin):
+class AioMysql:
     def __init__(self):
         self.pool = None
 
-    async def create_pool(self, key='default', autocommit=True):
-        if key not in DB_CONFIG:
-            raise ValueError(f'错误提示:检查数据库配置:{key}')
-        conf = deepcopy(DB_CONFIG[key])
-        conf.pop('type', None)
+    async def create_pool(self, key="default", autocommit=True):
+        if key not in DB_CFG:
+            raise ValueError(f"错误提示:检查数据库配置:{key}")
+        conf = DB_CFG[key]
+        conf.pop("type", None)
         self.autocommit = autocommit
         try:
             self.pool = await aiomysql.create_pool(
@@ -46,7 +44,7 @@ class AioMysql(item_Mixin):
             )
             return self.pool
         except Exception:
-            print('connect error:', Exception)
+            print("connect error:", Exception)
 
     async def getCurosr(self):
         conn = await self.pool.acquire()
@@ -67,7 +65,7 @@ class AioMysql(item_Mixin):
         :return:
         """
         conn, cur = await self.getCurosr()
-        res = ''
+        res = ""
         try:
             await cur.execute(sql, args)
             res = await cur.fetchall()
@@ -101,7 +99,7 @@ class AioMysql(item_Mixin):
             return affetced
 
 
-async def create_xt_aiomysql(key='default'):
+async def create_xt_aiomysql(key="default"):
     Aiomysql = AioMysql()
     await Aiomysql.create_pool(key)
     return Aiomysql
@@ -131,21 +129,16 @@ query_aiomysql = partial(_run_aiomysql, _query_aiomysql)
 execute_aiomysql = partial(_run_aiomysql, _execute_aiomysql)
 executemany_aiomysql = partial(_run_aiomysql, _executemany_aiomysql)
 
-if __name__ == '__main__':
-    query_list = [
-        'select * from users2',
-        'select * from users2 where ID = 1',
-        "update users2 set username='刘新军1' where ID = 2",
-        'select * from users2 where ID = 2',
-    ]
+if __name__ == "__main__":
+    query_list = ["select * from users2", "select * from users2 where ID = 1", "update users2 set username='刘新军1' where ID = 2", "select * from users2 where ID = 2"]
     up_sql = ("update users2 set username='刘新新' where ID = 2",)
-    ups_sql = 'update users2 set username=%s where ID = %s'
-    ups_data = [('刘澈', 1), ('刘新军', 2)]
+    ups_sql = "update users2 set username=%s where ID = %s"
+    ups_data = [("刘澈", 1), ("刘新军", 2)]
     # res = execute_aiomysql('TXbx', up_sql)
     # print(res)
     # res = executemany_aiomysql('TXbx', ups_sql, ups_data)
     # print(res)
-    res = query_aiomysql('TXbx', query_list)
+    res = query_aiomysql("TXbx", query_list)
     print(res)
 """
 python并发编程之asyncio协程(三) - 天宇之游 - 博客园

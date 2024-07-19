@@ -13,13 +13,13 @@ Github       : https://github.com/sandorn/home
 
 import os
 
-from xt_Ahttp import ahttpGetAll
-from xt_AhttpClent import AioHttpClient
-from xt_AHttpCrawl import AioHttpCrawl
-from xt_File import savefile
-from xt_Ls_Bqg import clean_Content, get_contents, get_download_url, 结果处理
-from xt_Response import htmlResponse
-from xt_Time import fn_timer
+from xt_ahttp import ahttpGetAll
+from xt_ahttpclent import AioHttpClient
+from xt_ahttpcrawl import AioHttpCrawl
+from xt_file import savefile
+from xt_ls_bqg import clean_Content, get_contents, get_download_url, 结果处理
+from xt_response import htmlResponse
+from xt_time import fn_timer
 
 
 @fn_timer
@@ -89,5 +89,5 @@ if __name__ == "__main__":
     # Aio_add_task(bookname, urls)  # |time: 55.67 sec|processtime: 32.83 sec
     # Aio_add_pool(bookname, urls)  # |time: 87.61 sec|processtime: 38.48 sec
     # Aio_add_task_back(bookname, urls)  # |time: 52.35 sec|processtime: 34.19 sec
-    ahttp_run(bookname, urls)  # |time: 64.91 sec|processtime: 40.31 sec
-    # AioHttpClient_run(bookname, urls)  # |time: 42.82 sec|processtime: 28.95 sec #@ 8星
+    # ahttp_run(bookname, urls)  # |time: 64.91 sec|processtime: 40.31 sec
+    AioHttpClient_run(bookname, urls)  # |time: 42.82 sec|processtime: 28.95 sec #@ 8星

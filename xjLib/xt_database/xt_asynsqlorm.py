@@ -9,9 +9,6 @@ LastEditTime : 2023-02-04 20:42:41
 FilePath     : /CODE/xjLib/xt_DAO/xt_asynOrm.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-#@电脑重启后出错
-    raise exc.NoSuchModuleError(
-sqlalchemy.exc.NoSuchModuleError: Can't load plugin: sqlalchemy.dialects:mysql.None
 """
 
 import asyncio
@@ -19,17 +16,17 @@ import asyncio
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.ext.declarative import DeclarativeMeta
-from xt_Class import typed_property
-from xt_DAO.cfg import connect_str
-from xt_DAO.untilsql import get_insert_sql, get_update_sql
-from xt_DAO.xt_chemyMeta import Orm_Meta, getModel
+from xt_class import typed_property
+from xt_database.cfg import connect_str
+from xt_database.untilsql import make_insert_sql, make_update_sql
+from xt_database.xt_chemymeta import ErrorMetaClass, get_db_model
 
 
-class AsynSqlOrm(Orm_Meta):
+class AsynSqlOrm(ErrorMetaClass):
     # #限定参数类型
-    Base = typed_property('Base', DeclarativeMeta)
+    Base = typed_property("Base", DeclarativeMeta)
 
-    def __init__(self, key='default', target_table_name=None, source_table_name=None):
+    def __init__(self, key="default", target_table_name=None, source_table_name=None):
         # 创建引擎
         engine = create_engine(
             connect_str(key),
@@ -40,12 +37,13 @@ class AsynSqlOrm(Orm_Meta):
             # echo=True,  # echo参数为True时,会显示每条执行的SQL语句
             # poolclass=NullPool, # 禁用池
         )
-        self.Base = getModel(engine, target_table_name, source_table_name)  # #获取orm基类,同时创建表
+
+        self.Base = get_db_model(engine, target_table_name, source_table_name)  # #获取orm基类,同时创建表
         self.tablename = target_table_name or self.Base.__tablename__
         self.coro_list = []
 
         self.engine = create_async_engine(
-            connect_str(key=key, odbc='aiomysql'),
+            connect_str(key=key, odbc="aiomysql"),
             max_overflow=0,  # 超过连接池大小外最多创建的连接
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
@@ -113,14 +111,14 @@ class AsynSqlOrm(Orm_Meta):
             self.coro_list.extend(_coro)
 
     async def __insert(self, data_dict_list, tablename):
-        insert_sql = get_insert_sql(data_dict_list, tablename)
+        insert_sql = make_insert_sql(data_dict_list, tablename)
         async with self.async_session() as session:
             result = await session.execute(insert_sql)
             await session.commit()
             return result.rowcount
 
     async def __update(self, data_dict_list, whrere_dict, tablename):
-        update_sql = get_update_sql(data_dict_list, whrere_dict, tablename)
+        update_sql = make_update_sql(data_dict_list, whrere_dict, tablename)
         async with self.async_session() as session:
             result = await session.execute(update_sql)
             await session.commit()
@@ -141,16 +139,13 @@ class AsynSqlOrm(Orm_Meta):
             await session.commit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # aio = create_orm('TXbx', 'users2')
     # print(aio.query('select * from users2'))
-    query_list = [
-        'select * from users2 where id = 1',
-        'select * from users2',
-    ]
-    item1 = {'username': '刘新', 'password': '234567', '手机': '13910118122', '代理人编码': '10005393', '会员级别': 'SSS', '会员到期日': '9999-12-31 00:00:00'}
+    query_list = ["select * from users2 where id = 1", "select * from users2"]
+    item1 = {"username": "刘新", "password": "234567", "手机": "13910118122", "代理人编码": "10005393", "会员级别": "SSS", "会员到期日": "9999-12-31 00:00:00"}
 
-    aio = AsynSqlOrm('TXbx', 'users2')
+    aio = AsynSqlOrm("TXbx", "users2")
     # res = aio.add_all(
     #     [
     #         item1,
@@ -220,7 +215,7 @@ if __name__ == '__main__':
 
     @contextmanager
     async def insert(data_dict_list, tablename):
-        insert_sql = get_insert_sql(data_dict_list, tablename)
+        insert_sql = make_insert_sql(data_dict_list, tablename)
         async with self.async_session() as session:
             result = await session.execute(insert_sql)
             yield result

@@ -24,13 +24,13 @@ from scrapy.exporters import JsonItemExporter
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from twisted.enterprise import adbapi
-from xt_DAO.cfg import DB_CONFIG
-from xt_DAO.xt_Aiomysql import AioMysql
-from xt_DAO.xt_AiomysqlPool import execute_aiomysql
-from xt_DAO.xt_AsynSqlOrm import AsynSqlOrm
-from xt_DAO.xt_chemyMeta import Base_Model
-from xt_DAO.xt_mysql import DbEngine as mysql
-from xt_DAO.xt_sqlalchemy import SqlConnection
+from xt_database.cfg import DB_CONFIG
+from xt_database.xt_aiomysql import AioMysql
+from xt_database.xt_aiomysqlpool import execute_aiomysql
+from xt_database.xt_asynsqlorm import AsynSqlOrm
+from xt_database.xt_chemymeta import Base_Model
+from xt_database.xt_mysql import DbEngine as mysql
+from xt_database.xt_sqlalchemy import SqlConnection
 
 
 def make_model(_BOOKNAME):
@@ -39,7 +39,7 @@ def make_model(_BOOKNAME):
     class table_model(Base_Model):
         # Base_Model 继承自from xt_DAO.xt_chemyMeta.Model_Method_Mixin
         __tablename__ = _BOOKNAME
-        __table_args__ = {'extend_existing': True}
+        __table_args__ = {"extend_existing": True}
 
         ID = Column(INTEGER(10), primary_key=True)
         BOOKNAME = Column(VARCHAR(255), nullable=False)
@@ -49,7 +49,7 @@ def make_model(_BOOKNAME):
         ZJHERF = Column(VARCHAR(255), nullable=False)
 
         def __repr__(self):
-            return f'({self.ID},{self.BOOKNAME},{self.INDEX},{self.ZJNAME},{self.ZJHERF})'
+            return f"({self.ID},{self.BOOKNAME},{self.INDEX},{self.ZJNAME},{self.ZJHERF})"
 
     return table_model
 
@@ -59,10 +59,10 @@ class PipelineToSqlTwisted:
     @classmethod
     def from_settings(cls, settings):
         # #用于获取settings配置文件中的信息
-        config = deepcopy(DB_CONFIG['TXbook'])
-        if 'type' in config:
-            config.pop('type')
-        dbpool = adbapi.ConnectionPool('MySQLdb', **config)
+        config = deepcopy(DB_CONFIG["TXbook"])
+        if "type" in config:
+            config.pop("type")
+        dbpool = adbapi.ConnectionPool("MySQLdb", **config)
         return cls(dbpool)
 
     def __init__(self, dbpool):
@@ -76,13 +76,13 @@ class PipelineToSqlTwisted:
 
     def handle_error(self, failure, item, spider):
         # 处理异步插入的异常
-        print(f'PipelineToSqlTwisted 异步insert异常 | {failure} | item:{item}')
+        print(f"PipelineToSqlTwisted 异步insert异常 | {failure} | item:{item}")
 
     def do_insert(self, cursor, item):
         # 根据item构建sql语句并执行
         insert_sql = """
         Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
-        """ % (item['BOOKNAME'], item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT'], item['ZJHERF'])
+        """ % (item["BOOKNAME"], item["BOOKNAME"], item["INDEX"], item["ZJNAME"], item["ZJTEXT"], item["ZJHERF"])
         cursor.execute(insert_sql)
 
 
@@ -97,17 +97,10 @@ class PipelineToAiomysqlpool:
     def Create_Sql(self, item):
         return """
         Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
-        """ % (
-            item['BOOKNAME'],
-            item['BOOKNAME'],
-            item['INDEX'],
-            item['ZJNAME'],
-            item['ZJTEXT'],
-            item['ZJHERF'],
-        )
+        """ % (item["BOOKNAME"], item["BOOKNAME"], item["INDEX"], item["ZJNAME"], item["ZJTEXT"], item["ZJHERF"])
 
     def close_spider(self, spider):
-        execute_aiomysql('TXbook', self.sql_list)
+        execute_aiomysql("TXbook", self.sql_list)
 
 
 class PipelineToAsynorm:
@@ -116,12 +109,12 @@ class PipelineToAsynorm:
         self.sqlconn = None
 
     def process_item(self, item, spider):
-        self._BOOKNAME = item['BOOKNAME']
+        self._BOOKNAME = item["BOOKNAME"]
         if self._BOOKNAME not in self.db:
             self.db.add(self._BOOKNAME)
             self.DBtable = make_model(self._BOOKNAME)
         if self.sqlconn is None:
-            self.sqlconn = AsynSqlOrm(self.DBtable, 'TXbook', self._BOOKNAME)
+            self.sqlconn = AsynSqlOrm(self.DBtable, "TXbook", self._BOOKNAME)
 
         self.sqlconn.insert(dict(item), autorun=False)
 
@@ -140,7 +133,7 @@ class PipelineToAiomysql:
 
     def process_item(self, item, spider):
         if self.AioMysql is None:
-            self.AioMysql = AioMysql('TXbook', item['BOOKNAME'])
+            self.AioMysql = AioMysql("TXbook", item["BOOKNAME"])
         self.AioMysql.insert(dict(item), autorun=False)
         return item
 
@@ -154,11 +147,11 @@ class PipelineToSqlalchemy:
         self.db = set()
 
     def process_item(self, item, spider):
-        _BOOKNAME = item['BOOKNAME']
+        _BOOKNAME = item["BOOKNAME"]
         if _BOOKNAME not in self.db:
             self.db.add(_BOOKNAME)
             DBtable = make_model(_BOOKNAME)
-            self.sqlconn = SqlConnection(DBtable, 'TXbook')
+            self.sqlconn = SqlConnection(DBtable, "TXbook")
 
         self.sqlconn.insert(dict(item))
         return item
@@ -170,14 +163,14 @@ class PipelineToSqlalchemy:
 
 class PipelineToMysql:
     def __init__(self):
-        self.conn = mysql('TXbook', 'MySQLdb')
+        self.conn = mysql("TXbook", "MySQLdb")
         self.db = set()
 
     def process_item(self, item, spider):
-        _BOOKNAME = item['BOOKNAME']
+        _BOOKNAME = item["BOOKNAME"]
         if _BOOKNAME not in self.db:
             # 避免重复创建数据库
-            Csql = f'Create Table If Not Exists {_BOOKNAME}(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)'
+            Csql = f"Create Table If Not Exists {_BOOKNAME}(`ID` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,  `BOOKNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `INDEX` int(10) NOT NULL,  `ZJNAME` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  `ZJTEXT` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,`ZJHERF` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,  PRIMARY KEY (`ID`) USING BTREE)"
             self.conn.execute(Csql)
             self.db.add(_BOOKNAME)
 
@@ -185,8 +178,8 @@ class PipelineToMysql:
         assert isinstance(_result, (list, tuple))
         ZJHERF_list = [res[5] for res in _result]
 
-        if item['ZJHERF'] in ZJHERF_list:
-            self.conn.update(dict(item), {'ZJHERF': item['ZJHERF']}, _BOOKNAME)
+        if item["ZJHERF"] in ZJHERF_list:
+            self.conn.update(dict(item), {"ZJHERF": item["ZJHERF"]}, _BOOKNAME)
         else:
             self.conn.insert(dict(item), _BOOKNAME)
         return item
@@ -202,18 +195,18 @@ class PipelineToTxt:
         self.file = {}
 
     def process_item(self, item, spider):
-        bookname = item['BOOKNAME']
-        self.file[bookname] = open(f'{bookname}.txt', 'w', encoding='utf-8')
-        self.file[bookname].write(f'-----------------------{bookname}-----------------------\n')
+        bookname = item["BOOKNAME"]
+        self.file[bookname] = open(f"{bookname}.txt", "w", encoding="utf-8")
+        self.file[bookname].write(f"-----------------------{bookname}-----------------------\n")
         self.content_list.append(item)
         return item
 
     def close_spider(self, spider):
-        list_sorted = sorted(self.content_list, key=lambda x: x['INDEX'])
+        list_sorted = sorted(self.content_list, key=lambda x: x["INDEX"])
         for item in list_sorted:
-            _BOOKNAME = item['BOOKNAME']
+            _BOOKNAME = item["BOOKNAME"]
             self.file[_BOOKNAME].write(f"----------{_BOOKNAME}----------{item['INDEX']}----------{item['ZJNAME']}----------\n")
-            self.file[_BOOKNAME].write(item['ZJTEXT'])
+            self.file[_BOOKNAME].write(item["ZJTEXT"])
 
         for key in self.file.keys():
             self.file[key].close()
@@ -224,9 +217,9 @@ class PipelineToJson:
         self.file = any
 
     def process_item(self, item, spider):
-        self.file = codecs.open(item['BOOKNAME'] + '.json', 'a', encoding='utf-8')
+        self.file = codecs.open(item["BOOKNAME"] + ".json", "a", encoding="utf-8")
         # 存储数据，将 Item 实例作为 json 数据写入到文件中
-        line = json.dumps(dict(item), ensure_ascii=False) + '\n'
+        line = json.dumps(dict(item), ensure_ascii=False) + "\n"
         self.file.write(line)
         return item
 
@@ -240,9 +233,9 @@ class PipelineToJsonExp:
         pass
 
     def open_spider(self, spider):
-        self.file = open('Items_exp.json', 'wb')
+        self.file = open("Items_exp.json", "wb")
         # 初始化 exporter 实例，执行输出的文件和编码
-        self.exporter = JsonItemExporter(self.file, encoding='utf-8', ensure_ascii=False)
+        self.exporter = JsonItemExporter(self.file, encoding="utf-8", ensure_ascii=False)
         self.exporter.start_exporting()  # 开启倒数
 
     # 将 Item 实例导出到 json 文件
@@ -260,10 +253,10 @@ class PipelineToCsv:
         self.file = any
 
     def process_item(self, item, spider):
-        self.file = codecs.open(item['BOOKNAME'] + '.csv', 'a', encoding='utf-8')
+        self.file = codecs.open(item["BOOKNAME"] + ".csv", "a", encoding="utf-8")
         # 存储数据，将 Item 实例作为 json 数据写入到文件中
         res = json.dumps(dict(item), ensure_ascii=False)
-        self.file.write(res + '\n')
+        self.file.write(res + "\n")
         return item
 
     def close_spider(self, spider):
@@ -276,9 +269,9 @@ class Pipeline2Csv:
         self.writer = any
 
     def process_item(self, item, spider):
-        self.file = open(item['BOOKNAME'] + '_2.csv', 'a', newline='')
-        self.writer = csv.writer(self.file, dialect='excel')  # csv写法
-        self.writer.writerow([item['BOOKNAME'], item['INDEX'], item['ZJNAME'], item['ZJTEXT']])
+        self.file = open(item["BOOKNAME"] + "_2.csv", "a", newline="")
+        self.writer = csv.writer(self.file, dialect="excel")  # csv写法
+        self.writer.writerow([item["BOOKNAME"], item["INDEX"], item["ZJNAME"], item["ZJTEXT"]])
         return item
 
     def close_spider(self, spider):

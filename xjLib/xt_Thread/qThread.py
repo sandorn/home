@@ -5,15 +5,15 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-01 10:50:56
-FilePath     : /CODE/xjLib/xt_Thread/qThread.py
+LastEditTime : 2024-07-18 11:34:22
+FilePath     : /CODE/xjLib/xt_thread/qThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
 from PyQt6.QtCore import QThread
-from xt_Singleon import Singleton_Mixin, singleton_wrap_class
-from xt_Thread import create_mixin_class
+from xt_singleon import SingletonDecoratorClass, SingletonMixin
+from xt_thread import create_mixin_class
 
 
 class CustomQThread(QThread):
@@ -52,16 +52,16 @@ class CustomQThread(QThread):
         self.wait()
 
 
-@singleton_wrap_class
+@SingletonDecoratorClass
 class QThread_wrap_class(CustomQThread): ...
 
 
-class QThread_Singleton_Mixin(Singleton_Mixin, CustomQThread): ...
+class QThread_Singleton_Mixin(SingletonMixin, CustomQThread): ...
 
 
-SingletonQThread = create_mixin_class('SingletonQThread', Singleton_Mixin, CustomQThread)
+SingletonQThread = create_mixin_class("SingletonQThread", SingletonMixin, CustomQThread)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     def f(*args):
         return sum(args)

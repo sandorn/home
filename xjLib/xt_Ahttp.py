@@ -18,9 +18,9 @@ from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from tenacity import retry, stop_after_attempt, wait_random
-from xt_Head import RETRY_TIME, TIMEOUT, Head
-from xt_Log import log_decorator
-from xt_Response import htmlResponse
+from xt_head import RETRY_TIME, TIMEOUT, Head
+from xt_log import log_decorator
+from xt_response import htmlResponse
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误

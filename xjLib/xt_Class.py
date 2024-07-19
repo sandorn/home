@@ -12,7 +12,7 @@ Github       : https://github.com/sandorn/home
 """
 
 
-class item_get_Mixin:
+class ItemGetMetaMixin:
     """下标obj[key]"""
 
     def __getitem__(self, key):
@@ -20,7 +20,7 @@ class item_get_Mixin:
         return self.__dict__.get(key)
 
 
-class item_Mixin:
+class ItemMetaMixin:
     """下标obj[key]"""
 
     def __getitem__(self, key):
@@ -34,7 +34,7 @@ class item_Mixin:
         return self.__dict__.pop(key)
 
 
-class attr_Mixin:
+class AttrMetaMixin:
     """原点调用obj.key"""
 
     def __getattr__(self, key):
@@ -48,7 +48,7 @@ class attr_Mixin:
         return super().__delattr__(key)
 
 
-class remake_dict_Mixin:
+class ReDictMixin:
     """get_dict重新生成__dict__类字典,主要用于readonly限制"""
 
     def get_dict(self):
@@ -58,7 +58,7 @@ class remake_dict_Mixin:
         return self.__dict__
 
 
-class iter_Mixin:
+class IterMetaMixin:
     """
     # #迭代类,用于继承,不支持next
     from collections import Iterable
@@ -70,7 +70,7 @@ class iter_Mixin:
         # return iter(self.get_dict().items())
 
 
-class repr_Mixin(remake_dict_Mixin):
+class ReprMetaMixin(ReDictMixin):
     """用于打印显示"""
 
     def __repr__(self):
@@ -78,10 +78,10 @@ class repr_Mixin(remake_dict_Mixin):
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
 
-class Class_Meta(item_Mixin, iter_Mixin, repr_Mixin): ...  # metaclass=abc.ABCMeta
+class BaseClass(ItemMetaMixin, IterMetaMixin, ReprMetaMixin): ...  # metaclass=abc.ABCMeta
 
 
-class SetOnce_Mixin:
+class SetOnceMixin:
     """限制key赋值一次,key不存在时可赋值"""
 
     __slots__ = ()
@@ -92,7 +92,7 @@ class SetOnce_Mixin:
         raise ValueError(f"key:`{key}`, already set!")
 
 
-class SetOnceDict(SetOnce_Mixin, dict): ...  # 自定义字典,限制key只能赋值一次,key不存在时可添加
+class SetOnceDict(SetOnceMixin, dict): ...  # 自定义字典,限制key只能赋值一次,key不存在时可添加
 
 
 def typeassert(**kwargs):
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         print(99999, my_dict)
 
     def 可迭代对象():
-        class Animal(iter_Mixin, repr_Mixin):
+        class Animal(IterMetaMixin, ReprMetaMixin):
             def __init__(self):
                 self.name = "liuxinjun"
                 self.age = 12
@@ -189,7 +189,7 @@ if __name__ == "__main__":
             print(k.ljust(16), ":", v)
 
     def itat():
-        class Anima(item_Mixin, attr_Mixin):
+        class Anima(ItemMetaMixin, AttrMetaMixin):
             def __init__(self):
                 self.name = "na98888me"
                 self.age = 12

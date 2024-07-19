@@ -10,5 +10,3 @@ FilePath     : /CODE/xjLib/xt_DAO/__init__.py
 Github       : https://github.com/sandorn/home.
 ==============================================================
 """
-
-# Path: xjLib\xt_DAO\__init__.py

@@ -1,54 +1,42 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-10-20 10:25:27
-FilePath     : /CODE/xjLib/xt_Alispeech/state.py
+LastEditTime : 2024-07-18 10:50:04
+FilePath     : /CODE/xjLib/xt_alitts/state.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
+"""
 
 
 # 1. 语音识别状态机
 class on_state_cls:
+    def _on_sentence_begin(self, message, *args): ...
 
-    def _on_sentence_begin(self, message, *args):
-        ...
+    def _on_sentence_end(self, message, *args): ...
 
-    def _on_sentence_end(self, message, *args):
-        ...
+    def _on_start(self, message, *args): ...
 
-    def _on_start(self, message, *args):
-        ...
+    def _on_error(self, message, *args): ...
 
-    def _on_error(self, message, *args):
-        ...
+    def _on_close(self, *args): ...
 
-    def _on_close(self, *args):
-        ...
+    def _on_result_changed(self, message, *args): ...
 
-    def _on_result_changed(self, message, *args):
-        ...
+    def _on_completed(self, message, *args): ...
 
-    def _on_completed(self, message, *args):
-        ...
+    def _on_metainfo(self, message, *args): ...
 
-    def _on_metainfo(self, message, *args):
-        ...
-
-    def _on_data(self, data, *args):
-        ...
+    def _on_data(self, data, *args): ...
 
 
 # @语音合成状态机
 
 
 class on_state_primitive:
-
     def _on_sentence_begin(self, message, *args):
         print(f"_on_sentence_begin message=>{message}: args=>{args}")
 

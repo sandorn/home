@@ -1,6 +1,5 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+"""
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
@@ -10,6 +9,4 @@ LastEditTime : 2023-11-08 09:14:43
 FilePath     : /CODE/xjLib/xt_xfspeech/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-'''
-
-# Path: xjLib\xt_xfspeech\__init__.py
+"""

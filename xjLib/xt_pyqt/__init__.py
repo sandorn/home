@@ -11,4 +11,4 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from xt_Ui.EventLoop import EventLoop
+from xt_pyqt.eventLoop import event_loop

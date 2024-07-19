@@ -15,11 +15,11 @@ LastEditTime : 2021-03-25 10:03:29
 from sqlalchemy import Table
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.orm import declarative_base
-from xt_Class import item_Mixin
-from xt_DAO.cfg import connect_str
+from xt_class import ItemMetaMixin
+from xt_database.cfg import connect_str
 
 
-class Orm_Meta:
+class ErrorMetaClass:
     def init_db(self):
         raise NotImplementedError
 
@@ -57,7 +57,7 @@ class Orm_Meta:
         raise NotImplementedError
 
 
-class ModelExt(item_Mixin):
+class ModelExt(ItemMetaMixin):
     """下标取值赋值、打印显示、生成字段列表"""
 
     @classmethod
@@ -87,21 +87,22 @@ class ModelExt(item_Mixin):
 
     def to_json(self):
         fields = self.__dict__
-        fields.pop('_sa_instance_state', None)
+        fields.pop("_sa_instance_state", None)
         return fields
 
     def __repr__(self):
         fields = self.__dict__
-        if '_sa_instance_state' in fields:
-            del fields['_sa_instance_state']
+        if "_sa_instance_state" in fields:
+            del fields["_sa_instance_state"]
         return self.__class__.__name__ + str(dict(fields.items()))
         # return self.__class__.__name__ + str({attr: getattr(self, attr) for attr in self.columns()})
 
     __str__ = __repr__
 
 
-Base_Model = declarative_base(cls=ModelExt)  # #生成SQLORM基类,混入继承ModelExt
+Base_Model = declarative_base(cls=ModelExt)
 """
+生成SQLORM基类,混入继承ModelExt
 metadata = Base.metadata
 定义table的基类,所有的表都要继承这个类,这个类的作用是将表映射到数据库中
 sqlalchemy 强制要求必须要有主键字段不然会报错,sqlalchemy在接收到查询结果后还会自己根据主键进行一次去重,因此不要随便设置非主键字段设为primary_key
@@ -109,8 +110,10 @@ sqlalchemy 强制要求必须要有主键字段不然会报错,sqlalchemy在接�
 """
 
 
-class parent_model_Mixin:
-    """定义所有数据库表对应的父类,用于混入继承,与Base_Model协同"""
+class ParentModelMixin:
+    """
+    定义所有数据库表对应的父类,用于混入继承,与Base_Model协同
+    """
 
     __abstract__ = True
 
@@ -141,18 +144,18 @@ def inherit_table_cls(target_table_name, table_model_cls, cid_class_dict=None):
     if cid_class_dict is None:
         cid_class_dict = {}
     if not isinstance(table_model_cls, DeclarativeMeta):
-        raise TypeError('table_model_cls must be DeclarativeMeta object')
+        raise TypeError("table_model_cls must be DeclarativeMeta object")
 
     if target_table_name not in cid_class_dict:
         cls = type(
             target_table_name,
             (table_model_cls,),
             {
-                '__table_args__': {
-                    'extend_existing': True,  # 允许表已存在
+                "__table_args__": {
+                    "extend_existing": True  # 允许表已存在
                 },
-                '__tablename__': target_table_name,
-                '__abstract__': True,  # 父类模式
+                "__tablename__": target_table_name,
+                "__abstract__": True,  # 父类模式
             },
         )
         cid_class_dict[target_table_name] = cls
@@ -183,7 +186,7 @@ def dictToObj(results, to_class):
             return None
 
 
-def getModel(engine, target_table_name, source_table_name=None):
+def get_db_model(engine, target_table_name, source_table_name=None):
     """读取数据库表;或copy源表结构,创建新表;返回model类"""
     # Base_Model.metadata.reflect(engine)
     # source_table = Base_Model.metadata.tables[source_table_name]
@@ -198,26 +201,31 @@ def getModel(engine, target_table_name, source_table_name=None):
 
     # 表结构
     target_kws = {
-        '__table__': Table(
-            target_table_name if source_table_name is None else source_table_name,  # #判断是否从source_table_name复制表结构
+        "__table__": Table(
+            target_table_name if source_table_name is None else source_table_name,
+            # 判断是否从source_table_name复制表结构
             Base_Model.metadata,
             extend_existing=True,
             autoload_with=engine,
         ),
-        '__tablename__': target_table_name,
+        "__tablename__": target_table_name,
     }
-    target_kws['__table__'].name = target_table_name  # @关键语句，决定是否创建新表
+    target_kws["__table__"].name = target_table_name  # @关键语句，决定是否创建新表
 
     Base_Model.metadata.create_all(engine)  # 创建表
     return type(target_table_name, (Base_Model,), target_kws)
 
 
-def Data_Model_2_py(tablename, key='default'):
+def db_to_model(tablename, key="default"):
     """
     根据已有数据库生成模型
     sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf
     """
     import subprocess
 
-    com_list = f'sqlacodegen --tables {tablename} --outfile {tablename}_db.py {connect_str(key)}'
+    com_list = f"sqlacodegen --tables {tablename} --outfile {tablename}_db.py {connect_str(key)}"
     subprocess.call(com_list, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+if __name__ == "__main__":
+    db_to_model("users2")

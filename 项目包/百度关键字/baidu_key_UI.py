@@ -16,7 +16,7 @@ import os
 from PyQt6.QtCore import QMetaObject, Qt
 from PyQt6.QtGui import QAction, QFont, QIcon
 from PyQt6.QtWidgets import QApplication, QHBoxLayout, QLabel, QMainWindow, QProgressBar, QSpinBox, QStatusBar, QTableWidget, QVBoxLayout, QWidget
-from xt_Ui.part import xt_QTableWidget
+from xt_pyqt.part import xt_QTableWidget
 
 
 class Ui_MainWindow(QMainWindow):

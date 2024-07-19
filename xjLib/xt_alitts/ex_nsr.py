@@ -15,9 +15,9 @@ Github       : https://github.com/sandorn/home
 from threading import Semaphore, Thread
 
 from nls import NlsSpeechRecognizer
-from xt_Alispeech.cfg import Constant
-from xt_Alispeech.state import on_state_cls
-from xt_Alispeech.util import handle_result
+from xt_alitts.cfg import Constant
+from xt_alitts.state import on_state_cls
+from xt_alitts.util import handle_result
 
 _ACCESS_APPKEY = Constant().appKey
 _ACCESS_TOKEN = Constant().token
@@ -37,7 +37,7 @@ class NSR(on_state_cls):
         self.start()
 
     def start(self):
-        self.__data = open(self.__file_name, 'rb').read()
+        self.__data = open(self.__file_name, "rb").read()
         self.__th.start()
         self.all_Thread.append(self.__th)
 
@@ -65,61 +65,39 @@ class NSR(on_state_cls):
 
     def __thread_run(self):
         with Sem:
-            print(f'{self.__id}: thread start..')
+            print(f"{self.__id}: thread start..")
 
-            _NSR_ = NlsSpeechRecognizer(
-                token=_ACCESS_TOKEN,
-                appkey=_ACCESS_APPKEY,
-                on_start=self._on_start,
-                on_result_changed=self._on_result_changed,
-                on_completed=self._on_completed,
-                on_error=self._on_error,
-                on_close=self._on_close,
-                callback_args=[self.__id],
-            )
+            _NSR_ = NlsSpeechRecognizer(token=_ACCESS_TOKEN, appkey=_ACCESS_APPKEY, on_start=self._on_start, on_result_changed=self._on_result_changed, on_completed=self._on_completed, on_error=self._on_error, on_close=self._on_close, callback_args=[self.__id])
 
-            print(f'{self.__id}: session start')
+            print(f"{self.__id}: session start")
 
-            _NSR_.start(
-                aformat='pcm',
-                enable_intermediate_result=True,
-                enable_punctuation_prediction=True,
-                enable_inverse_text_normalization=True,
-                sample_rate=16000,
-                ch=1,
-                timeout=10,
-                ping_interval=8,
-                ping_timeout=None,
-                ex={},
-            )
+            _NSR_.start(aformat="pcm", enable_intermediate_result=True, enable_punctuation_prediction=True, enable_inverse_text_normalization=True, sample_rate=16000, ch=1, timeout=10, ping_interval=8, ping_timeout=None, ex={})
             slices = [self.__data[i : i + 640] for i in range(0, len(self.__data), 640)]
             # slices = zip(*(iter(self.__data), ) * 640)
             for __s in slices:
                 _NSR_.send_audio(bytes(__s))
 
             _NSR_.stop()
-            print(f'{self.__id}: NSR stopped.')
+            print(f"{self.__id}: NSR stopped.")
 
 
-def TODO_NSR(_in_file_list):
+def execute_nsr(_in_file_list):
     if isinstance(_in_file_list, str):
         _ = [NSR(_in_file_list, 1)]
     elif isinstance(_in_file_list, list):
         _ = [NSR(file, index + 1) for index, file in enumerate(_in_file_list)]
     else:
-        raise TypeError(f'TODO_NSR: {_in_file_list} is not a file | file list.')
+        raise TypeError(f"TODO_NSR: {_in_file_list} is not a file | file list.")
 
     res_list, dictMerged = NSR.wait_completed()
     return res_list, dictMerged
 
 
-if __name__ == '__main__':
-    _in_file_list = [
-        'D:/11.wav',
-    ]
-    _in_file_list = 'D:/11.wav'
+if __name__ == "__main__":
+    _in_file_list = ["D:/11.wav"]
+    _in_file_list = "D:/11.wav"
 
-    res_list, dictMerged = TODO_NSR(_in_file_list)
+    res_list, dictMerged = execute_nsr(_in_file_list)
 
     print(dictMerged)
     print(res_list)

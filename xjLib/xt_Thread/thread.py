@@ -13,13 +13,13 @@ Github       : https://github.com/sandorn/home
 
 import ctypes
 import inspect
-from functools import wraps
 from queue import Empty, Queue
 from threading import Event, Thread, enumerate, main_thread
 from time import sleep, time
 
-from xt_Class import item_get_Mixin
-from xt_Singleon import Singleton_Mixin, singleton_wrap_return_class
+import wrapt
+from xt_class import ItemGetMetaMixin
+from xt_singleon import SingletonMixin, singleton_decorator_class
 
 
 class ThreadPoolWraps:
@@ -32,12 +32,9 @@ class ThreadPoolWraps:
         self._run(pool_num)  # #运行伺服线程
         self._result_list = []  # #任务结果存储
 
-    def __call__(self, func):
-        @wraps(func)
-        def _run_threads(*args, **kw):
-            self._pool_queue.put((func, args, kw))
-
-        return _run_threads
+    @wrapt.decorator
+    def __call__(self, func, instance, args, kwargs):
+        self._pool_queue.put((func, args, kwargs))
 
     def change_thread_num(self, num):
         x = self._pool_max_num - num
@@ -45,21 +42,21 @@ class ThreadPoolWraps:
             self._run(abs(x))
         if x > 0:
             for _ in range(abs(x)):
-                self._pool_queue.put('KillThreadParams')
+                self._pool_queue.put("KillThreadParams")
         self._pool_max_num = num
 
     def _run(self, num):
         def _pools_pull():
             while True:
                 args_list = self._pool_queue.get()
-                if args_list == 'KillThreadParams':
+                if args_list == "KillThreadParams":
                     return
                 try:
                     func, args, kw = args_list
                     Result = func(*args, **kw)  # 获取结果
                     self._result_list.append(Result)
                 except BaseException as e:
-                    print(' - thread stop_by_error - ', e)
+                    print(" - thread stop_by_error - ", e)
                     break
                 finally:
                     self._pool_queue.task_done()  # 发出此队列完成信号
@@ -78,7 +75,7 @@ class ThreadPoolWraps:
                     self.close_all()
                     break
 
-        self._MainMonitor = Thread(target=_func, name='MainMonitor')
+        self._MainMonitor = Thread(target=_func, name="MainMonitor")
         self._MainMonitor.start()
 
     def joinall(self):
@@ -103,17 +100,17 @@ def stop_thread(thread):
             exctype = type(exctype)
         res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
         if res == 0:
-            raise ValueError('invalid thread id')
+            raise ValueError("invalid thread id")
         elif res != 1:
             # """if it returns a number greater than one, you're in trouble,
             # and you should call it again with exc=NULL to revert the effect"""
             ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
-            raise SystemError('PyThreadState_SetAsyncExc failed')
+            raise SystemError("PyThreadState_SetAsyncExc failed")
 
     _async_raise(thread.ident, SystemExit)
 
 
-class CustomThread(Thread, item_get_Mixin):
+class CustomThread(Thread, ItemGetMetaMixin):
     """多线程,继承自threading.Thread"""
 
     all_Thread = []  # 类属性或类变量,实例公用
@@ -176,7 +173,7 @@ class CustomThread(Thread, item_get_Mixin):
         return res
 
 
-class CustomThread_Queue(Thread, item_get_Mixin):
+class CustomThread_Queue(Thread, ItemGetMetaMixin):
     """单例多线程,继承自threading.Thread"""
 
     """采用queue传递工作任务"""
@@ -216,7 +213,7 @@ class CustomThread_Queue(Thread, item_get_Mixin):
             while cls.task_queue.unfinished_tasks:
                 remaining = endtime - time()
                 if remaining <= 0.0:
-                    print('unfinished_tasks in task_queue : ', cls.task_queue.unfinished_tasks)
+                    print("unfinished_tasks in task_queue : ", cls.task_queue.unfinished_tasks)
                     break
                 cls.task_queue.all_tasks_done.wait(remaining)
         finally:
@@ -248,7 +245,7 @@ class CustomThread_Queue(Thread, item_get_Mixin):
         return res
 
 
-class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
+class SingletonThread(Thread, ItemGetMetaMixin, SingletonMixin):
     """单例多线程,继承自threading.Thread"""
 
     all_Thread = []  # 线程列表,用于jion。类属性或类变量,实例公用
@@ -311,13 +308,23 @@ class SingletonThread(Thread, item_get_Mixin, Singleton_Mixin):
 
 
 def _create_singleton_thread_class(parent_cls, new_class_name):
-    # #使用类装饰器 singleton_wrap_return_class 转换为单例类
-    _cls = singleton_wrap_return_class(parent_cls)
+    # #使用类装饰器 singleton_decorator_class 转换为单例类
+    _cls = singleton_decorator_class(parent_cls)
     _cls.__name__ = new_class_name  # @单例线程运行结束判断依据
     _cls.result_list = []  # @单独配置结果字典
     _cls.wait_completed, _cls.getAllResult = _cls.getAllResult, _cls.wait_completed
     return _cls
 
 
-SigThread = _create_singleton_thread_class(CustomThread, 'SigThread')
-SigThreadQ = _create_singleton_thread_class(CustomThread_Queue, 'SigThreadQ')
+SigThread = _create_singleton_thread_class(CustomThread, "SigThread")
+SigThreadQ = _create_singleton_thread_class(CustomThread_Queue, "SigThreadQ")
+
+if __name__ == "__main__":
+
+    @ThreadPoolWraps(200)
+    def aaa(x):
+        print(x)
+        return x
+
+    for i in range(10):
+        aaa(i)
