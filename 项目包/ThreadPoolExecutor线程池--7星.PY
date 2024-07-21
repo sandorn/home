@@ -44,7 +44,7 @@ def main_completed(max, bookname, urls):
     with ThreadPoolExecutor(max) as pool:
         future_tasks = [pool.submit(get_contents, index, urls[index]) for index in range(len(urls))]
     texts = [future.result() for future in as_completed(future_tasks)]
-    # texts = [future.result() for future in wait(future_tasks)[0]]
+    # $texts = [future.result() for future in wait(future_tasks)[0]]
     textssord = sorted(texts, key=lambda x: x[0])
     files = os.path.split(__file__)[-1].split(".")[0]
     savefile(f"{files}&{bookname}ThreadPoolE_submit.txt", textssord, br="\n")

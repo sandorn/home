@@ -90,13 +90,10 @@ def 结果处理(resps):
     for resp in resps:
         if not isinstance(resp, htmlResponse):
             continue
-        _xpath = ("//h1/text()", '//*[@id="chaptercontent"]/text()')
-        title, content = resp.xpath(_xpath)
-        title = "".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
-        content = clean_Content(content).strip()
-        texts.append([resp.index, title, content])
+        texts.append(handle_back_ait(resp))
 
     texts.sort(key=lambda x: x[0])
+    # texts = sorted(texts, key=lambda x: x[0])
     return texts
 
 
@@ -130,7 +127,8 @@ def get_download_url(target):
     return bookname, urls, titles
 
 
-def get_contents(index, target, fn=get):
+def get_contents(*args, fn=get):
+    index, target = args
     resp = fn(target)
     if not isinstance(resp, htmlResponse):
         return [0, resp, ""]
@@ -153,5 +151,5 @@ if __name__ == "__main__":
     # 'https://www.biquge11.cc/read/11159/'
     bookname, urls, titles = get_download_url(url)
     # print(bookname, urls, titles)
-    # res = get_contents(0, urls[0])
-    # print(res)
+    res = get_contents(0, urls[0])
+    print(res)

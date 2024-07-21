@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-03 12:52:03
-LastEditTime : 2024-07-19 14:56:31
-FilePath     : /CODE/项目包/自定义库CustomProcess.py
+LastEditTime : 2024-07-21 12:00:34
+FilePath     : /CODE/项目包/自定义库ProessPool_apply_async-8星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """

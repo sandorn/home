@@ -45,4 +45,4 @@ def ByCustomThread(target):
 
 if __name__ == "__main__":
     ByThreadPoolWraps("https://www.bigee.cc/book/6909/")  # |perf_counter: 65.40s|process_time: 28.03s
-    # ByCustomThread("https://www.bigee.cc/book/6909/")  # |perf_counter: 73.26s|process_time: 35.47s
+    # ByCustomThread("https://www.bigee.cc/book/6909/")  # |perf_counter: 72.39s|process_time: 38.41s

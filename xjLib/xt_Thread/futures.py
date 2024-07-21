@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-19 17:00:24
+LastEditTime : 2024-07-21 17:23:13
 FilePath     : /CODE/xjLib/xt_thread/futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -21,8 +21,8 @@ class ThreadPool(ThreadPoolExecutor):
         self._future_tasks = []
 
     def add_tasks(self, fn, *args_iter, callback=None):
-        for item in args_iter[0]:
-            future = self.submit(fn, item)
+        for item in zip(*args_iter):
+            future = self.submit(fn, *item)
             if callback:
                 future.add_done_callback(callback)
             self._future_tasks.append(future)
@@ -34,7 +34,7 @@ class ThreadPool(ThreadPoolExecutor):
         return result_list
 
 
-class FnInThreadPool:
+class FunctionInPool:
     """将程序放到ThreadPoolExecutor中异步运行,返回结果"""
 
     def __init__(self, fn, *args, **kwargs):
@@ -44,7 +44,14 @@ class FnInThreadPool:
         self.loop.run_until_complete(self._work())
 
     async def _work(self):
-        self.result = await asyncio.gather(*[self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs) for arg in list(zip(*self.args))])
+        self.result = await asyncio.gather(*[self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs) for arg in zip(*self.args)])
+        # tasks = []
+        # for arg in zip(*self.args):
+        #     task = self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs)
+        #     tasks.append(task)
+
+        # self.result = await asyncio.gather(*tasks)
+        # return self.result
 
 
 if __name__ == "__main__":

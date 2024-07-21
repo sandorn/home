@@ -322,18 +322,15 @@ SigThreadQ = _create_singleton_thread_class(CustomThread_Queue, "SigThreadQ")
 
 if __name__ == "__main__":
 
-    @ThreadPoolWraps(200)
-    def aaa(x):
-        thread_print(22222222222222222222, x)
-        return x
-
-    for i in range(10):
-        thread_print(111111111111111111111, aaa(i))
+    def func(arg, kwargs):
+        thread_print(arg, kwargs)
+        sleep(1)
+        return arg
 
     """
     tpool = ThreadPoolWraps(200)
 
-    for index, arg in enumerate(args,start=1):
+    for index, arg in enumerate(args, start=1):
         tpool(func)(arg, kwargs)
     text_list = tpool.wait_completed()
     """
