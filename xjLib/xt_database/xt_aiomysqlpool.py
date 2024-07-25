@@ -26,10 +26,10 @@ class AioMysql:
     def __init__(self):
         self.pool = None
 
-    async def create_pool(self, key="default", autocommit=True):
-        if key not in DB_CFG:
-            raise ValueError(f"错误提示:检查数据库配置:{key}")
-        cfg = DB_CFG[key]
+    async def create_pool(self, db_key="default", autocommit=True):
+        if db_key not in DB_CFG:
+            raise ValueError(f"错误提示:检查数据库配置:{db_key}")
+        cfg = DB_CFG[db_key].copy()
         cfg.pop("type", None)
         self.autocommit = autocommit
         try:

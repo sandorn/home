@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-21 00:08:37
-LastEditTime : 2024-06-13 21:19:32
-FilePath     : /CODE/xjLib/xt_DAO/xt_SqlTwisted.py
+LastEditTime : 2024-07-25 16:52:52
+FilePath     : /CODE/xjLib/xt_database/xt_sqltwisted.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -17,9 +17,9 @@ from xt_database.cfg import DB_CFG
 
 
 class SqlTwisted:
-    def __init__(self, key="default", table_name=None):
+    def __init__(self, db_key="default", table_name=None):
         self.table_name = table_name
-        config = DB_CFG[key]
+        config = DB_CFG[db_key].copy()
         if "type" in config:
             config.pop("type")
         self.dbpool = adbapi.ConnectionPool("MySQLdb", **config)  # 'MySQLdb' , 'pymysql'

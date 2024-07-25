@@ -22,18 +22,18 @@ from xt_database.untilsql import make_insert_sql, make_update_sql
 
 
 class AioMysql:
-    def __init__(self, key="default", tablename=None):
+    def __init__(self, db_key="default", tablename=None):
         self.coro_list = []
         if tablename:
             self.tablename = tablename
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.run_in_loop([self.create_engine(key)])
+        self.run_in_loop([self.create_engine(db_key)])
 
-    async def create_engine(self, key, autocommit=True):
-        if key not in DB_CFG:
-            raise ValueError(f"错误提示:检查数据库配置:{key}")
-        cfg = DB_CFG[key]
+    async def create_engine(self, db_key, autocommit=True):
+        if db_key not in DB_CFG:
+            raise ValueError(f"错误提示:检查数据库配置:{db_key}")
+        cfg = DB_CFG[db_key].copy()
         cfg.pop("type", None)
         try:
             self.engine = await aiosa.create_engine(

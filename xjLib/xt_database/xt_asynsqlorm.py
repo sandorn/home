@@ -22,12 +22,12 @@ from xt_singleon import SingletonMetaCls
 
 
 class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
-    def __init__(self, key="default", new_table_name=None, old_table_name=None):
-        self.engine = create_engine(connect_str(key))
+    def __init__(self, db_key="default", new_table_name=None, old_table_name=None):
+        self.engine = create_engine(connect_str(db_key))
         self.Base = get_db_model(self.engine, new_table_name, old_table_name)
         # 创建引擎
         self.async_engine = create_async_engine(
-            connect_str(key=key, odbc="aiomysql"),
+            connect_str(key=db_key, odbc="aiomysql"),
             max_overflow=0,  # 超过连接池大小外最多创建的连接
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错

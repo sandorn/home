@@ -21,16 +21,16 @@ from xt_database.untilsql import make_insert_sql, make_update_sql
 
 class DbEngine:
     """
-    mysql数据库对象,参数:db_name , odbc
+    mysql数据库对象,参数:db_key , odbc
     可选驱动:[mysql.connector 出错禁用]、[pymysql]、[MySQLdb]
     """
 
-    def __init__(self, db_name="default", odbc="pymysql"):
-        self.db_name = db_name
+    def __init__(self, db_key="default", odbc="pymysql"):
+        self.db_key = db_key
         self.odbc = odbc
-        if db_name not in DB_CFG:
-            raise ValueError(f"错误提示:检查数据库配置:{db_name}")
-        self.cfg = DB_CFG[self.db_name]
+        if db_key not in DB_CFG:
+            raise ValueError(f"错误提示:检查数据库配置:{db_key}")
+        self.cfg = DB_CFG[self.db_key].copy()
         self.cfg.pop("type", None)
 
         try:
@@ -42,24 +42,24 @@ class DbEngine:
                 self.DictCursor = MySQLdb.cursors.DictCursor
             self.conn.autocommit(True)  # #自动提交
         except Exception as error:
-            print(f"{self.odbc} connect<{self.db_name}> error:{repr(error)}")
+            print(f"{self.odbc} connect<{self.db_key}> error:{repr(error)}")
             return None
         else:
             self.cur = self.conn.cursor()
-            print(f"{self.odbc}  connect<{self.db_name}> Ok!")
+            print(f"{self.odbc}  connect<{self.db_key}> Ok!")
 
     def __enter__(self):
-        print(f"{ self.odbc}\t{self.db_name}\tIn __enter__()")
+        print(f"{ self.odbc}\t{self.db_key}\tIn __enter__()")
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """with自动调用,不必调用del"""
-        print(f"{ self.odbc}\t{self.db_name}\tIn __exit__()")
+        print(f"{ self.odbc}\t{self.db_key}\tIn __exit__()")
         if exc_tb is not None:
             print(f"exc_type:{exc_type}, exc_val:{exc_val}, exc_tb:{exc_tb}")
 
     def __del__(self):
-        print(f"{ self.odbc}\t{self.db_name}\tClosed\tIn __del__()")
+        print(f"{ self.odbc}\t{self.db_key}\tClosed\tIn __del__()")
         if hasattr(self, "cur"):
             self.cur.close()
         if hasattr(self, "conn"):
@@ -68,7 +68,7 @@ class DbEngine:
     def __str__(self):
         """返回一个对象的描述信息"""
         return f"""
-        mysql数据库对象,<odbc:[{self.odbc}],db_name:[{self.db_name}] >,
+        mysql数据库对象,<odbc:[{self.odbc}],db_key:[{self.db_key}] >,
         可选驱动:[[pymysql | MySQLdb];默认[pymysql]。
         """
 

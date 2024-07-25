@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-23 13:19:56
+LastEditTime : 2024-07-25 16:44:26
 FilePath     : /CODE/xjLib/xt_database/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -25,7 +25,8 @@ def connect_str(key, odbc=None):
     if key not in DB_CFG:
         raise ValueError(f"错误提示：检查数据库配置：{key}")
 
-    cfg = DB_CFG[key]
+    cfg = DB_CFG[key].copy()
+    print(id(cfg), id(DB_CFG[key]))
     db_types = cfg["type"]
     odbc = db_types if odbc is None else odbc
 

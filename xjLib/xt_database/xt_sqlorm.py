@@ -23,11 +23,11 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMeta):
     # #限定参数类型
     # Base = xt_class.typed_property("Base", DeclarativeMeta)
 
-    def __init__(self, key="default", target_table_name=None, source_table_name=None):
+    def __init__(self, db_key="default", target_table_name=None, source_table_name=None):
         echo = True if __name__ == "__main__" else False
         # 创建引擎
         self.engine = create_engine(
-            connect_str(key),
+            connect_str(db_key),
             max_overflow=0,  # 超过连接池大小外最多创建的连接
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
