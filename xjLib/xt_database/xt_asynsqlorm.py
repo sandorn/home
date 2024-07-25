@@ -58,8 +58,12 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
     async def __query(self, sql, params: dict = None):
         async with self.async_session() as session:
             result = await session.execute(text(sql), params)
-            await session.commit()
-            return result.all() if result.returns_rows else result.rowcount
+            try:
+                await session.commit()
+                return result.all() if result.returns_rows else result.rowcount
+            except BaseException:
+                await session.rollback()
+                return 0
 
     def insert(self, dict_in_list, tablename=None, autorun=True):
         tablename = tablename or self.tablename
@@ -88,7 +92,12 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
         items_list = [self.Base(**__d) for __d in dict_in_list]
         async with self.async_session() as session:
             session.add_all(items_list)
-            await session.commit()
+            try:
+                await session.commit()
+                return len(items_list)
+            except BaseException:
+                await session.rollback()
+                return 0
 
 
 if __name__ == "__main__":
@@ -100,9 +109,9 @@ if __name__ == "__main__":
     # print(1111, res)
     # res = aio.insert([item1])
     # print(2222, res)
-    res = aio.insert([item1, item1], "users2")
-    print(4444, res)
-    # res = aio.query(query_list[1])
-    # print(5555, res)
+    # res = aio.insert([item1, item1], "users2")
+    # print(4444, res)
+    res = aio.query(query_list[1])
+    print(5555, res)
     # res = aio.update([{"username": "刘澈111"}, {"username": "刘新军111"}], [{"ID": "1"}, {"ID": "2", "username": "刘新军"}])
     # print(6666, res)

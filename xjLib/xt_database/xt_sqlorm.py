@@ -79,9 +79,9 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMeta):
         result = self.session.execute(_sql, params)
         return result.all() if result.returns_rows else result.rowcount
 
-    def query(self, conds: dict = None):
-        conds = conds or {}
-        query = self._query.filter_by(**conds)
+    def query(self, whrere_dict: dict = None):
+        whrere_dict = whrere_dict or {}
+        query = self._query.filter_by(**whrere_dict)
         return query.all()
 
     def insert(self, item_list: list, **kwargs):
@@ -90,7 +90,7 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMeta):
         self.session.add_all(items)
         try:
             self.session.commit()
-            return self.session.count
+            return len(items)
         except BaseException:
             self.session.rollback()
             return 0
@@ -109,8 +109,8 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMeta):
             self.session.rollback()
             return 0
 
-    def delete(self, conditions_dict):
-        query = self._query.filter_by(**conditions_dict)
+    def delete(self, whrere_dict):
+        query = self._query.filter_by(**whrere_dict)
         deleteNum = query.delete()
         try:
             self.session.commit()
@@ -119,10 +119,10 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMeta):
             self.session.rollback()
             return 0
 
-    def select(self, conditions_dict=None, Columns_list=None, count=None):
+    def select(self, whrere_dict=None, Columns_list=None, count=None):
         """
-        conditions:字典,条件 where。类似self.params
-        Columns:选择的列名
+        whrere_dict:字典,条件 where。类似self.params
+        Columns_list:选择的列名
         count:返回的记录数
         return:处理后的list,内含dict(未选择列),或tuple(选择列)
         """
@@ -132,26 +132,23 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMeta):
             __Columns_list = [self.Base]
 
         query = self.session.query(*__Columns_list)
-
-        # if isinstance(conditions_dict, dict):
-        #     conditon_list = [self.params.get(key) == conditions_dict.get(key) for key in list(conditions_dict.keys()) if self.params.get(key, None)]
-        #     for __cond in conditon_list:
-        query = query.filter_by(**conditions_dict)
+        if whrere_dict is not None:
+            query = query.filter_by(**whrere_dict)
 
         return query.limit(count).all() if count else query.all()
 
-    def from_statement(self, sql, conditions_dict=None):
+    def from_statement(self, sql, whrere_dict=None):
         """使用完全基于字符串的语句"""
         query = self._query.from_statement(text(sql))
-        return query.params(**conditions_dict).all() if conditions_dict else query.all()
+        return query.params(**whrere_dict).all() if whrere_dict else query.all()
 
-    def filter_by(self, filter_kwargs, count=None):
+    def filter_by(self, whrere_dict, count=None):
         """
         filter_by用于简单查询,不支持比较运算符,不需要额外指定类名。
         filter_by的参数直接支持组合查询。
         仅支持[等于]、[and],无需明示,在参数中以字典形式传入
         """
-        query = self._query.filter_by(**filter_kwargs)
+        query = self._query.filter_by(**whrere_dict)
         return query.limit(count).all() if count else query.all()
 
     def pd_get_dict(self, table_name):
@@ -174,10 +171,10 @@ if __name__ == "__main__":
     # print(1111, res)
     # res = ASO.update(value={"username": "刘澈"}, conds={"ID": 4})
     # print(2222, res)
-    # res = ASO.run_sql(query_list[1])
-    # print(3333, res)
-    res = ASO.query()
-    print(4444, res)
+    res = ASO.run_sql(query_list[1])
+    print(3333, res)
+    # res = ASO.query()
+    # print(4444, res)
     # res = ASO.filter_by({"ID": 4})
     # print(5555, res)
     # resfrom_statement = ASO.from_statement("select * from users2 where id=:id", {"id": 5})
@@ -186,5 +183,5 @@ if __name__ == "__main__":
     # print(7777, resfrom_statement[0].to_dict(), ASO.Base.to_dict(resfrom_statement[0]))
     # deleNum = ASO.delete({"ID": 3})
     # print(8888, deleNum)
-    # res = ASO.select({"username": "刘新军"}, ["ID", "username"], 0)
+    # res = ASO.select()  # {"username": "刘新军"}, ["ID", "username"], 0)
     # print(9999, res)
