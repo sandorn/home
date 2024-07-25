@@ -29,18 +29,18 @@ class AioMysql:
     async def create_pool(self, key="default", autocommit=True):
         if key not in DB_CFG:
             raise ValueError(f"错误提示:检查数据库配置:{key}")
-        conf = DB_CFG[key]
-        conf.pop("type", None)
+        cfg = DB_CFG[key]
+        cfg.pop("type", None)
         self.autocommit = autocommit
         try:
             self.pool = await aiomysql.create_pool(
                 # minsize=5,  # 连接池最小值
                 # maxsize=10,  # 连接池最大值
-                # echo: bool = False,
+                echo=True if __name__ == "__main__" else False,
                 # pool_recycle: int = -1,
                 # loop: Unknown | None = None,
                 autocommit=self.autocommit,  # 自动提交模式
-                **conf,
+                **cfg,
             )
             return self.pool
         except Exception:

@@ -36,7 +36,11 @@ class AioMysql:
         cfg = DB_CFG[key]
         cfg.pop("type", None)
         try:
-            self.engine = await aiosa.create_engine(autocommit=autocommit, **cfg)
+            self.engine = await aiosa.create_engine(
+                autocommit=autocommit,  # 自动提交模式
+                echo=True if __name__ == "__main__" else False,
+                **cfg,
+            )
         except Exception as err:
             print("connect error:", err)
 
@@ -47,61 +51,34 @@ class AioMysql:
     def query(self, sql, autorun=True):
         _coro = [self.__query(sql)] if isinstance(sql, str) else [self.__query(_sql) for _sql in sql]
 
-        if autorun:
-            return self.run_in_loop(_coro)
-        else:
-            self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
-    async def __query(self, sql):
+    async def __query(self, sql, params: dict = None):
         try:
             async with self.engine.acquire() as conn:
                 async with conn._connection.cursor() as cursor:  # @关键语句
-                    # 执行SQL语句
-                    result = await cursor.execute(sql)
+                    result = await cursor.execute(sql, params)
                     return await cursor.fetchall() or result
         except Exception:
             print(traceback.format_exc())
 
-    def insert(self, data_dict_list, tablename=None, autorun=True):
+    def insert(self, dict_in_list, tablename=None, autorun=True):
         tablename = tablename or self.tablename
-        if isinstance(data_dict_list, dict):
-            data_dict_list = [data_dict_list]
-        _coro = [self.__insert(data_dict, tablename) for data_dict in data_dict_list]
-        if autorun:
-            return self.run_in_loop(_coro)
-        else:
-            self.coro_list.extend(_coro)
+        if isinstance(dict_in_list, dict):
+            dict_in_list = [dict_in_list]
+        insert_sql_list = [make_insert_sql(data_dict, tablename) for data_dict in dict_in_list]
 
-    async def __insert(self, data_dict_list, tablename):
-        insert_sql = make_insert_sql(data_dict_list, tablename)
-        async with self.engine.acquire() as conn:
-            # 注意: 执行的执行必须开启一个事务, 否则数据是不会进入到数据库中的
-            async with conn.begin():
-                try:
-                    result = await conn.execute(insert_sql)
-                    return result.rowcount  # 影响的行数
-                except Exception:
-                    print(traceback.format_exc())
+        _coro = [self.__query(insert_sql) for insert_sql in insert_sql_list]
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
-    def update(self, data_dict_list, whrere_dict_list, tablename=None, autorun=True):
+    def update(self, dict_in_list, whrere_dict_list, tablename=None, autorun=True):
         tablename = tablename or self.tablename
-        if isinstance(data_dict_list, dict):
-            data_dict_list = [data_dict_list]
-        _coro = [self.__update(data_dict, whrere_dict, tablename) for data_dict, whrere_dict in zip(data_dict_list, whrere_dict_list)]
-        if autorun:
-            return self.run_in_loop(_coro)
-        else:
-            self.coro_list.extend(_coro)
+        if isinstance(dict_in_list, dict):
+            dict_in_list = [dict_in_list]
+        update_sql_list = [make_update_sql(data_dict, whrere_dict, tablename) for data_dict, whrere_dict in zip(dict_in_list, whrere_dict_list)]
 
-    async def __update(self, data_dict_list, whrere_dict, tablename):
-        update_sql = make_update_sql(data_dict_list, whrere_dict, tablename)
-        async with self.engine.acquire() as conn:
-            async with conn.begin():
-                try:
-                    result = await conn.execute(update_sql)
-                    return result.rowcount  # 影响的行数
-                except Exception:
-                    print(traceback.format_exc())
+        _coro = [self.__query(update_sql) for update_sql in update_sql_list]
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
 
 if __name__ == "__main__":
@@ -112,9 +89,9 @@ if __name__ == "__main__":
     aio = AioMysql("TXbx", "users2")
     # res = aio.insert([item1])
     # print(res)
-    # res = aio.insert([item1, item1], autorun=False)
-    # res = aio.run_in_loop()
-    # print(res)
+    res = aio.insert([item1, item1], autorun=False)
+    res = aio.run_in_loop()
+    print(res)
     # res = aio.insert([item1, item1], 'users2')
     # print(res)
     res = aio.query(query_list)

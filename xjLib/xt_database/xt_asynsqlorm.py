@@ -23,7 +23,6 @@ from xt_singleon import SingletonMetaCls
 
 class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
     def __init__(self, key="default", new_table_name=None, old_table_name=None):
-        echo = True if __name__ == "__main__" else False
         self.engine = create_engine(connect_str(key))
         self.Base = get_db_model(self.engine, new_table_name, old_table_name)
         # 创建引擎
@@ -33,16 +32,14 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
             pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-            echo=echo,  # echo参数为True时,会显示每条执行的SQL语句
+            echo=True if __name__ == "__main__" else False,  # echo参数为True时,会显示每条执行的SQL语句
             future=True,  # 使用异步模式
             # poolclass=NullPool, # 禁用池
         )
         self.async_session = async_sessionmaker(
-            bind=self.async_engine,
+            bind=self.async_engine
+            # expire_on_commit=True, # 默认为True,提交后自动过期
             # class_=AsyncSession,
-            # autocommit=True,
-            # autoflush=False,
-            expire_on_commit=False,
         )
         self.coro_list = []
         self.tablename = new_table_name
@@ -90,8 +87,7 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
     async def __add_all(self, dict_in_list):
         items_list = [self.Base(**__d) for __d in dict_in_list]
         async with self.async_session() as session:
-            async with session.begin():
-                session.add_all(items_list)
+            session.add_all(items_list)
             await session.commit()
 
 
@@ -100,13 +96,13 @@ if __name__ == "__main__":
     item1 = {"username": "刘新", "password": "234567", "手机": "13910118122", "代理人编码": "10005393", "会员级别": "SSS", "会员到期日": "9999-12-31 00:00:00"}
 
     aio = AsynSqlOrm("TXbx", "users2", "users")
-    res = aio.add_all([item1])
-    print(1111, res)
-    res = aio.insert([item1])
-    print(2222, res)
+    # res = aio.add_all([item1])
+    # print(1111, res)
+    # res = aio.insert([item1])
+    # print(2222, res)
     res = aio.insert([item1, item1], "users2")
     print(4444, res)
-    res = aio.query(query_list[1])
-    print(5555, res)
-    res = aio.update([{"username": "刘澈"}, {"username": "刘新军"}], [{"ID": "1"}, {"ID": "2", "username": "刘新军"}])
-    print(6666, res)
+    # res = aio.query(query_list[1])
+    # print(5555, res)
+    # res = aio.update([{"username": "刘澈111"}, {"username": "刘新军111"}], [{"ID": "1"}, {"ID": "2", "username": "刘新军"}])
+    # print(6666, res)
