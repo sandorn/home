@@ -13,7 +13,55 @@ LastEditTime : 2020-12-08 12:30:49
 单例，与线程无关
 """
 
+from functools import wraps
 from threading import Lock
+
+
+class SingletonMetaCls(type):
+    """
+    单例元类，构建类时：metaclass=SingletonMetaCls
+    有重新__init__方法，可多次init
+    """
+
+    _instance_lock = Lock()
+
+    def __init__(cls, *args, **kwargs):
+        cls._instance = None
+        super().__init__(*args, **kwargs)
+
+    def _init_instance(cls, *args, **kwargs):
+        if cls._instance:
+            # 存在实例对象直接返回，减少锁竞争，提高性能
+            return cls._instance
+
+        with cls._instance_lock:
+            if cls._instance is None:
+                cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
+
+    def __call__(cls, *args, **kwargs):
+        reinit = kwargs.pop("reinit", False)
+        instance = cls._init_instance(*args, **kwargs)
+        if reinit:
+            # 重新初始化单例对象属性
+            instance.__init__(*args, **kwargs)
+        return instance
+
+
+class SingletonMeta(type):
+    """
+    单例模式元类,构建类时调用
+    class cls(parent_cls,metaclass=SingletonMeta):,
+    @ 单次init,可用类调用classmethod
+    """
+
+    _instances = {}
+    _lock = Lock()
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 class SingletonMixin:
@@ -40,26 +88,8 @@ class SingletonMixin:
         self.__class__._instance[self] = None
 
 
-class SingletonMeta(type):
-    """
-    单例模式元类,构建类时调用
-    class cls(parent_cls,metaclass=SingletonMeta):,
-    @ 单次init,可用类调用classmethod
-    """
-
-    _instances = {}
-    _lock = Lock()
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super().__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
 class SingletonDecoratorClass:
-    """单例类装饰器,单次init,只能实例调用classmethod
-    # @QThread可用
-    """
+    """单例类装饰器,单次init,只能实例调用classmethod"""
 
     _lock = Lock()
 
@@ -97,6 +127,24 @@ def singleton_decorator_class(_cls):
     return Class_Wrapper
 
 
+def singleton_wraps_class(cls_obj):
+    """单例装饰器,返回类，#@未测试"""
+    _instance_dic = {}
+    _instance_lock = Lock()
+
+    @wraps(cls_obj)
+    def wrapper(*args, **kwargs):
+        if cls_obj in _instance_dic:
+            return _instance_dic.get(cls_obj)
+
+        with _instance_lock:
+            if cls_obj not in _instance_dic:
+                _instance_dic[cls_obj] = cls_obj(*args, **kwargs)
+        return _instance_dic.get(cls_obj)
+
+    return wrapper
+
+
 if __name__ == "__main__":
 
     class sss:
@@ -110,7 +158,7 @@ if __name__ == "__main__":
 
     class sample_mixin(sss, SingletonMixin): ...
 
-    @SingletonDecoratorClass
+    @singleton_wraps_class
     class sample_class_wrap(sss): ...
 
     @singleton_decorator_class

@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-18 11:07:54
+LastEditTime : 2024-07-23 13:19:56
 FilePath     : /CODE/xjLib/xt_database/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -27,8 +27,7 @@ def connect_str(key, odbc=None):
 
     cfg = DB_CFG[key]
     db_types = cfg["type"]
-    if odbc is None:
-        odbc = db_types
+    odbc = db_types if odbc is None else odbc
 
     link_str = f"{cfg['user']}:{cfg['password']}@{cfg['host']}:{cfg['port']}/{cfg['db']}?charset={cfg['charset']}"
 
@@ -41,10 +40,6 @@ def connect_str(key, odbc=None):
         "access": {"access": "access+pyodbc"},
         "monetdb": {"monetdb": "monetdb", "lite": "monetdb+lite"},
     }
-    _tmp_map = driver_map.get(db_types, None)
-    if isinstance(_tmp_map, dict):
-        drivers_str = _tmp_map.get(odbc, _tmp_map.get(db_types))
-
-    # print(888888888888888888888, drivers_str)
-
+    _tmp_map = driver_map.get(db_types, {})
+    drivers_str = _tmp_map.get(odbc, _tmp_map.get(db_types))
     return f"{drivers_str}://{link_str}"

@@ -77,26 +77,23 @@ class AioMysql:
 
     async def execute(self, sql, args=None):
         conn, cur = await self.getCurosr()
-        affetced = 0
         try:
             affetced = await cur.execute(sql, args)
-            # affetced = cur.rowcount
         except Exception:
             print(traceback.format_exc())
         finally:
             await self.closeCurosr(conn, cur)
-            return affetced
+            return affetced if affetced else cur.lastrowid
 
     async def executemany(self, sql, data):
         conn, cur = await self.getCurosr()
-        affetced = 0
         try:
             affetced = await cur.executemany(sql, data)
         except Exception:
             print(traceback.format_exc())
         finally:
             await self.closeCurosr(conn, cur)
-            return affetced
+            return affetced if affetced else cur.lastrowid
 
 
 async def create_xt_aiomysql(key="default"):
@@ -134,12 +131,12 @@ if __name__ == "__main__":
     up_sql = ("update users2 set username='刘新新' where ID = 2",)
     ups_sql = "update users2 set username=%s where ID = %s"
     ups_data = [("刘澈", 1), ("刘新军", 2)]
-    # res = execute_aiomysql('TXbx', up_sql)
-    # print(res)
-    # res = executemany_aiomysql('TXbx', ups_sql, ups_data)
-    # print(res)
+    res = execute_aiomysql("TXbx", up_sql)
+    print(111111111111111111, res)
+    res = executemany_aiomysql("TXbx", ups_sql, ups_data)
+    print(222222222222222222, res)
     res = query_aiomysql("TXbx", query_list)
-    print(res)
+    print(333333333333333333, res)
 """
 python并发编程之asyncio协程(三) - 天宇之游 - 博客园
 https://www.cnblogs.com/cwp-bg/p/9590700.html

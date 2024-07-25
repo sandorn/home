@@ -15,213 +15,98 @@ import asyncio
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.ext.declarative import DeclarativeMeta
-from xt_class import typed_property
 from xt_database.cfg import connect_str
 from xt_database.untilsql import make_insert_sql, make_update_sql
-from xt_database.xt_chemymeta import ErrorMetaClass, get_db_model
+from xt_database.xt_sqlorm_meta import ErrorMetaClass, get_db_model
+from xt_singleon import SingletonMetaCls
 
 
-class AsynSqlOrm(ErrorMetaClass):
-    # #限定参数类型
-    Base = typed_property("Base", DeclarativeMeta)
-
-    def __init__(self, key="default", target_table_name=None, source_table_name=None):
+class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
+    def __init__(self, key="default", new_table_name=None, old_table_name=None):
+        echo = True if __name__ == "__main__" else False
+        self.engine = create_engine(connect_str(key))
+        self.Base = get_db_model(self.engine, new_table_name, old_table_name)
         # 创建引擎
-        engine = create_engine(
-            connect_str(key),
-            max_overflow=0,  # 超过连接池大小外最多创建的连接
-            pool_size=5,  # 连接池大小
-            pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
-            pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-            # echo=True,  # echo参数为True时,会显示每条执行的SQL语句
-            # poolclass=NullPool, # 禁用池
-        )
-
-        self.Base = get_db_model(engine, target_table_name, source_table_name)  # #获取orm基类,同时创建表
-        self.tablename = target_table_name or self.Base.__tablename__
-        self.coro_list = []
-
-        self.engine = create_async_engine(
+        self.async_engine = create_async_engine(
             connect_str(key=key, odbc="aiomysql"),
             max_overflow=0,  # 超过连接池大小外最多创建的连接
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
             pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-            # echo=True,  # echo参数为True时,会显示每条执行的SQL语句
+            echo=echo,  # echo参数为True时,会显示每条执行的SQL语句
+            future=True,  # 使用异步模式
             # poolclass=NullPool, # 禁用池
         )
         self.async_session = async_sessionmaker(
-            bind=self.engine,
+            bind=self.async_engine,
             # class_=AsyncSession,
             # autocommit=True,
             # autoflush=False,
             expire_on_commit=False,
         )
+        self.coro_list = []
+        self.tablename = new_table_name
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)  # @解决循环的关键点
-        self.run_in_loop([self.init_db()])
 
     def run_in_loop(self, coro_list=None):
         coro_list = coro_list or self.coro_list
         return self.loop.run_until_complete(asyncio.gather(*coro_list))
 
-    async def init_db(self):
-        async with self.engine.begin() as conn:
-            await conn.run_sync(self.Base.metadata.create_all)
+    def query(self, sql_list, params: dict = None, autorun=True):
+        sql_list = [sql_list] if isinstance(sql_list, str) else sql_list
+        _coro = [self.__query(_sql, params) for _sql in sql_list]
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
-    async def dropt_db(self):
-        async with self.engine.begin() as conn:
-            await conn.run_sync(self.Base.metadata.drop_all)
-
-    def query(self, sql, autorun=True):
-        if isinstance(sql, str):
-            _coro = [self.__query(sql)]
-        if isinstance(sql, list):
-            _coro = [self.__query(_sql) for _sql in sql]
-        if autorun:
-            return self.run_in_loop(_coro)
-        else:
-            self.coro_list.extend(_coro)
-
-    async def __query(self, sql):
+    async def __query(self, sql, params: dict = None):
         async with self.async_session() as session:
-            result = await session.execute(text(sql))
+            result = await session.execute(text(sql), params)
             await session.commit()
             return result.all() if result.returns_rows else result.rowcount
 
-    def insert(self, data_dict_list, tablename=None, autorun=True):
+    def insert(self, dict_in_list, tablename=None, autorun=True):
         tablename = tablename or self.tablename
-        if isinstance(data_dict_list, dict):
-            data_dict_list = [data_dict_list]
-        _coro = [self.__insert(data_dict, tablename) for data_dict in data_dict_list]
-        if autorun:
-            return self.run_in_loop(_coro)
-        else:
-            self.coro_list.extend(_coro)
+        if isinstance(dict_in_list, dict):
+            dict_in_list = [dict_in_list]
+        insert_sql_list = [make_insert_sql(data_dict, tablename) for data_dict in dict_in_list]
 
-    def update(self, data_dict_list, whrere_dict_list, tablename=None, autorun=True):
+        _coro = [self.__query(insert_sql) for insert_sql in insert_sql_list]
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+
+    def update(self, dict_in_list, whrere_dict_list, tablename=None, autorun=True):
         tablename = tablename or self.tablename
-        if isinstance(data_dict_list, dict):
-            data_dict_list = [data_dict_list]
-        _coro = [self.__update(data_dict, whrere_dict, tablename) for data_dict, whrere_dict in zip(data_dict_list, whrere_dict_list)]
-        if autorun:
-            return self.run_in_loop(_coro)
-        else:
-            self.coro_list.extend(_coro)
+        if isinstance(dict_in_list, dict):
+            dict_in_list = [dict_in_list]
 
-    async def __insert(self, data_dict_list, tablename):
-        insert_sql = make_insert_sql(data_dict_list, tablename)
-        async with self.async_session() as session:
-            result = await session.execute(insert_sql)
-            await session.commit()
-            return result.rowcount
+        update_sql_list = [make_update_sql(data_dict, whrere_dict, tablename) for data_dict, whrere_dict in zip(dict_in_list, whrere_dict_list)]
 
-    async def __update(self, data_dict_list, whrere_dict, tablename):
-        update_sql = make_update_sql(data_dict_list, whrere_dict, tablename)
-        async with self.async_session() as session:
-            result = await session.execute(update_sql)
-            await session.commit()
-            return result.rowcount
+        _coro = [self.__query(update_sql) for update_sql in update_sql_list]
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
-    def add_all(self, dictL, autorun=True):
-        _coro = [self.__add_all(dictL)]
-        if autorun:
-            return self.run_in_loop(_coro)
-        else:
-            self.coro_list.extend(_coro)
+    def add_all(self, dict_in_list, autorun=True):
+        _coro = [self.__add_all(dict_in_list)]
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
-    async def __add_all(self, dictL):
-        itemL = [self.Base(**__d) for __d in dictL]
+    async def __add_all(self, dict_in_list):
+        items_list = [self.Base(**__d) for __d in dict_in_list]
         async with self.async_session() as session:
             async with session.begin():
-                session.add_all(itemL)
+                session.add_all(items_list)
             await session.commit()
 
 
 if __name__ == "__main__":
-    # aio = create_orm('TXbx', 'users2')
-    # print(aio.query('select * from users2'))
     query_list = ["select * from users2 where id = 1", "select * from users2"]
     item1 = {"username": "刘新", "password": "234567", "手机": "13910118122", "代理人编码": "10005393", "会员级别": "SSS", "会员到期日": "9999-12-31 00:00:00"}
 
-    aio = AsynSqlOrm("TXbx", "users2")
-    # res = aio.add_all(
-    #     [
-    #         item1,
-    #     ]
-    # )
-    # print(1111, res)
-    # res = aio.insert(
-    #     [
-    #         item1,
-    #     ]
-    # )
-    # print(2222, res)
-    # res = aio.insert(
-    #     [
-    #         item1,
-    #     ],
-    #     autorun=False,
-    # )
-    # res = aio.run_in_loop()
-    # print(3333, res)
-    # res = aio.insert([item1, item1], 'users2')
-    # print(4444, res)
-    res = aio.query(query_list)
+    aio = AsynSqlOrm("TXbx", "users2", "users")
+    res = aio.add_all([item1])
+    print(1111, res)
+    res = aio.insert([item1])
+    print(2222, res)
+    res = aio.insert([item1, item1], "users2")
+    print(4444, res)
+    res = aio.query(query_list[1])
     print(5555, res)
-    # res = aio.query(query_list[1])
-    # print(6666, res)
-    # update_sql = [
-    #     "UPDATE users2 set username='刘澈' WHERE ID = '1'",
-    #     "UPDATE users2 set username='刘新军' WHERE ID = '2'",
-    # ]
-    # res = aio.query(update_sql)
-    # print(res)
-    # res = aio.update(
-    #     [{'username': '刘澈3'}, {'username': '刘新军4'}],
-    #     [
-    #         {
-    #             'ID': '1',
-    #         },
-    #         {
-    #             'ID': '2',
-    #             # 'username': '刘新军',
-    #         },
-    #     ],
-    # )
-    # print(res)
-    """
-    @contextmanager
-    async def query(sql):
-        async with self.async_session() as session:
-            result = await session.execute(text(sql))
-            yield result
-            await session.commit()
-
-    def __query(self, sql):
-        with query(sql) as result:
-            return result.all() if result.returns_rows else result.rowcount
-
-    def insert(self, data_dict_list, tablename=None, autorun=True):
-        tablename = tablename or self.tablename
-        if isinstance(data_dict_list, dict):
-            data_dict_list = [data_dict_list]
-        _coro = [self.__insert(data_dict, tablename) for data_dict in data_dict_list]
-        if autorun:
-            return self.run_in_loop(_coro)
-        else:
-            self.coro_list.extend(_coro)
-
-    @contextmanager
-    async def insert(data_dict_list, tablename):
-        insert_sql = make_insert_sql(data_dict_list, tablename)
-        async with self.async_session() as session:
-            result = await session.execute(insert_sql)
-            yield result
-            await session.commit()
-
-    def __insert(self, data_dict_list, tablename):
-        with insert(data_dict_list, tablename) as result:
-            return result.rowcount
-    """
+    res = aio.update([{"username": "刘澈"}, {"username": "刘新军"}], [{"ID": "1"}, {"ID": "2", "username": "刘新军"}])
+    print(6666, res)

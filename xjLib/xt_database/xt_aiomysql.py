@@ -16,7 +16,7 @@ https://blog.csdn.net/ydyang1126/article/details/78226701/
 import asyncio
 import traceback
 
-import aiomysql.sa as aio_sa
+import aiomysql.sa as aiosa
 from xt_database.cfg import DB_CFG
 from xt_database.untilsql import make_insert_sql, make_update_sql
 
@@ -36,7 +36,7 @@ class AioMysql:
         cfg = DB_CFG[key]
         cfg.pop("type", None)
         try:
-            self.engine = await aio_sa.create_engine(autocommit=autocommit, **cfg)
+            self.engine = await aiosa.create_engine(autocommit=autocommit, **cfg)
         except Exception as err:
             print("connect error:", err)
 
@@ -45,10 +45,8 @@ class AioMysql:
         return self.loop.run_until_complete(asyncio.gather(*coro_list))
 
     def query(self, sql, autorun=True):
-        if isinstance(sql, str):
-            _coro = [self.__query(sql)]
-        if isinstance(sql, list):
-            _coro = [self.__query(_sql) for _sql in sql]
+        _coro = [self.__query(sql)] if isinstance(sql, str) else [self.__query(_sql) for _sql in sql]
+
         if autorun:
             return self.run_in_loop(_coro)
         else:

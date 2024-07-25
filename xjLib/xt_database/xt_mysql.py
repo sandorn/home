@@ -119,18 +119,18 @@ class DbEngine:
         if not isinstance(data, dict):
             raise ValueError("must dict type")
         res_sql = make_insert_sql(data, tb_name)
-        self.execute(res_sql)
+        self.execute(text(res_sql))
 
     def update(self, new_data, condition, tb_name):
         if not isinstance(new_data, dict):
             raise ValueError("must dict type")
         sql = make_update_sql(new_data, condition, tb_name)
-        self.execute(sql)
+        self.execute(text(sql))
 
     def ver(self):
         sql = "SELECT VERSION()"
         #  使用execute方法执行SQL语句
-        self.cur.execute(sql)
+        self.cur.execute(text(sql))
         #  使用 fetchone() 方法获取一条数据库。
         _版本号 = self.cur.fetchone()
         return _版本号[0] if _版本号 else None
@@ -145,7 +145,7 @@ class DbEngine:
     def get_all_from_db(self, table_name, args=None):
         sql = f" select * from {table_name}"
         try:
-            self.cur.execute(sql, args)
+            self.cur.execute(text(sql), args)
             return self.cur.fetchall()
         except Exception as e:
             print(e)

@@ -11,15 +11,13 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from sqlalchemy import text  # , MetaData, Table, create_engine,
-
 
 def make_insert_sql(item, table_name):
     cols = ", ".join(f"`{k}`" for k in item.keys())
     vals = ", ".join(f"'{v}'" for v in item.values())
     sql = f"INSERT INTO `{table_name}`({cols}) VALUES({vals})"
     sql = sql.replace("%", "%%")
-    return text(sql)  # text() 用于防止sql注入
+    return sql  # text() 用于防止sql注入
 
 
 def make_update_sql(item, condition, table_name):
@@ -28,4 +26,4 @@ def make_update_sql(item, condition, table_name):
     cond_v = ", ".join([f"'{v}'" for v in condition.values()])
     sql = f"UPDATE `{table_name}` SET {item_kv} WHERE ({cond_k})=({cond_v})"
     sql = sql.replace("%", "%%")
-    return text(sql)  # text() 用于防止sql注入
+    return sql  # text() 用于防止sql注入

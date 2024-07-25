@@ -24,7 +24,9 @@ def thread_safe(func, instance, args, kwargs):
     """
     函数的线程安全化，可以装饰普通函数和类中的方法
     """
-    with Lock():
+    func.__lock__ = Lock()
+
+    with func.__lock__:
         return func(*args, **kwargs)
 
 
