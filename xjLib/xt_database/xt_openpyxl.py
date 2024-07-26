@@ -25,7 +25,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 def rename(file_path):
     filepath, tempfilename = os.path.split(file_path)
     filename, extension = os.path.splitext(tempfilename)
-    return os.path.join(filepath, f'{filename}--modified by openpyxl{extension}')
+    return os.path.join(filepath, f"{filename}--modified by openpyxl{extension}")
 
 
 class ExcelHandler:
@@ -158,25 +158,15 @@ class ExcelHandler:
         return get_column_letter(_col_num)
 
 
-if __name__ == '__main__':
-    with ExcelHandler('d:/1.xlsx', 'Sheet1') as he:
-        he.write_cell(1, 2, '2019年')
+if __name__ == "__main__":
+    with ExcelHandler("d:/1.xlsx", "Sheet1") as he:
+        he.write_cell(1, 2, "2019年")
         # print(he.read_all_dict())
         # print(he.read_row(1))
         print(1111, he.read_cell(1, 1))
         print(2222, he.sh_name_list)
         print(3333, he.read_col(2))
-        he.append(
-            [
-                [
-                    'AAA',
-                    'BBB',
-                    'CCC',
-                    'DDD',
-                    'EEEE',
-                ],
-            ]
-        )
+        he.append([["AAA", "BBB", "CCC", "DDD", "EEEE"]])
         he.write_cell(28, 1, 9876)
         rows = he.read_all()
         print(4444, rows)
@@ -233,7 +223,4 @@ WS['A3'].font = font
 fill = PatternFill(patternType="solid",start_color="33CCFF")
 ws['A3'].fill = fill
 -------------------------------------------------------------------------------
-
-
-
 """

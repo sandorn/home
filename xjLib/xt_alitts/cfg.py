@@ -18,6 +18,7 @@ appKey = 'Ofm34215thIUdSIX'
 """
 
 from nls.token import getToken
+from pydantic import BaseModel
 from xt_class import ReDictMixin
 from xt_singleon import SingletonMixin
 
@@ -26,7 +27,7 @@ _ACCESS_KeyId = "LTAI4G5TRjsGy8BNKPtctjXQ"
 _ACCESS_Secret = "hS8Kl0b9orxNUW7IOeBIFUfzgcVn00"
 
 
-class Constant(SingletonMixin):
+class Constant(BaseModel, SingletonMixin):
     """Constant : 常量参数"""
 
     appKey = property(lambda cls: _ACCESS_APPKEY)
@@ -42,7 +43,7 @@ class Constant(SingletonMixin):
         return self.__token
 
 
-class SpeechArgs(ReDictMixin):
+class SpeechArgs(BaseModel, ReDictMixin):
     """
     TTS参数
     使用SpeechArgs().get_dict()获取参数字典
@@ -147,20 +148,24 @@ VIOCE = [
     ("masha", "masha", "俄语女声", "俄语场景", "俄语", "8K/16K", "否", "否", "标准版"),
 ]
 
-# 参数说明
-# 参数	类型	参数说明
-# text	String	要合成的文字。
-# aformat	String	合成出来音频的格式，默认为pcm。
-# voice	String	发音人，默认为xiaoyun。
-# sample_rate	Integer	识别音频采样率，默认值：16000 Hz。
-# volume	Integer	音量大小，取值范围0~100，默认值：50。
-# speech_rate	Integer	语速，取值范围-500~500，默认值：0。
-# pitch_rate	Integer	语调，取值范围-500~500，默认值：0。
-# wait_complete	Boolean	是否阻塞到合成完成。
-# start_timeout	Integer	和云端连接建立超时，默认值：10秒。
-# completed_timeout	Integer	从连接建立到合成完成超时，默认值：60秒
-# ping_interval	Integer	Ping包发送间隔，默认值：8秒。无需间隔可设置为0或None。
-# ping_timeout	Integer	是否检查Pong包超时，默认值：None。None为不检查Pong包是否超时。
-# ex	Dict	用户提供的额外参数，该字典内容会以key:value形式合并进请求的payload段中，详情可参见接口说明章节中的请求数据。
-# {'enable_subtitle': True},  #输出每个字在音频中的时间位置
-# 返回值：Boolean类型，False为失败，True为成功。
+"""
+参数说明
+参数	类型	参数说明
+text	String	要合成的文字。
+aformat	String	合成出来音频的格式，默认为pcm。
+voice	String	发音人，默认为xiaoyun。
+sample_rate	Integer	识别音频采样率，默认值：16000 Hz。
+volume	Integer	音量大小，取值范围0~100，默认值：50。
+speech_rate	Integer	语速，取值范围-500~500，默认值：0。
+pitch_rate	Integer	语调，取值范围-500~500，默认值：0。
+wait_complete	Boolean	是否阻塞到合成完成。
+start_timeout	Integer	和云端连接建立超时，默认值：10秒。
+completed_timeout	Integer	从连接建立到合成完成超时，默认值：60秒
+ping_interval	Integer	Ping包发送间隔，默认值：8秒。无需间隔可设置为0或None。
+ping_timeout	Integer	是否检查Pong包超时，默认值：None。None为不检查Pong包是否超时。
+ex	Dict	用户提供的额外参数，该字典内容会以key:value形式合并进请求的payload段中，详情可参见接口说明章节中的请求数据。
+{'enable_subtitle': True},  #输出每个字在音频中的时间位置
+返回值：Boolean类型，False为失败，True为成功。
+"""
+if __name__ == "__main__":
+    print(SpeechArgs().get_dict())

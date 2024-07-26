@@ -1,16 +1,14 @@
 # !/usr/bin/env python
 """
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-06-23 17:41:52
-FilePath     : /xjLib/xt_Singleon.py
-LastEditTime : 2020-12-08 12:30:49
-#Github       : https://github.com/sandorn/home
-#==============================================================
-单例，与线程无关
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2024-07-26 10:17:05
+FilePath     : /CODE/xjLib/xt_singleon.py
+Github       : https://github.com/sandorn/home
+==============================================================
 """
 
 from functools import wraps

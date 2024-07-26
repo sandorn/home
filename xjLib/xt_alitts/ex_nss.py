@@ -126,9 +126,9 @@ if __name__ == "__main__":
     """
 
     def read():
-        out_file = TODO_TTS(_text, readonly=True, aformat="wav")
+        out_file = execute_tts(_text, readonly=True, aformat="wav")
 
-        from xt_Alispeech.Play import Thread_play
+        from xt_alitts.play import Thread_play
 
         for oufile in out_file:
             # task = Qthread_play(oufile[1])
@@ -136,6 +136,6 @@ if __name__ == "__main__":
             task2 = Thread_play(oufile[1])
             task2.wait()
 
-    # read()
+    read()
     # print(execute_tts(_text))
-    print(execute_tts(_text, aformat="wav", merge=True, voice="aifei"))
+    # print(execute_tts(_text, aformat="wav", merge=True, voice="aifei"))

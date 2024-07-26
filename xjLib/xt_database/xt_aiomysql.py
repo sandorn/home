@@ -18,7 +18,7 @@ import traceback
 
 import aiomysql.sa as aiosa
 from xt_database.cfg import DB_CFG
-from xt_database.untilsql import make_insert_sql, make_update_sql
+from xt_database.xt_untilsql import make_insert_sql, make_update_sql
 
 
 class AioMysql:

@@ -26,7 +26,6 @@ def connect_str(key, odbc=None):
         raise ValueError(f"错误提示：检查数据库配置：{key}")
 
     cfg = DB_CFG[key].copy()
-    print(id(cfg), id(DB_CFG[key]))
     db_types = cfg["type"]
     odbc = db_types if odbc is None else odbc
 
@@ -44,3 +43,42 @@ def connect_str(key, odbc=None):
     _tmp_map = driver_map.get(db_types, {})
     drivers_str = _tmp_map.get(odbc, _tmp_map.get(db_types))
     return f"{drivers_str}://{link_str}"
+
+
+class DBConnector:
+    driver_map = {
+        "mysql": {"OurSQL": "mysql+oursql", "aiomysql": "mysql+aiomysql", "connector": "mysql+mysqlconnector", "mysqldb": "mysql+mysqldb", "pymysql": "mysql+pymysql", "mysql": "mysql"},
+        "PostgreSQL": {"pg8000": "postgresql+pg8000", "psycopg2": "postgresql+psycopg2", "postgresql": "postgresql+psycopg2"},
+        "Oracle": {"oracle": "oracle", "cx": "oracle+cx_oracle"},
+        "SQLServer": {"pyodbc": "mssql+pyodbc", "pymssql": "mssql+pymssql", "sqlserver": "mssql+pymssql"},
+        "SQLite": {"sqlite": "sqlite"},
+        "access": {"access": "access+pyodbc"},
+        "monetdb": {"monetdb": "monetdb", "lite": "monetdb+lite"},
+    }
+
+    def __init__(self, key, odbc=None):
+        if key not in DB_CFG:
+            raise ValueError(f"错误提示：检查数据库配置：{key}")
+
+        self.cfg = DB_CFG[key].copy()
+        self.db_types = self.cfg["type"]
+        self.odbc = self.db_types if odbc is None else odbc
+
+    def get_connection_string(self):
+        link_str = f"{self.cfg['user']}:{self.cfg['password']}@{self.cfg['host']}:{self.cfg['port']}/{self.cfg['db']}?charset={self.cfg['charset']}"
+        _tmp_map = self.driver_map.get(self.db_types, {})
+        drivers_str = _tmp_map.get(self.odbc, _tmp_map.get(self.db_types))
+        return f"{drivers_str}://{link_str}"
+
+
+if __name__ == "__main__":
+    print(connect_str("TXbook"))
+
+    # 使用示例
+    connector1 = DBConnector("TXbx")
+    connection_str1 = connector1.get_connection_string()
+    print(connection_str1)
+
+    connector2 = DBConnector("TXbook", "connector")
+    connection_str2 = connector2.get_connection_string()
+    print(connection_str2)

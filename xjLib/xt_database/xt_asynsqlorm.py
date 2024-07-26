@@ -16,7 +16,7 @@ import asyncio
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from xt_database.cfg import connect_str
-from xt_database.untilsql import make_insert_sql, make_update_sql
+from xt_database.xt_untilsql import make_insert_sql, make_update_sql
 from xt_database.xt_sqlorm_meta import ErrorMetaClass, get_db_model
 from xt_singleon import SingletonMetaCls
 
