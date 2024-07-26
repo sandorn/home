@@ -19,8 +19,8 @@ from threading import Lock
 
 class SingletonMetaCls(type):
     """
-    单例元类，构建类时：metaclass=SingletonMetaCls
-    有重新__init__方法，可多次init
+    单例元类,可多次init，构建类时调用
+    class MyCls(ParentCls,metaclass=SingletonMetaCls)
     """
 
     _instance_lock = Lock()
@@ -46,22 +46,6 @@ class SingletonMetaCls(type):
             # 重新初始化单例对象属性
             instance.__init__(*args, **kwargs)
         return instance
-
-
-class SingletonMeta(type):
-    """
-    单例模式元类,构建类时调用
-    class cls(parent_cls,metaclass=SingletonMeta):,
-    @ 单次init,可用类调用classmethod
-    """
-
-    _instances = {}
-    _lock = Lock()
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super().__call__(*args, **kwargs)
-        return cls._instances[cls]
 
 
 class SingletonMixin:
@@ -128,7 +112,7 @@ def singleton_decorator_class(_cls):
 
 
 def singleton_wraps_class(cls_obj):
-    """单例装饰器,返回类，#@未测试"""
+    """单例装饰器,返回类"""
     _instance_dic = {}
     _instance_lock = Lock()
 
@@ -164,15 +148,16 @@ if __name__ == "__main__":
     @singleton_decorator_class
     class singleton_decorator_class_f(sss): ...
 
-    singleton_decorator_class_f_line = singleton_decorator_class(sss)
+    singleton_decorator_class_line = singleton_decorator_class(sss)
 
     a = sss("习近平")
     t = super_sss("毛泽东")
     b = sample("胡锦涛")
     c = sample_mixin("江泽民")
     d = sample_class_wrap("李鹏")
+    dd = sample_class_wrap("李鹏2")
     z = singleton_decorator_class_f("邓小平")
-    e = singleton_decorator_class_f_line("朱镕基")
+    e = singleton_decorator_class_line("朱镕基")
 
-    print(id(a), id(t), id(b), id(c), id(d))
+    print(id(a), id(t), id(b), id(c), id(d), id(dd))
     print(e is z, id(e), id(z))

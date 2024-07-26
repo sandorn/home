@@ -18,6 +18,7 @@ https://github.com/ShichaoMa
 import time
 import traceback
 from copy import deepcopy
+from functools import wraps
 from types import FunctionType
 
 import wrapt
@@ -89,24 +90,22 @@ def call_later(callback_fn, call_args=(), immediately=True, interval=1):
     return decorate
 
 
-@wrapt.decorator
-def freshdefault(func, instance, args, kwargs):
+def freshdefault(func):
     """装饰函数,使可变对象[list|dict]可以作为默认值"""
-    fdefaults = func.__defaults__  # 保存函数的默认值
-    ftypes = func.__annotations__  # 保存函数注解
+    default_args = func.__defaults__
+    ftypes = func.__annotations__  # 函数注解
 
-    def refresher(*args, **kwargs):
-        if fdefaults:
-            # 恢复函数的默认值
-            func.__defaults__ = deepcopy(fdefaults)
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if default_args:
+            func.__defaults__ = deepcopy(default_args)
         if ftypes:
-            # 恢复函数的注解
             for key in ftypes.keys():
                 if key not in kwargs.keys():
                     kwargs[key] = deepcopy(ftypes[key])
         return func(*args, **kwargs)
 
-    return refresher(*args, **kwargs)
+    return wrapper
 
 
 def _create_func(code_body, **kwargs):
@@ -250,12 +249,12 @@ if __name__ == "__main__":
             li.append(v)
             return li
 
-        list1 = extend_list(10)
+        list1 = extend_list(99)
         list2 = extend_list([1, 2, 3, 4], [])
         list3 = extend_list("a")
         print(list1)
         print(list2)
-        print(list3)
+        print(list3, list1)
 
         print(list1 is list3)
 
@@ -275,8 +274,8 @@ if __name__ == "__main__":
     # print(simple())
     # readFile("UnexistFile.txt")
     # print(add(123, 0))
-    # print(assertSumIsPositive(6, 0))
+    print(assertSumIsPositive(6, 0))
     # print(checkLen(a=5, b=0))
 
-    fre()
+    # fre()
     # fu()

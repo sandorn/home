@@ -12,6 +12,7 @@ Github       : https://github.com/sandorn/home
 https://mp.weixin.qq.com/s/4nkQITVniE9FhESDMt34Ow  # wrapt库
 """
 
+import builtins
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock, Thread
 
@@ -24,10 +25,14 @@ def thread_safe(func, instance, args, kwargs):
     """
     函数的线程安全化，可以装饰普通函数和类中的方法
     """
-    func.__lock__ = Lock()
-
-    with func.__lock__:
-        return func(*args, **kwargs)
+    if func.__module__ == builtins.__name__:
+        with Lock():
+            return func(*args, **kwargs)  # 内置函数
+    else:
+        if not hasattr(func, "__lock__"):
+            func.__lock__ = Lock()
+        with func.__lock__:
+            return func(*args, **kwargs)  # 普通函数和类方法
 
 
 @wrapt.decorator
@@ -42,7 +47,7 @@ def parallelize_decorator(func, instance, args, kwargs):
 
 
 class _ThreadSafeDecoratorBase(Thread):
-    """不单独使用,供线程装饰器调用"""
+    """不单独使用,供线程装饰器[ thread_decorator | ThreadDecoratorClass ]调用"""
 
     def __init__(self, func, name, *args, **kwargs):
         super().__init__(target=func, name=name, args=args, kwargs=kwargs)
@@ -116,7 +121,7 @@ def qthread_decorator(func=None, *args, **kwargs):
 
 
 class ThreadDecoratorClass:
-    """无特别用处，暂停使用,thread_decorator无差异
+    """无特别用处，暂停使用,thread_decorator 无差异
     函数的线程装饰器,无括号(),返回线程实例,
     getResult获取结果,getAllResult获取结果集合,
     可在调用被装饰函数添加daemon=True,callback等参数"""
@@ -145,9 +150,9 @@ class ThreadDecoratorClass:
         return res
 
 
-def create_mixin_class(name, cls, meta, **kwargs):
+def create_mixin_class(name, Cls, Mixin, **kwargs):
     """type动态混入继承,实质是调整 bases"""
-    return type(name, (cls, meta), kwargs)
+    return type(name, (Cls, Mixin), kwargs)
 
 
 thread_print = thread_safe(print)
@@ -166,8 +171,8 @@ if __name__ == "__main__":
     # thread_print(bb.Result)
     # thread_print(bb)
 
-    cc = c(3, callback=lambda x: x * 100)
-    thread_print("Result:", cc.Result)
+    # cc = c(3, callback=lambda x: x * 100)
+    # thread_print("Result:", cc.Result)
     # thread_print("callback:", cc.callback, "daemon:", cc.daemon, "objectName:", cc.objectName())
 
     @parallelize_decorator
