@@ -110,20 +110,22 @@ def freshdefault(func):
 
 def _create_func(code_body, **kwargs):
     """动态函数创建器"""
-    kwargs.setdefault_res("globals", {})
+    kwargs.setdefault("globals", {})
     filename = kwargs.pop("filename", "xt_tools._create_func")
     exmethod = kwargs.pop("exmethod", "exec")
     module_code = compile(code_body, filename, exmethod)
     return FunctionType(module_code.co_consts[0], **kwargs)
 
     # FunctionType(code, globals, name=None, argdefs=None, closure=None)
+    # FunctionType(wrapper.__code__, wrapper.__globals__, name=func.__name__, argdefs=wrapper.__defaults__, closure=wrapper.__closure__)
 
 
 func_attr_name_list = [
     # #函数的内置属性
     "__closure__",
     "__code__",
-    "__default_ress__",
+    "__defaults__",
+    # "__default_ress__",
     "__dict__",
     "__doc__",
     "__globals__",
@@ -265,16 +267,18 @@ if __name__ == "__main__":
         print(foo_func())
 
         for attr in func_attr_name_list:
-            print(attr, ":", getattr(foo_func, attr))
+            ...
+            # print(attr, ":", getattr(foo_func, attr))
 
         for attr in func_code_name_list:
-            print(f"foo_func.__code__.{attr.ljust(33)}", ":", getattr(foo_func.__code__, attr))
-        print(_create_func.__dict__)
+            ...
+            # print(f"foo_func.__code__.{attr.ljust(33)}", ":", getattr(foo_func.__code__, attr))
+        print(foo_func.__dict__)
 
     # print(simple())
     # readFile("UnexistFile.txt")
     # print(add(123, 0))
-    print(assertSumIsPositive(6, 0))
+    # print(assertSumIsPositive(6, 0))
     # print(checkLen(a=5, b=0))
 
     # fre()

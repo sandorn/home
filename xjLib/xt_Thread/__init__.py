@@ -14,4 +14,5 @@ Github       : https://github.com/sandorn/home
 from .decorator import create_mixin_class, parallelize_decorator, qthread_decorator, thread_decorator, thread_print, thread_safe
 from .futures import FunctionInPool, ThreadPool
 from .Process import CustomProcess, Do_CustomProcess
+from .qThread import CustomQThread, SingletonQThread
 from .thread import CustomThread, CustomThread_Queue, SigThread, SigThreadQ, SingletonThread, ThreadPoolWraps, stop_thread

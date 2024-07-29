@@ -13,24 +13,26 @@ Github       : https://github.com/sandorn/home
 
 
 class ItemGetMixin:
-    """下标obj[key]"""
+    """下标调用（索引操作）[key]"""
 
     def __getitem__(self, key):
-        # return getattr(self, key)
-        return self.__dict__.get(key)
+        # return getattr(self, key, None)
+        return self.__dict__.get(key, None)
 
 
 class ItemSetMixin:
-    """下标obj[key]"""
+    """下标调用（索引操作）[key]"""
 
     def __setitem__(self, key, value):
+        # return setattr(self, key, value)
         self.__dict__[key] = value
 
 
 class ItemDelMixin:
-    """下标obj[key]"""
+    """下标调用（索引操作）[key]"""
 
     def __delitem__(self, key):
+        # return delattr(self, key)
         return self.__dict__.pop(key)
 
 
@@ -38,22 +40,23 @@ class ItemMixin(ItemGetMixin, ItemSetMixin, ItemDelMixin): ...
 
 
 class AttrGetMixin:
-    """原点调用obj.key"""
+    """原点调用（属性访问）cls.key"""
 
     def __getattr__(self, key):
+        # return getattr(self, key, None)
         # return super().__getattribute__(key)
-        return self.__dict__.get(key)
+        return self.__dict__.get(key, None)
 
 
 class AttrSetMixin:
-    """原点调用obj.key"""
+    """原点调用（属性访问）cls.key"""
 
     def __setattr__(self, key, value):
         return super().__setattr__(key, value)
 
 
 class AttrDelMixin:
-    """原点调用obj.key"""
+    """原点调用（属性访问）cls.key"""
 
     def __delattr__(self, key):
         return super().__delattr__(key)
@@ -63,7 +66,7 @@ class AttrMixin(AttrGetMixin, AttrSetMixin, AttrDelMixin): ...
 
 
 class ReDictMixin:
-    """get_dict重新生成__dict__类字典,主要用于readonly限制"""
+    """get_dict重新生成 __dict__ 类字典,主要用于readonly限制"""
 
     def get_dict(self):
         """把对象转换成字典"""
@@ -92,18 +95,23 @@ class ReprMixin(ReDictMixin):
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
 
-class BaseClass(ItemMixin, IterMixin, ReprMixin): ...  # 基类,支持下标,迭代,打印
+class BaseCls(AttrMixin, ItemMixin, IterMixin, ReprMixin): ...  # 基类,支持下标,迭代,打印
 
 
-class SetOnceMixin:
-    """限制key赋值一次,key不存在时可赋值"""
+class SetOnceMixin(ItemGetMixin, AttrGetMixin):
+    """限制下标[key]赋值,key不存在时可赋值；对属性访问无用"""
 
     __slots__ = ()
 
     def __setitem__(self, key, value):
         if key not in self:
             return super().__setitem__(key, value)
-        raise ValueError(f"key:`{key}`, already set!")
+        raise ValueError(f"key:`{key}` is already set,cannot reset value to `{value}`!")
+
+    def __setattr__(self, key, value):
+        if key not in self:
+            return super().__setattr__(key, value)
+        raise ValueError(f"key:`{key}` is already set,cannot reset value to `{value}`!")
 
 
 class SetOnceDict(SetOnceMixin, dict): ...  # 自定义字典,限制key只能赋值一次,key不存在时可添加
@@ -112,6 +120,37 @@ class SetOnceDict(SetOnceMixin, dict): ...  # 自定义字典,限制key只能赋
 class LogMixin:
     def log(self, message):
         print(f"[{self.__class__.__name__}] {message}")
+
+
+class ClsMeta(type):
+    """
+    更智能的元类，根据类属性动态选择Mixin
+    class BaseClsMeta(metaclass=ClsMeta):
+        MixinAttr = True
+        MixinItem = True
+        MixinIter = True
+        MixinRepr = True
+        MixinLog = True
+    """
+
+    def __new__(cls, name, bases, dct):
+        bases_mixins = ()  # 用于存放要应用的Mixin类
+        bases_mixins += (bases,) if bases else ()
+        bases_mixins += (ItemMixin,) if "MixinItem" in dct and dct["MixinItem"] else ()
+        bases_mixins += (AttrMixin,) if "MixinAttr" in dct and dct["MixinAttr"] else ()
+        bases_mixins += (IterMixin,) if "MixinIter" in dct and dct["MixinIter"] else ()
+        bases_mixins += (ReprMixin,) if "MixinRepr" in dct and dct["MixinRepr"] else ()
+        bases_mixins += (LogMixin,) if "MixinLog" in dct and dct["MixinLog"] else ()
+        # mixins_to_apply = []
+        # if "MixinAttr" in dct and dct["MixinAttr"]:
+        #     mixins_to_apply.append(AttrMixin)
+
+        # for mixin in mixins_to_apply:
+        #     dct.update(mixin.__dict__)  # 动态添加属性和方法
+        # return super().__new__(cls, name, bases, dct)
+
+        # print(99999999999999999999999999, f"name:{name}, bases_mixins:{bases_mixins}, dct:{dct}")
+        return type(name, bases_mixins, dct)
 
 
 def typeassert(**kwargs):
@@ -187,12 +226,15 @@ if __name__ == "__main__":
     def 赋值一次的字典():
         my_dict = SetOnceDict()
         try:
-            my_dict["username"] = "333"
-            my_dict["me"] = "sand"
-            my_dict["username"] = "sandorny"
+            my_dict["username"] = "sand"
+            my_dict["me"] = "orny"
+            my_dict["efvtgn"] = "sandorny"
+            my_dict.me = 99
+            # my_dict["me"] = "49"
+
         except Exception as err:
-            print(111111111111, err)
-        print(99999, my_dict)
+            print(err)
+        print(99999, my_dict, my_dict.me)
 
     def 可迭代对象():
         class Animal(IterMixin, ReprMixin):
@@ -226,9 +268,61 @@ if __name__ == "__main__":
         print(a.__dict__, id(a))
         print(b.__dict__, id(b))
 
-    # 赋值一次的字典()
+    def metaclass():
+        _registry = []
+
+        class RegisterMixinMeta(type):
+            def __new__(cls, name, bases, dct):
+                new_class = super().__new__(cls, name, bases, dct)
+                if "register_me" in dct and dct["register_me"]:
+                    _registry.append(new_class)
+                return new_class
+
+        class IPlugin(metaclass=RegisterMixinMeta):
+            """接口类 ，定义了插件应实现的方法"""
+
+            def plugin_action(self):
+                raise NotImplementedError("Subclasses must implement plugin_action.")
+
+        class PluginA(IPlugin):
+            register_me = True
+
+            def plugin_action(self):
+                print("Plugin A is active.")
+
+        class PluginB(IPlugin):
+            def plugin_action(self):
+                print("Plugin B is active but not registered explicitly.")
+
+        # 使用示例
+        for plugin_class in _registry:
+            plugin_class().plugin_action()
+        BBB = PluginB()
+        BBB.plugin_action()
+
+        class MyBaseClsMeta(metaclass=ClsMeta):
+            # MixinAttr = True
+            # MixinItem = True
+            # MixinIter = True
+            MixinRepr = True
+            MixinLog = True
+
+            def __init__(self):
+                self.name = "liuxinjun"
+                self.age = 12
+                self._i = 787
+                self.姓名 = "行云流水"
+
+        bb = MyBaseClsMeta()
+        print(bb, bb.get_dict(), bb.__dict__)
+        bb.log("hello")
+
+    赋值一次的字典()
     # 可迭代对象()
-    itat()
+    # itat()
+    # metaclass()
+
+
 """
 方法1:工厂函数
 def createClass(cls):

@@ -64,6 +64,11 @@ class LogCls(SingletonMixin):
         "打印日志"
         return [getattr(self.logger, _levelToName[self.level])(item) for item in list(args)]
 
+    def __call__(self, *args, level=None):
+        if level is None:
+            level = self.level
+        return [getattr(self.logger, _levelToName[level])(item) for item in list(args)]
+
 
 def log_decorator(func):
     frame = inspect.currentframe().f_back
@@ -75,16 +80,16 @@ def log_decorator(func):
     def wrapper(*args, **kwargs):
         args_str = re.sub(r"<([^<>]+)>", r"\<\1\>", str(args))  # 使用正则表达式替换<任意内容>为\<任意内容>
         kwargs_str = re.sub(r"<([^<>]+)>", r"\<\1\>", str(kwargs))
-        logger.print(f"[{_filename}|fn:{func.__name__}@{_func_line}]|<args:{args_str} | kwargs:{kwargs_str}>")
+        logger(f"[{_filename}|fn:{func.__name__}@{_func_line}]|<args:{args_str} | kwargs:{kwargs_str}>")
         start = perf_counter()
         try:
             result = func(*args, **kwargs)
             result_str = re.sub(r"<([^<>]+)>", r"\<\1\>", str(result))
             duration = perf_counter() - start
-            logger.print(f"[{_filename}|fn:{func.__name__}@{_func_line}]|<返回结果：{result_str} | 耗时：{duration:4f}s>")
+            logger(f"[{_filename}|fn:{func.__name__}@{_func_line}]|<返回结果：{result_str} | 耗时：{duration:4f}s>")
             return result
         except Exception as e:
-            logger.print("exception", f"[{_filename}|fn:{func.__name__}@{_func_line}]|<报错:{e}>")
+            logger("exception", f"[{_filename}|fn:{func.__name__}@{_func_line}]|<报错:{e}>")
 
     return wrapper
 

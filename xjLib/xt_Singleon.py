@@ -88,7 +88,7 @@ class SingletonDecoratorClass:
 
 def singleton_decorator_class(_cls):
     """单例类装饰器,多次init,返回类,类属性及方法通用
-    # 可通过self._intialed判断,设定初始化次数"""
+    # 可通过self._initialized判断,设定初始化次数"""
 
     class Class_Wrapper(_cls):
         _lock = Lock()
@@ -96,15 +96,16 @@ def singleton_decorator_class(_cls):
 
         def __new__(cls, *args, **kwargs):
             with cls._lock:
-                if not hasattr(cls, "_instance"):
+                if cls._instance is None:
                     cls._instance = super().__new__(cls)
                     cls._instance.__qualname__ = _cls.__name__
-                    cls._instance._intialed = False
+                    cls._instance.__name__ = f"<{_cls.__name__} | by singleton_decorator_class>"
+                    cls._instance._initialized = False
             return cls._instance
 
         def __del__(self):
             self.__class__._instance = None
-            self.__class__._intialed = False
+            self.__class__._initialized = False
 
     return Class_Wrapper
 
@@ -117,11 +118,14 @@ def singleton_wraps_class(cls_obj):
     @wraps(cls_obj)
     def wrapper(*args, **kwargs):
         if cls_obj in _instance_dic:
+            cls_obj.__name__ = f"<{cls_obj.__name__} | by singleton_wraps_class>"
             return _instance_dic.get(cls_obj)
 
         with _instance_lock:
             if cls_obj not in _instance_dic:
                 _instance_dic[cls_obj] = cls_obj(*args, **kwargs)
+                _instance_dic[cls_obj]._intialed = False
+                _instance_dic[cls_obj].__name__ = f"<{cls_obj.__name__} | by singleton_wraps_class>"
         return _instance_dic.get(cls_obj)
 
     return wrapper
@@ -136,7 +140,7 @@ if __name__ == "__main__":
 
     super_sss = type("super_sss", (sss, SingletonMixin), {})
 
-    class sample(sss, metaclass=SingletonMeta): ...
+    class sample(sss, metaclass=SingletonMetaCls): ...
 
     class sample_mixin(sss, SingletonMixin): ...
 
@@ -157,5 +161,5 @@ if __name__ == "__main__":
     z = singleton_decorator_class_f("邓小平")
     e = singleton_decorator_class_line("朱镕基")
 
-    print(id(a), id(t), id(b), id(c), id(d), id(dd))
-    print(e is z, id(e), id(z))
+    print(id(a), id(t), id(b), id(c), d is dd)
+    print(e is z, id(e), id(z), e)
