@@ -16,10 +16,10 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from xt_database.cfg import connect_str
 from xt_database.xt_sqlorm_meta import ErrorMetaClass, get_db_model
-from xt_singleon import SingletonMeta
+from xt_singleon import SingletonMetaCls
 
 
-class SqlConnection(ErrorMetaClass, metaclass=SingletonMeta):
+class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
     # #限定参数类型
     # Base = xt_class.typed_property("Base", DeclarativeMeta)
 

@@ -18,7 +18,7 @@ from threading import Event, Thread, enumerate, main_thread
 from time import sleep, time
 
 import wrapt
-from xt_class import ItemGetMetaMixin
+from xt_class import ItemGetMixin
 from xt_singleon import SingletonMixin, singleton_decorator_class
 from xt_thread import thread_print
 
@@ -111,7 +111,7 @@ def stop_thread(thread):
     _async_raise(thread.ident, SystemExit)
 
 
-class CustomThread(Thread, ItemGetMetaMixin):
+class CustomThread(Thread, ItemGetMixin):
     """多线程,继承自threading.Thread"""
 
     all_Thread = []  # 类属性或类变量,实例公用
@@ -174,7 +174,7 @@ class CustomThread(Thread, ItemGetMetaMixin):
         return res
 
 
-class CustomThread_Queue(Thread, ItemGetMetaMixin):
+class CustomThread_Queue(Thread, ItemGetMixin):
     """单例多线程,继承自threading.Thread"""
 
     """采用queue传递工作任务"""
@@ -246,7 +246,7 @@ class CustomThread_Queue(Thread, ItemGetMetaMixin):
         return res
 
 
-class SingletonThread(Thread, ItemGetMetaMixin, SingletonMixin):
+class SingletonThread(Thread, ItemGetMixin, SingletonMixin):
     """单例多线程,继承自threading.Thread"""
 
     all_Thread = []  # 线程列表,用于jion。类属性或类变量,实例公用

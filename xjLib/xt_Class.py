@@ -12,7 +12,7 @@ Github       : https://github.com/sandorn/home
 """
 
 
-class ItemGetMetaMixin:
+class ItemGetMixin:
     """下标obj[key]"""
 
     def __getitem__(self, key):
@@ -20,32 +20,46 @@ class ItemGetMetaMixin:
         return self.__dict__.get(key)
 
 
-class ItemMetaMixin:
+class ItemSetMixin:
     """下标obj[key]"""
-
-    def __getitem__(self, key):
-        # return getattr(self, key)
-        return self.__dict__.get(key)
 
     def __setitem__(self, key, value):
         self.__dict__[key] = value
+
+
+class ItemDelMixin:
+    """下标obj[key]"""
 
     def __delitem__(self, key):
         return self.__dict__.pop(key)
 
 
-class AttrMetaMixin:
+class ItemMixin(ItemGetMixin, ItemSetMixin, ItemDelMixin): ...
+
+
+class AttrGetMixin:
     """原点调用obj.key"""
 
     def __getattr__(self, key):
         # return super().__getattribute__(key)
         return self.__dict__.get(key)
 
+
+class AttrSetMixin:
+    """原点调用obj.key"""
+
     def __setattr__(self, key, value):
         return super().__setattr__(key, value)
 
+
+class AttrDelMixin:
+    """原点调用obj.key"""
+
     def __delattr__(self, key):
         return super().__delattr__(key)
+
+
+class AttrMixin(AttrGetMixin, AttrSetMixin, AttrDelMixin): ...
 
 
 class ReDictMixin:
@@ -58,7 +72,7 @@ class ReDictMixin:
         return self.__dict__
 
 
-class IterMetaMixin:
+class IterMixin:
     """
     # #迭代类,用于继承,不支持next
     from collections import Iterable
@@ -70,7 +84,7 @@ class IterMetaMixin:
         # return iter(self.get_dict().items())
 
 
-class ReprMetaMixin(ReDictMixin):
+class ReprMixin(ReDictMixin):
     """用于打印显示"""
 
     def __repr__(self):
@@ -78,7 +92,7 @@ class ReprMetaMixin(ReDictMixin):
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
 
-class BaseClass(ItemMetaMixin, IterMetaMixin, ReprMetaMixin): ...  # metaclass=abc.ABCMeta
+class BaseClass(ItemMixin, IterMixin, ReprMixin): ...  # 基类,支持下标,迭代,打印
 
 
 class SetOnceMixin:
@@ -93,6 +107,11 @@ class SetOnceMixin:
 
 
 class SetOnceDict(SetOnceMixin, dict): ...  # 自定义字典,限制key只能赋值一次,key不存在时可添加
+
+
+class LogMixin:
+    def log(self, message):
+        print(f"[{self.__class__.__name__}] {message}")
 
 
 def typeassert(**kwargs):
@@ -172,11 +191,11 @@ if __name__ == "__main__":
             my_dict["me"] = "sand"
             my_dict["username"] = "sandorny"
         except Exception as err:
-            print(err)
+            print(111111111111, err)
         print(99999, my_dict)
 
     def 可迭代对象():
-        class Animal(IterMetaMixin, ReprMetaMixin):
+        class Animal(IterMixin, ReprMixin):
             def __init__(self):
                 self.name = "liuxinjun"
                 self.age = 12
@@ -189,7 +208,7 @@ if __name__ == "__main__":
             print(k.ljust(16), ":", v)
 
     def itat():
-        class Anima(ItemMetaMixin, AttrMetaMixin):
+        class Anima(ItemMixin, AttrMixin):
             def __init__(self):
                 self.name = "na98888me"
                 self.age = 12
@@ -198,7 +217,7 @@ if __name__ == "__main__":
 
         a = Anima()
         a["name"] = "张三李四"
-        print(a["names"])
+        print(a["names99"])
         del a["姓名"]
         b = Anima()
         b._i = 567
@@ -208,14 +227,10 @@ if __name__ == "__main__":
         print(b.__dict__, id(b))
 
     # 赋值一次的字典()
-    可迭代对象()
-    # itat()
+    # 可迭代对象()
+    itat()
 """
-参考见Alispeech/xt_Pygame.py
-xt_Thread/Custom.py
-xt_Singleon.py
-
-# 方法1:工厂函数
+方法1:工厂函数
 def createClass(cls):
     class CustomizedClass(cls):
         .......
@@ -223,11 +238,11 @@ def createClass(cls):
 
 ClassList = createClass(list)
 
-# 方法2:type完全动态构造
-# 方法3:type混入继承,动态修改
-# 方法4:class 混入继承
+方法2:type完全动态构造
+方法3:type混入继承,动态修改
+方法4:class 混入继承
 
-# 方法3:明示重置class.__bases__  = (指定父类,) class 要隔代继承object,QThread出错
+方法5:明示重置class.__bases__  = (指定父类,) class 要隔代继承object,QThread出错
 
 print(QThread.__mro__)
 (<class 'PyQt5.QtCore.QThread'>, <class 'PyQt5.QtCore.QObject'>, <class 'sip.wrapper'>, <class 'sip.simplewrapper'>, <class 'object'>)

@@ -18,7 +18,7 @@ DB_CFG = {
     "Jkdoc": {"type": "mysql", "host": "localhost", "port": 3306, "user": "sandorn", "password": "123456", "db": "Jkdoc", "charset": "utf8mb4"},
 }
 
-DB_CFG["default"] = DB_CFG["TXbook"]
+DB_CFG["default"] = DB_CFG["TXbx"]
 
 
 def connect_str(key, odbc=None):

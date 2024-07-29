@@ -15,7 +15,7 @@ https://blog.51cto.com/u_16213668/9806859
 
 from sqlalchemy import Table, inspect
 from sqlalchemy.orm import declarative_base
-from xt_class import ItemMetaMixin
+from xt_class import ItemMixin
 from xt_database.cfg import connect_str
 
 
@@ -57,7 +57,7 @@ class ErrorMetaClass:
         raise NotImplementedError
 
 
-class OrmExt(ItemMetaMixin):
+class OrmExt(ItemMixin):
     """SQLAlchemy Base ORM Model,下标取值赋值、打印显示、生成字段列表"""
 
     __str__ = __repr__ = lambda self: self.__class__.__name__ + str({key: getattr(self, key) for key in self.keys() if getattr(self, key) is not None})
@@ -111,7 +111,7 @@ Base = Base_Model = declarative_base(cls=OrmExt)
 metadata = Base.metadata  # 等价于：sqlalchemy.MetaData()
 
 
-class ParentBaseModelCls(Base, OrmExt):
+class ParentBaseModel(Base):
     """定义所有数据库表对应的父类,用于混入继承,与Base_Model协同"""
 
     __abstract__ = True  # 父类模式
@@ -203,7 +203,7 @@ def db_to_model(tablename, key="default"):
 if __name__ == "__main__":
     from sqlalchemy import INTEGER, TEXT, VARCHAR, Column
 
-    class table_model(ParentBaseModelCls):
+    class table_model(ParentBaseModel):
         __tablename__ = "ModelTable"
 
         ID = Column(INTEGER, primary_key=True)

@@ -16,22 +16,37 @@ https://blog.csdn.net/ydyang1126/article/details/78226701/
 
 import asyncio
 import traceback
-from functools import partial
 
 import aiomysql
 from xt_database.cfg import DB_CFG
+from xt_singleon import SingletonMixin
 
 
-class AioMysql:
-    def __init__(self):
+class AioMysql(SingletonMixin):
+    def __init__(self, key="default", autocommit=True):
         self.pool = None
+        self.autocommit = autocommit
+        self.coro_list = []
+        self.db_key = key
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)  # @解决循环的关键点
+        self.run_in_loop([self.create_pool()])
 
-    async def create_pool(self, db_key="default", autocommit=True):
+    def run_in_loop(self, coro_list=None):
+        coro_list = coro_list or self.coro_list
+        return self.loop.run_until_complete(asyncio.gather(*coro_list))
+
+    @staticmethod
+    def create_aclent(key="default", autocommit=True):
+        self = AioMysql(key, autocommit)
+        return self
+
+    async def create_pool(self):
+        db_key = self.db_key
         if db_key not in DB_CFG:
             raise ValueError(f"错误提示:检查数据库配置:{db_key}")
         cfg = DB_CFG[db_key].copy()
         cfg.pop("type", None)
-        self.autocommit = autocommit
         try:
             self.pool = await aiomysql.create_pool(
                 # minsize=5,  # 连接池最小值
@@ -58,7 +73,7 @@ class AioMysql:
         # 释放掉conn,将连接放回到连接池中
         await self.pool.release(conn)
 
-    async def query(self, sql, args=None):
+    async def _query(self, sql, args=None):
         """
         :param   sql: sql语句
         :param args: 参数
@@ -75,7 +90,7 @@ class AioMysql:
             await self.closeCurosr(conn, cur)
             return res
 
-    async def execute(self, sql, args=None):
+    async def _execute(self, sql, args=None):
         conn, cur = await self.getCurosr()
         try:
             affetced = await cur.execute(sql, args)
@@ -85,58 +100,49 @@ class AioMysql:
             await self.closeCurosr(conn, cur)
             return affetced if affetced else cur.lastrowid
 
-    async def executemany(self, sql, data):
+    async def _executeall(self, sql, args=None):
         conn, cur = await self.getCurosr()
         try:
-            affetced = await cur.executemany(sql, data)
+            affetced = await cur.executemany(sql, args)
         except Exception:
             print(traceback.format_exc())
         finally:
             await self.closeCurosr(conn, cur)
             return affetced if affetced else cur.lastrowid
 
+    def query(self, sql_list, params: dict = None, autorun=True):
+        sql_list = [sql_list] if isinstance(sql_list, str) else sql_list
+        _coro = [self._query(_sql, params) for _sql in sql_list]
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
-async def create_xt_aiomysql(key="default"):
-    Aiomysql = AioMysql()
-    await Aiomysql.create_pool(key)
-    return Aiomysql
+    def execute(self, sql_list, args=None, autorun=True):
+        sql_list = [sql_list] if isinstance(sql_list, str) else sql_list
+        args = [args] * len(sql_list) if not isinstance(args, (tuple, list)) else args
+        _coro = [self._execute(sql, data) for sql, data in zip(sql_list, args)]
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
+    def executeall(self, sql, args=None, autorun=True):
+        _coro = [self._executeall(sql, args)]
+        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
-async def _query_aiomysql(key, sql_list):
-    Aiomysql = await create_xt_aiomysql(key)
-    return await asyncio.gather(*[Aiomysql.query(sql) for sql in sql_list])
-
-
-async def _execute_aiomysql(key, sql_list):
-    Aiomysql = await create_xt_aiomysql(key)
-    return await asyncio.gather(*[Aiomysql.execute(sql) for sql in sql_list])
-
-
-async def _executemany_aiomysql(key, sql, data):
-    Aiomysql = await create_xt_aiomysql(key)
-    return await asyncio.gather(Aiomysql.executemany(sql, data))
-
-
-def _run_aiomysql(func, *args, **kwargs):
-    # loop = asyncio.new_event_loop()
-    return asyncio.run(func(*args, **kwargs))
-
-
-query_aiomysql = partial(_run_aiomysql, _query_aiomysql)
-execute_aiomysql = partial(_run_aiomysql, _execute_aiomysql)
-executemany_aiomysql = partial(_run_aiomysql, _executemany_aiomysql)
 
 if __name__ == "__main__":
     query_list = ["select * from users2", "select * from users2 where ID = 1", "update users2 set username='刘新军1' where ID = 2", "select * from users2 where ID = 2"]
     up_sql = ("update users2 set username='刘新新' where ID = 2",)
     ups_sql = "update users2 set username=%s where ID = %s"
     ups_data = [("刘澈", 1), ("刘新军", 2)]
-    res = execute_aiomysql("TXbx", up_sql)
-    print(111111111111111111, res)
-    res = executemany_aiomysql("TXbx", ups_sql, ups_data)
-    print(222222222222222222, res)
-    res = query_aiomysql("TXbx", query_list)
-    print(333333333333333333, res)
+    # self = AioMysql("TXbx")
+    # print(self.query(query_list[0]))
+    # res = self.execute(up_sql)
+    # print(111111111111111111, res)
+    # res = self.executeall(ups_sql, ups_data)
+    # print(222222222222222222, res)
+    self = AioMysql.create_aclent("TXbx")
+    res = self.query("select * from users2")
+    for item in res[0]:
+        print(item)
+    print(self.query(query_list[1]))
+
 """
 python并发编程之asyncio协程(三) - 天宇之游 - 博客园
 https://www.cnblogs.com/cwp-bg/p/9590700.html
