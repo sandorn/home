@@ -9,6 +9,7 @@ LastEditTime : 2023-02-25 04:31:14
 FilePath     : /CODE/xjLib/xt_String.py
 Github       : https://github.com/sandorn/home
 ==============================================================
+https://zhuanlan.zhihu.com/p/696103020
 """
 
 import hashlib

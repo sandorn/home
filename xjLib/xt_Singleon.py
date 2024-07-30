@@ -134,8 +134,8 @@ def singleton_wraps_class(cls_obj):
 if __name__ == "__main__":
 
     class sss:
-        def __init__(self, string, age=12):
-            self.name = string
+        def __init__(self, name, age=12):
+            self.name = name
             self.age = age
 
     super_sss = type("super_sss", (sss, SingletonMixin), {})

@@ -19,7 +19,6 @@ from tenacity import retry, stop_after_attempt, wait_random
 from xt_head import MYHEAD, RETRY_TIME, TIMEOUT, Head
 from xt_log import log_decorator
 from xt_response import htmlResponse
-from xt_tools import catch_wraps
 
 Method_List = ["get", "post", "head", "options", "put", "delete", "trace", "connect", "patch"]
 
@@ -30,62 +29,18 @@ TRETRY = retry(
 )
 
 
-def _setKw(kwargs):
+def _setKw(kwargs: dict) -> dict:
     kwargs.setdefault("headers", Head().randua)
     kwargs.setdefault("timeout", TIMEOUT)  # @超时
     return kwargs
 
 
-def _request_parse(method, url, *args, **kwargs):
-    """自实现重试"""
-    attempts = RETRY_TIME
-    response = None
-    func_exc = ret_err = False
-    kwargs = _setKw(kwargs)
-    callback = kwargs.pop("callback", None)
-
-    while attempts:
-        try:
-            func_exc = False
-            response = requests.request(method, url, *args, **kwargs)
-            assert response.status_code in [200, 201, 302]
-        except Exception as err:
-            attempts -= 1
-            func_exc = True
-            ret_err = err
-            print(f"_request_parse_{method}:<{url}>; times:{RETRY_TIME - attempts}; Err:{ret_err!r}")
-        else:
-            # #返回正确结果
-            result = htmlResponse(response)
-            return callback(result) if callable(callback) else result
-
-    # #错误返回None
-    if func_exc:
-        return ret_err
-
-
-def _request_wraps(method, url, *args, **kwargs):
-    """利用自编重试装饰器,实现重试"""
-    kwargs = _setKw(kwargs)
-    callback = kwargs.pop("callback", None)
-
-    @catch_wraps
-    def __fetch_run():
-        response = requests.request(method, url, *args, **kwargs)
-        return response
-
-    response = __fetch_run()
-    result = htmlResponse(response)
-    return callback(result) if callable(callback) else result
-
-
-def _request_tretry(method, url, *args, **kwargs):
-    """利用TRETRY三方库实现重试"""
+def _request_tretry(method, url, *args, **kwargs) -> htmlResponse:
+    """利用 TRETRY 库实现重试"""
     # print(f"_request_tretry.{method}:<{url}>,{args},{kwargs}")
     kwargs = _setKw(kwargs)
-    callback = kwargs.pop("callback", None)
 
-    @TRETRY
+    @TRETRY  # @catch_wraps同样效果  from xt_tools import catch_wraps
     def __fetch_run():
         return requests.request(method, url, *args, **kwargs)
         # response.raise_for_status()
@@ -93,16 +48,12 @@ def _request_tretry(method, url, *args, **kwargs):
     try:
         response = __fetch_run()
         result = htmlResponse(response)
-        return callback(result) if callable(callback) else result
+        return result
     except Exception as err:
         print(f"_request_tretry.{method}:<{url}>; Err:{err!r}")
         return htmlResponse(None)
 
 
-get_parse = partial(_request_parse, "get")
-post_parse = partial(_request_parse, "post")
-get_wraps = partial(_request_wraps, "get")
-post_wraps = partial(_request_wraps, "post")
 get = partial(_request_tretry, "get")
 post = partial(_request_tretry, "post")
 

@@ -95,7 +95,7 @@ def generate_base(*mixins):
             mro = meta_cls.mro(meta_cls)
 
             def filter_name(name):
-                filters = ['type', 'CombinedMeta', 'object']
+                filters = ["type", "CombinedMeta", "object"]
                 # return not any((i in name for i in filters))
                 return all(i not in name for i in filters)
 
@@ -108,7 +108,7 @@ def generate_base(*mixins):
 
 class DelegateMetaClass(type):
     def __new__(cls, name, bases, attrs):
-        methods = attrs.pop('delegated_methods', ())
+        methods = attrs.pop("delegated_methods", ())
         for m in methods:
 
             def make_func(m):
@@ -127,52 +127,51 @@ class Delegate(metaclass=DelegateMetaClass):
 
 
 class ImmutableList(Delegate):
-    delegated_methods = ('__contains__', '__eq__', '__getitem__', '__getslice__', '__str__', '__len__', 'index', 'count')
+    delegated_methods = ("__contains__", "__eq__", "__getitem__", "__getslice__", "__str__", "__len__", "index", "count")
 
 
 class ImmutableDict(Delegate):
-    delegated_methods = ('__contains__', '__getitem__', '__eq__', '__len__', '__str__', 'get', 'has_key', 'items', 'iteritems', 'iterkeys', 'itervalues', 'keys', 'values')
+    delegated_methods = ("__contains__", "__getitem__", "__eq__", "__len__", "__str__", "get", "has_key", "items", "iteritems", "iterkeys", "itervalues", "keys", "values")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     class Mymeta(type):
         def __init__(cls, name, bases, dic):
             super().__init__(name, bases, dic)
-            print('===>Mymeta.__init__')
+            print("===>Mymeta.__init__")
             print(cls.__name__)
             print(dic)
             print(cls.yaml_tag)
 
         def __new__(cls, *args, **kwargs):
-            print('===>Mymeta.__new__')
+            print("===>Mymeta.__new__")
             print(cls.__name__)
             return type.__new__(cls, *args, **kwargs)
 
         def __call__(self, *args, **kwargs):
-            print('===>Mymeta.__call__')
+            print("===>Mymeta.__call__")
             obj = self.__new__(self)
             self.__init__(self, *args, **kwargs)
             return obj
 
         def __instancecheck__(self, instance):
-            print('===>Mymeta.__instancecheck__')
+            print("===>Mymeta.__instancecheck__")
             return isinstance(instance, self)
 
     class Foo(metaclass=Mymeta):
-        yaml_tag = '!Foo'
+        yaml_tag = "!Foo"
 
         def __init__(self, name):
-            print('Foo.__init__')
+            print("Foo.__init__")
             self.name = name
 
         def __new__(cls, *args, **kwargs):
-            print('Foo.__new__')
+            print("Foo.__new__")
             return object.__new__(cls)
 
     di = ImmutableList([1, 1, 2, 3, 4])
-    print(type(di), dir(di), di)
-    for a in di:
-        print(a)
-    foo = Foo('foo')
-    print(Foo.__mro__)
+    # print(type(di), dir(di), di)
+    # for a in di: print(a)
+    foo = Foo("foo")
+    print(Foo.__mro__, foo.name)

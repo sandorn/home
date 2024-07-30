@@ -11,11 +11,18 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from typing import Any
+
+# 生成器的类型提示： Generator[yield_type, send_type, return_type]
+# from typing import List, Dict, Tuple, Set,Union,Any,Sequence
+# from typing import Type,TypeVar,Generic,Callable,Iterable,Iterator,Mapping,Pattern
+# from typing import Generator,ClassVar,Annotated,Optional
+
 
 class ItemGetMixin:
     """下标调用（索引操作）[key]"""
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         # return getattr(self, key, None)
         return self.__dict__.get(key, None)
 
@@ -23,7 +30,7 @@ class ItemGetMixin:
 class ItemSetMixin:
     """下标调用（索引操作）[key]"""
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         # return setattr(self, key, value)
         self.__dict__[key] = value
 
@@ -31,7 +38,7 @@ class ItemSetMixin:
 class ItemDelMixin:
     """下标调用（索引操作）[key]"""
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         # return delattr(self, key)
         return self.__dict__.pop(key)
 
@@ -42,7 +49,7 @@ class ItemMixin(ItemGetMixin, ItemSetMixin, ItemDelMixin): ...
 class AttrGetMixin:
     """原点调用（属性访问）cls.key"""
 
-    def __getattr__(self, key):
+    def __getattr__(self, key: str) -> Any:
         # return getattr(self, key, None)
         # return super().__getattribute__(key)
         return self.__dict__.get(key, None)
@@ -51,14 +58,14 @@ class AttrGetMixin:
 class AttrSetMixin:
     """原点调用（属性访问）cls.key"""
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: str, value: Any) -> None:
         return super().__setattr__(key, value)
 
 
 class AttrDelMixin:
     """原点调用（属性访问）cls.key"""
 
-    def __delattr__(self, key):
+    def __delattr__(self, key: str) -> None:
         return super().__delattr__(key)
 
 
@@ -68,7 +75,7 @@ class AttrMixin(AttrGetMixin, AttrSetMixin, AttrDelMixin): ...
 class ReDictMixin:
     """get_dict重新生成 __dict__ 类字典,主要用于readonly限制"""
 
-    def get_dict(self):
+    def get_dict(self) -> dict[str, Any]:
         """把对象转换成字典"""
         if not hasattr(self, "__dict__") or len(self.__dict__) == 0:
             self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith("__") and not callable(getattr(self, key))}
@@ -82,7 +89,7 @@ class IterMixin:
     isinstance(a, Iterable)
     """
 
-    def __iter__(self):
+    def __iter__(self) -> Any:
         yield from self.__dict__.items()
         # return iter(self.get_dict().items())
 
@@ -90,7 +97,7 @@ class IterMixin:
 class ReprMixin(ReDictMixin):
     """用于打印显示"""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         dic = self.get_dict()
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
@@ -98,27 +105,33 @@ class ReprMixin(ReDictMixin):
 class BaseCls(AttrMixin, ItemMixin, IterMixin, ReprMixin): ...  # 基类,支持下标,迭代,打印
 
 
-class SetOnceMixin(ItemGetMixin, AttrGetMixin):
+class SetOnceDict:
     """限制下标[key]赋值,key不存在时可赋值；对属性访问无用"""
 
-    __slots__ = ()
+    # __slots__ = ("_dict",)
 
-    def __setitem__(self, key, value):
-        if key not in self:
-            return super().__setitem__(key, value)
-        raise ValueError(f"key:`{key}` is already set,cannot reset value to `{value}`!")
+    def __init__(self):
+        self._dict: dict[Any, Any] = {}
 
-    def __setattr__(self, key, value):
-        if key not in self:
-            return super().__setattr__(key, value)
-        raise ValueError(f"key:`{key}` is already set,cannot reset value to `{value}`!")
+    def __setitem__(self, key: str, value: Any) -> None:
+        if key in self._dict.keys():
+            raise ValueError(f"Key '{key}' already exists:{value}")
+        self._dict[key] = value
 
+    def __getitem__(self, key: str) -> Any:
+        return self._dict[key]
 
-class SetOnceDict(SetOnceMixin, dict): ...  # 自定义字典,限制key只能赋值一次,key不存在时可添加
+    def __repr__(self):
+        return repr(self._dict)
+
+    # def __setitem__(self, key: str, value: Any) -> None:
+    #     if not hasattr(self, key):
+    #         return super().__setitem__(key, value)
+    #     raise ValueError(f"key:`{key}` is already set,cannot reset value to `{value}`!")
 
 
 class LogMixin:
-    def log(self, message):
+    def log(self, message: str) -> None:
         print(f"[{self.__class__.__name__}] {message}")
 
 
@@ -133,9 +146,9 @@ class ClsMeta(type):
         MixinLog = True
     """
 
-    def __new__(cls, name, bases, dct):
+    def __new__(cls, name: str, bases: tuple[type, ...], dct: dict[str, Any], **kwds: dict[str, Any]) -> type:
         bases_mixins = ()  # 用于存放要应用的Mixin类
-        bases_mixins += (bases,) if bases else ()
+        bases_mixins += bases if bases else ()
         bases_mixins += (ItemMixin,) if "MixinItem" in dct and dct["MixinItem"] else ()
         bases_mixins += (AttrMixin,) if "MixinAttr" in dct and dct["MixinAttr"] else ()
         bases_mixins += (IterMixin,) if "MixinIter" in dct and dct["MixinIter"] else ()
@@ -150,48 +163,47 @@ class ClsMeta(type):
         # return super().__new__(cls, name, bases, dct)
 
         # print(99999999999999999999999999, f"name:{name}, bases_mixins:{bases_mixins}, dct:{dct}")
-        return type(name, bases_mixins, dct)
+        return type(name, bases_mixins, dct, **kwds)
 
 
-def typeassert(**kwargs):
+def typeassert(**kwargs: dict[str, Any]) -> object:
     """Descriptor for a type-checked attribute
     #限制属性赋值的类型,因使用__dict__,与slots冲突"""
 
     class Typed:
-        def __init__(self, name, expected_type):
+        def __init__(self, name: str, expected_type: Any) -> None:
             self.name = name
             self.expected_type = expected_type
 
-        def __get__(self, instance, cls):
+        def __get__(self, instance: object, cls: type) -> Any:
             return self if instance is None else instance.__dict__[self.name]
 
-        def __set__(self, instance, value):
+        def __set__(self, instance: object, value: Any):
             assert isinstance(value, self.expected_type)
             # raise TypeError('Expected ' + str(self.expected_type))
             instance.__dict__[self.name] = value
 
-        def __delete__(self, instance):
+        def __delete__(self, instance: object) -> None:
             del instance.__dict__[self.name]
 
-    def decorate(cls):
+    def decorate(cls: object) -> object:
         for name, expected_type in kwargs.items():
-            # Attach a Typed descriptor to the class
             setattr(cls, name, Typed(name, expected_type))
         return cls
 
     return decorate
 
 
-def typed_property(name, expected_type):
+def typed_property(name: str, expected_type: Any) -> property:
     """class类property属性生成器,限制赋值类型"""
     storage_name = f"_{name}"
 
     @property
-    def prop(self):
+    def prop(self: object) -> Any:
         return getattr(self, storage_name)
 
     @prop.setter
-    def prop(self, value):
+    def prop(self: object, value: Any) -> None:
         if not isinstance(value, expected_type):
             raise TypeError(f"{name} must be a {expected_type}")
         setattr(self, storage_name, value)
@@ -199,7 +211,7 @@ def typed_property(name, expected_type):
     return prop
 
 
-def readonly(name):
+def readonly(name: str) -> property:
     """
     class类property只读属性生成器,隐藏真实属性名:name,
     #不在__dict__内,需要使用class_to_dict函数生成类__dict__
@@ -210,11 +222,11 @@ def readonly(name):
     storage_name = name
 
     @property
-    def prop(self):
+    def prop(self: object):
         return getattr(self, storage_name)
 
     @prop.setter
-    def prop(self, value):
+    def prop(self: object, value: Any):
         """赋值:无操作,直接返回"""
         return
 
@@ -230,7 +242,8 @@ if __name__ == "__main__":
             my_dict["me"] = "orny"
             my_dict["efvtgn"] = "sandorny"
             my_dict.me = 99
-            # my_dict["me"] = "49"
+            my_dict.me = 9009
+            my_dict["me"] = "49"
 
         except Exception as err:
             print(err)
@@ -254,7 +267,7 @@ if __name__ == "__main__":
             def __init__(self):
                 self.name = "na98888me"
                 self.age = 12
-                self._i = 787
+                self.pi = 787
                 self.姓名 = "行云流水"
 
         a = Anima()
@@ -262,17 +275,17 @@ if __name__ == "__main__":
         print(a["names99"])
         del a["姓名"]
         b = Anima()
-        b._i = 567
+        b.pi = 567
         print(a.name555s)
         del b.name
         print(a.__dict__, id(a))
         print(b.__dict__, id(b))
 
     def metaclass():
-        _registry = []
+        _registry: list = []
 
         class RegisterMixinMeta(type):
-            def __new__(cls, name, bases, dct):
+            def __new__(cls, name: str, bases: tuple[type, ...], dct: dict[str, Any]) -> type:
                 new_class = super().__new__(cls, name, bases, dct)
                 if "register_me" in dct and dct["register_me"]:
                     _registry.append(new_class)
@@ -281,7 +294,7 @@ if __name__ == "__main__":
         class IPlugin(metaclass=RegisterMixinMeta):
             """接口类 ，定义了插件应实现的方法"""
 
-            def plugin_action(self):
+            def plugin_action(self) -> None:
                 raise NotImplementedError("Subclasses must implement plugin_action.")
 
         class PluginA(IPlugin):
@@ -297,13 +310,15 @@ if __name__ == "__main__":
         # 使用示例
         for plugin_class in _registry:
             plugin_class().plugin_action()
+        AAA = PluginA()
+        AAA.plugin_action()
         BBB = PluginB()
         BBB.plugin_action()
 
         class MyBaseClsMeta(metaclass=ClsMeta):
-            # MixinAttr = True
-            # MixinItem = True
-            # MixinIter = True
+            MixinAttr = False
+            MixinItem = False
+            MixinIter = False
             MixinRepr = True
             MixinLog = True
 
@@ -314,8 +329,8 @@ if __name__ == "__main__":
                 self.姓名 = "行云流水"
 
         bb = MyBaseClsMeta()
-        print(bb, bb.get_dict(), bb.__dict__)
-        bb.log("hello")
+        print(bb, bb.get_dict(), bb.__dict__)  # type: ignore
+        bb.log("hello")  # type: ignore
 
     赋值一次的字典()
     # 可迭代对象()

@@ -71,9 +71,10 @@ class LogCls(SingletonMixin):
 
 
 def log_decorator(func):
-    frame = inspect.currentframe().f_back
-    _func_line = frame.f_lineno
-    _filename = frame.f_code.co_filename.split("\\")[-1].split(".")[0]
+    if callfn := inspect.currentframe() is not None:
+        frame = callfn.f_back
+        _func_line = frame.f_lineno
+        _filename = frame.f_code.co_filename.split("\\")[-1].split(".")[0]
     logger = LogCls(pyfile="MyLog")
 
     @wraps(func)
