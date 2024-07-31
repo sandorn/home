@@ -58,10 +58,7 @@ class htmlResponse:
         return self.status == 200
 
     def __len__(self):
-        if self.text:
-            return len(self.text)
-        else:
-            return 0
+        return len(self.text) if self.text else 0
 
     @property
     def content(self):
@@ -84,10 +81,11 @@ class htmlResponse:
 
     @property
     def seconds(self):
-        if self.raw and hasattr(self.raw, "elapsed"):
-            return self.raw.elapsed.total_seconds()
-        else:
-            return 0
+        return (
+            self.raw.elapsed.total_seconds()
+            if self.raw and hasattr(self.raw, "elapsed")
+            else 0
+        )
 
     @property
     def url(self):
@@ -115,8 +113,7 @@ class htmlResponse:
     def html(self, filter="//script"):
         element = self.element
         trashs = element.xpath(filter)
-        for item in trashs:
-            item.getparent().remove(item)
+        [item.getparent().remove(item) for item in trashs]
         return element
 
     @property

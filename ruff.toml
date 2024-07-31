@@ -8,6 +8,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # max-annotations-complexity = 10
 # max-returns = 6
 # max-arguments = 6
+
 [lint]
 # 选择的规则
 select = ["C","F","E","W","UP"]

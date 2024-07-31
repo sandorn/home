@@ -30,7 +30,17 @@ TRETRY = retry(
 
 __all__ = ("ahttpGet", "ahttpGetAll", "ahttpPost", "ahttpPostAll")
 
-Method_List = ["get", "post", "head", "options", "put", "delete", "trace", "connect", "patch"]
+Method_List = [
+    "get",
+    "post",
+    "head",
+    "options",
+    "put",
+    "delete",
+    "trace",
+    "connect",
+    "patch",
+]
 
 
 class AsyncTask:
@@ -74,7 +84,11 @@ async def _async_fetch(self):
 
     @TRETRY
     async def _fetch_run():
-        async with TCPConnector(ssl=False) as Tconn, ClientSession(cookies=self.cookies, connector=Tconn) as self.session, self.session.request(self.method, self.url, raise_for_status=True, *self.args, **self.kwargs) as self.response:
+        async with TCPConnector(ssl=False) as Tconn, ClientSession(
+            cookies=self.cookies, connector=Tconn
+        ) as self.session, self.session.request(
+            self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
+        ) as self.response:
             self.content = await self.response.read()
             return self.response, self.content, self.index
 
@@ -134,7 +148,11 @@ def __gather_parse(method, urls, *args, **kwargs):
     """多任务"""
     # coroes = [AsyncTask()[method](url, *args, **kwargs) for url in urls]
     coroes = [partial(__session_method, method)(url, *args, **kwargs) for url in urls]
-    _coroutine = create_threads_task(coroes) if kwargs.pop("threadsafe", True) else create_gather_task(coroes)
+    _coroutine = (
+        create_threads_task(coroes)
+        if kwargs.pop("threadsafe", True)
+        else create_gather_task(coroes)
+    )
     return asyncio.run(_coroutine)
 
 

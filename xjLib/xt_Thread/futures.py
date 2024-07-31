@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-21 17:23:13
+LastEditTime : 2024-07-31 17:07:01
 FilePath     : /CODE/xjLib/xt_thread/futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -34,7 +34,7 @@ class ThreadPool(ThreadPoolExecutor):
         return result_list
 
 
-class FunctionInPool:
+class FnInPool:
     """将程序放到ThreadPoolExecutor中异步运行,返回结果"""
 
     def __init__(self, fn, *args, **kwargs):
@@ -44,7 +44,12 @@ class FunctionInPool:
         self.loop.run_until_complete(self._work())
 
     async def _work(self):
-        self.result = await asyncio.gather(*[self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs) for arg in zip(*self.args)])
+        self.result = await asyncio.gather(
+            *[
+                self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs)
+                for arg in zip(*self.args)
+            ]
+        )
         # tasks = []
         # for arg in zip(*self.args):
         #     task = self.loop.run_in_executor(self.executor, self.fn, *arg, **self.kwargs)
@@ -58,7 +63,7 @@ if __name__ == "__main__":
     from xt_requests import get
 
     url_list = ["http://httpbin.org/get"] * 3
-    res = FnInThreadPool(get, url_list)
+    res = FnInPool(get, url_list)
     print(111111, res.result)
     # POOL = ThreadPool()
     # POOL.add_tasks(get, url_list)

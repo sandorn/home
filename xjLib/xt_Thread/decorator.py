@@ -57,7 +57,9 @@ class _ThreadSafeDecoratorBase(Thread):
 
     def run(self):
         self.Result = self._target(*self._args, **self._kwargs)
-        self.Result = self.callback(self.Result) if callable(self.callback) else self.Result
+        self.Result = (
+            self.callback(self.Result) if callable(self.callback) else self.Result
+        )
 
     def getResult(self):
         """获取当前线程结果"""
@@ -85,7 +87,9 @@ def thread_decorator(func=None, *args, **kwargs):
             _mythr = _ThreadSafeDecoratorBase(func, func.__name__, *args, **kwargs)
             _mythr.daemon = kwargs.pop("daemon", False)
             _mythr.start()
-            thread_print(f"func '{func.__name__}' in Thread start with thread_decorator...")
+            thread_print(
+                f"func '{func.__name__}' in Thread start with thread_decorator..."
+            )
             return _mythr
 
         return inner
@@ -107,7 +111,9 @@ def qthread_decorator(func=None, *args, **kwargs):
             _mythr.join = _mythr.wait
             _mythr.run = fun
             setattr(_mythr, "Result", _mythr.run(*args, **kwargs))
-            thread_print(f"func '{func.__name__}' in QThread start with qthread_decorator...")
+            thread_print(
+                f"func '{fun.__name__}' in QThread start with qthread_decorator..."
+            )
             if callable(_mythr.callback):
                 _mythr.Result = _mythr.callback(_mythr.Result)
 
@@ -134,10 +140,14 @@ class ThreadDecoratorClass:
 
     def __call__(self, *args, **kwargs):
         kwargs["Result_dict"] = ThreadDecoratorClass.Result_dict
-        _mythr = _ThreadSafeDecoratorBase(self.func, self.func.__name__, *args, **kwargs)
+        _mythr = _ThreadSafeDecoratorBase(
+            self.func, self.func.__name__, *args, **kwargs
+        )
         _mythr.daemon = kwargs.pop("daemon", False)
         _mythr.start()
-        print(f"func    `{self.func.__name__}` in Thread start with ThreadDecoratorClass...")
+        print(
+            f"func    `{self.func.__name__}` in Thread start with ThreadDecoratorClass..."
+        )
         self.thread_dict[_mythr.ident] = _mythr
         return _mythr
 

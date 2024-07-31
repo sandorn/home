@@ -222,7 +222,10 @@ class CustomThread_Queue(CustomThreadMeta):
             while cls.task_queue.unfinished_tasks:
                 remaining = endtime - time()
                 if remaining <= 0.0:
-                    print("unfinished_tasks in task_queue : ", cls.task_queue.unfinished_tasks)
+                    print(
+                        "unfinished_tasks in task_queue : ",
+                        cls.task_queue.unfinished_tasks,
+                    )
                     break
                 cls.task_queue.all_tasks_done.wait(remaining)
         finally:
