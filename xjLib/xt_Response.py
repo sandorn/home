@@ -12,6 +12,8 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from typing import List, Union
+
 from chardet import detect
 from html2text import HTML2Text
 from lxml import etree
@@ -30,8 +32,14 @@ class htmlResponse:
         if response is not None:
             self.raw = response
             self._content: bytes = content if content else response.content
-            self.encoding = response.encoding if hasattr(response, "encoding") else "utf-8"
-            self.code_type = detect(self._content)["encoding"] if isinstance(self._content, bytes) else self.encoding
+            self.encoding = (
+                response.encoding if hasattr(response, "encoding") else "utf-8"
+            )
+            self.code_type = (
+                detect(self._content)["encoding"]
+                if isinstance(self._content, bytes)
+                else self.encoding
+            )
         else:
             self.raw = None
             self._content = b""
@@ -99,7 +107,9 @@ class htmlResponse:
     @property
     def status(self):
         if self.raw:
-            return self.raw.status if hasattr(self.raw, "status") else self.raw.status_code
+            return (
+                self.raw.status if hasattr(self.raw, "status") else self.raw.status_code
+            )
 
     @property
     def html(self, filter="//script"):
@@ -126,16 +136,18 @@ class htmlResponse:
     def query(self):
         return PyQuery(self.html)  # , parser='xml')
 
-    def xpath(self, selectors: str | list | tuple = "") -> list:
+    def xpath(self, selectors: Union[str, List[str], tuple] = "") -> list:
         """
         在元素上执行XPath选择。
         参数selectors: XPath选择器,可以是字符串或字符串的列表/元组。
         返回值: 选择的元素列表。
         """
-        if isinstance(selectors, str):
-            selectors = [selectors] if selectors.strip() else []
-        elif isinstance(selectors, list | tuple):
-            selectors = [selector for selector in selectors if isinstance(selector, str) and selector.strip()]
+        selectors = [selectors] if isinstance(selectors, str) else list(selectors)
+        selectors = [
+            selector
+            for selector in selectors
+            if isinstance(selector, str) and selector.strip()
+        ]
 
         return [self.element.xpath(selector) for selector in selectors]
 

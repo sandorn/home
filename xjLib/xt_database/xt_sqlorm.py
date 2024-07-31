@@ -33,11 +33,17 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
             pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
             pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
             echo=echo,  # echo参数为True时,会显示每条执行的SQL语句
+            future=True,  # 使用异步模式
             # poolclass=NullPool, # 禁用池
         )
         self.Base = get_db_model(self.engine, target_table_name, source_table_name)  # #获取orm基类,同时创建表
         self.conn = self.engine.connect()  # pd使用
-        self.session = sessionmaker(bind=self.engine)()  # 类直接生成实例
+        self.session = sessionmaker(
+            bind=self.engine,
+            autoflush=True,  # 自动刷新
+            # expire_on_commit=True,  # 提交后自动过期
+            # class_=AsyncSession,
+        )()  # 类直接生成实例
         self.tablename = target_table_name  #  self.Base.name
         # 设置self.params参数
         self.params = {attr: getattr(self.Base, attr) for attr in self.Base.columns()}

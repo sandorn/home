@@ -13,7 +13,7 @@ Github       : https://github.com/sandorn/home
 
 import time
 from datetime import datetime
-from time import perf_counter, process_time
+from time import perf_counter
 from typing import Optional
 
 from dateutil.relativedelta import relativedelta
@@ -223,20 +223,14 @@ def now():
 
 @decorator
 def fn_timer(func, instance, args, kwargs):
-    _s_time = perf_counter()
-    _s_pro = process_time()
-
+    duration = perf_counter()
     result = func(*args, **kwargs)
-
-    perf_time = perf_counter() - _s_time
-    pro_time = process_time() - _s_pro
-
-    print(f"Function:<{func.__name__}>|perf_counter: {perf_time:.2f}s|process_time: {pro_time:.2f}s")
-
+    duration = perf_counter() - duration
+    print(f"[Timer | fn:'{func.__name__}']|<perf_counter: {duration:4f}s>")
     return result
 
 
-timeit = timer = fn_timer
+timeit = fn_timer
 
 
 def get_time():

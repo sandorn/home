@@ -25,7 +25,17 @@ TRETRY = retry(
     wait=wait_random(min=0, max=1),
 )
 
-Method_List = ["get", "post", "head", "options", "put", "delete", "trace", "connect", "patch"]
+Method_List = [
+    "get",
+    "post",
+    "head",
+    "options",
+    "put",
+    "delete",
+    "trace",
+    "connect",
+    "patch",
+]
 
 
 class AioHttpClient:
@@ -37,7 +47,9 @@ class AioHttpClient:
 
     async def _init_session(self):
         if self._session is None:
-            self._session = ClientSession(cookies=self.cookies, connector=TCPConnector(ssl=False))
+            self._session = ClientSession(
+                cookies=self.cookies, connector=TCPConnector(ssl=False)
+            )
 
     def __enter__(self):
         return self
@@ -88,7 +100,10 @@ class AioHttpClient:
         return self.__all(*args, **kwargs)
 
     def __all(self, *args, **kwargs):
-        task_list = [self.request(*arg, index=index, **kwargs) for index, arg in enumerate(list(zip(*args)), start=1)]
+        task_list = [
+            self.request(*arg, index=index, **kwargs)
+            for index, arg in enumerate(list(zip(*args)), start=1)
+        ]
         return self.loop.run_until_complete(asyncio.gather(*task_list))
 
 

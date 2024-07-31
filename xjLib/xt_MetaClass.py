@@ -149,10 +149,10 @@ if __name__ == "__main__":
             print(cls.__name__)
             return type.__new__(cls, *args, **kwargs)
 
-        def __call__(self, *args, **kwargs):
+        def __call__(cls, *args, **kwargs):
             print("===>Mymeta.__call__")
-            obj = self.__new__(self)
-            self.__init__(self, *args, **kwargs)
+            obj = cls.__new__(cls)  # type: ignore
+            cls.__init__(cls, *args, **kwargs)
             return obj
 
         def __instancecheck__(self, instance):

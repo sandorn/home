@@ -78,7 +78,11 @@ class ReDictMixin:
     def get_dict(self) -> dict[str, Any]:
         """把对象转换成字典"""
         if not hasattr(self, "__dict__") or len(self.__dict__) == 0:
-            self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith("__") and not callable(getattr(self, key))}
+            self.__dict__ = {
+                key: getattr(self, key)
+                for key in dir(self)
+                if not key.startswith("__") and not callable(getattr(self, key))
+            }
         return self.__dict__
 
 
@@ -102,7 +106,9 @@ class ReprMixin(ReDictMixin):
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
 
-class BaseCls(AttrMixin, ItemMixin, IterMixin, ReprMixin): ...  # 基类,支持下标,迭代,打印
+class BaseCls(
+    AttrMixin, ItemMixin, IterMixin, ReprMixin
+): ...  # 基类,支持下标,迭代,打印
 
 
 class SetOnceDict:
@@ -146,7 +152,13 @@ class ClsMeta(type):
         MixinLog = True
     """
 
-    def __new__(cls, name: str, bases: tuple[type, ...], dct: dict[str, Any], **kwds: dict[str, Any]) -> type:
+    def __new__(
+        cls,
+        name: str,
+        bases: tuple[type, ...],
+        dct: dict[str, Any],
+        **kwds: dict[str, Any],
+    ) -> type:
         bases_mixins = ()  # 用于存放要应用的Mixin类
         bases_mixins += bases if bases else ()
         bases_mixins += (ItemMixin,) if "MixinItem" in dct and dct["MixinItem"] else ()
@@ -285,7 +297,9 @@ if __name__ == "__main__":
         _registry: list = []
 
         class RegisterMixinMeta(type):
-            def __new__(cls, name: str, bases: tuple[type, ...], dct: dict[str, Any]) -> type:
+            def __new__(
+                cls, name: str, bases: tuple[type, ...], dct: dict[str, Any]
+            ) -> type:
                 new_class = super().__new__(cls, name, bases, dct)
                 if "register_me" in dct and dct["register_me"]:
                     _registry.append(new_class)

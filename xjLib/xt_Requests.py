@@ -20,7 +20,17 @@ from xt_head import MYHEAD, RETRY_TIME, TIMEOUT, Head
 from xt_log import log_decorator
 from xt_response import htmlResponse
 
-Method_List = ["get", "post", "head", "options", "put", "delete", "trace", "connect", "patch"]
+Method_List = [
+    "get",
+    "post",
+    "head",
+    "options",
+    "put",
+    "delete",
+    "trace",
+    "connect",
+    "patch",
+]
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
@@ -132,11 +142,15 @@ if __name__ == "__main__":
 
     res = get("http://www.163.com")
     print("1".ljust(10), ":", res.xpath("//title/text()"))
-    # print("2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
-    # print("space".ljust(10), ":", res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]))
+    print("2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
+    print(
+        "blank".ljust(10),
+        ":",
+        res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+    )
     # print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
     # print("html".ljust(10), ":", res.html.xpath("//title/text()"))
-    # print("element".ljust(10), ":", res.element.xpath("//title/text()"))
+    print("element".ljust(10), ":", res.element.xpath("//title/text()"))
     # print("query".ljust(10), ":", res.query("title").text())
     """
     ###############################################################

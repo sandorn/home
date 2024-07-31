@@ -60,7 +60,9 @@ class SingletonMixin:
         with cls._lock:
             if cls not in cls._instance:
                 # 调用基类的__new__方法，创建实例，并将其添加到实例字典
-                instance = super().__new__(cls)  # 为实例添加一个标志，用于跟踪是否初始化
+                instance = super().__new__(
+                    cls
+                )  # 为实例添加一个标志，用于跟踪是否初始化
                 setattr(instance, "_initialized", False)
                 cls._instance[cls] = instance
 
@@ -99,7 +101,9 @@ def singleton_decorator_class(_cls):
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
                     cls._instance.__qualname__ = _cls.__name__
-                    cls._instance.__name__ = f"<{_cls.__name__} | by singleton_decorator_class>"
+                    cls._instance.__name__ = (
+                        f"<{_cls.__name__} | by singleton_decorator_class>"
+                    )
                     cls._instance._initialized = False
             return cls._instance
 
@@ -125,7 +129,9 @@ def singleton_wraps_class(cls_obj):
             if cls_obj not in _instance_dic:
                 _instance_dic[cls_obj] = cls_obj(*args, **kwargs)
                 _instance_dic[cls_obj]._intialed = False
-                _instance_dic[cls_obj].__name__ = f"<{cls_obj.__name__} | by singleton_wraps_class>"
+                _instance_dic[
+                    cls_obj
+                ].__name__ = f"<{cls_obj.__name__} | by singleton_wraps_class>"
         return _instance_dic.get(cls_obj)
 
     return wrapper
@@ -152,14 +158,50 @@ if __name__ == "__main__":
 
     singleton_decorator_class_line = singleton_decorator_class(sss)
 
-    a = sss("习近平")
-    t = super_sss("毛泽东")
-    b = sample("胡锦涛")
-    c = sample_mixin("江泽民")
-    d = sample_class_wrap("李鹏")
-    dd = sample_class_wrap("李鹏2")
-    z = singleton_decorator_class_f("邓小平")
-    e = singleton_decorator_class_line("朱镕基")
+    # a = sss("习近平")
+    # t = super_sss("毛泽东")
+    # b = sample("胡锦涛")
+    # c = sample_mixin("江泽民")
+    # d = sample_class_wrap("李鹏")
+    # dd = sample_class_wrap("李鹏2")
+    # z = singleton_decorator_class_f("邓小平")
+    # e = singleton_decorator_class_line("朱镕基")
 
-    print(id(a), id(t), id(b), id(c), d is dd)
-    print(e is z, id(e), id(z), e)
+    # print(id(a), id(t), id(b), id(c), d is dd)
+    # print(e is z, id(e), id(z), e)
+    from typing_extensions import overload
+
+    @overload
+    def calculatee(a: int, b: int) -> int: ...
+
+    @overload
+    def calculatee(a: float, b: float) -> float: ...
+
+    def calculatee(a, b):
+        return a + b
+
+    # 实际调用
+    print(calculatee(1, 2))  # 输出: 3
+    print(calculatee(1.5, 2.5))  # 输出: 4.0
+
+    from functools import singledispatch
+
+    @singledispatch
+    def process(value):
+        """默认处理函数 ，用于未注册的类型"""
+        print(f"Default processing for type {type(value).__name__}: {value}")
+
+    @process.register(int)
+    def _(value: int):
+        """处理整数类型"""
+        print(f"Processing integer: {value * 2}")
+
+    @process.register(str)
+    def _(value: str):
+        """处理字符串类型"""
+        print(f"Processing string: {value.upper()}")
+
+    # 示例调用
+    process(10)  # 输出: Processing integer: 20
+    process("hello")  # 输出: Processing string: HELLO
+    process(3.14)  # 输出: Default processing for type float: 3.14

@@ -117,7 +117,11 @@ class AioHttpCrawl:
 
         @TRETRY
         async def __fetch():
-            async with ClientSession(cookies=cookies, connector=TCPConnector(ssl=False)) as session, session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
+            async with ClientSession(
+                cookies=cookies, connector=TCPConnector(ssl=False)
+            ) as session, session.request(
+                method, url, raise_for_status=True, *args, **kwargs
+            ) as response:
                 # async with session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
                 content = await response.read()
                 return response, content
@@ -137,7 +141,9 @@ class AioHttpCrawl:
         # _session = ClientSession(cookies=cookies, connector=TCPConnector(ssl=False))
 
         for index, url in enumerate(url_list, 1):
-            task = asyncio.create_task(self.__add_tasks(url, method=method, index=index, *args, **kwargs))
+            task = asyncio.create_task(
+                self.__add_tasks(url, method=method, index=index, *args, **kwargs)
+            )
             if callback:
                 task.add_done_callback(callback)
             self.future_list.append(task)
@@ -149,7 +155,9 @@ class AioHttpCrawl:
 
     def add_tasks(self, url_list, method="GET", *args, **kwargs):
         """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
-        return self.loop.run_until_complete(self._add_tasks(url_list, method=method, *args, **kwargs))
+        return self.loop.run_until_complete(
+            self._add_tasks(url_list, method=method, *args, **kwargs)
+        )
 
     async def _add_pool(self, func, *args, **kwargs):
         callback = kwargs.pop("fu_callback", None)
@@ -206,7 +214,9 @@ if __name__ == "__main__":
 
     @async_run_decorator
     async def get_message():
-        async with ClientSession() as session, session.get("https://httpbin.org/get") as response:
+        async with ClientSession() as session, session.get(
+            "https://httpbin.org/get"
+        ) as response:
             await response.text()
             return response
 

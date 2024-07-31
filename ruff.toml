@@ -1,11 +1,13 @@
-
 line-length = 480  # 代码最大行宽
 # target-version = "py38", "py39", "py310","py312"
 per-file-ignores = {}
 unsafe-fixes = true
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-
+# max-line-length = 120
+# max-complexity = 10
+# max-annotations-complexity = 10
+# max-returns = 6
+# max-arguments = 6
 [lint]
 # 选择的规则
 select = ["C","F","E","W","UP"]
@@ -16,7 +18,7 @@ fixable = ["ALL"]
 unfixable = [] # 忽略的修复
 ignore-init-module-imports = false
 extend-per-file-ignores = {"__init__.py" = ["E402","F401"]}
-task-tags = ["TODO"]
+# task-tags = ["TODO"]
 
 [lint.isort]
 split-on-trailing-comma = false
@@ -32,11 +34,15 @@ docstring-code-format = true
 docstring-code-line-length = 120
 skip-magic-trailing-comma = true
 line-ending = "auto"
+ignore = []
+extend-ignore = []
+max-line-length = 120
+
 
 [pydocstyle]
-convention = "google"
-# Accepts: "google", "numpy", or "pep257".
+convention = "sphinx"
+# Accepts: "google", "numpy", or "pep257"  # 支持多行"sphinx"  "pep287"
 
 [mccabe]
 # Unlike Flake8, default to a complexity level of 10.
-max-complexity = 10
+# max-complexity = 10

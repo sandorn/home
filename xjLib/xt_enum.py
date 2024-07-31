@@ -12,6 +12,7 @@ Github       : https://github.com/sandorn/home
 """
 
 from enum import Enum
+from typing import Optional
 
 
 class BaseEnum(Enum):
@@ -35,7 +36,7 @@ class BaseEnum(Enum):
         return obj
 
     @classmethod
-    def get_members(cls, exclude_enums: list = None, only_value: bool = False) -> list:
+    def get_members(cls, exclude_enums: Optional[list] = None, only_value: bool = False) -> list:
         """
         获取枚举的所有成员
         Args:
@@ -57,7 +58,7 @@ class BaseEnum(Enum):
         return members
 
     @classmethod
-    def get_values(cls, exclude_enums: list = None):
+    def get_values(cls, exclude_enums: Optional[list] = None):
         return cls.get_members(exclude_enums=exclude_enums, only_value=True)
 
     @classmethod

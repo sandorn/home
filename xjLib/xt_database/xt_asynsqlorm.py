@@ -37,8 +37,9 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
             # poolclass=NullPool, # 禁用池
         )
         self.async_session = async_sessionmaker(
-            bind=self.async_engine
-            # expire_on_commit=True, # 默认为True,提交后自动过期
+            bind=self.async_engine,
+            autoflush=True,  # 自动刷新
+            # expire_on_commit=True, # 提交后自动过期
             # class_=AsyncSession,
         )
         self.coro_list = []
