@@ -12,6 +12,7 @@ Github       : https://github.com/sandorn/home
 """
 
 import asyncio
+from typing import Optional
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -32,7 +33,9 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
             pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-            echo=True if __name__ == "__main__" else False,  # echo参数为True时,会显示每条执行的SQL语句
+            echo=True
+            if __name__ == "__main__"
+            else False,  # echo参数为True时,会显示每条执行的SQL语句
             future=True,  # 使用异步模式
             # poolclass=NullPool, # 禁用池
         )
@@ -51,13 +54,13 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
         coro_list = coro_list or self.coro_list
         return self.loop.run_until_complete(asyncio.gather(*coro_list))
 
-    def query(self, sql_list, params: dict = None, autorun=True):
+    def query(self, sql_list, params: Optional[dict] = None, autorun=True):
         sql_list = [sql_list] if isinstance(sql_list, str) else sql_list
         _coro = [self.__query(_sql, params) for _sql in sql_list]
         return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
 
-    async def __query(self, sql, params: dict = None):
-        async with self.async_session() as session:
+    async def __query(self, sql, params: Optional[dict] = None):
+        async with self.async_session() as session:  # self.async_engine.connect()
             result = await session.execute(text(sql), params)
             try:
                 await session.commit()
@@ -70,7 +73,9 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
         tablename = tablename or self.tablename
         if isinstance(dict_in_list, dict):
             dict_in_list = [dict_in_list]
-        insert_sql_list = [make_insert_sql(data_dict, tablename) for data_dict in dict_in_list]
+        insert_sql_list = [
+            make_insert_sql(data_dict, tablename) for data_dict in dict_in_list
+        ]
 
         _coro = [self.__query(insert_sql) for insert_sql in insert_sql_list]
         return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
@@ -80,7 +85,10 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
         if isinstance(dict_in_list, dict):
             dict_in_list = [dict_in_list]
 
-        update_sql_list = [make_update_sql(data_dict, whrere_dict, tablename) for data_dict, whrere_dict in zip(dict_in_list, whrere_dict_list)]
+        update_sql_list = [
+            make_update_sql(data_dict, whrere_dict, tablename)
+            for data_dict, whrere_dict in zip(dict_in_list, whrere_dict_list)
+        ]
 
         _coro = [self.__query(update_sql) for update_sql in update_sql_list]
         return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
@@ -103,7 +111,14 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
 
 if __name__ == "__main__":
     query_list = ["select * from users2 where id = 1", "select * from users2"]
-    item1 = {"username": "刘新", "password": "234567", "手机": "13910118122", "代理人编码": "10005393", "会员级别": "SSS", "会员到期日": "9999-12-31 00:00:00"}
+    item1 = {
+        "username": "刘新",
+        "password": "234567",
+        "手机": "13910118122",
+        "代理人编码": "10005393",
+        "会员级别": "SSS",
+        "会员到期日": "9999-12-31 00:00:00",
+    }
 
     aio = AsynSqlOrm("TXbx", "users2", "users")
     # res = aio.add_all([item1])
@@ -114,5 +129,8 @@ if __name__ == "__main__":
     # print(4444, res)
     res = aio.query(query_list[1])
     print(5555, res)
-    # res = aio.update([{"username": "刘澈111"}, {"username": "刘新军111"}], [{"ID": "1"}, {"ID": "2", "username": "刘新军"}])
+    # res = aio.update(
+    #     [{"username": "刘澈111"}, {"username": "刘新军111"}],
+    #     [{"ID": "1"}, {"ID": "2", "username": "刘新军"}],
+    # )
     # print(6666, res)

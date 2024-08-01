@@ -99,10 +99,10 @@ class LogCls(SingletonMixin):
             getattr(self.logger, LevelDict[self.level])(item) for item in list(args)
         ]
 
-    def __call__(self, *args, level=None):
-        if level is None:
-            level = self.level
-        return [getattr(self.logger, LevelDict[level])(item) for item in list(args)]
+    def __call__(self, *args):
+        return [
+            getattr(self.logger, LevelDict[self.level])(item) for item in list(args)
+        ]
 
 
 def get_fn_fileinfo(callfn):

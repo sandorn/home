@@ -38,7 +38,9 @@ class ErrorMetaClass:
     def update(self, *args, **kwargs):
         raise NotImplementedError
 
-    def select(self, *args, **kwargs):  # conditions=None, Columns=None, count=None, show=False):
+    def select(
+        self, *args, **kwargs
+    ):  # conditions=None, Columns=None, count=None, show=False):
         raise NotImplementedError
 
     def from_statement(self, *args, **kwargs):
@@ -60,12 +62,20 @@ class ErrorMetaClass:
 class OrmExt(ItemMixin):
     """SQLAlchemy Base ORM Model,下标取值赋值、打印显示、生成字段列表"""
 
-    __str__ = __repr__ = lambda self: self.__class__.__name__ + str({key: getattr(self, key) for key in self.keys() if getattr(self, key) is not None})
+    __str__ = __repr__ = lambda self: self.__class__.__name__ + str(
+        {
+            key: getattr(self, key)
+            for key in self.keys()
+            if getattr(self, key) is not None
+        }
+    )
 
     @classmethod
     def columns(cls):
         """获取字段名列表"""
-        cls._c = [col.name for col in cls.__table__.c if col.name != "_sa_instance_state"]
+        cls._c = [
+            col.name for col in cls.__table__.c if col.name != "_sa_instance_state"
+        ]
         return cls._c
 
     @classmethod
@@ -82,7 +92,11 @@ class OrmExt(ItemMixin):
         """
         if isinstance(result, cls):
             return {key: result[key] for key in cls.columns()}
-        elif isinstance(result, (tuple, list)) and len(result) and isinstance(result[0], cls):
+        elif (
+            isinstance(result, (tuple, list))
+            and len(result)
+            and isinstance(result[0], cls)
+        ):
             return [{key: res[key] for key in cls.columns()} for res in result]
         return result
 
@@ -102,9 +116,16 @@ class OrmExt(ItemMixin):
         """
         alias_dict = alias_dict or {}
         if exclude_none:
-            return {alias_dict.get(c.name, c.name): self[c.name] for c in self.__table__.columns if self[c.name] is not None}
+            return {
+                alias_dict.get(c.name, c.name): self[c.name]
+                for c in self.__table__.columns
+                if self[c.name] is not None
+            }
         else:
-            return {alias_dict.get(c.name, c.name): self[c.name] for c in self.__table__.columns}
+            return {
+                alias_dict.get(c.name, c.name): self[c.name]
+                for c in self.__table__.columns
+            }
 
 
 Base = Base_Model = declarative_base(cls=OrmExt)
@@ -163,6 +184,31 @@ def get_db_model(engine, new_table_name, old_table_name=None):
      addresses_table = metadata_obj.tables['addresses']
 
      # 更底层的反射可以看 inspect
+     # 如果我想在异步中使用反射，先使用同步engine得到反射后的metadata_obj对象，在将它传递给Base就可以了
+     # 也可以这样
+     import asyncio
+
+     from sqlalchemy.ext.asyncio import create_async_engine
+     from sqlalchemy.ext.asyncio import AsyncSession
+     from sqlalchemy import inspect
+
+     engine = create_async_engine(
+     "postgresql+asyncpg://scott:tiger@localhost/test"
+     )
+
+     def use_inspector(conn):
+         inspector = inspect(conn)
+         # use the inspector
+         print(inspector.get_view_names())
+         # return any value to the caller
+         return inspector.get_table_names()
+
+     async def async_main():
+         async with engine.connect() as conn:
+             tables = await conn.run_sync(use_inspector)
+    async with engine.begin() as conn:
+         await conn.run_sync(Base.metadata.drop_all)
+         await conn.run_sync(Base.metadata.create_all)
     -----------------------------------
     sqlalchemy创建异步sqlite会话 sqlalchemy async
     https://blog.51cto.com/u_16213668/9806859
@@ -182,7 +228,9 @@ def get_db_model(engine, new_table_name, old_table_name=None):
     }
 
     if not tableinpool:
-        table_structure["__table__"].name = new_table_name  # @关键语句，决定是否创建新表
+        table_structure[
+            "__table__"
+        ].name = new_table_name  # @关键语句，决定是否创建新表
         metadata.create_all(engine)  # 创建表
     return type(new_table_name, (Base_Model,), table_structure)
     # return Table(new_table_name, metadata, autoload_with=engine) # 反射单个表
@@ -217,7 +265,9 @@ if __name__ == "__main__":
         print(1111, db := table_model, db.__mro__)
         # print(1111,db := inherit_table_cls("NT", table_model), db.__mro__)
         print(2222, db.__tablename__, db, db.columns())
-        print(3333, db.__abstract__, db.__tablename__, db.__extend_existing__, db.metadata)
+        print(
+            3333, db.__abstract__, db.__tablename__, db.__extend_existing__, db.metadata
+        )
         print(4444, res := db(ID=1, BOOKNAME="sqlorm_bookname"))
         print(5555, res := db(**{"ID": "2", "BOOKNAME": "sqlorm_bookname22"}))
         print(6666, res.to_dict())

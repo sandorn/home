@@ -97,33 +97,29 @@ def thread_decorator(func=None, *args, **kwargs):
     return wrapper(func, *args, **kwargs) if callable(func) else wrapper
 
 
-def qthread_decorator(func=None, *args, **kwargs):
+def qthread_decorator(func, *args, **kwargs):
     """函数的线程装饰器,返回线程实例,有无括号都可以,\n
     getResult获取结果,类或实例getAllResult获取结果集合,\n
-    可在调用被装饰函数添加daemon=True,callback等参数"""
+    可在调用被装饰函数添加daemon=True,callback 等参数"""
 
-    def wrapper(fun):
-        def inner(*args, **kwargs):
-            _mythr = QThread()
-            _mythr.daemon = kwargs.pop("daemon", True)
-            _mythr.callback = kwargs.pop("callback", None)
-            _mythr.setObjectName(fun.__name__)
-            _mythr.join = _mythr.wait
-            _mythr.run = fun
-            setattr(_mythr, "Result", _mythr.run(*args, **kwargs))
-            thread_print(
-                f"func '{fun.__name__}' in QThread start with qthread_decorator..."
-            )
-            if callable(_mythr.callback):
-                _mythr.Result = _mythr.callback(_mythr.Result)
+    def inner(*args, **kwargs):
+        _mythr = QThread()
+        _mythr.daemon = kwargs.pop("daemon", True)
+        _mythr.callback = kwargs.pop("callback", None)
+        _mythr.setObjectName(func.__name__)
+        _mythr.join = _mythr.wait
+        _mythr.run = func
+        setattr(_mythr, "Result", _mythr.run(*args, **kwargs))
+        thread_print(
+            f"func '{func.__name__}' in QThread start with qthread_decorator..."
+        )
+        if callable(_mythr.callback):
+            _mythr.Result = _mythr.callback(_mythr.Result)
 
-            # _mythr.join()  # 自动阻塞，等待结果
-            return _mythr
+        # _mythr.join()  # 自动阻塞，等待结果
+        return _mythr
 
-        return inner
-
-    # 如果func是可以调用的函数
-    return wrapper(func, *args, **kwargs) if callable(func) else wrapper
+    return inner
 
 
 class ThreadDecoratorClass:
@@ -181,8 +177,8 @@ if __name__ == "__main__":
     # thread_print(bb.Result)
     # thread_print(bb)
 
-    # cc = c(3, callback=lambda x: x * 100)
-    # thread_print("Result:", cc.Result)
+    cc = c(3, callback=lambda x: x * 100)
+    thread_print("Result:", cc.Result)
     # thread_print("callback:", cc.callback, "daemon:", cc.daemon, "objectName:", cc.objectName())
 
     @parallelize_decorator

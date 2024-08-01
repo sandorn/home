@@ -98,17 +98,16 @@ class IterMixin:
         # return iter(self.get_dict().items())
 
 
-class ReprMixin(ReDictMixin):
+class ReprMixin:
     """用于打印显示"""
 
     def __repr__(self) -> str:
-        dic = self.get_dict()
+        dic = self.__dict__ | self.get_dict()
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
 
-class BaseCls(
-    AttrMixin, ItemMixin, IterMixin, ReprMixin
-): ...  # 基类,支持下标,迭代,打印
+# 基类,支持下标,迭代,打印
+class BaseCls(AttrMixin, ItemMixin, IterMixin, ReprMixin): ...
 
 
 class SetOnceDict:
@@ -136,20 +135,14 @@ class SetOnceDict:
     #     raise ValueError(f"key:`{key}` is already set,cannot reset value to `{value}`!")
 
 
-class LogMixin:
-    def log(self, message: str) -> None:
-        print(f"[{self.__class__.__name__}] {message}")
-
-
-class ClsMeta(type):
+class MixinClsMeta(type):
     """
-    更智能的元类，根据类属性动态选择Mixin
-    class BaseClsMeta(metaclass=ClsMeta):
+    智能元类，根据类属性动态选择Mixin
+    class BaseClsMeta(metaclass=MixinClsMeta):
         MixinAttr = True
         MixinItem = True
         MixinIter = True
         MixinRepr = True
-        MixinLog = True
     """
 
     def __new__(
@@ -164,18 +157,48 @@ class ClsMeta(type):
         bases_mixins += (ItemMixin,) if "MixinItem" in dct and dct["MixinItem"] else ()
         bases_mixins += (AttrMixin,) if "MixinAttr" in dct and dct["MixinAttr"] else ()
         bases_mixins += (IterMixin,) if "MixinIter" in dct and dct["MixinIter"] else ()
-        bases_mixins += (ReprMixin,) if "MixinRepr" in dct and dct["MixinRepr"] else ()
-        bases_mixins += (LogMixin,) if "MixinLog" in dct and dct["MixinLog"] else ()
-        # mixins_to_apply = []
-        # if "MixinAttr" in dct and dct["MixinAttr"]:
-        #     mixins_to_apply.append(AttrMixin)
-
-        # for mixin in mixins_to_apply:
-        #     dct.update(mixin.__dict__)  # 动态添加属性和方法
-        # return super().__new__(cls, name, bases, dct)
-
-        # print(99999999999999999999999999, f"name:{name}, bases_mixins:{bases_mixins}, dct:{dct}")
+        bases_mixins += (
+            (
+                ReDictMixin,
+                ReprMixin,
+            )
+            if "MixinRepr" in dct and dct["MixinRepr"]
+            else ()
+        )
         return type(name, bases_mixins, dct, **kwds)
+
+
+class BaseClsMeta(type):
+    """
+    智能元类，根据类属性动态选择Mixin,字典__dict__有冲突，
+    原因是mixin.__dict__包含了特殊的方法（如__get__, __set__, __delete__等），
+    这些方法不能直接应用到类实例上。
+    class BaseClsMeta(metaclass=BaseClsMeta):
+        MixinAttr = True
+        MixinItem = True
+        MixinIter = True
+        MixinRepr = True
+
+    """
+
+    def __new__(
+        cls,
+        name: str,
+        bases: tuple[type, ...],
+        dct: dict[str, Any],
+        **kwds: dict[str, Any],
+    ) -> type:
+        bases_mixins = []
+        if "MixinItem" in dct and dct["MixinItem"]:
+            bases_mixins.append(ItemMixin)
+        if "MixinAttr" in dct and dct["MixinAttr"]:
+            bases_mixins.append(AttrMixin)
+        if "MixinIter" in dct and dct["MixinIter"]:
+            bases_mixins.append(IterMixin)
+
+        for mixin in bases_mixins:
+            dct.update(mixin.__dict__)  # 动态添加属性和方法
+        return super().__new__(cls, name, bases, dct)
 
 
 def typeassert(**kwargs: dict[str, Any]) -> object:
@@ -293,48 +316,12 @@ if __name__ == "__main__":
         print(a.__dict__, id(a))
         print(b.__dict__, id(b))
 
-    def metaclass():
-        _registry: list = []
-
-        class RegisterMixinMeta(type):
-            def __new__(
-                cls, name: str, bases: tuple[type, ...], dct: dict[str, Any]
-            ) -> type:
-                new_class = super().__new__(cls, name, bases, dct)
-                if "register_me" in dct and dct["register_me"]:
-                    _registry.append(new_class)
-                return new_class
-
-        class IPlugin(metaclass=RegisterMixinMeta):
-            """接口类 ，定义了插件应实现的方法"""
-
-            def plugin_action(self) -> None:
-                raise NotImplementedError("Subclasses must implement plugin_action.")
-
-        class PluginA(IPlugin):
-            register_me = True
-
-            def plugin_action(self):
-                print("Plugin A is active.")
-
-        class PluginB(IPlugin):
-            def plugin_action(self):
-                print("Plugin B is active but not registered explicitly.")
-
-        # 使用示例
-        for plugin_class in _registry:
-            plugin_class().plugin_action()
-        AAA = PluginA()
-        AAA.plugin_action()
-        BBB = PluginB()
-        BBB.plugin_action()
-
-        class MyBaseClsMeta(metaclass=ClsMeta):
-            MixinAttr = False
-            MixinItem = False
-            MixinIter = False
+    def 动态元类():
+        class MyBaseClsMeta(metaclass=BaseClsMeta):
+            MixinAttr = True
+            MixinItem = True
+            MixinIter = True
             MixinRepr = True
-            MixinLog = True
 
             def __init__(self):
                 self.name = "liuxinjun"
@@ -342,15 +329,16 @@ if __name__ == "__main__":
                 self._i = 787
                 self.姓名 = "行云流水"
 
-        bb = MyBaseClsMeta()
-        print(bb, bb.get_dict(), bb.__dict__)  # type: ignore
-        bb.log("hello")  # type: ignore
+            def ddd(self, value):
+                print("ddd")
 
-    赋值一次的字典()
+        bb = MyBaseClsMeta()
+        print(bb)  # , bb.__dict__)
+
+    # 赋值一次的字典()
     # 可迭代对象()
     # itat()
-    # metaclass()
-
+    动态元类()
 
 """
 方法1:工厂函数
@@ -358,16 +346,11 @@ def createClass(cls):
     class CustomizedClass(cls):
         .......
     return CustomizedClass
-
 ClassList = createClass(list)
-
 方法2:type完全动态构造
 方法3:type混入继承,动态修改
 方法4:class 混入继承
-
 方法5:明示重置class.__bases__  = (指定父类,) class 要隔代继承object,QThread出错
-
 print(QThread.__mro__)
 (<class 'PyQt5.QtCore.QThread'>, <class 'PyQt5.QtCore.QObject'>, <class 'sip.wrapper'>, <class 'sip.simplewrapper'>, <class 'object'>)
-
 """

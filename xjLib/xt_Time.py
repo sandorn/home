@@ -63,7 +63,11 @@ class TimeUtil(metaclass=SingletonMetaCls):
         instance = cls(*args, reinit=reinit, **kwargs)
         return instance
 
-    def __init__(self, datetime_obj: Optional[datetime] = None, format_str: str = TimeFormatEnum.DateTime.value):
+    def __init__(
+        self,
+        datetime_obj: Optional[datetime] = None,
+        format_str: str = TimeFormatEnum.DateTime.value,
+    ):
         """
         时间工具类初始化
         Args:
@@ -93,15 +97,37 @@ class TimeUtil(metaclass=SingletonMetaCls):
         """获取一个月后的日期"""
         return self.add_time(months=1)
 
-    def add_time(self, years=0, months=0, days=0, hours=0, minutes=0, seconds=0, **kwargs) -> datetime:
+    def add_time(
+        self, years=0, months=0, days=0, hours=0, minutes=0, seconds=0, **kwargs
+    ) -> datetime:
         """增加指定时间"""
-        return self.datetime_obj + relativedelta(years=years, months=months, days=days, hours=hours, minutes=minutes, seconds=seconds, **kwargs)
+        return self.datetime_obj + relativedelta(
+            years=years,
+            months=months,
+            days=days,
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+            **kwargs,
+        )
 
-    def sub_time(self, years=0, months=0, days=0, hours=0, minutes=0, seconds=0, **kwargs) -> datetime:
+    def sub_time(
+        self, years=0, months=0, days=0, hours=0, minutes=0, seconds=0, **kwargs
+    ) -> datetime:
         """减去指定时间"""
-        return self.datetime_obj - relativedelta(years=years, months=months, days=days, hours=hours, minutes=minutes, seconds=seconds, **kwargs)
+        return self.datetime_obj - relativedelta(
+            years=years,
+            months=months,
+            days=days,
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds,
+            **kwargs,
+        )
 
-    def str_to_datetime(self, date_str: str, format_str: Optional[str] = None) -> datetime:
+    def str_to_datetime(
+        self, date_str: str, format_str: Optional[str] = None
+    ) -> datetime:
         """将时间字符串转换为 datetime 对象"""
         format_str = format_str or self.format_str
         return datetime.strptime(date_str, format_str)
@@ -111,12 +137,16 @@ class TimeUtil(metaclass=SingletonMetaCls):
         format_str = format_str or self.format_str
         return self.datetime_obj.strftime(format_str)
 
-    def timestamp_to_str(self, timestamp: float, format_str: Optional[str] = None) -> str:
+    def timestamp_to_str(
+        self, timestamp: float, format_str: Optional[str] = None
+    ) -> str:
         """将时间戳转换为时间字符串"""
         format_str = format_str or self.format_str
         return datetime.fromtimestamp(timestamp).strftime(format_str)
 
-    def str_to_timestamp(self, time_str: str, format_str: Optional[str] = None) -> float:
+    def str_to_timestamp(
+        self, time_str: str, format_str: Optional[str] = None
+    ) -> float:
         """将时间字符串转换为时间戳"""
         format_str = format_str or self.format_str
         return time.mktime(time.strptime(time_str, format_str))
@@ -141,7 +171,14 @@ class TimeUtil(metaclass=SingletonMetaCls):
         """
         delta = relativedelta(self.datetime_obj, datetime_obj)
 
-        return DateDiff(years=abs(delta.years), months=abs(delta.months), days=abs(delta.days), hours=abs(delta.hours), minutes=abs(delta.minutes), seconds=abs(delta.seconds))
+        return DateDiff(
+            years=abs(delta.years),
+            months=abs(delta.months),
+            days=abs(delta.days),
+            hours=abs(delta.hours),
+            minutes=abs(delta.minutes),
+            seconds=abs(delta.seconds),
+        )
 
     def start_of_week(self) -> datetime:
         """获取本周的开始日期（周一）"""
@@ -167,7 +204,9 @@ class TimeUtil(metaclass=SingletonMetaCls):
 
     def end_of_quarter(self) -> datetime:
         """获取本季度的最后一天"""
-        next_quarter_start = self.start_of_quarter().replace(month=self.datetime_obj.month + 3)
+        next_quarter_start = self.start_of_quarter().replace(
+            month=self.datetime_obj.month + 3
+        )
         return next_quarter_start - relativedelta(days=1)
 
     def start_of_year(self) -> datetime:
@@ -182,7 +221,9 @@ class TimeUtil(metaclass=SingletonMetaCls):
         """判断当前日期是否是工作日（星期一到星期五）"""
         return self.datetime_obj.weekday() < 5
 
-    def count_weekdays_between(self, datetime_obj: datetime, include_end_date: bool = True) -> int:
+    def count_weekdays_between(
+        self, datetime_obj: datetime, include_end_date: bool = True
+    ) -> int:
         """计算两个日期之间的工作日数量
 
         Args:
@@ -233,6 +274,22 @@ def fn_timer(func, instance, args, kwargs):
 timeit = fn_timer
 
 
+class TimerDecorator:
+    """
+    计时器装饰器,装饰函数
+    """
+
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        start_time = perf_counter()
+        result = self.func(*args, **kwargs)
+        end_time = perf_counter()
+        print(f"{self.func.__name__} executed in {end_time - start_time:.4f}s")
+        return result
+
+
 def get_time():
     return now().strftime("%Y-%m-%d %H:%M:%S.%f")
 
@@ -263,10 +320,17 @@ def get_13_timestamp(timestr=None):
 
 
 if __name__ == "__main__":
-    print(get_time())
-    print(get_lite_time())
-    print(get_sql_time())
-    print(get_10_timestamp("2020-06-15 13:28:27"))
-    print(get_13_timestamp("2020-06-15 13:28:27"))
-    TT = TimeUtil()
-    print(TT.yesterday)
+    # print(get_time())
+    # print(get_lite_time())
+    # print(get_sql_time())
+    # print(get_10_timestamp("2020-06-15 13:28:27"))
+    # print(get_13_timestamp("2020-06-15 13:28:27"))
+    # TT = TimeUtil()
+    # print(TT.yesterday)
+
+    @TimerDecorator
+    def example_function():
+        time.sleep(0.01)
+        print("Function executed")
+
+    example_function()
