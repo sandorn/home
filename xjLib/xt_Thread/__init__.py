@@ -5,14 +5,13 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-31 17:21:12
+LastEditTime : 2024-08-03 10:23:22
 FilePath     : /CODE/xjLib/xt_thread/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
 from .decorator import (
-    create_mixin_class,
     parallelize_decorator,
     qthread_decorator,
     thread_decorator,

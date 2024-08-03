@@ -79,17 +79,20 @@ class _ThreadSafeDecoratorBase(Thread):
 
 
 def thread_decorator(func=None, *args, **kwargs):
-    """函数的线程装饰器,返回线程实例,有无括号都可以,getResult获取结果,\n
-    可在调用被装饰函数添加daemon=True,callback等参数"""
+    """
+    函数的线程装饰器,返回线程实例,\n
+    有无括号都可以,getResult获取结果,\n
+    可在调用被装饰函数添加daemon=True,callback等参数
+    """
 
     def wrapper(func):
         def inner(*args, **kwargs):
             _mythr = _ThreadSafeDecoratorBase(func, func.__name__, *args, **kwargs)
             _mythr.daemon = kwargs.pop("daemon", False)
-            _mythr.start()
             thread_print(
                 f"func '{func.__name__}' in Thread start with thread_decorator..."
             )
+            _mythr.start()
             return _mythr
 
         return inner
@@ -98,23 +101,32 @@ def thread_decorator(func=None, *args, **kwargs):
 
 
 def qthread_decorator(func, *args, **kwargs):
-    """函数的线程装饰器,返回线程实例,有无括号都可以,\n
-    getResult获取结果,类或实例getAllResult获取结果集合,\n
-    可在调用被装饰函数添加daemon=True,callback 等参数"""
+    """
+    函数的线程装饰器,返回线程实例,无括号,\n
+    通过 getResult 获取结果集合,\n
+    可在调用被装饰函数添加daemon=True,callback 等参数
+    """
 
     def inner(*args, **kwargs):
+        def getResult():
+            _mythr.wait()
+            return _mythr.Result
+
         _mythr = QThread()
         _mythr.daemon = kwargs.pop("daemon", True)
         _mythr.callback = kwargs.pop("callback", None)
         _mythr.setObjectName(func.__name__)
         _mythr.join = _mythr.wait
         _mythr.run = func
-        setattr(_mythr, "Result", _mythr.run(*args, **kwargs))
+
         thread_print(
             f"func '{func.__name__}' in QThread start with qthread_decorator..."
         )
+        setattr(_mythr, "Result", _mythr.run(*args, **kwargs))
         if callable(_mythr.callback):
             _mythr.Result = _mythr.callback(_mythr.Result)
+
+        _mythr.getResult = getResult
 
         # _mythr.join()  # 自动阻塞，等待结果
         return _mythr
@@ -136,6 +148,7 @@ class ThreadDecoratorClass:
 
     def __call__(self, *args, **kwargs):
         kwargs["Result_dict"] = ThreadDecoratorClass.Result_dict
+
         _mythr = _ThreadSafeDecoratorBase(
             self.func, self.func.__name__, *args, **kwargs
         )
@@ -165,20 +178,21 @@ thread_print = thread_safe(print)
 
 if __name__ == "__main__":
 
-    @thread_decorator
+    @qthread_decorator
     def b(i):
         return i * 5
 
     @qthread_decorator
     def c(i):
+        print(9999999999999, "in c")
         return i * 11
 
     # bb = b(8)
     # thread_print(bb.Result)
     # thread_print(bb)
 
-    cc = c(3, callback=lambda x: x * 100)
-    thread_print("Result:", cc.Result)
+    cc = c(3, callback=lambda x: x * 11)
+    thread_print("Result:", cc.getResult())
     # thread_print("callback:", cc.callback, "daemon:", cc.daemon, "objectName:", cc.objectName())
 
     @parallelize_decorator

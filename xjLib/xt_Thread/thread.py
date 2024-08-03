@@ -189,10 +189,11 @@ class CustomThread(CustomThreadMeta):
 
 
 class CustomThread_Queue(CustomThreadMeta):
-    """单例多线程,继承自threading.Thread"""
+    """
+    单例多线程,继承自threading.Thread\n
+    采用queue传递工作任务
+    """
 
-    #
-    """采用queue传递工作任务"""
     all_Thread = []  # 线程列表,用于jion。类属性或类变量,实例公用
     result_list = []  # 结果列表
     task_queue = Queue()
