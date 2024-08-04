@@ -1,3 +1,14 @@
+'''
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:57
+LastEditTime : 2024-08-03 10:39:12
+FilePath     : /CODE/项目包/ThreadPoolExecutor线程池--7星.PY
+Github       : https://github.com/sandorn/home
+==============================================================
+'''
 """
 ==============================================================
 Description  : 头部注释

@@ -50,7 +50,7 @@ def _request_tretry(method, url, *args, **kwargs) -> htmlResponse:
     # print(f"_request_tretry.{method}:<{url}>,{args},{kwargs}")
     kwargs = _setKw(kwargs)
 
-    @TRETRY  # @catch_wraps同样效果  from xt_tools import catch_wraps
+    @TRETRY  # @ from xt_tools import try_except_wraps
     def __fetch_run():
         return requests.request(method, url, *args, **kwargs)
         # response.raise_for_status()
@@ -84,19 +84,21 @@ class SessionClient:
         self.session.close()
 
     @log_decorator
-    @TRETRY
-    def _request(self):
-        return self.session.request(self.method, self.url, *self.args, **self.kwargs)
-
     def start_fetch_run(self):
+        @TRETRY
+        def _request(self):
+            return self.session.request(
+                self.method, self.url, *self.args, **self.kwargs
+            )
+
         try:
-            self.response = self._request()
+            self.response = _request(self)
             self.update_cookies(self.response.cookies)
             result = htmlResponse(self.response)
             return self.callback(result) if callable(self.callback) else result
         except requests.exceptions.RequestException as err:
             print(f"SessionClient request:<{self.url}>; Err:{err!r}")
-            return htmlResponse("", err)
+            return htmlResponse("", err, id(self.url))
 
     def __create_params(self, *args, **kwargs):
         self.url = args[0]

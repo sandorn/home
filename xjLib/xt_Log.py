@@ -17,9 +17,9 @@ import logging.config
 import re
 from datetime import datetime
 from functools import wraps
+from time import perf_counter
 
 from xt_singleon import SingletonMixin
-from xt_time import fn_timer
 
 standard_format = "[%(asctime)s][%(threadName)s:%(thread)d]\t%(message)s"
 simple_format = "[%(asctime)s]\t%(message)s"
@@ -131,10 +131,10 @@ def log_decorator(func):
     _filename, _f_lineno = get_fn_fileinfo(inspect.currentframe())
     logger = LogCls(pyfile="MyLog")
 
-    @fn_timer
     @wraps(func)
     def wrapper(*args, **kwargs):
-        args_str = kwargs_str = format_args_and_keywords(args, kwargs)
+        duration = perf_counter()
+        args_str, kwargs_str = format_args_and_keywords(args, kwargs)
 
         logger(
             f"[{_filename}|fn:{func.__name__}@{_f_lineno}]|<参数：{args_str} | 关键字参数：{kwargs_str}>"
@@ -142,8 +142,9 @@ def log_decorator(func):
         try:
             result = func(*args, **kwargs)
             result_str = re.sub(r"<([^<>]+)>", r"\<\1\>", str(result))
+            duration = perf_counter() - duration
             logger(
-                f"[{_filename}|fn:{func.__name__}@{_f_lineno}]|<返回结果：{result_str} >"
+                f"[{_filename}|fn:{func.__name__}@{_f_lineno}]|<返回结果：{result_str} >|<耗时：{duration:.4f}s>"
             )
             return result
         except Exception as e:

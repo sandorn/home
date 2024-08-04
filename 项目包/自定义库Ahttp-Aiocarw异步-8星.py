@@ -66,4 +66,6 @@ if __name__ == "__main__":
     # AioHttpCrawl_task(bookname, urls)  # |perf_counter: 56.08s|process_time: 32.48s
     # AioHttpCrawl_pool(bookname, urls)  # |perf_counter: 86.56s|process_time: 44.23s
     # ahttp_GetAll(bookname, urls)  # |perf_counter: 74.74s|process_time: 31.91s
-    AioHttpClient_run(bookname, urls)  # |perf_counter: 46.74s|process_time: 24.34s #@ 8星
+    AioHttpClient_run(
+        bookname, urls
+    )  # |perf_counter: 46.74s|process_time: 24.34s #@ 8星

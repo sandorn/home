@@ -157,4 +157,5 @@ class htmlResponse:
 
 
 if __name__ == "__main__":
-    print(htmlResponse(None))
+    print(res := htmlResponse(None))
+    print(res.text)

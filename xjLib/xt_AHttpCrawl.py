@@ -132,7 +132,7 @@ class AioHttpCrawl:
             return callback(result) if callable(callback) else result
         except Exception as err:
             print(f"AioCrawl_run_task:{self} | RetryErr:{err!r}")
-            return [index, err, ""]
+            return htmlResponse("", err, index)
 
     async def _add_tasks(self, url_list, method, *args, **kwargs):
         """分发任务"""
@@ -187,10 +187,14 @@ class AioHttpCrawl:
 if __name__ == "__main__":
     ...
     # $add_tasks#######################################################
-    # myaio = AioHttpCrawl()
-    url_list = ["https://www.163.com", "https://www.126.com", "https://www.qq.com"]
-    # print(111111, myaio.add_tasks(url_list * 1, "get"))
-    # print(111111, myaio.wait_completed())
+    myaio = AioHttpCrawl()
+    url_list = [
+        "https://www.163.com",
+        "https://www.126.com",
+        "https://www.bigee.cc/book/6909/2.html",
+    ]
+    print(111111, myaio.add_tasks(url_list * 1, "get"))
+    print(111111, myaio.wait_completed())
     # print(222222, myaio.add_tasks(url_list * 1))
     # print(222222, myaio.wait_completed())
     # $add_func########################################################
@@ -204,13 +208,13 @@ if __name__ == "__main__":
     def get_html(url):
         return get(url)
 
-    print(444444, res := get_html("https://www.baidu.com"))
+    # print(444444, res := get_html("https://www.baidu.com"))
 
     @async_run_decorator
     async def get_a_html(url):
         return get(url)
 
-    print(555555, res := get_a_html("https://www.baidu.com"))
+    # print(555555, res := get_a_html("https://www.baidu.com"))
 
     @async_run_decorator
     async def get_message():
@@ -220,4 +224,4 @@ if __name__ == "__main__":
             await response.text()
             return response
 
-    print(666666, res := get_message())
+    # print(666666, res := get_message())

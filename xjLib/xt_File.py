@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-26 13:26:53
+LastEditTime : 2024-08-03 10:29:47
 FilePath     : /CODE/xjLib/xt_file.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -19,11 +19,19 @@ class filesize:
     def __init__(self, filePath):
         self.Bytes = os.path.getsize(filePath)
 
+    @property
+    def MB(self):
+        return self.Bytes / 1024 / 1024
+
+    @property
+    def KB(self):
+        return self.Bytes / 1024
+
     def __str__(self):
-        if self.Bytes > 1024 * 1024:
-            return f"{self.Bytes / 1024 / 1024:.2f} MB"
-        elif self.Bytes > 1024:
-            return f"{self.Bytes / 1024:.2f} KB"
+        if self.MB > 1.000:
+            return f"{self.MB:.2f} MB"
+        elif self.KB > 1.000:
+            return f"{self.KB:.2f} KB"
         else:
             return f"{self.Bytes} B"
 
@@ -41,7 +49,10 @@ class qsstools:
 
 
 def get_desktop():
-    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders") as key:
+    with winreg.OpenKey(
+        winreg.HKEY_CURRENT_USER,
+        r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders",
+    ) as key:
         return winreg.QueryValueEx(key, "Desktop")[0]
 
 
