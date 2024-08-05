@@ -13,7 +13,34 @@ Github       : https://github.com/sandorn/home
 
 from PyQt6.QtCore import Qt, QThread
 from PyQt6.QtGui import QAction, QCursor, QStandardItem, QStandardItemModel
-from PyQt6.QtWidgets import QAbstractItemView, QCheckBox, QComboBox, QDoubleSpinBox, QFileDialog, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QListView, QListWidget, QListWidgetItem, QMenu, QMessageBox, QPushButton, QSpinBox, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextBrowser, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget
+from PyQt6.QtWidgets import (
+    QAbstractItemView,
+    QCheckBox,
+    QComboBox,
+    QDoubleSpinBox,
+    QFileDialog,
+    QHBoxLayout,
+    QHeaderView,
+    QInputDialog,
+    QLabel,
+    QLineEdit,
+    QListView,
+    QListWidget,
+    QListWidgetItem,
+    QMenu,
+    QMessageBox,
+    QPushButton,
+    QSpinBox,
+    QTableView,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QTextBrowser,
+    QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QWidget,
+)
 from xt_pyqt import event_loop
 
 
@@ -119,7 +146,7 @@ class xt_QTableView(QTableView):
             ColumnsName = []
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QTableView_{id(self)}")
-        self.model = QStandardItemModel(0, len(ColumnsName))  # type: ignore
+        self.model = QStandardItemModel(0, len(ColumnsName))
         self.ColumnsName = ColumnsName
         self.setColumnsName(ColumnsName)
         self.setModel(self.model)
@@ -132,7 +159,9 @@ class xt_QTableView(QTableView):
         self.双向滚动条()
         self.clicked.connect(self.clicked_event)
 
-        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # 配合右键菜单
+        self.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu
+        )  # 配合右键菜单
         self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
@@ -158,7 +187,9 @@ class xt_QTableView(QTableView):
         self.horizontalHeader().setStretchLastSection(True)
 
     def 设置列宽适应内容(self, index=0):
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents
+        )
 
     def 设置整行选中(self):
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -302,7 +333,9 @@ class xt_QTableWidget(QTableWidget):
         self.颜色交替()
         self.双向滚动条()
         self.itemClicked.connect(self.itemClicked_event)
-        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # 配合右键菜单
+        self.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu
+        )  # 配合右键菜单
         self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
@@ -328,7 +361,9 @@ class xt_QTableWidget(QTableWidget):
         self.horizontalHeader().setStretchLastSection(True)
 
     def 设置列宽适应内容(self, index=0):
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents
+        )
 
     def 表格禁止编辑(self):
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -518,7 +553,9 @@ class xt_QListWidget(QListWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setObjectName(f"xt_QListWidget_{id(self)}")
-        self.setDragDropMode(QAbstractItemView.DragDropMode.NoDragDrop)  # 设置单元项不可拖动
+        self.setDragDropMode(
+            QAbstractItemView.DragDropMode.NoDragDrop
+        )  # 设置单元项不可拖动
         # 图标格式显示 QListView.IconMode | QListWidget.ListMode
         self.setViewMode(QListView.ViewMode.ListMode)
         self.setSpacing(6)  # 间距大小
@@ -527,7 +564,9 @@ class xt_QListWidget(QListWidget):
         self.itemClicked.connect(self.itemClicked_event)  # 绑定点击事件
         self.currentRowChanged.connect(self.currentRowChanged_event)  # 绑定点击事件
 
-        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # 配合右键菜单
+        self.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu
+        )  # 配合右键菜单
         self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
@@ -612,7 +651,9 @@ class xt_QTreeWidget(QTreeWidget):
         self.clicked.connect(self.clicked_event)
         self.itemDoubleClicked.connect(self.itemDoubleClicked_event)
 
-        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # 配合右键菜单
+        self.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu
+        )  # 配合右键菜单
         self.customContextMenuRequested.connect(self.showContextMenu)
 
     def showContextMenu(self):  # 创建右键菜单
@@ -700,11 +741,19 @@ class xt_QTextBrowser(QTextBrowser):
         self.ensureCursorVisible()  # 游标可用
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 设置垂直滚动条按需可见
         # Qt.ScrollBarAlwaysOff  #禁用垂直滚动条
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 设置水平滚动条按需可见
+        self.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarAsNeeded
+        )  # 设置水平滚动条按需可见
         self.setOpenLinks(True)  # 打开文档内部链接 默认为True
         self.setOpenExternalLinks(True)
         # 打开外部链接,默认false,openlinks设置false时 该选项无效
-        self.setTextInteractionFlags(Qt.LinksAccessibleByKeyboard | Qt.LinksAccessibleByMouse | Qt.TextBrowserInteraction | Qt.TextSelectableByKeyboard | Qt.TextSelectableByMouse)
+        self.setTextInteractionFlags(
+            Qt.LinksAccessibleByKeyboard
+            | Qt.LinksAccessibleByMouse
+            | Qt.TextBrowserInteraction
+            | Qt.TextSelectableByKeyboard
+            | Qt.TextSelectableByMouse
+        )
 
     def event(self, event):
         if event.type() == event.Wheel:

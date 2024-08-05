@@ -5,10 +5,12 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-06-17 14:05:36
-FilePath     : /CODE/xjLib/xt_Ui/__init__.py
+LastEditTime : 2024-08-05 16:16:28
+FilePath     : /CODE/xjLib/xt_pyqt/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from xt_pyqt.eventLoop import event_loop
+from .eventLoop import event_loop
+
+__all__ = ["event_loop"]

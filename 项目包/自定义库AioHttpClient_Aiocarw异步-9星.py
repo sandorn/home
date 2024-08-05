@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-14 23:30:44
-LastEditTime : 2024-07-21 11:57:33
-FilePath     : /CODE/项目包/自定义库Ahttp-Aiocarw异步-8星.py
+LastEditTime : 2024-08-05 15:39:47
+FilePath     : /CODE/项目包/自定义库AioHttpClient_Aiocarw异步-9星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -63,9 +63,7 @@ def AioHttpClient_run(bookname, urls):
 if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
     bookname, urls, _ = get_download_url(url)
-    # AioHttpCrawl_task(bookname, urls)  # |perf_counter: 56.08s|process_time: 32.48s
-    # AioHttpCrawl_pool(bookname, urls)  # |perf_counter: 86.56s|process_time: 44.23s
-    # ahttp_GetAll(bookname, urls)  # |perf_counter: 74.74s|process_time: 31.91s
-    AioHttpClient_run(
-        bookname, urls
-    )  # |perf_counter: 46.74s|process_time: 24.34s #@ 8星
+    # AioHttpCrawl_pool(bookname, urls)  # |perf_counter: 85.29s
+    # ahttp_GetAll(bookname, urls)  # |perf_counter: 56.20s
+    # AioHttpCrawl_task(bookname, urls)  # |perf_counter: 55.75s
+    AioHttpClient_run(bookname, urls)  # |perf_counter: 42.20s #@ 8星

@@ -60,7 +60,16 @@ class xt_QProgressBar(QProgressBar):
 
 
 class xt_QMainWindow(QMainWindow):
-    def __init__(self, title="MainWindow", action=True, tool=True, menu=True, status=True, *args, **kwargs):
+    def __init__(
+        self,
+        title="MainWindow",
+        action=True,
+        tool=True,
+        menu=True,
+        status=True,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.basepath = os.path.dirname(__file__)
         # #窗体title,setupUI
@@ -86,20 +95,34 @@ class xt_QMainWindow(QMainWindow):
         # #窗体icon,size...
         self.setWindowIcon(QIcon(f"{self.basepath}/ico/ico.ico"))
         availableGeometry = self.screen().availableGeometry()
-        screen_width, screen_height = availableGeometry.width(), availableGeometry.height()
+        screen_width, screen_height = (
+            availableGeometry.width(),
+            availableGeometry.height(),
+        )
         self.resize(int(screen_width * 0.618), int(screen_height * 0.618))
         self.move(availableGeometry.center() - self.rect().center())
-        qss = qdarkstyle.load_stylesheet_pyqt6() + "* {font: 10pt '微软雅黑';outline: none;}"
+        qss = (
+            qdarkstyle.load_stylesheet_pyqt6()
+            + "* {font: 10pt '微软雅黑';outline: none;}"
+        )
         self.setStyleSheet(qss)
 
     def action_init(self):  # #QAction
-        self.Run_action = QAction(QIcon(f"{self.basepath}/ico/Execute.png"), "&Execute", self)
-        self.Do_action = QAction(QIcon(f"{self.basepath}/ico/Performing.png"), "&Performing", self)
-        self.Theme_action = QAction(QIcon(f"{self.basepath}/ico/color.ico"), "&Theme", self)
+        self.Run_action = QAction(
+            QIcon(f"{self.basepath}/ico/Execute.png"), "&Execute", self
+        )
+        self.Do_action = QAction(
+            QIcon(f"{self.basepath}/ico/Performing.png"), "&Performing", self
+        )
+        self.Theme_action = QAction(
+            QIcon(f"{self.basepath}/ico/color.ico"), "&Theme", self
+        )
         self.Run_action.setObjectName("Run")
         self.Do_action.setObjectName("Do")
         self.Theme_action.setObjectName("Theme")
-        self.Close_action = QAction(QIcon(f"{self.basepath}/ico/close.ico"), "&Quit", self)
+        self.Close_action = QAction(
+            QIcon(f"{self.basepath}/ico/close.ico"), "&Quit", self
+        )
         self.Run_action.setShortcut("Ctrl+E")
         self.Do_action.setShortcut("Ctrl+P")
         self.Theme_action.setShortcut("Ctrl+T")
@@ -110,7 +133,9 @@ class xt_QMainWindow(QMainWindow):
 
     def tool_init(self):  # #工具栏
         self.file_toolbar = self.addToolBar("")
-        self.file_toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.file_toolbar.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
         """
         Qt.ToolButtonIconOnly：仅显示图标，没有文本。
         Qt.ToolButtonTextOnly：仅显示文本，没有图标。
@@ -129,7 +154,9 @@ class xt_QMainWindow(QMainWindow):
         self.file_toolbar.setFloatable(False)
         self.file_toolbar.setIconSize(QSize(36, 36))
         self.file_toolbar.setStyleSheet("QToolBar{spacing:16px;}")
-        self.file_toolbar.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # ActionsContextMenu
+        self.file_toolbar.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu
+        )  # ActionsContextMenu
 
     def menu_init(self):  # #菜单栏
         menubar = self.menuBar()
@@ -166,7 +193,14 @@ class xt_QMainWindow(QMainWindow):
 
     def on_Theme_triggered(self):
         # print('on_Theme_triggered')
-        qss_list = [f"{self.basepath}/qss/blue.qss", f"{self.basepath}/qss/css.qss", f"{self.basepath}/qss/dark_orange.qss", f"{self.basepath}/qss/dark.qss", f"{self.basepath}/qss/grey.qss", f"{self.basepath}/qss/qdark.qss"]
+        qss_list = [
+            f"{self.basepath}/qss/blue.qss",
+            f"{self.basepath}/qss/css.qss",
+            f"{self.basepath}/qss/dark_orange.qss",
+            f"{self.basepath}/qss/dark.qss",
+            f"{self.basepath}/qss/grey.qss",
+            f"{self.basepath}/qss/qdark.qss",
+        ]
         file_name = random.choice(qss_list)
         self.setWindowTitle(f"{self.title}--" + file_name.split("/")[-1].split(".")[0])
         qsstools.set(file_name, self)

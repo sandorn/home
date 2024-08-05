@@ -267,7 +267,7 @@ def fn_timer(func, instance, args, kwargs):
     duration = perf_counter()
     result = func(*args, **kwargs)
     duration = perf_counter() - duration
-    print(f"[Timer | fn:'{func.__name__}']|<perf_counter: {duration:4f}s>")
+    print(f"[Timer | fn:'{func.__name__}']|<perf_counter: {duration:.2f}s>")
     return result
 
 
@@ -286,7 +286,7 @@ class TimerDecorator:
         start_time = perf_counter()
         result = self.func(*args, **kwargs)
         end_time = perf_counter()
-        print(f"{self.func.__name__} executed in {end_time - start_time:.4f}s")
+        print(f"{self.func.__name__} executed in {end_time - start_time:.2f}s")
         return result
 
 

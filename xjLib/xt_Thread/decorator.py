@@ -169,11 +169,6 @@ class ThreadDecoratorClass:
         return res
 
 
-def create_mixin_class(name, Cls, Mixin, **kwargs):
-    """type动态混入继承,实质是调整 bases"""
-    return type(name, (Cls, Mixin), kwargs)
-
-
 thread_print = thread_safe(print)
 
 if __name__ == "__main__":

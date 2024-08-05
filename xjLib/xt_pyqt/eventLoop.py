@@ -11,17 +11,21 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-import wrapt
 from PyQt6.QtCore import QEventLoop, Qt
 from PyQt6.QtWidgets import QApplication
+from wrapt import decorator
 
 
-@wrapt.decorator
+@decorator
 def event_loop(func, instance, args, kwargs):
-    """定义一个装饰器,确定鼠标显示和控制权"""
-    QApplication.processEvents(QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents)  # 忽略用户键鼠输入
+    """装饰器,确定鼠标显示和控制权"""
+    QApplication.processEvents(
+        QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents
+    )  # 忽略用户键鼠输入
     QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)  # 显示等待中的鼠标
+
     result = func(*args, **kwargs)
+
     QApplication.restoreOverrideCursor()  # 恢复鼠标样式
     QApplication.processEvents()  # 交还控制权
     return result

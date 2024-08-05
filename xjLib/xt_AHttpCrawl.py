@@ -106,8 +106,28 @@ class AioHttpCrawl:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.loop.close()
 
+    def add_tasks(self, url_list, method="GET", *args, **kwargs):
+        """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
+        return self.loop.run_until_complete(
+            self.tasks_run(url_list, method=method, *args, **kwargs)
+        )
+
+    async def tasks_run(self, url_list, method, *args, **kwargs):
+        """分发任务"""
+        callback = kwargs.pop("fu_callback", None)
+
+        for index, url in enumerate(url_list, 1):
+            task = asyncio.create_task(
+                self.__tasks_run(url, method=method, index=index, *args, **kwargs)
+            )
+            if callback:
+                task.add_done_callback(callback)
+            self.future_list.append(task)
+
+        return await asyncio.gather(*self.future_list, return_exceptions=True)
+
     @log_decorator
-    async def __add_tasks(self, url, method, index=None, *args, **kwargs):
+    async def __tasks_run(self, url, method, index=None, *args, **kwargs):
         """运行任务"""
         kwargs.setdefault("headers", Head().randua)
         kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
@@ -116,53 +136,31 @@ class AioHttpCrawl:
         index = index or id(url)
 
         @TRETRY
-        async def __fetch():
+        async def _fetch():
             async with ClientSession(
                 cookies=cookies, connector=TCPConnector(ssl=False)
             ) as session, session.request(
                 method, url, raise_for_status=True, *args, **kwargs
             ) as response:
-                # async with session.request(method, url, raise_for_status=True, *args, **kwargs) as response:
                 content = await response.read()
                 return response, content
 
         try:
-            response, content = await __fetch()
+            response, content = await _fetch()
             result = htmlResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:
             print(f"AioCrawl_run_task:{self} | RetryErr:{err!r}")
             return htmlResponse("", err, index)
 
-    async def _add_tasks(self, url_list, method, *args, **kwargs):
-        """分发任务"""
+    def add_pool(self, func, *args, **kwargs):
+        """添加函数及参数,异步运行，可用wait_completed取结果"""
+        return self.loop.run_until_complete(self.__pool_run(func, *args, **kwargs))
+
+    async def __pool_run(self, func, *args, **kwargs):
         callback = kwargs.pop("fu_callback", None)
-        # cookies = kwargs.pop("cookies", {})
-        # _session = ClientSession(cookies=cookies, connector=TCPConnector(ssl=False))
-
-        for index, url in enumerate(url_list, 1):
-            task = asyncio.create_task(
-                self.__add_tasks(url, method=method, index=index, *args, **kwargs)
-            )
-            if callback:
-                task.add_done_callback(callback)
-            self.future_list.append(task)
-
-        result = await asyncio.gather(*self.future_list, return_exceptions=True)
-        # await _session.close()
-
-        return result
-
-    def add_tasks(self, url_list, method="GET", *args, **kwargs):
-        """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
-        return self.loop.run_until_complete(
-            self._add_tasks(url_list, method=method, *args, **kwargs)
-        )
-
-    async def _add_pool(self, func, *args, **kwargs):
-        callback = kwargs.pop("fu_callback", None)
-        with ThreadPoolExecutor(200) as executor:
-            for arg in list(zip(*args)):
+        with ThreadPoolExecutor(32) as executor:
+            for arg in zip(*args):
                 task = self.loop.run_in_executor(executor, func, *arg, **kwargs)
                 if callback:
                     task.add_done_callback(callback)
@@ -170,16 +168,12 @@ class AioHttpCrawl:
 
         return await asyncio.gather(*self.future_list, return_exceptions=True)
 
-    def add_pool(self, func, *args, **kwargs):
-        """添加函数及参数,异步运行，可用wait_completed取结果"""
-        return self.loop.run_until_complete(self._add_pool(func, *args, **kwargs))
-
     def wait_completed(self):
         if len(self.future_list) == 0:
             return []
-        while any(fu._state == "PENDING" for fu in self.future_list):
+        while any(future._state == "PENDING" for future in self.future_list):
             continue
-        result_list = [fu.result() for fu in self.future_list]
+        result_list = [future.result() for future in self.future_list]
         self.future_list.clear()
         return result_list
 
@@ -193,15 +187,15 @@ if __name__ == "__main__":
         "https://www.126.com",
         "https://www.bigee.cc/book/6909/2.html",
     ]
-    print(111111, myaio.add_tasks(url_list * 1, "get"))
-    print(111111, myaio.wait_completed())
+    # print(111111, myaio.add_tasks(url_list * 1, "get"))
+    # print(111111, myaio.wait_completed())
     # print(222222, myaio.add_tasks(url_list * 1))
     # print(222222, myaio.wait_completed())
     # $add_func########################################################
     from xt_requests import get
 
-    # print(333333, myaio.add_pool(get, ['https://httpbin.org/get'] * 3))
-    # print(333333, myaio.wait_completed())
+    print(333333, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
+    print(333333, myaio.wait_completed())
     # $装饰器##########################################################
 
     @async_inexecutor_decorator
