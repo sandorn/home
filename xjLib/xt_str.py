@@ -158,7 +158,9 @@ def remove_all_blank(value, keep_blank=True):
     if keep_blank:
         return "".join(ch for ch in value if ch.isprintable())
     else:
-        return "".join(ch for ch in value if ch.isprintable() and ch not in string.whitespace)
+        return "".join(
+            ch for ch in value if ch.isprintable() and ch not in string.whitespace
+        )
 
 
 def clean_invisible_chars(text):
@@ -169,7 +171,7 @@ def clean_invisible_chars(text):
 
 def Str_Replace(replacement: str, trims: Sequence[Sequence]):
     """
-    # @字符替换，不支持正则
+    字符替换
     replacement:欲处理的字符串
     trims: list[list | tuple], [('a', 'A'), ('b', 'B'), ('c', 'C')]
     trims[0]:查找,trims[1]:替换
@@ -179,12 +181,14 @@ def Str_Replace(replacement: str, trims: Sequence[Sequence]):
     # return replacement
     """
 
-    return reduce(lambda strtmp, item: strtmp.replace(item[0], item[1]), trims, replacement)
+    return reduce(
+        lambda strtmp, item: strtmp.replace(item[0], item[1]), trims, replacement
+    )
 
 
 def Str_Clean(replacement: str, trims: Sequence) -> str:
     """
-    # @字符清除，不支持正则
+    字符清除
     replacement:欲处理的字符串
     trims: list | tuple
     """
@@ -199,7 +203,7 @@ def Str_Clean(replacement: str, trims: Sequence) -> str:
 
 def Re_Sub(replacement: str, trims: Sequence[Sequence]):
     """
-    @ re.sub正则替换,自写表达式
+    re.sub正则替换,自写表达式
     replacement:欲处理的字符串
     trims:: list[list | tuple]
     trims[0]:查找字符串,trims[1]:替换字符串
@@ -208,7 +212,9 @@ def Re_Sub(replacement: str, trims: Sequence[Sequence]):
     if not trims:
         return replacement
 
-    return reduce(lambda str_tmp, item: re.sub(item[0], item[1], str_tmp), trims, replacement)
+    return reduce(
+        lambda str_tmp, item: re.sub(item[0], item[1], str_tmp), trims, replacement
+    )
 
 
 def Re_Compile(replacement: str, trimsL: Sequence[Sequence]):
@@ -232,39 +238,67 @@ def Re_Compile(replacement: str, trimsL: Sequence[Sequence]):
     if not all(isinstance(t, Sequence) for t in trimsL):
         raise TypeError(f"Expected Sequence in Sequence, got {trimsL}")
 
-    pattern = re.compile("|".join(t[0] for t in trimsL))
-    return pattern.sub(lambda x: next((t[1] for t in trimsL if t[0] == x.group()), x.group()), replacement)
+    pattern = re.compile("|".join(f"{re.escape(trim[0])}" for trim in trimsL))
+    return pattern.sub(
+        lambda x: next((trim[1] for trim in trimsL if trim[0] == x.group()), x.group()),
+        replacement,
+    )
 
 
-def str_split_limited_list(intext, mixnum=100, maxnum=280):
-    return [intext] if len(intext) < mixnum else re.findall(r"[\s\S]{" + str(mixnum) + "," + str(maxnum) + "}。", intext)
+def str_split_limited_list(intext, mixnum=100, maxnum=300):
+    """
+    将输入的字符串分割成若干个段落，每个段落的长度在mixnum、maxnum之间。
+    args:
+        intext: 输入的字符串
+        mixnum: 最小段落长度
+        maxnum: 最大段落长度
+    return:
+        result: list, 分割后的段落列表
+    """
+    if len(intext) < mixnum:
+        return [intext]
+    else:
+        pattern = r"[\s\S]{%d,%d}。?" % (mixnum, maxnum)
+        result = re.findall(
+            pattern,
+            Str_Replace(
+                intext,
+                [["\r", "。"], ["\n", "。"], [" ", ""], ["\u200b", ""], ["。。", "。"]],
+            ),
+        )
+        return result
 
 
 def str2list(intext, maxlen=300):
     """
     将输入的字符串分割成若干个段落，每个段落的长度不超过 maxlen。
     """
-    # 按照句号（。）将原始字符串分割为一组子串
-    sentence_list = re.split("。", Str_Replace(intext, [["\r", "。"], ["\n", "。"], [" ", ""]]))
-    # 过滤掉空子串，并添加句号
+    sentence_list = re.split(
+        "。",
+        Str_Replace(
+            intext,
+            [["\r", "。"], ["\n", "。"], [" ", ""], ["\u200b", ""], ["。。", "。"]],
+        ),
+    )
     sentence_list = [f"{item}。" for item in sentence_list if item]
 
-    paragraph_list = []
-    current_paragraph = ""
+    resturn_list = []
+    temp_str = ""
+
     for sentence in sentence_list:
         # 如果当前段落长度不超过最大长度，则继续添加新的句子
-        if len(current_paragraph + sentence) <= maxlen:
-            current_paragraph += sentence
+        if len(temp_str + sentence) <= maxlen:
+            temp_str += sentence
         else:
             # 否则，当前段落结束，添加到段落列表中
-            paragraph_list.append(current_paragraph)
-            current_paragraph = sentence
+            resturn_list.append(temp_str)
+            temp_str = sentence
 
     # 处理最后一个段落
-    if current_paragraph:
-        paragraph_list.append(current_paragraph)
+    if temp_str:
+        resturn_list.append(temp_str)
 
-    return paragraph_list
+    return resturn_list
 
 
 def dict2qss(dict_tmp: dict):
@@ -289,13 +323,22 @@ def groupby(iterobj, key):
 
 
 def random_char(length=20):
-    """实现指定长度的随机数"""
-    res_str = []
-    for _ in range(length):
-        x = random.randint(1, 2)
-        y = str(random.randint(0, 9)) if x == 1 else chr(random.randint(97, 122))
-        res_str.append(y)
-    return "".join(res_str)
+    """
+    实现指定长度的随机数,有数字、大写字母、小写字母
+    length: 随机数的长度
+    """
+    return "".join(
+        str(random.randint(0, 9))
+        if random.randint(1, 2) == 1
+        else (
+            chr(
+                random.randint(97, 122)
+                if random.randint(1, 2) == 1
+                else random.randint(65, 90)
+            )
+        )
+        for _ in range(length)
+    )
 
 
 def class_add_dict(in_obj):
@@ -303,7 +346,13 @@ def class_add_dict(in_obj):
     if not hasattr(in_obj, "__dict__"):
         in_obj.__dict__ = {}
 
-    in_obj.__dict__.update({key: value for key, value in vars(in_obj).items() if not key.startswith("__") and not callable(value)})
+    in_obj.__dict__.update(
+        {
+            key: value
+            for key, value in vars(in_obj).items()
+            if not key.startswith("__") and not callable(value)
+        }
+    )
 
     return in_obj.__dict__
 
@@ -311,11 +360,26 @@ def class_add_dict(in_obj):
 def format_html_str(replacement):
     """
     格式化html, 去掉多余的字符，类，script等。
-    :param html:
-    :return:
+    :param replacement: 要格式化的HTML字符串
+    :return: 格式化后的HTML字符串
     """
-    trim_list = [(r"\n", ""), (r"\t", ""), (r"\r", ""), (r"  ", ""), (r"\u2018", "'"), (r"\u2019", "'"), (r"\ufeff", ""), (r"\u2022", ":"), (r"<([a-z][a-z0-9]*)\ [^>]*>", r"<\g<1>>"), (r"<\s*script[^>]*>[^<]*<\s*/\s*script\s*>", ""), (r"</?a.*?>", "")]
-    return reduce(lambda str_tmp, item: re.sub(item[0], item[1], str_tmp), trim_list, replacement)
+    trim_list = [
+        (r"\n", ""),
+        (r"\t", ""),
+        (r"\r", ""),
+        (r"  ", ""),
+        (r"\u2018", "'"),
+        (r"\u2019", "'"),
+        (r"\ufeff", ""),
+        (r"\u2022", ":"),
+        (r"<([a-z][a-z0-9]*)\ [^>]*>", r"<\g<1>>"),
+        (r"<\s*script[^>]*>[^<]*<\s*/\s*script\s*>", ""),
+        (r"</?a.*?>", ""),
+    ]
+
+    return reduce(
+        lambda str_tmp, item: re.sub(item[0], item[1], str_tmp), trim_list, replacement
+    )
 
 
 if __name__ == "__main__":
@@ -325,33 +389,39 @@ if __name__ == "__main__":
         trims = [("a", "A"), ("b", "B"), ("c", "C")]
         print(Str_Replace(replacement, trims))
 
-    test_str_replace()
+    # test_str_replace()
 
     def test_str_clean():
         test_str = "###Hello?World"
         print(Str_Clean(test_str, ["#", "?"]))
 
-    test_str_clean()
+    # test_str_clean()
 
     def test_Re_Sub():
         replacement = "This\n is \u2018a\u2019 test\ufeff string"
         trims = [("\n", ""), ("\u2018", "'"), ("\u2019", "'"), ("\ufeff", "")]
         print(Re_Sub(replacement, trims))
 
-    test_Re_Sub()
+    # test_Re_Sub()
 
     def test_Re_Compile():
         replacement = "hello A and B"
-        trims_list = [("A", "aAa"), ("B", "bBb")]
+        trims_list = [("A", "aaa"), ("B", "bbb")]
         print(Re_Compile(replacement, trims_list))
 
-    test_Re_Compile()
+    # test_Re_Compile()
     str2 = "Powe, on；the 2333, 。哈哈 ！！\U0001f914看看可以吗？一行代码就可以了！^_^"
-    print(remove_all_blank(str2, keep_blank=False))
-    print(remove_all_blank(str2, keep_blank=True))
-    print(clean_invisible_chars(str2))
+    # print(remove_all_blank(str2, keep_blank=False))
+    # print(remove_all_blank(str2, keep_blank=True))
+    # print(clean_invisible_chars(str2))
 
     # 测试
     # print(is_valid_id_number('230605197505032139'))  # True
     # print(is_valid_id_number('23060219750503213x'))  # True
     # print(is_valid_id_number('110101199003078017'))  # False
+    strr = """嘻嘻地先合掌诵声佛号，然后从袖子里取出两份香积钱契，口称功德。李善德伸手接过，只觉得两张麻纸重逾千斤，两撇胡须抖了一抖。他只是一个从九品下的小官，想要拿下这座宅子，除罄尽自家多年的积蓄之外，少不得要借贷。京中除两市的柜坊之外，要数几座大伽蓝的放贷最为便捷，谓之“香积钱”​。当然，佛法不可沾染铜臭，所以这香积钱的本金唤作“功德”​，利息唤作“福报”​。李善德拿过这两张借契，从头到尾细细读了一遍，当真是功德深厚，福报连绵。他对典座道：​“大师，契上明言这功德一共两百贯，月生福报四分，两年还讫，本利结算该是三百九十二贯，怎么写成了四百三十八贯？​”这一连串数字报出来，典座为之一怔。李善德悠悠道：​“咱们大唐杂律里有规定，凡有借贷，只取本金为计，不得回利为本——大师精通佛法，这计算方式怕是有差池吧？​”典座支吾起来，讪讪说许是小沙弥抄错了本子。见典座脸色尴尬，李善德得意地捋了一下胡子。他可是开元十五年明算科出身，这点数字上的小花招，根本瞒不住他。不过他很快又失落地叹了口气，朝廷向来以文取士，算学及第全无升迁之望，一辈子只在九品晃荡，他只能在这种事上自豪一下。典座掏出纸笔，就地改好，李善德查验无误后，在香积钱契上落了指印。
+   """
+
+    # print(res := str_split_limited_list(strr), len(res))
+    # print(res := str2list(strr), len(res))
+    # print(random_char(20))

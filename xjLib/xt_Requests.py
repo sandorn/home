@@ -16,7 +16,7 @@ from functools import partial
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_random
-from xt_head import MYHEAD, RETRY_TIME, TIMEOUT, Head
+from xt_head import RETRY_TIME, TIMEOUT, Head
 from xt_log import log_decorator
 from xt_response import htmlResponse
 
@@ -75,7 +75,6 @@ class SessionClient:
 
     def __init__(self):
         self.session = requests.session()
-        # self.response = None
 
     def __enter__(self):
         return self
@@ -104,7 +103,7 @@ class SessionClient:
         self.url = args[0]
         self.args = args[1:]
 
-        self.update_headers(kwargs.pop("headers", MYHEAD))
+        self.update_headers(kwargs.pop("headers", Head().randua))
         self.update_cookies(kwargs.pop("cookies", {}))
         self.callback = kwargs.pop("callback", None)
         kwargs.setdefault("timeout", TIMEOUT)

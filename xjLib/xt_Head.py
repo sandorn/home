@@ -17,7 +17,7 @@ import random
 from fake_useragent import UserAgent
 
 TIMEOUT = 20
-RETRY_TIME = 9
+RETRY_TIME = 6
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36",
@@ -292,22 +292,17 @@ MYHEAD = {
 
 class Head:
     def __init__(self):
-        self.headers = {}
-
-    def __set_user_agent__(self, user_agent):
-        self.headers["User-Agent"] = user_agent
+        self.headers = MYHEAD.copy()
 
     @property
     def randua(self):
-        self.__set_user_agent__(UserAgent().random)
-        # 随机生成一个fake_useragent
+        self.headers["User-Agent"] = UserAgent().random
         return self.headers
 
     @property
     def ua(self):
         user_agent = random.choice(USER_AGENTS)
-        self.__set_user_agent__(user_agent)
-        # 随机选择一个User-Agent
+        self.headers["User-Agent"] = user_agent
         return self.headers
 
 

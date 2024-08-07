@@ -36,7 +36,9 @@ class BaseEnum(Enum):
         return obj
 
     @classmethod
-    def get_members(cls, exclude_enums: Optional[list] = None, only_value: bool = False) -> list:
+    def get_members(
+        cls, exclude_enums: Optional[list] = None, only_value: bool = False
+    ) -> list:
         """
         获取枚举的所有成员
         Args:
