@@ -22,7 +22,7 @@ from requests_html import HTML
 
 
 class htmlResponse:
-    """封装网页抓取结果,使之标准化"""
+    """封装网页结果,标准化"""
 
     __slots__ = ("raw", "_content", "index", "encoding", "code_type")
 
@@ -145,7 +145,6 @@ class htmlResponse:
             for selector in selectors
             if isinstance(selector, str) and selector.strip()
         ]
-
         return [self.element.xpath(selector) for selector in selectors]
 
     @property
@@ -154,6 +153,12 @@ class htmlResponse:
         h.ignore_links = True
         if self.raw:
             return h.handle(self.raw.text)
+
+
+class ACResponse(htmlResponse):
+    """封装aiohttp网页抓取结果,标准化"""
+
+    ...
 
 
 if __name__ == "__main__":

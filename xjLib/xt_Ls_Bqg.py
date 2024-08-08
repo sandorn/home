@@ -15,7 +15,7 @@ from functools import partial
 
 from xt_ahttp import ahttpGet
 from xt_requests import get
-from xt_response import htmlResponse
+from xt_response import ACResponse, htmlResponse
 from xt_str import Re_Sub, Str_Clean, Str_Replace
 
 
@@ -92,7 +92,7 @@ def clean_Content(in_str):
 
 
 def handle_back_ait(resp):
-    if not isinstance(resp, htmlResponse):
+    if not isinstance(resp, (ACResponse, htmlResponse)):
         return [0, resp, ""]
 
     index = resp.index
@@ -108,7 +108,7 @@ def 结果处理(resps):
     texts = []
 
     for resp in resps:
-        if not isinstance(resp, htmlResponse):
+        if not isinstance(resp, (ACResponse, htmlResponse)):
             continue
         texts.append(handle_back_ait(resp))
 
@@ -150,7 +150,7 @@ def get_download_url(target):
 def get_contents(*args, fn=get):
     index, target = args
     resp = fn(target)
-    if not isinstance(resp, htmlResponse):
+    if not isinstance(resp, (ACResponse, htmlResponse)):
         return [0, resp, ""]
     # pyquery
     title = resp.query("h1").text()

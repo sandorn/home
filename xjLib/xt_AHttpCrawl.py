@@ -23,7 +23,7 @@ from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from tenacity import retry, stop_after_attempt, wait_random
 from xt_head import RETRY_TIME, TIMEOUT, Head
 from xt_log import log_decorator
-from xt_response import htmlResponse
+from xt_response import ACResponse
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
@@ -147,11 +147,11 @@ class AioHttpCrawl:
 
         try:
             response, content = await _fetch()
-            result = htmlResponse(response, content, index)
+            result = ACResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:
             print(f"AioCrawl_run_task:{self} | RetryErr:{err!r}")
-            return htmlResponse("", err, index)
+            return ACResponse("", err, index)
 
     def add_pool(self, func, *args, **kwargs):
         """添加函数及参数,异步运行，可用wait_completed取结果"""

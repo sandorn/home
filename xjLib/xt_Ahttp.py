@@ -20,7 +20,7 @@ from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from tenacity import retry, stop_after_attempt, wait_random
 from xt_head import RETRY_TIME, TIMEOUT, Head
 from xt_log import log_decorator
-from xt_response import htmlResponse
+from xt_response import ACResponse
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
@@ -70,17 +70,14 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
-    def run(self):
-        return asyncio.run(_async_fetch(self))
-
     async def start(self):
-        """主线程"""
+        """执行主要工作"""
         return await _async_fetch(self)
 
 
 @log_decorator
 async def _async_fetch(self):
-    """单任务和多任务均调用此方法"""
+    """主要工作,单任务和多任务均调用此方法"""
 
     @TRETRY
     async def _fetch_run():
@@ -90,17 +87,18 @@ async def _async_fetch(self):
             self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
         ) as self.response:
             self.content = await self.response.read()
+            self.response.text = await self.response.text()
             return self.response, self.content, self.index
 
     try:
         await _fetch_run()
-        _result = htmlResponse(self.response, self.content, self.index)
+        _result = ACResponse(self.response, self.content, self.index)
         self.result = self.callback(_result) if callable(self.callback) else _result
         return self.result
     except Exception as err:
         print(f"Async_fetch:{self} | RetryErr:{err!r}")
         self.response = self.content = None
-        self.result = htmlResponse("", err, index=self.index)
+        self.result = ACResponse("", err, index=self.index)
         return self.result
 
 
@@ -109,7 +107,7 @@ def __session_method(method, *args, **kwargs):
 
 
 def __parse(method, url, *args, **kwargs):
-    """单任务"""
+    """发起单任务"""
     task = partial(__session_method, method)(url, *args, **kwargs)
     _coroutine = task.start()
     loop = asyncio.new_event_loop()
@@ -120,40 +118,32 @@ ahttpGet = partial(__parse, "get")
 ahttpPost = partial(__parse, "post")
 
 
-async def create_gather_task(tasks):
-    """异步,使用不同session"""
-    tasks_list = []
-    for index, task in enumerate(tasks, 1):
-        task.index = index
-        _coroutine = task.start()
-        tasks_list.append(_coroutine)
-    return await asyncio.gather(*tasks_list, return_exceptions=True)
+async def __create_thread_task(tasks):
+    """异步，子线程,用不同session"""
+    thread_loop = asyncio.new_event_loop()
+    Thread(target=thread_loop.run_forever, name="ThreadSafe", daemon=True).start()
 
-
-async def create_threads_task(tasks):
-    """异步线程安全,使用不同session"""
-    threadsafe_loop = asyncio.new_event_loop()
-    Thread(target=threadsafe_loop.run_forever, name="ThreadSafe", daemon=True).start()
-
-    tasks_list = []
+    future_list = []
     for index, task in enumerate(tasks, start=1):
         task.index = index
         _coroutine = task.start()
-        tasks_list.append(asyncio.run_coroutine_threadsafe(_coroutine, threadsafe_loop))
+        future_list.append(asyncio.run_coroutine_threadsafe(_coroutine, thread_loop))
+    return [future.result() for future in future_list]
 
-    return [task.result() for task in tasks_list]
+
+async def __create_gather_task(tasks):
+    """异步,使用不同session"""
+    future_list = []
+    for index, task in enumerate(tasks, 1):
+        task.index = index
+        future_list.append(task.start())
+    return await asyncio.gather(*future_list, return_exceptions=True)
 
 
 def __gather_parse(method, urls, *args, **kwargs):
-    """多任务"""
-    # coroes = [AsyncTask()[method](url, *args, **kwargs) for url in urls]
+    """发起多任务"""
     coroes = [partial(__session_method, method)(url, *args, **kwargs) for url in urls]
-    _coroutine = (
-        create_threads_task(coroes)
-        if kwargs.pop("threadsafe", True)
-        else create_gather_task(coroes)
-    )
-    return asyncio.run(_coroutine)
+    return asyncio.run(__create_gather_task(coroes))
 
 
 ahttpGetAll = partial(__gather_parse, "get")
@@ -165,13 +155,31 @@ if __name__ == "__main__":
     url_post = "https://httpbin.org/post"
     url_headers = "https://httpbin.org/headers"
 
-    # res = ahttpGet(url_get)
-    # print(res)
-    # res = ahttpPost(url_post, data=b'data')
-    # print(res)
-    def handle_back_ait(resp):
-        if isinstance(resp, htmlResponse):
-            return resp.status
-
-    res = ahttpGetAll([url_headers, url_get], callback=handle_back_ait)
+    res = ahttpGet(url_get)
     print(res)
+    res = ahttpPost(url_post, data=b"data")
+    print(res)
+
+    def handle_back_ait(resp):
+        if isinstance(resp, ACResponse):
+            return resp
+
+    # res = ahttpGetAll([url_headers, url_get], callback=handle_back_ait)
+    # print(res=res[0])
+    dic = [
+        "raw",
+        "_content",
+        "index",
+        "encoding",
+        "code_type",
+        "text",
+        "status",
+        "url",
+        "cookies",
+        "headers",
+        "content",
+        "ctext",
+        "element",
+        "html",
+    ]
+    # [print(i, ":::", getattr(res, i)) for i in dic]

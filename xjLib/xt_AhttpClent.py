@@ -17,7 +17,7 @@ from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from tenacity import retry, stop_after_attempt, wait_random
 from xt_head import MYHEAD, RETRY_TIME, TIMEOUT
 from xt_log import log_decorator
-from xt_response import htmlResponse
+from xt_response import ACResponse
 
 TRETRY = retry(
     reraise=True,  # 保留最后一次错误
@@ -101,11 +101,11 @@ class AioHttpClient:
 
         try:
             response, content = await __fetch()
-            result = htmlResponse(response, content, index)
+            result = ACResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:
             print(f"AioHttpClient:{self} | RetryErr:{err!r}")
-            return htmlResponse("", err, index)
+            return ACResponse("", err, index)
 
     def getall(self, *args, **kwargs):
         self.method = "get"  # 保存请求方法

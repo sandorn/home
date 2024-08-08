@@ -141,7 +141,9 @@ if __name__ == "__main__":
     # ...
     # print(get_wraps('http://www.baidu.com').cookies)
 
+    # res = partial(_request_tretry, "head")("http://www.163.com")
     res = get("http://www.163.com")
+    print(res)
     print("1".ljust(10), ":", res.xpath("//title/text()"))
     print("2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
     print(

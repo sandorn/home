@@ -26,7 +26,13 @@ import wrapt
 
 
 class ExceptContext:
-    def __init__(self, exception: Type[Exception] = Exception, func_name: str = "", errback: Optional[Callable[..., Any]] = None, finalback: Optional[Callable[..., Any]] = None):
+    def __init__(
+        self,
+        exception: Type[Exception] = Exception,
+        func_name: str = "",
+        errback: Optional[Callable[..., Any]] = None,
+        finalback: Optional[Callable[..., Any]] = None,
+    ):
         self.errback = errback or self.default_res_errback
         self.finalback = finalback or self.default_res_finalback
         self.exception = exception
@@ -47,7 +53,12 @@ class ExceptContext:
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
         @wrapt.decorator
-        def wrapper(func: Callable[..., Any], instance: Optional[Any], args: tuple[Any], kwargs: dict[Any, Any]) -> Any:
+        def wrapper(
+            func: Callable[..., Any],
+            instance: Optional[Any],
+            args: tuple[Any],
+            kwargs: dict[Any, Any],
+        ) -> Any:
             with self:
                 return func(*args, **kwargs)
 
@@ -62,7 +73,9 @@ class ExceptContext:
     def default_res_finalback(has_error: bool): ...
 
 
-def call_later(callback_fn: str, call_args: tuple = (), immediately: bool = True, interval: int = 1) -> Callable[..., Any]:
+def call_later(
+    callback_fn: str, call_args: tuple = (), immediately: bool = True, interval: int = 1
+) -> Callable[..., Any]:
     """
     被装饰的方法需要大量调用,随后需要调用保存方法,但是因为被装饰的方法访问量很高,而保存方法开销很大
     所以设计在装饰方法持续调用一定间隔后,再调用保存方法。规定间隔内,无论调用多少次被装饰方法,保存方法只会
@@ -75,7 +88,12 @@ def call_later(callback_fn: str, call_args: tuple = (), immediately: bool = True
     """
 
     @wrapt.decorator
-    def decorate(func: Callable[..., Any], instance: Optional[Any], args: tuple[Any], kwargs: dict[Any, Any]) -> Any:
+    def decorate(
+        func: Callable[..., Any],
+        instance: Optional[Any],
+        args: tuple[Any],
+        kwargs: dict[Any, Any],
+    ) -> Any:
         self = args[0]
         try:
             return func(*args, **kwargs)
@@ -162,7 +180,15 @@ def catch_wraps(func, instance, args, kwargs) -> Any | None:
         return None
 
 
-def try_except_wraps(max_retries=3, delay=0.2, step=0.1, sleep_fn=time.sleep, validate_fn=None, callback_fn=None, default_res=None):
+def try_except_wraps(
+    max_retries=3,
+    delay=0.2,
+    step=0.1,
+    sleep_fn=time.sleep,
+    validate_fn=None,
+    callback_fn=None,
+    default_res=None,
+):
     """
     函数执行出现异常时自动重试的简单装饰器
     :param f: function 执行的函数。

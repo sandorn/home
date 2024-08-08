@@ -286,7 +286,7 @@ class TimerDecorator:
         start_time = perf_counter()
         result = self.func(*args, **kwargs)
         end_time = perf_counter()
-        print(f"{self.func.__name__} executed in {end_time - start_time:.2f}s")
+        print(f"fn:[{self.func.__name__}] run for {end_time - start_time:.2f}s")
         return result
 
 
@@ -329,8 +329,8 @@ if __name__ == "__main__":
     # print(TT.yesterday)
 
     @TimerDecorator
-    def example_function():
+    def test_timer():
         time.sleep(0.01)
-        print("Function executed")
+        print("test_timer Function executed")
 
-    example_function()
+    test_timer()
