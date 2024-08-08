@@ -273,4 +273,17 @@ if __name__ == "__main__":
         print(6666, res.to_dict())
         print(7777, res.model_to_dict())
 
+    from sqlalchemy import Column, DateTime, Integer, String
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.sql import func
+
+    class TimestampMixin:
+        created_at = Column(DateTime, server_default=func.now())
+        updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    class User(ParentBaseModel, TimestampMixin):
+        __tablename__ = "users"
+        id = Column(Integer, primary_key=True)
+        username = Column(String)
+
     ceshi()

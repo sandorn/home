@@ -63,7 +63,7 @@ def AioHttpClient_run(bookname, urls):
 if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
     bookname, urls, _ = get_download_url(url)
-    # AioHttpCrawl_pool(bookname, urls)  # |perf_counter: 85.29s
-    ahttp_GetAll(bookname, urls[:20])  # |perf_counter: 56.20s
+    AioHttpCrawl_pool(bookname, urls)  # |perf_counter: 85.29s
+    # ahttp_GetAll(bookname, urls)  # |perf_counter: 56.20s
     # AioHttpCrawl_task(bookname, urls)  # |perf_counter: 55.75s
     # AioHttpClient_run(bookname, urls)  # |perf_counter: 42.20s #@ 8星

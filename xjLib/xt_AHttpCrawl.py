@@ -94,7 +94,7 @@ def async_run_decorator(func):
 class AioHttpCrawl:
     def __init__(self, loop=None):
         self.future_list = []
-        self.loop = loop or asyncio.new_event_loop()
+        self.loop = loop or asyncio.get_event_loop_policy().new_event_loop()
         asyncio.set_event_loop(self.loop)
 
     def __enter__(self):
@@ -115,7 +115,6 @@ class AioHttpCrawl:
     async def tasks_run(self, url_list, method, *args, **kwargs):
         """分发任务"""
         callback = kwargs.pop("fu_callback", None)
-
         for index, url in enumerate(url_list, 1):
             task = asyncio.create_task(
                 self.__tasks_run(url, method=method, index=index, *args, **kwargs)
@@ -143,10 +142,11 @@ class AioHttpCrawl:
                 method, url, raise_for_status=True, *args, **kwargs
             ) as response:
                 content = await response.read()
-                return response, content
+                response.text = await response.text()
+                return response, content, index
 
         try:
-            response, content = await _fetch()
+            response, content, index = await _fetch()
             result = ACResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:
@@ -154,7 +154,7 @@ class AioHttpCrawl:
             return ACResponse("", err, index)
 
     def add_pool(self, func, *args, **kwargs):
-        """添加函数及参数,异步运行，可用wait_completed取结果"""
+        """添加函数(同步异步均可)及参数,异步运行，可用wait_completed取结果"""
         return self.loop.run_until_complete(self.__pool_run(func, *args, **kwargs))
 
     async def __pool_run(self, func, *args, **kwargs):
@@ -169,10 +169,9 @@ class AioHttpCrawl:
         return await asyncio.gather(*self.future_list, return_exceptions=True)
 
     def wait_completed(self):
-        if len(self.future_list) == 0:
+        if not self.future_list:
             return []
-        while any(future._state == "PENDING" for future in self.future_list):
-            continue
+        # while not all([future.done() for future in self.future_list]):sleep(0.01);continue
         result_list = [future.result() for future in self.future_list]
         self.future_list.clear()
         return result_list
@@ -187,15 +186,15 @@ if __name__ == "__main__":
         "https://www.126.com",
         "https://www.bigee.cc/book/6909/2.html",
     ]
-    # print(111111, myaio.add_tasks(url_list * 1, "get"))
-    # print(111111, myaio.wait_completed())
-    # print(222222, myaio.add_tasks(url_list * 1))
-    # print(222222, myaio.wait_completed())
+    print(111111, myaio.add_tasks(url_list * 1, "get"))
+    print(111111, myaio.wait_completed())
+    print(222222, myaio.add_tasks(url_list * 1))
+    print(222222, myaio.wait_completed())
     # $add_func########################################################
     from xt_requests import get
 
-    print(333333, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
-    print(333333, myaio.wait_completed())
+    # print(333333, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
+    # print(333333, myaio.wait_completed())
     # $装饰器##########################################################
 
     @async_inexecutor_decorator
@@ -211,11 +210,16 @@ if __name__ == "__main__":
     # print(555555, res := get_a_html("https://www.baidu.com"))
 
     @async_run_decorator
-    async def get_message():
-        async with ClientSession() as session, session.get(
-            "https://httpbin.org/get"
-        ) as response:
-            await response.text()
-            return response
+    async def get_message(url):
+        async with ClientSession() as session, session.get(url) as response:
+            content = await response.content.read()
+            return ACResponse(response, content, 0)
 
-    # print(666666, res := get_message())
+    # print(666666, res := get_message("https://httpbin.org/get"))
+
+    print(
+        666666,
+        myaio.add_pool(get_message, ["https://httpbin.org/get"] * 3),
+    )
+
+    print(666666, myaio.wait_completed())

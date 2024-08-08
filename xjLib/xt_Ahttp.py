@@ -5,11 +5,10 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-10-26 17:05:52
-FilePath     : /CODE/xjLib/xt_Ahttp.py
+LastEditTime : 2024-08-08 12:13:33
+FilePath     : /CODE/xjLib/xt_ahttp.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-https://github.com/web-trump/ahttp/blob/master/ahttp.py
 """
 
 import asyncio
@@ -97,7 +96,7 @@ async def _async_fetch(self):
         return self.result
     except Exception as err:
         print(f"Async_fetch:{self} | RetryErr:{err!r}")
-        self.response = self.content = None
+        # self.response = self.content = None
         self.result = ACResponse("", err, index=self.index)
         return self.result
 
@@ -126,8 +125,8 @@ async def __create_thread_task(tasks):
     future_list = []
     for index, task in enumerate(tasks, start=1):
         task.index = index
-        _coroutine = task.start()
-        future_list.append(asyncio.run_coroutine_threadsafe(_coroutine, thread_loop))
+        future_list.append(asyncio.run_coroutine_threadsafe(task.start(), thread_loop))
+
     return [future.result() for future in future_list]
 
 
@@ -143,7 +142,10 @@ async def __create_gather_task(tasks):
 def __gather_parse(method, urls, *args, **kwargs):
     """发起多任务"""
     coroes = [partial(__session_method, method)(url, *args, **kwargs) for url in urls]
-    return asyncio.run(__create_gather_task(coroes))
+    select_fn = (
+        __create_thread_task if kwargs.pop("thread", False) else __create_gather_task
+    )
+    return asyncio.run(select_fn(coroes))
 
 
 ahttpGetAll = partial(__gather_parse, "get")
@@ -155,17 +157,17 @@ if __name__ == "__main__":
     url_post = "https://httpbin.org/post"
     url_headers = "https://httpbin.org/headers"
 
-    res = ahttpGet(url_get)
-    print(res)
-    res = ahttpPost(url_post, data=b"data")
-    print(res)
+    # res = ahttpGet(url_get)
+    # print(res)
+    # res = ahttpPost(url_post, data=b"data")
+    # print(res)
 
     def handle_back_ait(resp):
         if isinstance(resp, ACResponse):
             return resp
 
-    # res = ahttpGetAll([url_headers, url_get], callback=handle_back_ait)
-    # print(res=res[0])
+    res = ahttpGetAll([url_headers, url_get], callback=handle_back_ait)
+    print(res := res[0])
     dic = [
         "raw",
         "_content",
