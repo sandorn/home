@@ -15,7 +15,7 @@ import asyncio
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from tenacity import retry, stop_after_attempt, wait_random
-from xt_head import MYHEAD, RETRY_TIME, TIMEOUT
+from xt_head import RETRY_TIME, TIMEOUT, Head
 from xt_log import log_decorator
 from xt_response import ACResponse
 
@@ -38,101 +38,86 @@ Method_List = [
 
 
 class AioHttpClient:
-    def __init__(self, loop=None):
-        self.loop = loop or asyncio.get_event_loop_policy().new_event_loop()
-        asyncio.set_event_loop(self.loop)
-        self._session = self.loop.run_until_complete(self.create_session())
-        self.cookies = {}
-
-    async def create_session(self):
-        if self._session is None:
-            self._session = ClientSession(
-                cookies=self.cookies, connector=TCPConnector(ssl=False)
-            )
-        return self._session
+    def __init__(self):
+        self._loop = asyncio.get_event_loop_policy().new_event_loop()
+        asyncio.set_event_loop(self._loop)
+        self._session = ClientSession(connector=TCPConnector(ssl=True))
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """关闭会话"""
-        self.close()
+        self._loop.run_until_complete(self.close_session())
 
     def __del__(self):
-        self.close()
-        self.loop.close()
-
-    async def close_session(self):
-        if self._session is not None:
-            await self._session.close()
-            self._session = None
-
-    def close(self):
-        self.loop.run_until_complete(self.close_session())
+        """关闭会话"""
+        self._loop.run_until_complete(self.close_session())
 
     def __getitem__(self, method):
         if method.lower() in Method_List:
             self.method = method.lower()  # 保存请求方法
-            return lambda *args, **kwargs: self._make_method(*args, **kwargs)
+            return self._make_method  # 调用方法
+            # return lambda *args, **kwargs: self._make_method(*args, **kwargs)
 
     def __getattr__(self, method):
-        if method.lower() in Method_List:
-            self.method = method.lower()  # 保存请求方法
-            return self._make_method  # 调用方法
+        return self.__getitem__(method)
+
+    async def close_session(self):
+        if hasattr(self, "_session") and self._session is not None:
+            await self._session.close()
+            self._session = None
+        # self._loop.close()
 
     def _make_method(self, *args, **kwargs):
-        return self.loop.run_until_complete(self.request(*args, **kwargs))
+        return self._loop.run_until_complete(self.request(*args, **kwargs))
 
     @log_decorator
     async def request(self, url, index=None, *args, **kwargs):
-        kwargs.setdefault("headers", MYHEAD)
+        kwargs.setdefault("headers", Head().randua)
         kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
-        callback = kwargs.pop("callback", None)
+        self.callback = kwargs.pop("callback", None)
         index = index or id(url)
 
         @TRETRY
-        async def __fetch():
-            Session = await self.create_session()
-            async with Session.request(
+        async def _retryable_request():
+            async with self._session.request(
                 self.method, url, raise_for_status=True, *args, **kwargs
-            ) as response:
-                content = await response.content.read()
-                return response, content, index
+            ) as self.response:
+                self.content = await self.response.read()
+                self.response.text = await self.response.text()
+                return self.response, self.content, self.index
 
         try:
-            response, content, index = await __fetch()
-            result = ACResponse(response, content, index)
-            return callback(result) if callable(callback) else result
+            await _retryable_request()
+            _result = ACResponse(self.response, self.content, self.index)
+            self.result = self.callback(_result) if callable(self.callback) else _result
+            return self.result
         except Exception as err:
             print(f"AioHttpClient:{self} | RetryErr:{err!r}")
-            return ACResponse("", err, index)
+            self.result = ACResponse("", str(err), index)
+            return self.result
+
+    async def request_all(self, method, *args, **kwargs):
+        self.method = method
+        task_list = [
+            self.request(*arg, index=index, **kwargs)
+            for index, arg in enumerate(list(zip(*args)), start=1)
+        ]
+        return await asyncio.gather(*task_list, return_exceptions=True)
 
     def getall(self, *args, **kwargs):
-        self.method = "get"  # 保存请求方法
-        task_list = [
-            self.request(*arg, index=index, **kwargs)
-            for index, arg in enumerate(list(zip(*args)), start=1)
-        ]
-        return self.loop.run_until_complete(
-            asyncio.gather(*task_list, return_exceptions=True)
-        )
+        return self._loop.run_until_complete(self.request_all("get", *args, **kwargs))
 
     def postall(self, *args, **kwargs):
-        self.method = "post"  # 保存请求方法
-        task_list = [
-            self.request(*arg, index=index, **kwargs)
-            for index, arg in enumerate(list(zip(*args)), start=1)
-        ]
-        return self.loop.run_until_complete(
-            asyncio.gather(*task_list, return_exceptions=True)
-        )
+        return self._loop.run_until_complete(self.request_all("post", *args, **kwargs))
 
 
 if __name__ == "__main__":
     url = "https://httpbin.org/get"
     with AioHttpClient() as AHC:
-        # res = AHC.get(url)
-        # print(111111, res.headers)
+        res = AHC.get(url)
+        print(111111, res)
         res = AHC.getall([url, url, "https://www.bigee.cc/book/6909/2.html"])
         print(222222, res)
     # AHC = AioHttpClient()

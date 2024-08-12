@@ -39,39 +39,45 @@ TRETRY = retry(
 )
 
 
-def _setKw(kwargs: dict) -> dict:
-    kwargs.setdefault("headers", Head().randua)
-    kwargs.setdefault("timeout", TIMEOUT)  # @超时
-    return kwargs
-
-
-def _request_tretry(method, url, *args, **kwargs) -> htmlResponse:
-    """利用 TRETRY 库实现重试"""
-    # print(f"_request_tretry.{method}:<{url}>,{args},{kwargs}")
-    kwargs = _setKw(kwargs)
-
-    @TRETRY  # @ from xt_tools import try_except_wraps
-    def __fetch_run():
-        return requests.request(method, url, *args, **kwargs)
-        # response.raise_for_status()
-
+@TRETRY  # from xt_tools import try_except_wraps
+def _retryable_request(method, url, **kwargs):
+    callback = kwargs.pop("callback", None)
     try:
-        response = __fetch_run()
+        response = requests.request(method, url, **kwargs)
+        response.raise_for_status()  # 如果响应状态码不是200，则抛出HTTPError
         result = htmlResponse(response)
-        return result
+        return callback(result) if callable(callback) else result
     except Exception as err:
         print(f"_request_tretry.{method}:<{url}>; Err:{err!r}")
-        return htmlResponse(None)
+        return htmlResponse("", str(err), id(url))
 
 
-get = partial(_request_tretry, "get")
-post = partial(_request_tretry, "post")
+@log_decorator
+def _request(method, url, **kwargs) -> htmlResponse:
+    """利用 TRETRY 库实现重试"""
+    kwargs.setdefault("headers", Head().randua)
+    kwargs.setdefault("timeout", TIMEOUT)  # @超时
+    result = _retryable_request(method, url, **kwargs)
+    return result
+
+
+get = partial(_request, "get")
+post = partial(_request, "post")
 
 
 class SessionClient:
     """封装session,保存cookies,利用TRETRY三方库实现重试"""
 
-    __slots__ = ["session", "method", "url", "args", "kwargs", "response", "callback"]
+    __slots__ = [
+        "session",
+        "method",
+        "url",
+        "args",
+        "kwargs",
+        "response",
+        "callback",
+        "result",
+    ]
 
     def __init__(self):
         self.session = requests.session()
@@ -82,24 +88,16 @@ class SessionClient:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.session.close()
 
-    @log_decorator
-    def start_fetch_run(self):
-        @TRETRY
-        def _request(self):
-            return self.session.request(
-                self.method, self.url, *self.args, **self.kwargs
-            )
+    def __getitem__(self, method):
+        if method.lower() in Method_List:
+            self.method = method.lower()  # 保存请求方法
+            return self._make_method  # 调用方法
+            # return lambda *args, **kwargs: self._make_method(*args, **kwargs)
 
-        try:
-            self.response = _request(self)
-            self.update_cookies(self.response.cookies)
-            result = htmlResponse(self.response)
-            return self.callback(result) if callable(self.callback) else result
-        except requests.exceptions.RequestException as err:
-            print(f"SessionClient request:<{self.url}>; Err:{err!r}")
-            return htmlResponse("", err, id(self.url))
+    def __getattr__(self, method):
+        return self.__getitem__(method)
 
-    def __create_params(self, *args, **kwargs):
+    def _make_method(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
 
@@ -108,17 +106,25 @@ class SessionClient:
         self.callback = kwargs.pop("callback", None)
         kwargs.setdefault("timeout", TIMEOUT)
         self.kwargs = kwargs
-        return self.start_fetch_run()
+        return self._request()
 
-    def __getitem__(self, method):
-        if method.lower() in Method_List:
-            self.method = method.lower()  # 保存请求方法
-            return lambda *args, **kwargs: self.__create_params(*args, **kwargs)
+    @TRETRY
+    def _retryable_request(self):
+        try:
+            self.response = self.session.request(
+                self.method, self.url, *self.args, **self.kwargs
+            )
+            self.update_cookies(self.response.cookies)
+            result = htmlResponse(self.response)
+            return self.callback(result) if callable(self.callback) else result
+        except requests.exceptions.RequestException as err:
+            print(f"SessionClient request:<{self.url}>; Err:{err!r}")
+            return htmlResponse("", err, id(self.url))
 
-    def __getattr__(self, method):
-        if method.lower() in Method_List:
-            self.method = method.lower()  # 保存请求方法
-            return self.__create_params  # @ 设置参数
+    @log_decorator
+    def _request(self):
+        self.result = self._retryable_request()
+        return self.result
 
     def update_cookies(self, cookie_dict):
         self.session.cookies.update(cookie_dict)
@@ -129,7 +135,7 @@ class SessionClient:
 
 if __name__ == "__main__":
     sion = SessionClient()
-    print(getattr(sion, "get")("http://httpbin.org/headers"))
+    print(111111111111111111111, getattr(sion, "get")("http://httpbin.org/headers"))
     # urls = [
     # 'http://www.baidu.com',
     # 'http://www.163.com',

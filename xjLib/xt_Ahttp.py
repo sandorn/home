@@ -43,23 +43,24 @@ Method_List = [
 
 
 class AsyncTask:
-    def __init__(self):
-        self.index = id(self)
+    """aiohttp异步任务"""
+
+    def __init__(self, index=None):
+        self.index = index or id(self)
 
     def __getitem__(self, method):
         if method.lower() in Method_List:
             self.method = method.lower()  # 保存请求方法
-            return self.__create_params
+            return self._make_method  # 调用方法
+            # return lambda *args, **kwargs: self._make_method(*args, **kwargs)
 
     def __getattr__(self, method):
-        if method.lower() in Method_List:
-            self.method = method.lower()  # 保存请求方法
-            return self.__create_params  # @ 设置参数
+        return self.__getitem__(method)
 
     def __repr__(self):
         return f"AsyncTask | Method:[{self.method}] | Index:[{self.index}] | URL:[{self.url}]"
 
-    def __create_params(self, *args, **kwargs):
+    def _make_method(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
         kwargs.setdefault("headers", Head().randua)
@@ -70,16 +71,20 @@ class AsyncTask:
         return self
 
     async def start(self):
-        """执行主要工作"""
+        """
+        执行核心操作
+        """
         return await _async_fetch(self)
 
 
 @log_decorator
 async def _async_fetch(self):
-    """主要工作,单任务和多任务均调用此方法"""
+    """
+    核心操作,单任务和多任务均调用
+    """
 
     @TRETRY
-    async def _fetch_run():
+    async def _retryable_request():
         async with TCPConnector(ssl=False) as Tconn, ClientSession(
             cookies=self.cookies, connector=Tconn
         ) as self.session, self.session.request(
@@ -90,27 +95,28 @@ async def _async_fetch(self):
             return self.response, self.content, self.index
 
     try:
-        await _fetch_run()
+        await _retryable_request()
         _result = ACResponse(self.response, self.content, self.index)
         self.result = self.callback(_result) if callable(self.callback) else _result
         return self.result
     except Exception as err:
         print(f"Async_fetch:{self} | RetryErr:{err!r}")
-        # self.response = self.content = None
-        self.result = ACResponse("", err, index=self.index)
+        self.result = ACResponse("", str(err), index=self.index)
         return self.result
 
 
 def __session_method(method, *args, **kwargs):
+    """构建任务"""
     return getattr(AsyncTask(), method)(*args, **kwargs)
 
 
 def __parse(method, url, *args, **kwargs):
     """发起单任务"""
     task = partial(__session_method, method)(url, *args, **kwargs)
-    _coroutine = task.start()
-    loop = asyncio.new_event_loop()
-    return loop.run_until_complete(_coroutine)
+    return asyncio.run(task.start())
+    # _coroutine = task.start()
+    # loop = asyncio.new_event_loop()
+    # return loop.run_until_complete(_coroutine)
 
 
 ahttpGet = partial(__parse, "get")
@@ -118,7 +124,7 @@ ahttpPost = partial(__parse, "post")
 
 
 async def __create_thread_task(tasks):
-    """异步，子线程,用不同session"""
+    """不推荐，异步，子线程,用不同session"""
     thread_loop = asyncio.new_event_loop()
     Thread(target=thread_loop.run_forever, name="ThreadSafe", daemon=True).start()
 
@@ -142,10 +148,10 @@ async def __create_gather_task(tasks):
 def __gather_parse(method, urls, *args, **kwargs):
     """发起多任务"""
     coroes = [partial(__session_method, method)(url, *args, **kwargs) for url in urls]
-    select_fn = (
+    task_method = (
         __create_thread_task if kwargs.pop("thread", False) else __create_gather_task
     )
-    return asyncio.run(select_fn(coroes))
+    return asyncio.run(task_method(coroes))
 
 
 ahttpGetAll = partial(__gather_parse, "get")
@@ -157,8 +163,8 @@ if __name__ == "__main__":
     url_post = "https://httpbin.org/post"
     url_headers = "https://httpbin.org/headers"
 
-    # res = ahttpGet(url_get)
-    # print(res)
+    res = ahttpGet(url_get)
+    print(res)
     # res = ahttpPost(url_post, data=b"data")
     # print(res)
 
@@ -167,21 +173,4 @@ if __name__ == "__main__":
             return resp
 
     res = ahttpGetAll([url_headers, url_get], callback=handle_back_ait)
-    print(res := res[0])
-    dic = [
-        "raw",
-        "_content",
-        "index",
-        "encoding",
-        "code_type",
-        "text",
-        "status",
-        "url",
-        "cookies",
-        "headers",
-        "content",
-        "ctext",
-        "element",
-        "html",
-    ]
-    # [print(i, ":::", getattr(res, i)) for i in dic]
+    print(res)

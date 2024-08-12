@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-06-26 09:47:33
-FilePath     : /CODE/xjLib/xt_Asyncio.py
+LastEditTime : 2024-08-09 11:16:18
+FilePath     : /CODE/xjLib/xt_ahttpcrawl.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 aiohttp笔记 - happy_codes - 博客园
@@ -92,18 +92,18 @@ def async_run_decorator(func):
 
 
 class AioHttpCrawl:
-    def __init__(self, loop=None):
-        self.future_list = []
-        self.loop = loop or asyncio.get_event_loop_policy().new_event_loop()
+    def __init__(self):
+        self.loop = asyncio.get_event_loop_policy().new_event_loop()
         asyncio.set_event_loop(self.loop)
+        self.future_list = []
 
     def __enter__(self):
         return self
 
-    def __del__(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.loop.close()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __del__(self):
         self.loop.close()
 
     def add_tasks(self, url_list, method="GET", *args, **kwargs):
@@ -114,28 +114,22 @@ class AioHttpCrawl:
 
     async def tasks_run(self, url_list, method, *args, **kwargs):
         """分发任务"""
-        callback = kwargs.pop("fu_callback", None)
         for index, url in enumerate(url_list, 1):
             task = asyncio.create_task(
                 self.__tasks_run(url, method=method, index=index, *args, **kwargs)
             )
-            if callback:
-                task.add_done_callback(callback)
             self.future_list.append(task)
 
         return await asyncio.gather(*self.future_list, return_exceptions=True)
 
-    @log_decorator
-    async def __tasks_run(self, url, method, index=None, *args, **kwargs):
-        """运行任务"""
+    @TRETRY
+    async def _retryable_request(self, url, method, index, *args, **kwargs):
         kwargs.setdefault("headers", Head().randua)
         kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
         cookies = kwargs.pop("cookies", {})
         callback = kwargs.pop("callback", None)
         index = index or id(url)
-
-        @TRETRY
-        async def _fetch():
+        try:
             async with ClientSession(
                 cookies=cookies, connector=TCPConnector(ssl=False)
             ) as session, session.request(
@@ -143,15 +137,19 @@ class AioHttpCrawl:
             ) as response:
                 content = await response.read()
                 response.text = await response.text()
-                return response, content, index
-
-        try:
-            response, content, index = await _fetch()
-            result = ACResponse(response, content, index)
-            return callback(result) if callable(callback) else result
+                _result = ACResponse(response, content, index)
+                result = callback(_result) if callable(callback) else _result
+            return result
         except Exception as err:
             print(f"AioCrawl_run_task:{self} | RetryErr:{err!r}")
-            return ACResponse("", err, index)
+            result = ACResponse("", str(err), index)
+            return result
+
+    @log_decorator
+    async def __tasks_run(self, url, method, index, *args, **kwargs):
+        """运行任务"""
+        result = await self._retryable_request(url, method, index, *args, **kwargs)
+        return result
 
     def add_pool(self, func, *args, **kwargs):
         """添加函数(同步异步均可)及参数,异步运行，可用wait_completed取结果"""
@@ -193,8 +191,8 @@ if __name__ == "__main__":
     # $add_func########################################################
     from xt_requests import get
 
-    # print(333333, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
-    # print(333333, myaio.wait_completed())
+    print(333333, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
+    print(333333, myaio.wait_completed())
     # $装饰器##########################################################
 
     @async_inexecutor_decorator
@@ -217,9 +215,9 @@ if __name__ == "__main__":
 
     # print(666666, res := get_message("https://httpbin.org/get"))
 
-    print(
-        666666,
-        myaio.add_pool(get_message, ["https://httpbin.org/get"] * 3),
-    )
+    # print(
+    #     666666,
+    #     myaio.add_pool(get_message, ["https://httpbin.org/get"] * 3),
+    # )
 
-    print(666666, myaio.wait_completed())
+    # print(666666, myaio.wait_completed())
