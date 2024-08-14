@@ -16,6 +16,7 @@ https://blog.csdn.net/ydyang1126/article/details/78226701/
 
 import asyncio
 import traceback
+from typing import Optional
 
 import aiomysql
 from xt_database.cfg import DB_CFG
@@ -32,14 +33,9 @@ class AioMysql(SingletonMixin):
         asyncio.set_event_loop(self.loop)  # @解决循环的关键点
         self.run_in_loop([self.create_pool()])
 
-    def run_in_loop(self, coro_list=None):
+    def run_in_loop(self, coro_list: Optional[list] = None):
         coro_list = coro_list or self.coro_list
         return self.loop.run_until_complete(asyncio.gather(*coro_list))
-
-    @staticmethod
-    def create_aclent(key="default", autocommit=True):
-        self = AioMysql(key, autocommit)
-        return self
 
     async def create_pool(self):
         db_key = self.db_key
@@ -110,7 +106,7 @@ class AioMysql(SingletonMixin):
             await self.closeCurosr(conn, cur)
             return affetced if affetced else cur.lastrowid
 
-    def query(self, sql_list, params: dict = None, autorun=True):
+    def query(self, sql_list, params: Optional[dict] = None, autorun=True):
         sql_list = [sql_list] if isinstance(sql_list, str) else sql_list
         _coro = [self._query(_sql, params) for _sql in sql_list]
         return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
@@ -127,7 +123,12 @@ class AioMysql(SingletonMixin):
 
 
 if __name__ == "__main__":
-    query_list = ["select * from users2", "select * from users2 where ID = 1", "update users2 set username='刘新军1' where ID = 2", "select * from users2 where ID = 2"]
+    query_list = [
+        "select * from users2",
+        "select * from users2 where ID = 1",
+        "update users2 set username='刘新军1' where ID = 2",
+        "select * from users2 where ID = 2",
+    ]
     up_sql = ("update users2 set username='刘新新' where ID = 2",)
     ups_sql = "update users2 set username=%s where ID = %s"
     ups_data = [("刘澈", 1), ("刘新军", 2)]
@@ -137,7 +138,7 @@ if __name__ == "__main__":
     # print(111111111111111111, res)
     # res = self.executeall(ups_sql, ups_data)
     # print(222222222222222222, res)
-    self = AioMysql.create_aclent("TXbx")
+    self = AioMysql("TXbx")
     res = self.query("select * from users2")
     for item in res[0]:
         print(item)

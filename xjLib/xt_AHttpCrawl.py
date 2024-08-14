@@ -93,35 +93,32 @@ def async_run_decorator(func):
 
 class AioHttpCrawl:
     def __init__(self):
-        self.loop = asyncio.get_event_loop_policy().new_event_loop()
-        asyncio.set_event_loop(self.loop)
         self.future_list = []
 
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.loop.close()
+    def __exit__(self, exc_type, exc_val, exc_tb): ...
 
-    def __del__(self):
-        self.loop.close()
+    def __del__(self): ...
 
     def add_tasks(self, url_list, method="GET", *args, **kwargs):
         """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
-        return self.loop.run_until_complete(
-            self.tasks_run(url_list, method=method, *args, **kwargs)
-        )
+        return asyncio.run(self.tasks_run(url_list, method=method, *args, **kwargs))
 
     async def tasks_run(self, url_list, method, *args, **kwargs):
         """分发任务"""
         for index, url in enumerate(url_list, 1):
             task = asyncio.create_task(
-                self.__tasks_run(url, method=method, index=index, *args, **kwargs)
+                self._retryable_request(
+                    url, method=method, index=index, *args, **kwargs
+                )
             )
             self.future_list.append(task)
 
         return await asyncio.gather(*self.future_list, return_exceptions=True)
 
+    @log_decorator
     @TRETRY
     async def _retryable_request(self, url, method, index, *args, **kwargs):
         kwargs.setdefault("headers", Head().randua)
@@ -145,21 +142,16 @@ class AioHttpCrawl:
             result = ACResponse("", str(err), index)
             return result
 
-    @log_decorator
-    async def __tasks_run(self, url, method, index, *args, **kwargs):
-        """运行任务"""
-        result = await self._retryable_request(url, method, index, *args, **kwargs)
-        return result
-
     def add_pool(self, func, *args, **kwargs):
         """添加函数(同步异步均可)及参数,异步运行，可用wait_completed取结果"""
-        return self.loop.run_until_complete(self.__pool_run(func, *args, **kwargs))
+        return asyncio.run(self.__pool_run(func, *args, **kwargs))
 
     async def __pool_run(self, func, *args, **kwargs):
+        _loop = asyncio.get_running_loop()
         callback = kwargs.pop("fu_callback", None)
         with ThreadPoolExecutor(32) as executor:
             for arg in zip(*args):
-                task = self.loop.run_in_executor(executor, func, *arg, **kwargs)
+                task = _loop.run_in_executor(executor, func, *arg, **kwargs)
                 if callback:
                     task.add_done_callback(callback)
                 self.future_list.append(task)

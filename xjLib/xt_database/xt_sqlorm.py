@@ -11,6 +11,8 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from typing import Optional
+
 import pandas
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -23,7 +25,9 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
     # #限定参数类型
     # Base = xt_class.typed_property("Base", DeclarativeMeta)
 
-    def __init__(self, db_key="default", target_table_name=None, source_table_name=None):
+    def __init__(
+        self, db_key="default", target_table_name=None, source_table_name=None
+    ):
         echo = True if __name__ == "__main__" else False
         # 创建引擎
         self.engine = create_engine(
@@ -36,7 +40,9 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
             future=True,  # 使用异步模式
             # poolclass=NullPool, # 禁用池
         )
-        self.Base = get_db_model(self.engine, target_table_name, source_table_name)  # #获取orm基类,同时创建表
+        self.Base = get_db_model(
+            self.engine, target_table_name, source_table_name
+        )  # #获取orm基类,同时创建表
         self.conn = self.engine.connect()  # pd使用
         self.session = sessionmaker(
             bind=self.engine,
@@ -70,7 +76,7 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
         drop_sql = f"DROP TABLE if exists {dbname}"
         self.session.execute(text(drop_sql))
 
-    def run_sql(self, sql: str, *, params: dict = None):
+    def run_sql(self, sql: str, *, params: Optional[dict] = None):
         """
         执行并提交单条sql
         Args:
@@ -85,7 +91,7 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
         result = self.session.execute(_sql, params)
         return result.all() if result.returns_rows else result.rowcount
 
-    def query(self, whrere_dict: dict = None):
+    def query(self, whrere_dict: Optional[dict] = None):
         whrere_dict = whrere_dict or {}
         query = self._query.filter_by(**whrere_dict)
         return query.all()
@@ -170,7 +176,16 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
 
 if __name__ == "__main__":
     query_list = ["select * from users2 where id = 1", "select * from users2"]
-    item = [{"username": "刘新", "password": "234567", "手机": "13910118122", "代理人编码": "10005393", "会员级别": "SSS", "会员到期日": "9999-12-31 00:00:00"}]
+    item = [
+        {
+            "username": "刘新",
+            "password": "234567",
+            "手机": "13910118122",
+            "代理人编码": "10005393",
+            "会员级别": "SSS",
+            "会员到期日": "9999-12-31 00:00:00",
+        }
+    ]
 
     ASO = SqlConnection("TXbx", "users2", "users")
     # res = ASO.insert(item)
