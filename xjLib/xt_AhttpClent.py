@@ -67,7 +67,6 @@ class AioHttpClient:
         if hasattr(self, "_session") and self._session is not None:
             await self._session.close()
             self._session = None
-        # self._loop.close()
 
     def _make_method(self, *args, **kwargs):
         return self._loop.run_until_complete(self.request(*args, **kwargs))
@@ -108,6 +107,7 @@ class AioHttpClient:
 
     def getall(self, *args, **kwargs):
         return self._loop.run_until_complete(self.request_all("get", *args, **kwargs))
+        # return asyncio.run(self.request_all("get", *args, **kwargs))
 
     def postall(self, *args, **kwargs):
         return self._loop.run_until_complete(self.request_all("post", *args, **kwargs))
@@ -115,11 +115,11 @@ class AioHttpClient:
 
 if __name__ == "__main__":
     url = "https://httpbin.org/get"
-    with AioHttpClient() as AHC:
-        res = AHC.get(url)
-        print(111111, res)
-        res = AHC.getall([url, url, "https://www.bigee.cc/book/6909/2.html"])
-        print(222222, res)
+    AHC = AioHttpClient()
+    res = AHC.get(url)
+    print(111111, res)
+    res = AHC.getall([url, url, "https://www.bigee.cc/book/6909/2.html"])
+    print(222222, res)
     # AHC = AioHttpClient()
     # res = AHC.GET(url)
     # print(333333, res.headers)
