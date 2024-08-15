@@ -33,9 +33,8 @@ class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
             pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-            echo=True
-            if __name__ == "__main__"
-            else False,  # echo参数为True时,会显示每条执行的SQL语句
+            echo=True if __name__ == "__main__" else False,
+            # echo参数为True时,会显示每条执行的SQL语句
             future=True,  # 使用异步模式
             # poolclass=NullPool, # 禁用池
         )

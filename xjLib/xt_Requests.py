@@ -53,7 +53,7 @@ def _retryable_request(method, url, **kwargs):
 
 
 @log_decorator
-def _request(method, url, **kwargs) -> htmlResponse:
+def _made_request_by_method(method, url, **kwargs) -> htmlResponse:
     """利用 TRETRY 库实现重试"""
     kwargs.setdefault("headers", Head().randua)
     kwargs.setdefault("timeout", TIMEOUT)  # @超时
@@ -61,8 +61,8 @@ def _request(method, url, **kwargs) -> htmlResponse:
     return result
 
 
-get = partial(_request, "get")
-post = partial(_request, "post")
+get = partial(_made_request_by_method, "get")
+post = partial(_made_request_by_method, "post")
 
 
 class SessionClient:
@@ -91,13 +91,13 @@ class SessionClient:
     def __getitem__(self, method):
         if method.lower() in Method_List:
             self.method = method.lower()  # 保存请求方法
-            return self._make_method  # 调用方法
-            # return lambda *args, **kwargs: self._make_method(*args, **kwargs)
+            return self._made_request_by_method  # 调用方法
+            # return lambda *args, **kwargs: self._made_request_by_method(*args, **kwargs)
 
     def __getattr__(self, method):
         return self.__getitem__(method)
 
-    def _make_method(self, *args, **kwargs):
+    def _made_request_by_method(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
 

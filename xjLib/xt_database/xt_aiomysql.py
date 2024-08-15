@@ -34,7 +34,7 @@ class AioMysql:
         if db_key not in DB_CFG:
             raise ValueError(f"错误提示:检查数据库配置:{db_key}")
         cfg = DB_CFG[db_key].copy()
-        cfg.pop("type", None)
+        cfg.pop("type")
         try:
             self.engine = await aiosa.create_engine(
                 autocommit=autocommit,  # 自动提交模式

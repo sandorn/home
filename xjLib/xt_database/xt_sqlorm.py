@@ -11,7 +11,7 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from typing import Optional
+from typing import Optional, Sequence
 
 import pandas
 from sqlalchemy import create_engine, text
@@ -28,7 +28,6 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
     def __init__(
         self, db_key="default", target_table_name=None, source_table_name=None
     ):
-        echo = True if __name__ == "__main__" else False
         # 创建引擎
         self.engine = create_engine(
             connect_str(db_key),
@@ -36,7 +35,8 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
             pool_size=5,  # 连接池大小
             pool_timeout=30,  # 池中没有线程最多等待的时间,否则报错
             pool_recycle=-1,  # 多久之后对线程池中的线程进行一次连接的回收（重置）
-            echo=echo,  # echo参数为True时,会显示每条执行的SQL语句
+            echo=True if __name__ == "__main__" else False,
+            # echo参数为True时,会显示每条执行的SQL语句
             future=True,  # 使用异步模式
             # poolclass=NullPool, # 禁用池
         )
@@ -107,13 +107,13 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
             self.session.rollback()
             return 0
 
-    def update(self, value, conds):
+    def update(self, params: dict, whrere_dict: dict):
         """
-        conditions_dict:条件字典;where
-        value_dict:更新数据字典:{'字段':字段值}
+        whrere_dict:条件字典;where
+        params:更新数据字典:{'字段':字段值}
         """
-        query = self._query.filter_by(**conds)
-        updatenum = query.update(value)
+        query = self._query.filter_by(**whrere_dict)
+        updatenum = query.update(params)
         try:
             self.session.commit()
             return updatenum
@@ -121,7 +121,7 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
             self.session.rollback()
             return 0
 
-    def delete(self, whrere_dict):
+    def delete(self, whrere_dict: dict):
         query = self._query.filter_by(**whrere_dict)
         deleteNum = query.delete()
         try:
@@ -131,14 +131,19 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
             self.session.rollback()
             return 0
 
-    def select(self, whrere_dict=None, Columns_list=None, count=None):
+    def select(
+        self,
+        whrere_dict: Optional[dict] = None,
+        Columns_list: Optional[Sequence[str]] = None,
+        countNum: Optional[int] = None,
+    ):
         """
         whrere_dict:字典,条件 where。类似self.params
         Columns_list:选择的列名
-        count:返回的记录数
+        countNum:返回的记录数
         return:处理后的list,内含dict(未选择列),或tuple(选择列)
         """
-        if isinstance(Columns_list, (tuple, list)) and len(Columns_list) > 0:
+        if isinstance(Columns_list, Sequence) and len(Columns_list) > 0:
             __Columns_list = [self.params.get(key) for key in Columns_list]
         else:
             __Columns_list = [self.Base]
@@ -147,21 +152,21 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
         if whrere_dict is not None:
             query = query.filter_by(**whrere_dict)
 
-        return query.limit(count).all() if count else query.all()
+        return query.limit(countNum).all() if countNum else query.all()
 
-    def from_statement(self, sql, whrere_dict=None):
+    def from_statement(self, sql, whrere_dict: Optional[dict] = None):
         """使用完全基于字符串的语句"""
         query = self._query.from_statement(text(sql))
         return query.params(**whrere_dict).all() if whrere_dict else query.all()
 
-    def filter_by(self, whrere_dict, count=None):
+    def filter_by(self, whrere_dict: Optional[dict], countNum: Optional[int] = None):
         """
         filter_by用于简单查询,不支持比较运算符,不需要额外指定类名。
         filter_by的参数直接支持组合查询。
         仅支持[等于]、[and],无需明示,在参数中以字典形式传入
         """
         query = self._query.filter_by(**whrere_dict)
-        return query.limit(count).all() if count else query.all()
+        return query.limit(countNum).all() if countNum else query.all()
 
     def pd_get_dict(self, table_name):
         result = pandas.read_sql_table(table_name, con=self.conn)
@@ -192,17 +197,19 @@ if __name__ == "__main__":
     # print(1111, res)
     # res = ASO.update(value={"username": "刘澈"}, conds={"ID": 4})
     # print(2222, res)
-    res = ASO.run_sql(query_list[1])
+    res = ASO.run_sql(query_list[0])
     print(3333, res)
     # res = ASO.query()
     # print(4444, res)
     # res = ASO.filter_by({"ID": 4})
     # print(5555, res)
-    # resfrom_statement = ASO.from_statement("select * from users2 where id=:id", {"id": 5})
-    # print(6666, resfrom_statement)
-    # print(ASO.Base.make_dict(resfrom_statement))
-    # print(7777, resfrom_statement[0].to_dict(), ASO.Base.to_dict(resfrom_statement[0]))
+    resfrom_statement = ASO.from_statement(
+        "select * from users2 where id=:id", {"id": 5}
+    )
+    print(6666, resfrom_statement)
+    print(ASO.Base.make_dict(resfrom_statement))
+    print(7777, resfrom_statement[0].to_dict(), ASO.Base.to_dict(resfrom_statement[0]))
     # deleNum = ASO.delete({"ID": 3})
     # print(8888, deleNum)
-    # res = ASO.select()  # {"username": "刘新军"}, ["ID", "username"], 0)
-    # print(9999, res)
+    res = ASO.select({"username": "刘新军"}, ["ID", "username"], 0)
+    print(9999, res)

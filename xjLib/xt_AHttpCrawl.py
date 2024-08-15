@@ -103,8 +103,9 @@ class AioHttpCrawl:
     def __del__(self): ...
 
     def add_tasks(self, url_list, method="GET", *args, **kwargs):
-        """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
-        return asyncio.run(self.tasks_run(url_list, method=method, *args, **kwargs))
+        """添加网址列表,异步并发爬虫，返回结果列表，可用_wait_completed取结果"""
+        asyncio.run(self.tasks_run(url_list, method=method, *args, **kwargs))
+        return self._wait_completed()
 
     async def tasks_run(self, url_list, method, *args, **kwargs):
         """分发任务"""
@@ -143,8 +144,9 @@ class AioHttpCrawl:
             return result
 
     def add_pool(self, func, *args, **kwargs):
-        """添加函数(同步异步均可)及参数,异步运行，可用wait_completed取结果"""
-        return asyncio.run(self.__pool_run(func, *args, **kwargs))
+        """添加函数(同步异步均可)及参数,异步运行，可用_wait_completed取结果"""
+        asyncio.run(self.__pool_run(func, *args, **kwargs))
+        return self._wait_completed()
 
     async def __pool_run(self, func, *args, **kwargs):
         _loop = asyncio.get_running_loop()
@@ -158,7 +160,7 @@ class AioHttpCrawl:
 
         return await asyncio.gather(*self.future_list, return_exceptions=True)
 
-    def wait_completed(self):
+    def _wait_completed(self):
         if not self.future_list:
             return []
         # while not all([future.done() for future in self.future_list]):sleep(0.01);continue
@@ -177,14 +179,11 @@ if __name__ == "__main__":
         "https://www.bigee.cc/book/6909/2.html",
     ]
     print(111111, myaio.add_tasks(url_list * 1, "get"))
-    print(111111, myaio.wait_completed())
     print(222222, myaio.add_tasks(url_list * 1))
-    print(222222, myaio.wait_completed())
     # $add_func########################################################
     from xt_requests import get
 
     print(333333, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
-    print(333333, myaio.wait_completed())
     # $装饰器##########################################################
 
     @async_inexecutor_decorator
@@ -212,4 +211,4 @@ if __name__ == "__main__":
     #     myaio.add_pool(get_message, ["https://httpbin.org/get"] * 3),
     # )
 
-    # print(666666, myaio.wait_completed())
+    # print(666666, myaio._wait_completed())
