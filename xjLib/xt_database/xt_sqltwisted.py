@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-21 00:08:37
-LastEditTime : 2024-07-25 16:52:52
+LastEditTime : 2024-08-15 14:03:13
 FilePath     : /CODE/xjLib/xt_database/xt_sqltwisted.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -14,6 +14,7 @@ Github       : https://github.com/sandorn/home
 from twisted.enterprise import adbapi
 from twisted.internet import reactor
 from xt_database.cfg import DB_CFG
+from xt_database.xt_untilsql import make_insert_sql, make_update_sql
 
 
 class SqlTwisted:
@@ -22,22 +23,26 @@ class SqlTwisted:
         config = DB_CFG[db_key].copy()
         if "type" in config:
             config.pop("type")
-        self.dbpool = adbapi.ConnectionPool("MySQLdb", **config)  # 'MySQLdb' , 'pymysql'
+        self.dbpool = adbapi.ConnectionPool(
+            "MySQLdb", **config
+        )  # 'MySQLdb' , 'pymysql'
         reactor.callWhenRunning(self.close)
 
     def close(self):
         self.dbpool.close()
         reactor.stop()  # 终止reactor
 
-    def query_success(self, results):
+    def perform_query_success(self, results):
         print("【perform_query 查询成功】:", results)
 
-    def query_failure(self, error):
+    def perform_query_failure(self, error):
         print("【perform_query 查询失败】:", error)
 
     # 异步执行SQL查询
     def perform_query(self, query):
-        self.dbpool.runQuery(query).addCallbacks(self.query_success, self.query_failure)
+        self.dbpool.runQuery(query).addCallbacks(
+            self.perform_query_success, self.perform_query_failure
+        )
 
     def query(self, sql):
         defer = self.dbpool.runInteraction(self._do_query, sql)
@@ -54,45 +59,36 @@ class SqlTwisted:
         defer.addBoth(self.handle_back, item, "update")
 
     def handle_back(self, result, item, *args):
-        [arg] = args
-        print(f"【SqlTwisted异步回调 [{arg}] 】: {result} | item:{item}")
+        print(f"【SqlTwisted异步回调 [{args[0]}] 】: {result} | item:{item}")
         return result
-
-    @staticmethod
-    def get_insert_sql(item, table_name):
-        cols = ", ".join(f"`{k}`" for k in item.keys())
-        vals = ", ".join(f"'{v}'" for v in item.values())
-        sql = f"INSERT INTO `{table_name}`({cols}) VALUES({vals})"
-        return sql.replace("%", "%%")
-
-    @staticmethod
-    def get_update_sql(item, condition, table_name):
-        item_kv = ", ".join([f"`{k}`='{item[k]}'" for k in item])
-        cond_k = ", ".join([f"`{k}`" for k in condition.keys()])
-        cond_v = ", ".join([f"'{v}'" for v in condition.values()])
-        sql = f"UPDATE `{table_name}` SET {item_kv} WHERE ({cond_k})=({cond_v})"
-        return sql.replace("%", "%%")
 
     def _do_query(self, cursor, sql):
         cursor.execute(sql)  # self.dbpool 自带cursor
         return cursor.fetchall()
 
     def _do_insert(self, cursor, item, table_name):
-        sql = self.get_insert_sql(item, table_name)
+        sql = make_insert_sql(item, table_name)
         return cursor.execute(sql)  # self.dbpool 自带cursor
 
     def _do_update(self, cursor, item, condition, table_name):
-        sql = self.get_update_sql(item, condition, table_name)
+        sql = make_update_sql(item, condition, table_name)
         return cursor.execute(sql)
 
 
 if __name__ == "__main__":
     SQ = SqlTwisted("TXbx", "users2")
     update_item = {"username": "刘新军"}
-    insert_item = {"username": "刘新军99", "password": "234567", "手机": "13910118122", "代理人编码": "10008888", "会员级别": "SSS", "会员到期日": "9999-12-31 00:00:00"}
-    sql = ""
-    # SQ.insert(insert_item, 'users2')
-    # SQ.update(update_item, {'ID': 2})
-    SQ.query("select * from users2")
-    SQ.perform_query("select * from users2")
+    insert_item = {
+        "username": "刘新军99",
+        "password": "234567",
+        "手机": "13910118122",
+        "代理人编码": "10008888",
+        "会员级别": "SSS",
+        "会员到期日": "9999-12-31 00:00:00",
+    }
+    sqlstr = ["select * from users2 where ID=2", "select * from users2"]
+    # SQ.insert(insert_item, "users2")
+    # SQ.update(update_item, {"ID": 2})
+    # SQ.query(sqlstr)
+    SQ.perform_query(sqlstr[1])
     reactor.run()
