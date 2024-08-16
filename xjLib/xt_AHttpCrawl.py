@@ -35,16 +35,14 @@ def future_decorator(func, instance, args, kwargs):
 
 
 def coroutine_decorator(func):
-    """异步装饰器，装饰普通函数，返回coroutine"""
+    """尝试将普通函数包装为返回协程的装饰器（但注意这不是真正的异步）"""
 
-    @wrapt.decorator
-    async def wrapper(wrapped, instance, args, kwargs):
-        async def async_func(*args, **kwargs):
-            return wrapped(*args, **kwargs)
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        # 注意：这里直接调用同步函数，不等待任何异步操作
+        return func(*args, **kwargs)
 
-        return await async_func(*args, **kwargs)
-
-    return func if iscoroutinefunction(func) else wrapper(func)
+    return func if iscoroutinefunction(func) else wrapper
 
 
 def async_inexecutor_decorator(func):
@@ -74,7 +72,7 @@ def async_run_decorator(func):
         async def __wrapper(*args, **kwargs):
             callback = kwargs.pop("fu_callback", None)
 
-            task = asyncio.create_task(coroutine_decorator(func)(*args, **kwargs))
+            task = coroutine_decorator(func)(*args, **kwargs)
             if callback:
                 task.add_done_callback(callback)
             return await asyncio.gather(task, return_exceptions=True)
@@ -95,9 +93,7 @@ class AioHttpCrawl:
     async def tasks_run(self, url_list, method, **kwargs):
         """分发任务"""
         tasks = [
-            asyncio.create_task(
-                self._retry_request(url, method=method, index=index, **kwargs)
-            )
+            self._retry_request(url, method=method, index=index, **kwargs)
             for index, url in enumerate(url_list, 1)
         ]
         self.future_list.extend(tasks)
@@ -133,7 +129,7 @@ class AioHttpCrawl:
             return ACResponse("", err_str, index)
 
     def add_pool(self, func, *args, callback=None, **kwargs):
-        """添加函数(同步异步均可)及参数,异步运行，可用wait_completed取结果"""
+        """添加函数(同步异步均可)及参数,异步运行，返回结果"""
         return asyncio.run(self.__pool_run(func, *args, callback=callback, **kwargs))
 
     async def __pool_run(self, func, *args, callback=None, **kwargs):
@@ -174,11 +170,12 @@ if __name__ == "__main__":
         "https://www.bigee.cc/book/6909/2.html",
     ]
     print(111111, myaio.add_tasks(url_list * 1, "get"))
-    print(222222, myaio.add_tasks(url_list * 1))
     # $add_func########################################################
     from xt_requests import get
 
-    print(333333, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
+    print(222222, myaio.add_pool(get, url_list * 1))
+
+    # print(333333, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
     # print(444444, myaio.wait_completed())
     # $装饰器##########################################################
 
