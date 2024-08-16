@@ -14,16 +14,10 @@ Github       : https://github.com/sandorn/home
 import asyncio
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from tenacity import retry, stop_after_attempt, wait_random
-from xt_head import RETRY_TIME, TIMEOUT, Head
+from xt_head import TIMEOUT, TRETRY, Head
 from xt_log import log_decorator
 from xt_response import ACResponse
 
-TRETRY = retry(
-    reraise=True,  # 保留最后一次错误
-    stop=stop_after_attempt(RETRY_TIME),
-    wait=wait_random(min=0, max=1),
-)
 Method_List = [
     "get",
     "post",
@@ -57,8 +51,8 @@ class AioHttpClient:
     def __getitem__(self, method):
         if method.lower() in Method_List:
             self.method = method.lower()  # 保存请求方法
-            return self._make_method  # 调用方法
-            # return lambda *args, **kwargs: self._make_method(*args, **kwargs)
+            return self._make_parse  # 调用方法
+            # return lambda *args, **kwargs: self._make_parse(*args, **kwargs)
 
     def __getattr__(self, method):
         return self.__getitem__(method)
@@ -68,49 +62,49 @@ class AioHttpClient:
             await self._session.close()
             self._session = None
 
-    def _make_method(self, *args, **kwargs):
-        return self._loop.run_until_complete(self.request(*args, **kwargs))
+    def _make_parse(self, url, **kwargs):
+        return self._loop.run_until_complete(
+            self._retry_request(url, inde=id(url), **kwargs)
+        )
 
     @log_decorator
-    async def request(self, url, index=None, *args, **kwargs):
+    async def _retry_request(self, url, index=None, **kwargs):
         kwargs.setdefault("headers", Head().randua)
         kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
-        self.callback = kwargs.pop("callback", None)
+        callback = kwargs.pop("callback", None)
         index = index or id(url)
 
         @TRETRY
-        async def _retryable_request():
+        async def __fetch():
             async with self._session.request(
-                self.method, url, raise_for_status=True, *args, **kwargs
-            ) as self.response:
-                self.content = await self.response.read()
-                self.response.text = await self.response.text()
-                return self.response, self.content, self.index
+                self.method, url, raise_for_status=True, **kwargs
+            ) as response:
+                content = await response.content.read()
+                response.text = await response.text()
+                return response, content, index
 
         try:
-            await _retryable_request()
-            _result = ACResponse(self.response, self.content, self.index)
-            self.result = self.callback(_result) if callable(self.callback) else _result
-            return self.result
+            response, content, index = await __fetch()
+            result = ACResponse(response, content, index)
+            return callback(result) if callable(callback) else result
         except Exception as err:
-            print(f"AioHttpClient:{self} | RetryErr:{err!r}")
-            self.result = ACResponse("", str(err), index)
-            return self.result
+            print(err_str := f"AioHttpClient:{self} | URL:{url} | RetryErr:{err!r}")
+            return ACResponse("", err_str, index)
 
-    async def request_all(self, method, *args, **kwargs):
-        self.method = method
+    async def request_all(self, urls_list, **kwargs):
         task_list = [
-            self.request(*arg, index=index, **kwargs)
-            for index, arg in enumerate(list(zip(*args)), start=1)
+            self._retry_request(url, index=index, **kwargs)
+            for index, url in enumerate(urls_list, start=1)
         ]
         return await asyncio.gather(*task_list, return_exceptions=True)
 
-    def getall(self, *args, **kwargs):
-        return self._loop.run_until_complete(self.request_all("get", *args, **kwargs))
-        # return asyncio.run(self.request_all("get", *args, **kwargs))
+    def getall(self, urls_list, **kwargs):
+        self.method = "get"
+        return self._loop.run_until_complete(self.request_all(urls_list, **kwargs))
 
-    def postall(self, *args, **kwargs):
-        return self._loop.run_until_complete(self.request_all("post", *args, **kwargs))
+    def postall(self, urls_list, **kwargs):
+        self.method = "post"
+        return self._loop.run_until_complete(self.request_all(urls_list, **kwargs))
 
 
 if __name__ == "__main__":
@@ -120,8 +114,5 @@ if __name__ == "__main__":
     print(111111, res)
     res = AHC.getall([url, url, "https://www.bigee.cc/book/6909/2.html"])
     print(222222, res)
-    # AHC = AioHttpClient()
-    # res = AHC.GET(url)
     # print(333333, res.headers)
-    # res = AHC.GET(url)
     # print(444444, res.status)

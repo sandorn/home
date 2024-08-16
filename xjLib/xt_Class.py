@@ -23,14 +23,18 @@ class ItemGetMixin:
     """下标调用（索引操作）[key]"""
 
     def __getitem__(self, key: str) -> Any:
-        # return getattr(self, key, None)
-        return self.__dict__.get(key, None)
+        if __name__ == "__main__":
+            print("ItemGetMixin", key)
+        return getattr(self, key, None)
+        # return self.__dict__.get(key, None)
 
 
 class ItemSetMixin:
     """下标调用（索引操作）[key]"""
 
     def __setitem__(self, key: str, value: Any) -> None:
+        if __name__ == "__main__":
+            print("ItemSetMixin", key, value)
         # return setattr(self, key, value)
         self.__dict__[key] = value
 
@@ -39,26 +43,111 @@ class ItemDelMixin:
     """下标调用（索引操作）[key]"""
 
     def __delitem__(self, key: str) -> None:
+        if __name__ == "__main__":
+            print("ItemDelMixin", key)
         # return delattr(self, key)
-        return self.__dict__.pop(key)
+        # del self.__dict__[key]
+        self.__dict__.pop(key)
 
 
 class ItemMixin(ItemGetMixin, ItemSetMixin, ItemDelMixin): ...
+
+
+class ItemMixinS:
+    """下标调用（索引操作）[key] 的混合类"""
+
+    def __init__(self):
+        # 初始化一个空字典来存储键值对
+        self._data = {}
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        """
+        设置与指定键相关联的值。
+
+        参数:
+        key (str): 要设置的键。
+        value (Any): 与键相关联的值。
+        """
+        # 将键值对存储在_data字典中
+        self._data[key] = value
+
+    def __getitem__(self, key: str) -> Any:
+        """
+        获取与指定键相关联的值。
+
+        参数:
+        key (str): 要获取值的键。
+
+        返回:
+        Any: 与键相关联的值。
+
+        抛出:
+        KeyError: 如果键不存在于_data字典中。
+        """
+        # 从_data字典中获取与键相关联的值
+        return self._data[key]
+
+    # 可选: 提供一个方法来删除键值对
+    def __delitem__(self, key: str) -> None:
+        """
+        删除与指定键相关联的值。
+
+        参数:
+        key (str): 要删除的键。
+
+        抛出:
+        KeyError: 如果键不存在于_data字典中。
+        """
+        del self._data[key]
+
+    # 可选: 提供一个方法来获取所有键
+    def keys(self) -> list:
+        """
+        获取所有键的列表。
+
+        返回:
+        list: 所有键的列表。
+        """
+        return list(self._data.keys())
+
+    # 可选: 提供一个方法来获取所有值
+    def values(self) -> list:
+        """
+        获取所有值的列表。
+
+        返回:
+        list: 所有值的列表。
+        """
+        return list(self._data.values())
+
+    # 可选: 提供一个方法来获取所有键值对
+    def items(self) -> list:
+        """
+        获取所有键值对的列表。
+
+        返回:
+        list: 所有键值对的列表（每个元素是一个(key, value)元组）。
+        """
+        return list(self._data.items())
 
 
 class AttrGetMixin:
     """原点调用（属性访问）cls.key"""
 
     def __getattr__(self, key: str) -> Any:
-        # return getattr(self, key, None)
-        # return super().__getattribute__(key)
-        return self.__dict__.get(key, None)
+        if __name__ == "__main__":
+            print("AttrGetMixin", key)
+        return getattr(self, key, None)
+        # return super().__getattribute__(key)  #可能会导致递归调用
+        # return self.__dict__.get(key, None)
 
 
 class AttrSetMixin:
     """原点调用（属性访问）cls.key"""
 
     def __setattr__(self, key: str, value: Any) -> None:
+        if __name__ == "__main__":
+            print("AttrSetMixin", key, value)
         return super().__setattr__(key, value)
 
 
@@ -66,6 +155,8 @@ class AttrDelMixin:
     """原点调用（属性访问）cls.key"""
 
     def __delattr__(self, key: str) -> None:
+        if __name__ == "__main__":
+            print("AttrDelMixin", key)
         return super().__delattr__(key)
 
 
@@ -94,6 +185,8 @@ class IterMixin:
     """
 
     def __iter__(self) -> Any:
+        if __name__ == "__main__":
+            print("IterMixin")
         yield from self.__dict__.items()
         # return iter(self.get_dict().items())
 
@@ -102,6 +195,8 @@ class ReprMixin:
     """用于打印显示"""
 
     def __repr__(self) -> str:
+        if __name__ == "__main__":
+            print("ReprMixin")
         dic = self.__dict__ | self.get_dict()
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
@@ -116,17 +211,25 @@ class SetOnceDict:
     # __slots__ = ("_dict",)
 
     def __init__(self):
+        if __name__ == "__main__":
+            print("SetOnceDict.__init__")
         self._dict: dict[Any, Any] = {}
 
     def __setitem__(self, key: str, value: Any) -> None:
+        if __name__ == "__main__":
+            print("SetOnceDict.__setitem__", key, value)
         if key in self._dict.keys():
             raise ValueError(f"Key '{key}' already exists:{value}")
         self._dict[key] = value
 
     def __getitem__(self, key: str) -> Any:
+        if __name__ == "__main__":
+            print("SetOnceDict.__getitem__", key)
         return self._dict[key]
 
     def __repr__(self):
+        if __name__ == "__main__":
+            print("SetOnceDict.__repr__")
         return repr(self._dict)
 
     # def __setitem__(self, key: str, value: Any) -> None:
@@ -188,16 +291,18 @@ class BaseClsMeta(type):
         dct: dict[str, Any],
         **kwds: dict[str, Any],
     ) -> type:
-        bases_mixins = []
-        if "MixinItem" in dct and dct["MixinItem"]:
-            bases_mixins.append(ItemMixin)
+        UpMethod_list = []
         if "MixinAttr" in dct and dct["MixinAttr"]:
-            bases_mixins.append(AttrMixin)
+            UpMethod_list.append(AttrMixin)
         if "MixinIter" in dct and dct["MixinIter"]:
-            bases_mixins.append(IterMixin)
+            UpMethod_list.append(IterMixin)
+        if "MixinItem" in dct and dct["MixinItem"]:
+            UpMethod_list.append(ItemMixin)
+        if "MixinRepr" in dct and dct["MixinRepr"]:
+            UpMethod_list.append(ReprMixin, ReDictMixin)
 
-        for mixin in bases_mixins:
-            dct.update(mixin.__dict__)  # 动态添加属性和方法
+        for UpMethod in UpMethod_list:
+            dct.update(UpMethod.__dict__)  # 动态添加属性和方法
         return super().__new__(cls, name, bases, dct)
 
 
@@ -317,7 +422,7 @@ if __name__ == "__main__":
         print(b.__dict__, id(b))
 
     def 动态元类():
-        class MyBaseClsMeta(metaclass=BaseClsMeta):
+        class MyBaseClsMeta(metaclass=MixinClsMeta):
             MixinAttr = True
             MixinItem = True
             MixinIter = True
@@ -333,7 +438,8 @@ if __name__ == "__main__":
                 print("ddd")
 
         bb = MyBaseClsMeta()
-        print(bb)  # , bb.__dict__)
+        bb["姓名"] = "象牙黑"
+        print(bb, "\n", bb.name, bb.姓名, bb["name"])  # , bb.__dict__)
 
     # 赋值一次的字典()
     # 可迭代对象()

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 
 import os
-from typing import IO, List, Union
+from typing import IO, List, Optional, Union
 
 import numpy as np
 import pandas
@@ -36,7 +36,14 @@ class ExcelUtil:
     DEFAULT_SHEET_NAME = "Sheet1"
 
     @classmethod
-    def _to_excel(cls, data_list: List[dict], col_mappings: List[ColumnMapping], sheet_name: str, writer: pandas.ExcelWriter, **kwargs):
+    def _to_excel(
+        cls,
+        data_list: List[dict],
+        col_mappings: List[ColumnMapping],
+        sheet_name: str,
+        writer: pandas.ExcelWriter,
+        **kwargs,
+    ):
         """
         将列表数据写入excel文件
         Args:
@@ -46,14 +53,25 @@ class ExcelUtil:
             sheet_name: sheet名称 默认 Sheet1
             writer: ExcelWriter
         """
-        col_dict = {cm.column_name: cm.column_alias for cm in col_mappings} if col_mappings else None
+        col_dict = (
+            {cm.column_name: cm.column_alias for cm in col_mappings}
+            if col_mappings
+            else None
+        )
         df = pandas.DataFrame(data=data_list)
         if col_dict:
             df.rename(columns=col_dict, inplace=True)
         df.to_excel(writer, sheet_name=sheet_name, index=False, **kwargs)
 
     @classmethod
-    def list_to_excel(cls, path_or_buffer: Union[str, IO], data_list: List[dict], col_mappings: List[ColumnMapping] = None, sheet_name: str = None, **kwargs):
+    def list_to_excel(
+        cls,
+        path_or_buffer: Union[str, IO],
+        data_list: List[dict],
+        col_mappings: List[ColumnMapping],
+        sheet_name: Optional[str] = None,
+        **kwargs,
+    ):
         """
         列表转 excel文件
         Args:
@@ -79,7 +97,9 @@ class ExcelUtil:
             cls._to_excel(data_list, col_mappings, sheet_name, writer, **kwargs)
 
     @classmethod
-    def multi_list_to_excel(cls, path_or_buffer: Union[str, IO], data_collects: List[DataCollect], **kwargs):
+    def multi_list_to_excel(
+        cls, path_or_buffer: Union[str, IO], data_collects: List[DataCollect], **kwargs
+    ):
         """
         多列表转带不同 sheet的excel文件
         Args:
@@ -90,10 +110,25 @@ class ExcelUtil:
         """
         with pandas.ExcelWriter(path_or_buffer) as writer:
             for data_collect in data_collects:
-                cls._to_excel(data_list=data_collect.data_list, col_mappings=data_collect.col_mappings, sheet_name=data_collect.sheet_name, writer=writer, **kwargs)
+                cls._to_excel(
+                    data_list=data_collect.data_list,
+                    col_mappings=data_collect.col_mappings,
+                    sheet_name=data_collect.sheet_name,
+                    writer=writer,
+                    **kwargs,
+                )
 
     @classmethod
-    def read_excel(cls, path_or_buffer: Union[str, IO], sheet_name: str = None, col_mappings: List[ColumnMapping] = None, all_col: bool = True, header: int = 0, nan_replace=None, **kwargs) -> List[dict]:
+    def read_excel(
+        cls,
+        path_or_buffer: Union[str, IO],
+        sheet_name: Optional[str] = None,
+        col_mappings: Optional[List[ColumnMapping]] = None,
+        all_col: bool = True,
+        header: int = 0,
+        nan_replace=None,
+        **kwargs,
+    ) -> List[dict]:
         """
         读取excel表格数据，根据col_mapping替换列名
         Args:
@@ -107,13 +142,23 @@ class ExcelUtil:
         Returns:
         """
         sheet_name = sheet_name or cls.DEFAULT_SHEET_NAME
-        col_dict = {cm.column_name: cm.column_alias for cm in col_mappings} if col_mappings else None
+        col_dict = (
+            {cm.column_name: cm.column_alias for cm in col_mappings}
+            if col_mappings
+            else None
+        )
         use_cols = None
         if not all_col:
             # 获取excel表指定列数据
             use_cols = list(col_dict) if col_dict else None
 
-        df = pandas.read_excel(path_or_buffer, sheet_name=sheet_name, usecols=use_cols, header=header, **kwargs)
+        df = pandas.read_excel(
+            path_or_buffer,
+            sheet_name=sheet_name,
+            usecols=use_cols,
+            header=header,
+            **kwargs,
+        )
         df.replace(np.NAN, nan_replace)
         if col_dict:
             df.rename(columns=col_dict, inplace=True)
@@ -121,7 +166,13 @@ class ExcelUtil:
         return df.to_dict("records")
 
     @classmethod
-    def merge_excel_files(cls, input_files: List[str], output_file: str, sheet_mappings: List[SheetMapping] = None, **kwargs):
+    def merge_excel_files(
+        cls,
+        input_files: List[str],
+        output_file: str,
+        sheet_mappings: Optional[List[SheetMapping]] = None,
+        **kwargs,
+    ):
         """
         合并多个Excel文件到一个文件中（每个文件对应一个工作表）
         如果Excel文件有多个作表，则默认取第一个工作表
@@ -133,7 +184,10 @@ class ExcelUtil:
         Returns:
         """
         sheet_mappings = sheet_mappings or []
-        sheet_dict = {sheet_mapping.file_name: sheet_mapping.sheet_name for sheet_mapping in sheet_mappings}
+        sheet_dict = {
+            sheet_mapping.file_name: sheet_mapping.sheet_name
+            for sheet_mapping in sheet_mappings
+        }
         with pandas.ExcelWriter(output_file, engine_kwargs=kwargs) as writer:
             for file in input_files:
                 df = pandas.read_excel(file)

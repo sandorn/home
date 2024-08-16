@@ -15,8 +15,7 @@ requests 简化调用
 from functools import partial
 
 import requests
-from tenacity import retry, stop_after_attempt, wait_random
-from xt_head import RETRY_TIME, TIMEOUT, Head
+from xt_head import TIMEOUT, TRETRY, Head
 from xt_log import log_decorator
 from xt_response import htmlResponse
 
@@ -32,15 +31,10 @@ Method_List = [
     "patch",
 ]
 
-TRETRY = retry(
-    reraise=True,  # 保留最后一次错误
-    stop=stop_after_attempt(RETRY_TIME),
-    wait=wait_random(min=0, max=1),
-)
-
 
 @TRETRY  # from xt_tools import try_except_wraps
-def _retryable_request(method, url, **kwargs):
+def _retry_request(method, url, **kwargs):
+    """利用 TRETRY 库实现重试"""
     callback = kwargs.pop("callback", None)
     try:
         response = requests.request(method, url, **kwargs)
@@ -48,21 +42,24 @@ def _retryable_request(method, url, **kwargs):
         result = htmlResponse(response)
         return callback(result) if callable(callback) else result
     except Exception as err:
-        print(f"_request_tretry.{method}:<{url}>; Err:{err!r}")
-        return htmlResponse("", str(err), id(url))
+        print(err_str := f"Request_tretry:{method} | URL:{url} | Err:{err!r}")
+        return htmlResponse("", err_str, id(url))
 
 
 @log_decorator
-def _made_request_by_method(method, url, **kwargs) -> htmlResponse:
-    """利用 TRETRY 库实现重试"""
+def _parse(method, url, **kwargs) -> htmlResponse:
+    if method.lower() not in Method_List:
+        return htmlResponse("", f"Method:{method} not in {Method_List}", id(url))
     kwargs.setdefault("headers", Head().randua)
     kwargs.setdefault("timeout", TIMEOUT)  # @超时
-    result = _retryable_request(method, url, **kwargs)
+    kwargs.setdefault("cookies", {})
+
+    result = _retry_request(method, url, **kwargs)
     return result
 
 
-get = partial(_made_request_by_method, "get")
-post = partial(_made_request_by_method, "post")
+get = partial(_parse, "get")
+post = partial(_parse, "post")
 
 
 class SessionClient:
@@ -91,13 +88,14 @@ class SessionClient:
     def __getitem__(self, method):
         if method.lower() in Method_List:
             self.method = method.lower()  # 保存请求方法
-            return self._made_request_by_method  # 调用方法
-            # return lambda *args, **kwargs: self._made_request_by_method(*args, **kwargs)
+            return self.create_task  # 调用方法
+            # return lambda *args, **kwargs: self.create_task(*args, **kwargs)
 
     def __getattr__(self, method):
         return self.__getitem__(method)
 
-    def _made_request_by_method(self, *args, **kwargs):
+    @log_decorator
+    def create_task(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
 
@@ -106,10 +104,13 @@ class SessionClient:
         self.callback = kwargs.pop("callback", None)
         kwargs.setdefault("timeout", TIMEOUT)
         self.kwargs = kwargs
-        return self._request()
+
+        self.result = self._retry_request()
+        return self.result
 
     @TRETRY
-    def _retryable_request(self):
+    def _retry_request(self):
+        """利用 TRETRY 库实现重试"""
         try:
             self.response = self.session.request(
                 self.method, self.url, *self.args, **self.kwargs
@@ -118,13 +119,8 @@ class SessionClient:
             result = htmlResponse(self.response)
             return self.callback(result) if callable(self.callback) else result
         except requests.exceptions.RequestException as err:
-            print(f"SessionClient request:<{self.url}>; Err:{err!r}")
-            return htmlResponse("", err, id(self.url))
-
-    @log_decorator
-    def _request(self):
-        self.result = self._retryable_request()
-        return self.result
+            print(err_str := f"SessionClient:{self} | URL:{self.url} | Err:{err!r}")
+            return htmlResponse("", err_str, id(self.url))
 
     def update_cookies(self, cookie_dict):
         self.session.cookies.update(cookie_dict)
@@ -135,31 +131,29 @@ class SessionClient:
 
 if __name__ == "__main__":
     sion = SessionClient()
-    print(111111111111111111111, getattr(sion, "get")("http://httpbin.org/headers"))
+    print(111111111111111111111, getattr(sion, "get")("https://httpbin.org/get"))
     # urls = [
-    # 'http://www.baidu.com',
-    # 'http://www.163.com',
-    # 'http://dangdang.com',
-    # "https://httpbin.org",
-    # 'https://www.google.com',
+    #     "http://www.baidu.com",
+    #     "http://www.163.com",
+    #     "http://dangdang.com",
+    #     "https://httpbin.org",
+    #     "https://www.google.com",
     # ]
     # for url in urls:
-    # ...
-    # print(get_wraps('http://www.baidu.com').cookies)
+    #     print(get(url))
 
-    # res = partial(_request_tretry, "head")("http://www.163.com")
-    res = get("http://www.163.com")
-    print(res)
-    print("1".ljust(10), ":", res.xpath("//title/text()"))
-    print("2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
-    print(
-        "blank".ljust(10),
-        ":",
-        res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
-    )
+    print(222222222222222222222, partial(_parse, "HEAD")("http://httpbin.org/headers"))
+    print(333333333333333333333, res := get("http://www.163.com"))
+    # print("1".ljust(10), ":", res.xpath("//title/text()"))
+    # print("2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
+    # print(
+    #     "blank".ljust(10),
+    #     ":",
+    #     res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+    # )
     # print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
     # print("html".ljust(10), ":", res.html.xpath("//title/text()"))
-    print("element".ljust(10), ":", res.element.xpath("//title/text()"))
+    # print("elemsent".ljust(10), ":", res.element.xpath("//title/text()"))
     # print("query".ljust(10), ":", res.query("title").text())
     """
     ###############################################################

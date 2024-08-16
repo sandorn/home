@@ -168,7 +168,6 @@ ahttp_get_contents = partial(get_contents, fn=ahttpGet)
 
 if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
-    # 'https://www.biquge11.cc/read/11159/'
     bookname, urls, titles = get_download_url(url)
     # print(bookname, urls, titles)
     res = get_contents(0, urls[0])

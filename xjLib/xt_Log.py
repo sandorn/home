@@ -36,7 +36,7 @@ LevelDict = {
 
 class LogCls(SingletonMixin):
     def __init__(self, level=logging.DEBUG, logger=__name__, pyfile=None):
-        pyfile = pyfile or "MyLog"
+        pyfile = pyfile or "XtLog"
         self.level = level
         self.filename = f'{pyfile}--{datetime.now().strftime('%Y%m%d')}.log'
         # 定义的logging配置字典
@@ -47,110 +47,91 @@ class LogCls(SingletonMixin):
                 "standard": {"format": standard_format},
                 "simple": {"format": simple_format},
             },
-            "filters": {},
             "handlers": {
-                # 打印到终端的日志
                 "console": {
                     "level": self.level,
-                    "class": "logging.StreamHandler",
+                    "class": "logging.StreamHandler",  # 打印到屏幕
                     "formatter": "simple",
-                },  # 打印到屏幕
-                # 打印到文件的日志,收集DEBUG及以上的日志
+                },
                 "writelog": {
                     "level": self.level,
-                    "class": "logging.handlers.RotatingFileHandler",
+                    "class": "logging.handlers.RotatingFileHandler",  # 打印到文件
                     "formatter": "standard",
                     "filename": self.filename,
                     "maxBytes": 1024 * 1024 * 5,
                     "backupCount": 5,
                     "encoding": "utf-8",
-                },  # 保存到文件  # 日志文件  # 日志大小 5M  # 日志文件的编码，再也不用担心中文log乱码了
+                },  # 保存到文件  # 日志文件  # 日志大小 5M  # 日志文件的编码
             },
             "loggers": {
                 # logging.getLogger(__name__)拿到的logger配置
                 "": {
                     "handlers": ["writelog", "console"],
                     "level": self.level,
-                    "propagate": True,
-                },  # log数据既写入文件又打印到屏幕  # 向上（更高level的logger）传递
-                "writelog": {
-                    "handlers": ["writelog"],
-                    "level": self.level,
-                    "propagate": True,
-                },
-                "console": {
-                    "handlers": ["console"],
-                    "level": self.level,
-                    "propagate": True,
-                },
+                    "propagate": False,  # 向上级-父Logger传递
+                },  # log数据既写入文件又打印到屏幕
             },
         }
+
         logging.config.dictConfig(self.conf_dic)
         self.logger = logging.getLogger(logger)
 
-    def __getitem__(self, item):
-        return getattr(self.logger, LevelDict[self.level])
-
     def __getattr__(self, item):
-        return getattr(self.logger, LevelDict[self.level])
+        if item in logging._levelToName:
+            return getattr(self.logger, item)
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{item}'"
+        )
 
     def print(self, *args):
         return [
             getattr(self.logger, LevelDict[self.level])(item) for item in list(args)
         ]
 
-    def __call__(self, *args):
-        return [
-            getattr(self.logger, LevelDict[self.level])(item) for item in list(args)
-        ]
+    __call__ = print
 
 
 def get_fn_fileinfo(callfn):
-    # callfn = inspect.currentframe()
     _filename = _f_lineno = "None"
-    if callfn is not None:
+    if callfn:
         frame = callfn.f_back
-        if frame is not None:
+        if frame:
             _f_lineno = frame.f_lineno
             _filename = frame.f_code.co_filename.split("\\")[-1].split(".")[0]
     return _filename, _f_lineno
 
 
-def format_args_and_keywords(args, kwargs):
-    args_str = kwargs_str = ""
-
-    if args:
-        args_str = re.sub(r"<([^<>]+)>", r"\<\1\>", str(args))
-    if kwargs:
-        kwargs_str = re.sub(r"<([^<>]+)>", r"\<\1\>", str(kwargs))
-
-    return args_str, kwargs_str
+def format_strings(obj):
+    if isinstance(obj, (list, tuple, set)):
+        return ", ".join(map(format_strings, obj))
+    elif isinstance(obj, dict):
+        return ", ".join(f"{k}: {format_strings(v)}" for k, v in obj.items())
+    elif isinstance(obj, str):
+        return re.sub(r"<([^<>]+)>", r"\<\1\>", obj)
+    else:
+        return str(obj)
 
 
 def log_decorator(func):
     _filename, _f_lineno = get_fn_fileinfo(inspect.currentframe())
-    logger = LogCls(pyfile="MyLog")
+    logger = LogCls(pyfile="XtLog")
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        duration = perf_counter()
-        args_str, kwargs_str = format_args_and_keywords(args, kwargs)
+        args_str = format_strings(args)
+        kwargs_str = format_strings(kwargs)
+        base_log_msg = f"[{_filename}|fn:{func.__name__}@{_f_lineno}]"
 
-        logger(
-            f"[{_filename}|fn:{func.__name__}@{_f_lineno}]|<参数：{args_str} | 关键字参数：{kwargs_str}>"
-        )
+        logger(f"{base_log_msg}|<参数：{args_str} | 关键字参数：{kwargs_str}>")
+        duration = perf_counter()
         try:
             result = func(*args, **kwargs)
-            result_str = re.sub(r"<([^<>]+)>", r"\<\1\>", str(result))
+            result_str = format_strings(str(result))
             duration = perf_counter() - duration
-            logger(
-                f"[{_filename}|fn:{func.__name__}@{_f_lineno}]|<返回结果：{result_str} >|<耗时：{duration:.4f}s>"
-            )
+            logger(f"{base_log_msg}|<返回结果：{result_str} >|<耗时：{duration:.4f}s>")
             return result
         except Exception as e:
-            logger(
-                "exception", f"[{_filename}|fn:{func.__name__}@{_f_lineno}]|<报错：{e}>"
-            )
+            logger("exception", f"{base_log_msg}|<报错：{e}>")
 
     return wrapper
 

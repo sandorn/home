@@ -29,20 +29,26 @@ class htmlResponse:
     def __init__(self, response, content=None, index=None):
         self.index: int = index or id(self)
 
-        if response is not None:
+        if response:
             self.raw = response
-            self._content: bytes = content if content else response.content
+            self._content: bytes = (
+                content if isinstance(content, bytes) else response.content
+            )
             self.encoding = (
                 response.encoding if hasattr(response, "encoding") else "utf-8"
             )
             self.code_type = (
                 detect(self._content)["encoding"]
                 if isinstance(self._content, bytes)
-                else self.encoding
+                else "utf-8"
             )
         else:
             self.raw = None
-            self._content = b""
+            self._content = (
+                content.encode("utf-8", "replace")
+                if isinstance(content, str)
+                else (content or b"")
+            )
             self.encoding = "utf-8"
             self.code_type = "utf-8"
 
@@ -162,5 +168,5 @@ class ACResponse(htmlResponse):
 
 
 if __name__ == "__main__":
-    print(res := htmlResponse(None))
+    print(res := htmlResponse(""))
     print(res.text)

@@ -15,10 +15,15 @@ Github       : https://github.com/sandorn/home
 import random
 
 from fake_useragent import UserAgent
+from tenacity import retry, stop_after_attempt, wait_random
 
-TIMEOUT = 20
+TIMEOUT = 30
 RETRY_TIME = 6
-
+TRETRY = retry(
+    reraise=True,  # 保留最后一次错误
+    stop=stop_after_attempt(RETRY_TIME),
+    wait=wait_random(min=0, max=1),
+)
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36",
     "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML like Gecko) Chrome/44.0.2403.155 Safari/537.36",

@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-05 11:40:43
+LastEditTime : 2024-08-16 16:34:05
 FilePath     : /CODE/xjLib/xt_thread/futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -40,19 +40,19 @@ class FnInPool:
 
     def __init__(self, fn, *args, **kwargs):
         self.count = (cpu_count() or 4) * 4
+        self.executor = ThreadPoolExecutor(max_workers=self.count)
         self.fn, self.args, self.kwargs = fn, args, kwargs
         self._map() if len(args) == 1 else self._run()
 
     def _run(self):
-        with ThreadPoolExecutor(self.count) as executor:
-            future_list = [
-                executor.submit(self.fn, *arg, **self.kwargs) for arg in zip(*self.args)
-            ]
+        future_list = [
+            self.executor.submit(self.fn, *arg, **self.kwargs)
+            for arg in zip(*self.args)
+        ]
         self.result = [future.result() for future in as_completed(future_list)]
 
     def _map(self):
-        with ThreadPoolExecutor(self.count) as executor:
-            result_iterator = executor.map(self.fn, *self.args, **self.kwargs)
+        result_iterator = self.executor.map(self.fn, *self.args, **self.kwargs)
         self.result = list(result_iterator)
 
 

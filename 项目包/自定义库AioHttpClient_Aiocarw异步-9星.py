@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-14 23:30:44
-LastEditTime : 2024-08-08 15:22:24
+LastEditTime : 2024-08-16 14:23:48
 FilePath     : /CODE/项目包/自定义库AioHttpClient_Aiocarw异步-9星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -24,8 +24,7 @@ from xt_time import fn_timer
 @fn_timer
 def AioHttpCrawl_task(bookname, urls):
     myaio = AioHttpCrawl()
-    myaio.add_tasks(urls)
-    resps = myaio.wait_completed()
+    resps = myaio.add_tasks(urls)
     texts = 结果处理(resps)
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
@@ -35,8 +34,7 @@ def AioHttpCrawl_task(bookname, urls):
 @fn_timer
 def AioHttpCrawl_pool(bookname, urls):
     myaio = AioHttpCrawl()
-    myaio.add_pool(get_contents, list(range(len(urls))), urls)
-    texts = myaio.wait_completed()
+    texts = myaio.add_pool(get_contents, list(range(len(urls))), urls)
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
     savefile(f"{files}&{bookname}AioHttpCrawl_pool.txt", texts, br="\n")
@@ -66,4 +64,4 @@ if __name__ == "__main__":
     # AioHttpCrawl_pool(bookname, urls)  # |perf_counter: 85.29s
     # ahttp_GetAll(bookname, urls)  # |perf_counter: 56.20s
     # AioHttpCrawl_task(bookname, urls)  # |perf_counter: 55.75s
-    # AioHttpClient_run(bookname, urls)  # |perf_counter: 42.20s #@ 8星
+    AioHttpClient_run(bookname, urls)  # |perf_counter: 42.20s #@ 8星
