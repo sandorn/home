@@ -169,20 +169,6 @@ if __name__ == "__main__":
 
     # print(id(a), id(t), id(b), id(c), d is dd)
     # print(e is z, id(e), id(z), e)
-    from typing_extensions import overload
-
-    @overload
-    def calculatee(a: int, b: int) -> int: ...
-
-    @overload
-    def calculatee(a: float, b: float) -> float: ...
-
-    def calculatee(a, b):
-        return a + b
-
-    # 实际调用
-    print(calculatee(1, 2))  # 输出: 3
-    print(calculatee(1.5, 2.5))  # 输出: 4.0
 
     from functools import singledispatch
 

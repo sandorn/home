@@ -144,17 +144,17 @@ if __name__ == "__main__":
 
     print(222222222222222222222, partial(_parse, "HEAD")("http://httpbin.org/headers"))
     print(333333333333333333333, res := get("http://www.163.com"))
-    # print("1".ljust(10), ":", res.xpath("//title/text()"))
-    # print("2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
-    # print(
-    #     "blank".ljust(10),
-    #     ":",
-    #     res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
-    # )
-    # print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
-    # print("html".ljust(10), ":", res.html.xpath("//title/text()"))
-    # print("elemsent".ljust(10), ":", res.element.xpath("//title/text()"))
-    # print("query".ljust(10), ":", res.query("title").text())
+    print("1".ljust(10), ":", res.xpath("//title/text()"))
+    print("2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
+    print(
+        "blank".ljust(10),
+        ":",
+        res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+    )
+    print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
+    print("html".ljust(10), ":", res.html.xpath("//title/text()"))
+    print("elemsent".ljust(10), ":", res.element.xpath("//title/text()"))
+    print("query".ljust(10), ":", res.query("title").text())
     """
     ###############################################################
     # allow_redirects=False #取消重定向

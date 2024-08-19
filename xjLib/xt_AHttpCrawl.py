@@ -136,7 +136,7 @@ class AioHttpCrawl:
         _loop = asyncio.get_running_loop()
 
         tasks = []
-        with ThreadPoolExecutor(32) as executor:
+        with ThreadPoolExecutor(160) as executor:
             for arg in zip(*args):
                 task = _loop.run_in_executor(executor, func, *arg, **kwargs)
                 if callback:

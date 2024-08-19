@@ -26,6 +26,7 @@ from pydantic import BaseModel, constr, field_validator
 class User(BaseModel):
     """https://zhuanlan.zhihu.com/p/696103020"""
 
+    id: int
     username: str
     password: constr(min_length=8)
 

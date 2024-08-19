@@ -12,7 +12,7 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from typing import List, Union
+from typing import Sequence
 
 from chardet import detect
 from html2text import HTML2Text
@@ -118,8 +118,7 @@ class htmlResponse:
     @property
     def html(self, filter="//script"):
         element = self.element
-        trashs = element.xpath(filter)
-        [item.getparent().remove(item) for item in trashs]
+        [item.getparent().remove(item) for item in element.xpath(filter)]
         return element
 
     @property
@@ -139,19 +138,19 @@ class htmlResponse:
     def query(self):
         return PyQuery(self.html)  # , parser='xml')
 
-    def xpath(self, selectors: Union[str, List[str], tuple] = "") -> list:
+    def xpath(self, selectors: str | Sequence[str] = "") -> list:
         """
         在元素上执行XPath选择。
-        参数selectors: XPath选择器,可以是字符串或字符串的列表/元组。
+        参数selectors: XPath选择器,str | Sequence[str]。
         返回值: 选择的元素列表。
         """
-        selectors = [selectors] if isinstance(selectors, str) else list(selectors)
-        selectors = [
-            selector
-            for selector in selectors
-            if isinstance(selector, str) and selector.strip()
+        ele_list = [selectors] if isinstance(selectors, str) else list(selectors)
+
+        return [
+            self.element.xpath(ele_item)
+            for ele_item in ele_list
+            if isinstance(ele_item, str) and ele_item.strip()
         ]
-        return [self.element.xpath(selector) for selector in selectors]
 
     @property
     def ctext(self):
