@@ -71,13 +71,13 @@ class BaseEnum(Enum):
 class StrEnum(str, BaseEnum):
     """字符串枚举"""
 
-    pass
+    ...
 
 
 class IntEnum(int, BaseEnum):
     """整型枚举"""
 
-    pass
+    ...
 
 
 class BaseErrCodeEnum(StrEnum):
@@ -103,3 +103,16 @@ class BaseErrCodeEnum(StrEnum):
     @property
     def msg(self):
         return self.desc
+
+
+if __name__ == "__main__":
+    print(BaseErrCodeEnum.get_members())
+    print(BaseErrCodeEnum.get_values())
+    print(BaseErrCodeEnum.get_names())
+    print(BaseErrCodeEnum.OK)
+    print(BaseErrCodeEnum.OK._value_)
+    print(BaseErrCodeEnum.OK.code)
+    print(BaseErrCodeEnum.OK.msg)
+    print(BaseErrCodeEnum.OK.value)
+    print(BaseErrCodeEnum.OK.desc)
+    print(BaseErrCodeEnum.OK.name)

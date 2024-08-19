@@ -25,9 +25,10 @@ def thread_safe(func, instance, args, kwargs):
     """
     函数的线程安全化，可以装饰普通函数和类中的方法
     """
-    if func.__module__ == builtins.__name__:
+    if func.__module__ == builtins.__name__:  # 判断内置函数
         with Lock():
-            return func(*args, **kwargs)  # 内置函数
+            return func(*args, **kwargs)
+
     else:
         if not hasattr(func, "__lock__"):
             func.__lock__ = Lock()

@@ -107,21 +107,21 @@ if __name__ == "__main__":
     aio = AioMysql("TXbx", "users2")
     # res = aio.insert([item1])
     # print(res)
-    res = aio.insert([item1, item1], autorun=False)
-    res = aio.run_in_loop()
-    print(res)
+    # res = aio.insert([item1, item1], autorun=False)
+    # res = aio.run_in_loop()
+    # print(res)
     # res = aio.insert([item1, item1], 'users2')
     # print(res)
-    res = aio.query(query_list)
-    print(res[1][0])
+    res = aio.query(query_list[0])
+    print(res)
     # res = aio.query(query_list[0])
     # print(res)
     update_sql = [
         "UPDATE users2 set username='刘澈' WHERE ID = '1'",
         "UPDATE users2 set username='刘新军' WHERE ID = '2'",
     ]
-    res = aio.query(update_sql)
-    print(res)
+    # res = aio.query(update_sql)
+    # print(res)
     # res = aio.update(
     #     [{'username': '刘澈3'}, {'username': '刘新军4'}],
     #     [
