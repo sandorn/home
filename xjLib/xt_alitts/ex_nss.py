@@ -84,10 +84,30 @@ class NSS(on_state_cls):
         with Sem:
             print(f"thread {self.__id}: start..")
 
-            _NSS_ = nls.NlsSpeechSynthesizer(token=_ACCESS_TOKEN, appkey=_ACCESS_APPKEY, long_tts=self.args.get("long_tts", False), on_metainfo=self._on_metainfo, on_data=self._on_data, on_completed=self._on_completed, on_error=self._on_error, on_close=self._on_close, callback_args=[self.__id])
+            _NSS_ = nls.NlsSpeechSynthesizer(
+                token=_ACCESS_TOKEN,
+                appkey=_ACCESS_APPKEY,
+                long_tts=self.args.get("long_tts", False),
+                on_metainfo=self._on_metainfo,
+                on_data=self._on_data,
+                on_completed=self._on_completed,
+                on_error=self._on_error,
+                on_close=self._on_close,
+                callback_args=[self.__id],
+            )
 
             _NSS_.start(
-                text=self.__text, voice=self.args.get("voice", "Aida"), aformat=self.args.get("aformat", "mp3"), sample_rate=self.args.get("sample_rate", 16000), volume=self.args.get("volume", 50), speech_rate=self.args.get("speech_rate", 0), pitch_rate=self.args.get("pitch_rate", 0), wait_complete=self.args.get("wait_complete", True), start_timeout=self.args.get("start_timeout", 10), completed_timeout=self.args.get("completed_timeout", 60), ex=self.args.get("ex", {})
+                text=self.__text,
+                voice=self.args.get("voice", "Aida"),
+                aformat=self.args.get("aformat", "mp3"),
+                sample_rate=self.args.get("sample_rate", 16000),
+                volume=self.args.get("volume", 50),
+                speech_rate=self.args.get("speech_rate", 0),
+                pitch_rate=self.args.get("pitch_rate", 0),
+                wait_complete=self.args.get("wait_complete", True),
+                start_timeout=self.args.get("start_timeout", 10),
+                completed_timeout=self.args.get("completed_timeout", 60),
+                ex=self.args.get("ex", {}),
             )
 
             QThread.msleep(100)
@@ -121,8 +141,7 @@ def execute_tts(_in_text, readonly=False, merge=False, **kwargs):
 
 if __name__ == "__main__":
     _text = """
-    我家过亿的资产全是借来的
-    我爸每天都会向亲朋好友借几十万块钱
+    我家过亿资产
     """
 
     def read():

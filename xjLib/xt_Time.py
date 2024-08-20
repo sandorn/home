@@ -265,8 +265,11 @@ def now():
 @decorator
 def fn_timer(func, instance, args, kwargs):
     duration = perf_counter()
+
     result = func(*args, **kwargs)
+
     duration = perf_counter() - duration
+
     print(f"[Timer | fn:'{func.__name__}']|<perf_counter: {duration:.2f}s>")
     return result
 
