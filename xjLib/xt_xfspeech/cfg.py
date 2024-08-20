@@ -5,21 +5,31 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-11-08 09:18:15
-LastEditTime : 2024-07-18 11:35:25
+LastEditTime : 2024-08-20 09:54:08
 FilePath     : /CODE/xjLib/xt_xfspeech/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-APPID = 2269c784
-APISecret = OWI0NGJmYmQxZTA1OTI1Yjg5MTM4OGUy
-APIKey = 5206d42c6146ead1ee5411b106965114
 SDK调用方式只需APPID。APIKey或APISecret适用于WebAPI调用方式。
 https://console.xfyun.cn/services/tts
 在线语音合成(流式版)API:"wss://tts-api.xfyun.cn/v2/tts"
 """
 
-APPID = "2269c784"
-APISecret = "OWI0NGJmYmQxZTA1OTI1Yjg5MTM4OGUy"
-APIKey = "5206d42c6146ead1ee5411b106965114"
+from xt_enum import StrEnum
+
+
+class cfg(StrEnum):
+    APPID = ("2269c784", "讯飞开放平台的APPID")
+    APISecret = ("OWI0NGJmYmQxZTA1OTI1Yjg5MTM4OGUy", "讯飞开放平台的APISecret")
+    APIKey = ("5206d42c6146ead1ee5411b106965114", "讯飞开放平台的APIKey")
+
+    @property
+    def code(self):
+        return self.value
+
+    @property
+    def msg(self):
+        return self.desc
+
 
 """
 业务参数说明(business)
@@ -64,3 +74,10 @@ rdn	string	否	合成音频数字发音方式
 			2:完全字符串
 			3:字符串优先
 """
+if __name__ == "__main__":
+    print(11111111, cfg.get_members())
+    print(22222222, cfg.get_values())
+    print(33333333, cfg.get_names())
+    print(cfg.APPID.value)
+    print(cfg.APIKey.msg)
+    print(cfg.APISecret.code)

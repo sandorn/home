@@ -19,7 +19,10 @@ from xt_database.cfg import DB_CFG
 
 async def sanic_go(sql, loop=None):
     loop = loop or asyncio.get_event_loop()
-    cfg = DB_CFG["TXbx"].copy()
+    db_key = "TXbx"
+    if not hasattr(DB_CFG, db_key):
+        raise ValueError(f"错误提示:检查数据库配置:{db_key}")
+    cfg = DB_CFG[db_key].value
     cfg.pop("type", None)
     cfg["database"] = cfg.pop("db")
 

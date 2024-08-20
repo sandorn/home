@@ -28,9 +28,9 @@ class DbEngine:
     def __init__(self, db_key="default", odbc="pymysql"):
         self.db_key = db_key
         self.odbc = odbc
-        if db_key not in DB_CFG:
+        if not hasattr(DB_CFG, db_key):
             raise ValueError(f"错误提示:检查数据库配置:{db_key}")
-        self.cfg = DB_CFG[self.db_key].copy()
+        self.cfg = DB_CFG[db_key].value
         self.cfg.pop("type", None)
 
         try:

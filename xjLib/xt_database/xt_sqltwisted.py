@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-21 00:08:37
-LastEditTime : 2024-08-15 14:03:13
+LastEditTime : 2024-08-20 14:19:36
 FilePath     : /CODE/xjLib/xt_database/xt_sqltwisted.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -20,12 +20,11 @@ from xt_database.xt_untilsql import make_insert_sql, make_update_sql
 class SqlTwisted:
     def __init__(self, db_key="default", table_name=None):
         self.table_name = table_name
-        config = DB_CFG[db_key].copy()
-        if "type" in config:
-            config.pop("type")
-        self.dbpool = adbapi.ConnectionPool(
-            "MySQLdb", **config
-        )  # 'MySQLdb' , 'pymysql'
+        if not hasattr(DB_CFG, db_key):
+            raise ValueError(f"错误提示:检查数据库配置:{db_key}")
+        cfg = DB_CFG[db_key].value
+        cfg.pop("type", None)
+        self.dbpool = adbapi.ConnectionPool("MySQLdb", **cfg)  # 'MySQLdb' , 'pymysql'
         reactor.callWhenRunning(self.close)
 
     def close(self):

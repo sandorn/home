@@ -28,12 +28,12 @@ class filesize:
         return self.Bytes / 1024
 
     def __str__(self):
-        if self.MB > 1.000:
+        if self.MB > 1.00:
             return f"{self.MB:.2f} MB"
-        elif self.KB > 1.000:
+        elif self.KB > 1.00:
             return f"{self.KB:.2f} KB"
         else:
-            return f"{self.Bytes} B"
+            return f"{self.Bytes} Bytes"
 
 
 class qsstools:
