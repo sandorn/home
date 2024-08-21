@@ -109,26 +109,23 @@ ahttpGet = partial(__parse, "get")
 ahttpPost = partial(__parse, "post")
 
 
-async def __run_many_parse(tasks_list, method=None):
+async def __run_many_parse(tasks_list, channel=None):
     coro_list = []
     for index, task in enumerate(tasks_list, start=1):
         task.index = index
         coro_list.append(task.start())
 
-    if method == "thread":
+    if channel == "thread":
         """异步，子线程,不同session,不推荐"""
         _child_thread_loop = asyncio.new_event_loop()
         Thread(
             target=_child_thread_loop.run_forever, name="ThreadSafe", daemon=True
         ).start()
-
         future_list = [
             asyncio.run_coroutine_threadsafe(coro, _child_thread_loop)
             for coro in coro_list
         ]
-
         return [future.result() for future in future_list]
-
     else:
         """异步,不同session"""
         return await asyncio.gather(*coro_list, return_exceptions=True)

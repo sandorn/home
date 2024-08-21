@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2024-08-19 09:25:03
+LastEditTime : 2024-08-21 10:18:24
 FilePath     : /CODE/项目包/自定义库thread_CustomThread-6星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -18,11 +18,10 @@ from xt_ls_bqg import get_contents, get_download_url
 from xt_thread import CustomThread, ThreadPoolWraps
 from xt_time import fn_timer
 
-tpool = ThreadPoolWraps(160)
-
 
 @fn_timer
 def ByThreadPoolWraps(target):
+    tpool = ThreadPoolWraps(160)
     bookname, urls, _ = get_download_url(target)
     for index, url in enumerate(urls):
         tpool(get_contents)(index, url)
@@ -44,4 +43,4 @@ def ByCustomThread(target):
 
 if __name__ == "__main__":
     ByThreadPoolWraps("https://www.bigee.cc/book/6909/")  # |perf_counter: 85.40s
-    # ByCustomThread("https://www.bigee.cc/book/6909/")  # |perf_counter: 89.43s
+    # ByCustomThread("https://www.bigee.cc/book/6909/")  # |perf_counter: 83.58s

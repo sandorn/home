@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-09 11:16:18
+LastEditTime : 2024-08-21 09:34:40
 FilePath     : /CODE/xjLib/xt_ahttpcrawl.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -15,7 +15,7 @@ https://www.cnblogs.com/haoabcd2010/p/10615364.html
 
 import asyncio
 from asyncio.coroutines import iscoroutinefunction
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import wraps
 
 import wrapt
@@ -151,7 +151,16 @@ class AioHttpCrawl:
         if not self.future_list:
             return []
         # while not all([future.done() for future in self.future_list]):sleep(0.01);continue
-        result_list = [future.result() for future in self.future_list]
+
+        result_list = []
+        for future in as_completed(self.future_list):
+            try:
+                result = future.result()
+                result_list.append(result)
+            except Exception as exc:
+                # 处理异常，例如记录日志
+                print(f"Task failed with exception: {exc}")
+
         self.future_list.clear()
         return result_list
 

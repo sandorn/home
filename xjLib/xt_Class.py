@@ -24,7 +24,7 @@ class ItemGetMixin:
 
     def __getitem__(self, key: str) -> Any:
         if __name__ == "__main__":
-            print("ItemGetMixin", key)
+            print("ItemGetMixin:", key)
         return getattr(self, key, None)
         # return self.__dict__.get(key, None)
 
@@ -34,7 +34,7 @@ class ItemSetMixin:
 
     def __setitem__(self, key: str, value: Any) -> None:
         if __name__ == "__main__":
-            print("ItemSetMixin", key, value)
+            print("ItemSetMixin:", key, value)
         # return setattr(self, key, value)
         self.__dict__[key] = value
 
@@ -44,7 +44,7 @@ class ItemDelMixin:
 
     def __delitem__(self, key: str) -> None:
         if __name__ == "__main__":
-            print("ItemDelMixin", key)
+            print("ItemDelMixin:", key)
         # return delattr(self, key)
         # del self.__dict__[key]
         self.__dict__.pop(key)
@@ -136,7 +136,7 @@ class AttrGetMixin:
 
     def __getattr__(self, key: str) -> Any:
         if __name__ == "__main__":
-            print("AttrGetMixin", key)
+            print("AttrGetMixin:", key)
         return getattr(self, key, None)
         # return super().__getattribute__(key)  #可能会导致递归调用
         # return self.__dict__.get(key, None)
@@ -147,7 +147,7 @@ class AttrSetMixin:
 
     def __setattr__(self, key: str, value: Any) -> None:
         if __name__ == "__main__":
-            print("AttrSetMixin", key, value)
+            print("AttrSetMixin:", key, value)
         return super().__setattr__(key, value)
 
 
@@ -156,7 +156,7 @@ class AttrDelMixin:
 
     def __delattr__(self, key: str) -> None:
         if __name__ == "__main__":
-            print("AttrDelMixin", key)
+            print("AttrDelMixin:", key)
         return super().__delattr__(key)
 
 
@@ -186,7 +186,7 @@ class IterMixin:
 
     def __iter__(self) -> Any:
         if __name__ == "__main__":
-            print("IterMixin")
+            print("IterMixin:")
         yield from self.__dict__.items()
         # return iter(self.get_dict().items())
 
@@ -196,8 +196,8 @@ class ReprMixin:
 
     def __repr__(self) -> str:
         if __name__ == "__main__":
-            print("ReprMixin")
-        dic = self.__dict__ | self.get_dict()
+            print("ReprMixin:")
+        dic = self.__dict__ or self.get_dict()
         return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
 
 
@@ -246,6 +246,7 @@ class MixinClsMeta(type):
         MixinItem = True
         MixinIter = True
         MixinRepr = True
+        MixinDict = True
     """
 
     def __new__(
@@ -261,22 +262,18 @@ class MixinClsMeta(type):
         bases_mixins += (AttrMixin,) if "MixinAttr" in dct and dct["MixinAttr"] else ()
         bases_mixins += (IterMixin,) if "MixinIter" in dct and dct["MixinIter"] else ()
         bases_mixins += (
-            (
-                ReDictMixin,
-                ReprMixin,
-            )
-            if "MixinRepr" in dct and dct["MixinRepr"]
-            else ()
+            (ReDictMixin,) if "MixinDict" in dct and dct["MixinDict"] else ()
         )
+        bases_mixins += (ReprMixin,) if "MixinRepr" in dct and dct["MixinRepr"] else ()
         return type(name, bases_mixins, dct, **kwds)
 
 
-class BaseClsMeta(type):
+class MethodClsMeta(type):
     """
     智能元类，根据类属性动态选择Mixin,字典__dict__有冲突，
     原因是mixin.__dict__包含了特殊的方法（如__get__, __set__, __delete__等），
     这些方法不能直接应用到类实例上。
-    class BaseClsMeta(metaclass=BaseClsMeta):
+    class BaseClsMeta(metaclass=MethodClsMeta):
         MixinAttr = True
         MixinItem = True
         MixinIter = True
@@ -422,11 +419,12 @@ if __name__ == "__main__":
         print(b.__dict__, id(b))
 
     def 动态元类():
-        class MyBaseClsMeta(metaclass=MixinClsMeta):
+        class MyCls(metaclass=MixinClsMeta):
             MixinAttr = True
             MixinItem = True
             MixinIter = True
             MixinRepr = True
+            MixinDict = True
 
             def __init__(self):
                 self.name = "liuxinjun"
@@ -437,9 +435,9 @@ if __name__ == "__main__":
             def ddd(self, value):
                 print("ddd")
 
-        bb = MyBaseClsMeta()
+        bb = MyCls()
         bb["姓名"] = "象牙黑"
-        print(bb, "\n", bb.name, bb.姓名, bb["name"])  # , bb.__dict__)
+        print(bb, "\n", bb.name, bb.姓名, bb["name"], bb.get_dict())
 
     # 赋值一次的字典()
     # 可迭代对象()

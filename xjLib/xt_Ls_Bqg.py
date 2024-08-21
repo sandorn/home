@@ -117,10 +117,8 @@ def 结果处理(resps):
     return texts
 
 
-def get_download_url(target):
-    resp = get(target)
-    if not isinstance(resp, htmlResponse):
-        return "", "", ""
+def get_download_url(url):
+    resp = get(url)
     # pyquery
     # pr = resp.pyquery('.listmain dl dd:gt(11)').children() # 从第二个dt开始，获取后面所有的兄弟节点
     # pr = res.pyquery('dt').eq(1).nextAll()  # 从第二个dt开始，获取后面所有的兄弟节点
@@ -142,8 +140,8 @@ def get_download_url(target):
     bookname, temp_urls, temp_urls2, titles, titles2 = resp.xpath(_xpath)
     titles += titles2
     temp_urls += temp_urls2
-    bookname = bookname[0]
-    urls = ["/".join(target.split("/")[:-3]) + item for item in temp_urls]  # 章节链接
+    bookname = "".join(bookname)
+    urls = ["/".join(url.split("/")[:-3]) + item for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
 

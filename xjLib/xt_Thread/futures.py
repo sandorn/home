@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-16 16:34:05
+LastEditTime : 2024-08-21 14:27:52
 FilePath     : /CODE/xjLib/xt_thread/futures.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -31,7 +31,20 @@ class ThreadPool(ThreadPoolExecutor):
     def wait_completed(self):
         """获取结果,无序"""
         # self.shutdown(wait=True)
-        result_list = [future.result() for future in as_completed(self._future_tasks)]
+        if not self._future_tasks:
+            return []
+        # while not all([future.done() for future in self._future_tasks]):sleep(0.01);continue
+
+        result_list = []
+        for future in as_completed(self._future_tasks):
+            try:
+                result = future.result()
+                result_list.append(result)
+            except Exception as exc:
+                # 处理异常，例如记录日志
+                print(f"Task failed with exception: {exc}")
+
+        self._future_tasks.clear()
         return result_list
 
 
