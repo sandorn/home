@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-14 23:30:44
-LastEditTime : 2024-08-19 14:38:57
+LastEditTime : 2024-08-21 17:09:37
 FilePath     : /CODE/项目包/自定义库AioHttpClient_Aiocarw异步-9星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -63,5 +63,5 @@ if __name__ == "__main__":
     bookname, urls, _ = get_download_url(url)
     # AioHttpCrawl_pool(bookname, urls)  # |perf_counter: 68.29s  #160线程
     # ahttp_GetAll(bookname, urls)  # |perf_counter: 56.20s
-    AioHttpCrawl_task(bookname, urls)  # |perf_counter: 55.75s
-    # AioHttpClient_run(bookname, urls)  # |perf_counter: 42.20s #@ 8星
+    # AioHttpCrawl_task(bookname, urls)  # |perf_counter: 53.93s
+    AioHttpClient_run(bookname, urls)  # |perf_counter: 42.20s #@ 8星

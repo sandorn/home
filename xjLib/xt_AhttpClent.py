@@ -14,21 +14,10 @@ Github       : https://github.com/sandorn/home
 import asyncio
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
+from xt_ahttp import Method_List
 from xt_head import TIMEOUT, TRETRY, Head
 from xt_log import log_decorator
 from xt_response import ACResponse
-
-Method_List = [
-    "get",
-    "post",
-    "head",
-    "options",
-    "put",
-    "delete",
-    "trace",
-    "connect",
-    "patch",
-]
 
 
 class AioHttpClient:

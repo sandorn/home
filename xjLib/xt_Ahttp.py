@@ -22,7 +22,7 @@ from xt_response import ACResponse
 
 __all__ = ("ahttpGet", "ahttpGetAll", "ahttpPost", "ahttpPostAll")
 
-Method_List = [
+Method_List = (
     "get",
     "post",
     "head",
@@ -32,7 +32,7 @@ Method_List = [
     "trace",
     "connect",
     "patch",
-]
+)
 
 
 class AsyncTask:
