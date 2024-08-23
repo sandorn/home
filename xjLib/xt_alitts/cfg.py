@@ -21,7 +21,7 @@ from xt_class import ReDictMixin
 from xt_enum import StrEnum
 
 
-class cfg(StrEnum):
+class CFG(StrEnum):
     ACCESS_APPKEY = ("Ofm34215thIUdSIX", "阿里开放平台的APPID")
     ACCESS_KeyId = ("LTAI4G5TRjsGy8BNKPtctjXQ", "阿里开放平台的APISecret")
     ACCESS_Secret = ("hS8Kl0b9orxNUW7IOeBIFUfzgcVn00", "阿里开放平台的APIKey")
@@ -38,9 +38,9 @@ class cfg(StrEnum):
 class Constant(BaseModel):
     """Constant : 常量参数"""
 
-    appKey = property(lambda cls: cfg.ACCESS_APPKEY.value)
-    accessKeyId = property(lambda cls: cfg.ACCESS_KeyId.value)
-    accessKeySecret = property(lambda cls: cfg.ACCESS_Secret.value)
+    appKey = property(lambda cls: CFG.ACCESS_APPKEY.value)
+    accessKeyId = property(lambda cls: CFG.ACCESS_KeyId.value)
+    accessKeySecret = property(lambda cls: CFG.ACCESS_Secret.value)
 
     # token = property(lambda cls: cls.__token)
     @property  # 第二种方法

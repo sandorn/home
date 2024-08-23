@@ -11,12 +11,12 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-import inspect
 import logging
-import logging.config
 import re
 from datetime import datetime
 from functools import wraps
+from inspect import currentframe
+from logging.config import dictConfig
 from time import perf_counter
 
 from xt_singleon import SingletonMixin
@@ -73,7 +73,7 @@ class LogCls(SingletonMixin):
             },
         }
 
-        logging.config.dictConfig(self.conf_dic)
+        dictConfig(self.conf_dic)
         self.logger = logging.getLogger(logger)
 
     def __getattr__(self, item):
@@ -83,12 +83,10 @@ class LogCls(SingletonMixin):
             f"'{type(self).__name__}' object has no attribute '{item}'"
         )
 
-    def print(self, *args):
+    def __call__(self, *args):
         return [
             getattr(self.logger, LevelDict[self.level])(item) for item in list(args)
         ]
-
-    __call__ = print
 
 
 def get_fn_fileinfo(callfn):
@@ -113,7 +111,7 @@ def format_strings(obj):
 
 
 def log_decorator(func):
-    _filename, _f_lineno = get_fn_fileinfo(inspect.currentframe())
+    _filename, _f_lineno = get_fn_fileinfo(currentframe())
     logger = LogCls(pyfile="XtLog")
 
     @wraps(func)
@@ -124,6 +122,7 @@ def log_decorator(func):
 
         logger(f"{base_log_msg}|<参数：{args_str} | 关键字参数：{kwargs_str}>")
         duration = perf_counter()
+
         try:
             result = func(*args, **kwargs)
             result_str = format_strings(str(result))

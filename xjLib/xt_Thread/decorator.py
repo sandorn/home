@@ -68,7 +68,8 @@ class _ThreadSafeDecoratorBase(Thread):
             self.join()
             return self.Result
         except Exception:
-            return None
+            raise Exception
+            # return None
 
     def wait(self):
         """等待线程执行完毕"""

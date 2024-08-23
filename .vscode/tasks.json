@@ -1,11 +1,6 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
     "version": "2.0.0",
-    // 在Linux和Mac系统中使用"sh".
     "command": "cmd",
-    // global args
-    // 在Linux和Mac系统中使用"-c"(注意大小写).
     "args": [
         "/C"
     ],
@@ -27,7 +22,7 @@
                 "kind": "test",
                 "isDefault": true
             }
-        }
+        },
         {
             "label": "build",
             "type": "shell",

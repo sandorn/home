@@ -40,6 +40,7 @@ class AsyncTask:
 
     def __init__(self, index=None):
         self.index = index or id(self)
+        self.result = None
 
     def __getitem__(self, method):
         if method.lower() in Method_List:
@@ -70,7 +71,7 @@ class AsyncTask:
         @TRETRY
         async def _fetch_run():
             async with ClientSession(
-                cookies=self.cookies, connector=TCPConnector(ssl=True)
+                cookies=self.cookies, connector=TCPConnector()
             ) as self.session, self.session.request(
                 self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
             ) as self.response:
@@ -141,7 +142,7 @@ ahttpGetAll = partial(_many_parse, "get")
 ahttpPostAll = partial(_many_parse, "post")
 
 if __name__ == "__main__":
-    url1 = "http://www.163.com"
+    url1 = "https://www.163.com"
     url_get = "https://httpbin.org/get"
     url_post = "https://httpbin.org/post"
     url_headers = "https://httpbin.org/headers"
@@ -153,6 +154,7 @@ if __name__ == "__main__":
     print(2222222222222222, res)
 
     def handle_back_ait(resp):
+        """help"""
         if isinstance(resp, ACResponse):
             return resp
 

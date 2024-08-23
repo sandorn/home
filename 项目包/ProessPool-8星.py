@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-03 12:52:03
-LastEditTime : 2024-08-21 15:46:48
+LastEditTime : 2024-08-23 14:00:38
 FilePath     : /CODE/项目包/ProessPool-8星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -26,7 +26,7 @@ def new_get_contents(args):
 
 @fn_timer
 def MPpool(bookname, urls):
-    with ProcPool(32) as propool:
+    with ProcPool(60) as propool:
         res_list = propool.map(new_get_contents, enumerate(urls, 1))
         # task_list = [
         #     propool.apply_async(get_contents, args=(index, url))
@@ -41,7 +41,7 @@ def MPpool(bookname, urls):
 
 @fn_timer
 def PPoolExecutor(bookname, urls):
-    with ProcessPoolExecutor(32) as executor:
+    with ProcessPoolExecutor(60) as executor:
         task_list = [
             executor.submit(get_contents, i, url) for i, url in enumerate(urls, 1)
         ]
@@ -49,11 +49,12 @@ def PPoolExecutor(bookname, urls):
 
     res_list.sort(key=lambda x: x[0])
     files = os.path.splitext(os.path.basename(__file__))[0]
+
     savefile(f"{files}&{bookname}&PPoolExecutor.txt", res_list, br="\n")
 
 
 if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
     bookname, urls, _ = get_download_url(url)
-    MPpool(bookname, urls)  # |<perf_counter: 70.98s>
-    # PPoolExecutor(bookname, urls)  # |<perf_counter: 72.30s>
+    # MPpool(bookname, urls)  # |<perf_counter: 70.98s>
+    PPoolExecutor(bookname, urls)  # |<perf_counter: 72.30s>
