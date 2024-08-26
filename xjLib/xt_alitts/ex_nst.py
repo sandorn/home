@@ -19,8 +19,8 @@ from xt_alitts.cfg import Constant
 from xt_alitts.state import on_state_cls
 from xt_alitts.util import handle_result
 
-_ACCESS_APPKEY = Constant().appKey
-_ACCESS_TOKEN = Constant().token
+_ACCESS_APPKEY = Constant.appKey
+_ACCESS_TOKEN = Constant.token
 Sem = Semaphore(2)  # 限制线程并发数
 
 
@@ -68,11 +68,33 @@ class NST(on_state_cls):
         with Sem:
             print(f"{self.__id}: thread start..")
 
-            _NST_ = NlsSpeechTranscriber(token=_ACCESS_TOKEN, appkey=_ACCESS_APPKEY, on_sentence_begin=self._on_sentence_begin, on_sentence_end=self._on_sentence_end, on_start=self._on_start, on_result_changed=self._on_result_changed, on_completed=self._on_completed, on_error=self._on_error, on_close=self._on_close, callback_args=[self.__id])
+            _NST_ = NlsSpeechTranscriber(
+                token=_ACCESS_TOKEN,
+                appkey=_ACCESS_APPKEY,
+                on_sentence_begin=self._on_sentence_begin,
+                on_sentence_end=self._on_sentence_end,
+                on_start=self._on_start,
+                on_result_changed=self._on_result_changed,
+                on_completed=self._on_completed,
+                on_error=self._on_error,
+                on_close=self._on_close,
+                callback_args=[self.__id],
+            )
 
             print(f"{self.__id}: session start")
 
-            _NST_.start(aformat="pcm", enable_intermediate_result=True, enable_punctuation_prediction=True, enable_inverse_text_normalization=True, sample_rate=16000, ch=1, timeout=10, ping_interval=8, ping_timeout=None, ex={})
+            _NST_.start(
+                aformat="pcm",
+                enable_intermediate_result=True,
+                enable_punctuation_prediction=True,
+                enable_inverse_text_normalization=True,
+                sample_rate=16000,
+                ch=1,
+                timeout=10,
+                ping_interval=8,
+                ping_timeout=None,
+                ex={},
+            )
 
             slices = [self.__data[i : i + 640] for i in range(0, len(self.__data), 640)]
             for __s in slices:

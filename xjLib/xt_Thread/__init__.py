@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-05 16:15:42
+LastEditTime : 2024-08-26 10:25:23
 FilePath     : /CODE/xjLib/xt_thread/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -28,6 +28,7 @@ from .thread import (
     SigThreadQ,
     SingletonThread,
     ThreadPoolWraps,
+    _create_singleton_thread_class,
     stop_thread,
 )
 
@@ -50,4 +51,5 @@ __all__ = (
     "SingletonThread",
     "ThreadPoolWraps",
     "stop_thread",
+    "_create_singleton_thread_class",
 )

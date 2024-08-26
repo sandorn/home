@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-20 16:24:54
+LastEditTime : 2024-08-26 10:37:51
 FilePath     : /CODE/xjLib/xt_alitts/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -15,7 +15,7 @@ Github       : https://github.com/sandorn/home
 
 from typing import Optional
 
-# from nls.token import getToken
+from nls.token import getToken
 from pydantic import BaseModel, Field
 from xt_class import ReDictMixin
 from xt_enum import StrEnum
@@ -45,7 +45,7 @@ class Constant(BaseModel):
     # token = property(lambda cls: cls.__token)
     @property  # 第二种方法
     def token(self):
-        return None  # getToken(self.accessKeyId, self.accessKeySecret)
+        return getToken(self.accessKeyId, self.accessKeySecret)
 
 
 class SpeechArgs(BaseModel, ReDictMixin):

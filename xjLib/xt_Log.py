@@ -35,7 +35,7 @@ LevelDict = {
 
 
 class LogCls(SingletonMixin):
-    def __init__(self, level=logging.DEBUG, logger=__name__, pyfile=None):
+    def __init__(self, level=10, logname=__name__, pyfile=None):
         pyfile = pyfile or "XtLog"
         self.level = level
         self.filename = f'{pyfile}--{datetime.now().strftime('%Y%m%d')}.log'
@@ -74,7 +74,7 @@ class LogCls(SingletonMixin):
         }
 
         dictConfig(self.conf_dic)
-        self.logger = logging.getLogger(logger)
+        self.logger = logging.getLogger(logname)
 
     def __getattr__(self, item):
         if item in logging._levelToName:

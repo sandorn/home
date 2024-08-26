@@ -17,7 +17,6 @@ from threading import Thread
 import pygame
 from PyQt6.QtCore import QThread, pyqtSignal
 from xt_alitts.ex_nss import execute_tts
-from xt_thread import create_mixin_class
 from xt_thread import thread_print as print
 
 
@@ -73,7 +72,11 @@ class _read_meta_cls:
                     print("py_mixer new loading......")
                     continue
 
-                if not self._MainMonitor.is_alive() and len(self.textlist) == 0 and len(self.datas_list) == 0:
+                if (
+                    not self._MainMonitor.is_alive()
+                    and len(self.textlist) == 0
+                    and len(self.datas_list) == 0
+                ):
                     print("all recod play finished!!!!")
                     if self.__isQ:
                         self._signal.emit()  # type: ignore
@@ -109,11 +112,12 @@ def create_read_thread(meta):
 
 
 Synt_Read_Thread = create_read_thread(Thread)
-
-
-Synt_Read_QThread = create_mixin_class("QThread", _read_meta_cls, QThread)
+Synt_Read_QThread = create_read_thread(QThread)
 
 if __name__ == "__main__":
-    text_list = ["2022世界杯小组赛C组第二轮,阿根廷2:0力克墨西哥,重新掌握出线主动权。第64分钟,梅西世界波破门,打入个人世界杯第8个进球,进球数追平马拉多纳。", "第87分钟,恩索·费尔南德斯锁定胜局！目前,波兰积4分,阿根廷和沙特同积3分,阿根廷以净胜球优势排名第二,墨西哥积1分。"]
+    text_list = [
+        "2022世界杯小组赛C组第二轮,阿根廷2:0力克墨西哥,重新掌握出线主动权。第64分钟,梅西世界波破门,打入个人世界杯第8个进球,进球数追平马拉多纳。",
+        "第87分钟,恩索·费尔南德斯锁定胜局！目前,波兰积4分,阿根廷和沙特同积3分,阿根廷以净胜球优势排名第二,墨西哥积1分。",
+    ]
 
-    Synt_Read_Thread(text_list)
+    Synt_Read_QThread(text_list)

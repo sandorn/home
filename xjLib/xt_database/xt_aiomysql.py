@@ -25,16 +25,17 @@ from xt_database.xt_untilsql import make_insert_sql, make_update_sql
 class AioMysql:
     def __init__(self, db_key="default", tablename=None):
         self.coro_list = []
+        self.db_key = db_key
         self.tablename = tablename
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.run_in_loop([self._create_engine(db_key)])
+        self.run_in_loop([self._create_engine()])
 
-    async def _create_engine(self, db_key, autocommit=True):
-        if not hasattr(DB_CFG, db_key):
-            raise ValueError(f"错误提示:检查数据库配置:{db_key}")
-        cfg = DB_CFG[db_key].value
-        cfg.pop("type")
+    async def _create_engine(self, autocommit=True):
+        if not hasattr(DB_CFG, self.db_key):
+            raise ValueError(f"错误提示:检查数据库配置:{self.db_key}")
+        cfg = DB_CFG[self.db_key].value
+        cfg.pop("type", None)
         try:
             self.engine = await aiosa.create_engine(
                 autocommit=autocommit,  # 自动提交模式

@@ -23,7 +23,7 @@ from xt_database.cfg import DB_CFG
 from xt_singleon import SingletonMixin
 
 
-class AioMysql(SingletonMixin):
+class AioSqlPool(SingletonMixin):
     def __init__(self, key="default", autocommit=True):
         self.pool = None
         self.autocommit = autocommit
@@ -76,35 +76,33 @@ class AioMysql(SingletonMixin):
         :return:
         """
         conn, cur = await self.getCurosr()
-        res = ""
         try:
             await cur.execute(sql, args)
-            res = await cur.fetchall()
+            return await cur.fetchall()
         except Exception:
             print(traceback.format_exc())
         finally:
             await self.closeCurosr(conn, cur)
-            return res
 
     async def _execute(self, sql, args=None):
         conn, cur = await self.getCurosr()
         try:
             affetced = await cur.execute(sql, args)
+            return affetced if affetced else cur.lastrowid
         except Exception:
             print(traceback.format_exc())
         finally:
             await self.closeCurosr(conn, cur)
-            return affetced if affetced else cur.lastrowid
 
     async def _executeall(self, sql, args=None):
         conn, cur = await self.getCurosr()
         try:
             affetced = await cur.executemany(sql, args)
+            return affetced if affetced else cur.lastrowid
         except Exception:
             print(traceback.format_exc())
         finally:
             await self.closeCurosr(conn, cur)
-            return affetced if affetced else cur.lastrowid
 
     def query(self, sql_list, params: Optional[dict] = None, autorun=True):
         sql_list = [sql_list] if isinstance(sql_list, str) else sql_list
@@ -132,13 +130,13 @@ if __name__ == "__main__":
     up_sql = ("update users2 set username='刘新新' where ID = 2",)
     ups_sql = "update users2 set username=%s where ID = %s"
     ups_data = [("刘澈", 1), ("刘新军", 2)]
-    # self = AioMysql("TXbx")
+    # self = AioSqlPool("TXbx")
     # print(self.query(query_list[0]))
     # res = self.execute(up_sql)
     # print(111111111111111111, res)
     # res = self.executeall(ups_sql, ups_data)
     # print(222222222222222222, res)
-    self = AioMysql("TXbx")
+    self = AioSqlPool("TXbx")
     res = self.query("select * from users2")
     for item in res[0]:
         print(item)

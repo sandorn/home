@@ -26,6 +26,7 @@ class DB_CFG(BaseEnum):
             "charset": "utf8mb4",
         },
     )
+
     TXbx = (
         {
             "type": "mysql",
@@ -37,7 +38,7 @@ class DB_CFG(BaseEnum):
             "charset": "utf8mb4",
         },
     )
-    redis = ({"type": "redis", "host": "127.0.0.1", "port": 6379, "db": 4},)
+    redis = {"type": "redis", "host": "127.0.0.1", "port": 6379, "db": 4}
     Jkdoc = (
         {
             "type": "mysql",

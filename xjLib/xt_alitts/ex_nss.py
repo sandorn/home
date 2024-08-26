@@ -22,8 +22,8 @@ from xt_alitts.util import get_voice_data, merge_sound_file, save_sound_file
 from xt_str import str2list
 from xt_time import get_10_timestamp
 
-_ACCESS_APPKEY = Constant().appKey
-_ACCESS_TOKEN = Constant().token
+_ACCESS_APPKEY = Constant.appKey
+_ACCESS_TOKEN = Constant.token
 Sem = Semaphore(2)  # 限制线程并发数
 
 
@@ -147,12 +147,12 @@ if __name__ == "__main__":
     def read():
         out_file = execute_tts(_text, readonly=True, aformat="wav")
 
-        from xt_alitts.play import Thread_play
+        from xt_alitts.play import Synt_Read_Thread
 
         for oufile in out_file:
             # task = Qthread_play(oufile[1])
             # task.join()
-            task2 = Thread_play(oufile[1])
+            task2 = Synt_Read_Thread(oufile[1])
             task2.wait()
 
     read()
