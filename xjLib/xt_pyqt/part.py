@@ -823,14 +823,16 @@ class xt_QLineEdit(QLineEdit):
         self.returnPressed.connect(self.returnPressed_event)
 
     def textChanged_event(self, text):
-        print("xt_QLineEdit textChanged:", text)
+        print("xt_QLineEdit textChanged_event:", text)
+        ...
 
-    def textEdited_event(self):
-        print("xt_QLineEdit textEdited", self.text())
+    def textEdited_event(self, text):
+        print("xt_QLineEdit textEdited_event", text)
+        ...
 
     def returnPressed_event(self):
-        # 文本框回车，执行的操作
-        print("xt_QLineEdit returnPressed:", self.text())
+        print("xt_QLineEdit returnPressed_event:", self.text())
+        ...
 
 
 class xt_QPushButton(QPushButton):

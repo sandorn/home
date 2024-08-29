@@ -24,23 +24,27 @@ def clean_Content(in_str):
     clean_list = [
         "', '",
         "&nbsp;",
-        ";[笔趣看  www.biqukan.com]",
-        "www.biqukan.com。",
-        "wap.biqukan.com",
-        "www.biqukan.com",
-        "m.biqukan.com",
-        "n.biqukan.com",
-        "www.biqukan8.cc。",
-        "www.biqukan8.cc",
-        "m.biqukan8.cc。",
-        "m.biqukan8.cc",
+        ";[笔趣看  www.bigee.com]",
+        "https://www.bigee.com。",
+        "https://wap.bigee.com",
+        "https://www.bigee.com",
+        "https://m.bigee.com",
+        "https://n.bigee.com",
+        "https://www.bigee.cc。",
+        "https://www.bigee.cc",
+        "https://m.bigee.cc。",
+        "https://m.bigee.cc",
+        "请收藏本站：",
         "百度搜索“笔趣看小说网”手机阅读:",
         "百度搜索“笔趣看小说网”手机阅读：",
         "请记住本书首发域名:",
         "请记住本书首发域名：",
         "笔趣阁手机版阅读网址:",
+        "笔趣阁手机版：",
         "笔趣阁手机版阅读网址：",
         "关注公众号：书友大本营  关注即送现金、点币！",
+        "『点此报错』",
+        "『加入书签』",
         ";[笔趣看  ]",
         "[笔趣看 ]",
         "[笔趣看\xa0\xa0]",
@@ -141,15 +145,18 @@ def get_download_url(url):
     titles += titles2
     temp_urls += temp_urls2
     bookname = "".join(bookname)
-    urls = ["/".join(url.split("/")[:-3]) + item for item in temp_urls]  # 章节链接
+    # urls = ["/".join(url.split("/")[:-3]) + item for item in temp_urls]  # 章节链接
+    urls = [f"{url}{"".join(item.split("/")[-1:])}" for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
 
 def get_contents(*args, fn=get):
-    index, target = args
-    resp = fn(target)
+    index, url = args[0:2]
+    resp = fn(url, *args[2:])
+
     if not isinstance(resp, (ACResponse, htmlResponse)):
         return [0, resp, ""]
+
     # pyquery
     title = resp.query("h1").text()
     content = resp.query("#chaptercontent").text()
@@ -158,6 +165,7 @@ def get_contents(*args, fn=get):
 
     title = "".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
     content = clean_Content(content).strip()
+
     return [index, title, content]
 
 

@@ -19,8 +19,8 @@ from xt_alitts.cfg import Constant
 from xt_alitts.state import on_state_cls
 from xt_alitts.util import handle_result
 
-_ACCESS_APPKEY = Constant.appKey
-_ACCESS_TOKEN = Constant.token
+_ACCESS_APPKEY = Constant().appKey
+_ACCESS_TOKEN = Constant().token
 Sem = Semaphore(2)  # 限制线程并发数
 
 

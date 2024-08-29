@@ -22,8 +22,8 @@ from xt_alitts.util import get_voice_data, merge_sound_file, save_sound_file
 from xt_str import str2list
 from xt_time import get_10_timestamp
 
-_ACCESS_APPKEY = Constant.appKey
-_ACCESS_TOKEN = Constant.token
+_ACCESS_APPKEY = Constant().appKey
+_ACCESS_TOKEN = Constant().token
 Sem = Semaphore(2)  # 限制线程并发数
 
 
@@ -40,7 +40,6 @@ class NSS(on_state_cls):
         self.__text = text
         __fname = f"{self.__id}_{get_10_timestamp()}_{self.args['voice']}_tts.{ self.args['aformat']}"
         self.__file_name = f"{os.getenv('TMP')}\\{__fname}"
-
         self.start()
 
     def start(self):
@@ -70,19 +69,18 @@ class NSS(on_state_cls):
             self.__f.write(data)
             QThread.msleep(100)
         except Exception as e:
-            print("write data failed:", e)
+            print("[NSS] write data failed:", e)
 
     def _on_completed(self, message, *args):
         res = [self.__id, self.__file_name]
         self.data_list.append(res)
-        return res
 
     def _on_close(self, *args):
         self.__f.close()
 
     def __thread_run(self):
         with Sem:
-            print(f"thread {self.__id}: start..")
+            print(f"[NSS] thread {self.__id}: start..")
 
             _NSS_ = nls.NlsSpeechSynthesizer(
                 token=_ACCESS_TOKEN,
@@ -111,7 +109,7 @@ class NSS(on_state_cls):
             )
 
             QThread.msleep(100)
-            print(f"thread {self.__id}: NSS stopped.")
+            print(f"[NSS] thread {self.__id}: NSS stopped.")
 
 
 def execute_tts(_in_text, readonly=False, merge=False, **kwargs):
@@ -125,7 +123,7 @@ def execute_tts(_in_text, readonly=False, merge=False, **kwargs):
     assert isinstance(_in_text, list)
 
     # $运行主程序
-    _ = [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
+    [NSS(text, tid=index + 1, args=args) for index, text in enumerate(_in_text)]
     voice_data_list = NSS.wait_completed()
 
     # $处理结果
@@ -140,21 +138,19 @@ def execute_tts(_in_text, readonly=False, merge=False, **kwargs):
 
 
 if __name__ == "__main__":
-    _text = """
-    我家过亿资产
-    """
+    _text = [
+        "2022世界杯小组赛C组第二轮,阿根廷2:0力克墨西哥,重新掌握出线主动权。第64分钟,梅西世界波破门,打入个人世界杯第8个进球,进球数追平马拉多纳。",
+        "第87分钟,恩索·费尔南德斯锁定胜局！目前,波兰积4分,阿根廷和沙特同积3分,阿根廷以净胜球优势排名第二,墨西哥积1分。",
+    ]
 
     def read():
         out_file = execute_tts(_text, readonly=True, aformat="wav")
 
-        from xt_alitts.play import Synt_Read_Thread
+        from xt_alitts.play import PlayInQThread
 
         for oufile in out_file:
-            # task = Qthread_play(oufile[1])
-            # task.join()
-            task2 = Synt_Read_Thread(oufile[1])
-            task2.wait()
+            task = PlayInQThread(oufile[1])
+            # task2 = PlayInThread(oufile[1])
+            task.as_completed()
 
     read()
-    # print(execute_tts(_text))
-    # print(execute_tts(_text, aformat="wav", merge=True, voice="aifei"))

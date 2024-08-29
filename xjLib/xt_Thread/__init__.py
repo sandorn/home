@@ -12,6 +12,7 @@ Github       : https://github.com/sandorn/home
 """
 
 from .decorator import (
+    create_mixin_class,
     parallelize_decorator,
     qthread_decorator,
     thread_decorator,
@@ -51,5 +52,6 @@ __all__ = (
     "SingletonThread",
     "ThreadPoolWraps",
     "stop_thread",
+    "create_mixin_class",
     "_create_singleton_thread_class",
 )

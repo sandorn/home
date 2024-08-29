@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-02 14:37:16
+LastEditTime : 2024-08-26 15:33:16
 FilePath     : /CODE/xjLib/xt_thread/qThread.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -25,6 +25,7 @@ class CustomQThread(QThread):
     def __init__(self, func, *args, **kwargs):
         super().__init__()
         self._isRunning = True
+        # self.finished.connect(self.on_finished)  # 连接信号到槽函数
         self._target = func
         self._args = args
         self._kwargs = kwargs

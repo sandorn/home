@@ -80,7 +80,7 @@ class Voice(StrEnum):
 
 if __name__ == "__main__":
     res = SpeechArgs()
-    print(resss := Constant())
-    print(resss.token)
+    resss = Constant()
+    print(resss.token, Constant.token)
     res.text = "你好"
     print(res, res.get_dict())

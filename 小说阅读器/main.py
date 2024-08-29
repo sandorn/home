@@ -13,13 +13,15 @@ Github       : https://github.com/sandorn/home
 
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QThread, pyqtSlot
-from PyQt6.QtWidgets import QMessageBox
 from read_ui import Ui_Window
-from xt_alitts.play import Synt_Read_QThread
+from xt_alitts.play import QThreadPlayText
 from xt_ls_bqg import get_contents, get_download_url
 from xt_pyqt import event_loop
-from xt_str import str2list
-from xt_thread import thread_decorator
+
+"""
+音质不好，有杂音；
+朗读反应较慢；
+"""
 
 
 class NyWindow(Ui_Window):
@@ -32,7 +34,7 @@ class NyWindow(Ui_Window):
         self.titles = []  # 章节名称列表
         self.bookname = ""  # 小说名称
         self.listWidgetCurrentRow = 0  # 当前选中的行
-        self.runthread = None
+        self.reader_thread = None
 
         self.QTextEdit.scroll_to_top_event = self.on_upB_clicked
         self.QTextEdit.scroll_to_bottom_event = self.on_downB_clicked
@@ -43,20 +45,19 @@ class NyWindow(Ui_Window):
 
     def setnum(self):
         self.book_number = self.lineEdit.text()
+        self.okB.setEnabled(True)
 
     @pyqtSlot()
     @event_loop
     def on_upB_clicked(self):
-        if self.listWidgetCurrentRow == 0:
-            return
-        self.listWidget.setCurrentRow(self.listWidgetCurrentRow - 1)
+        if self.listWidgetCurrentRow > 0:
+            self.listWidget.setCurrentRow(self.listWidgetCurrentRow - 1)
 
     @pyqtSlot()
     @event_loop
     def on_downB_clicked(self):
-        if self.listWidgetCurrentRow + 1 == self.listWidget.count():
-            return
-        self.listWidget.setCurrentRow(self.listWidgetCurrentRow + 1)
+        if self.listWidgetCurrentRow + 1 < self.listWidget.count():
+            self.listWidget.setCurrentRow(self.listWidgetCurrentRow + 1)
 
     @pyqtSlot()
     @event_loop
@@ -64,33 +65,31 @@ class NyWindow(Ui_Window):
         self.listWidget.clean()
         self.QTextEdit.clear()
 
-        try:
-            self.getlist(f"{self.baseurl}/{self.book_number}/")
-        except Exception as err:
-            QMessageBox.warning(
-                None, "警告", f"没有数据，请检查：{err}", QMessageBox.Ok
-            )
-        else:
-            self.bindList()  # 对列表进行填充
-        return
+        self.getlist(f"{self.baseurl}{self.book_number}/")
+        self.bindList()  # 对列表进行填充
+        self.okB.setEnabled(False)
 
     @pyqtSlot()
     def on_readB_clicked(self):
-        (self.read_read if self.readB.text() == "&Read" else self.read_stop)()
+        if self.readB.text() == "&Read":
+            self.read_read()
+        else:
+            self.read_stop()
 
     @event_loop
     def read_read(self):
         self.readB.setText("&STOP")
-        newText = str2list(self.QTextEdit.toPlainText())  # 处理字符串
-        self.runthread = Synt_Read_QThread(newText)
-        # #绑定Synt_Read_QThread中定义的信号
-        self.runthread._signal.connect(self.playdone)
+        if self.listWidgetCurrentRow == 0:
+            self.listWidget.setCurrentRow(0)
+        newText = self.QTextEdit.toPlainText().split("\n")  # 处理字符串
+        self.reader_thread = QThreadPlayText(newText)
+        self.reader_thread._signal_done.connect(self.playdone)
+        self.reader_thread.start()  # 外部启动线程，线程启动后就会执行线程的run方法，防锁死
 
-    @event_loop
     def read_stop(self):
         self.readB.setText("&Read")
-        if self.runthread is not None:
-            self.runthread.stop()
+        if self.reader_thread is not None:
+            self.reader_thread.stop()
 
     def playdone(self):
         self.read_stop()
@@ -104,10 +103,8 @@ class NyWindow(Ui_Window):
     def getlist(self, url):
         self.bookname, self.urls, self.titles = get_download_url(url)
         self.setWindowTitle(f"{self.title}--{self.bookname}")
-        return
 
     @event_loop
-    @thread_decorator
     def getcontent(self, url):
         _, title, content = get_contents(1, url)
         return f"《{self.bookname}->{title}" + "》\n\n" + content
@@ -121,18 +118,13 @@ class NyWindow(Ui_Window):
         self.listWidget.scrollToTop()  # scrollToBottom()
 
     # List列表单击方法，用来打开选中的项
-    # @pyqtSlot(int)  # 参数与func一致  #有没有都行
     @event_loop
     def on_listWidget_currentRowChanged(self, row):
         self.listWidgetCurrentRow = row
         self.QTextEdit.clear()
-        _text = self.getcontent(
-            self.urls[row]
-        ).getResult()  # 获取thread_decorator线程返回值
-        # nowthread = QThread()
-        # nowthread.run = self.getcontent
-        # _text = nowthread.run(self.urls[row])
-
+        nowthread = QThread()
+        nowthread.run = self.getcontent
+        _text = nowthread.run(self.urls[row])
         self.QTextEdit.setText(_text)
 
 
