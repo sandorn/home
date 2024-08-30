@@ -143,7 +143,7 @@ if __name__ == "__main__":
         "第87分钟,恩索·费尔南德斯锁定胜局！目前,波兰积4分,阿根廷和沙特同积3分,阿根廷以净胜球优势排名第二,墨西哥积1分。",
     ]
 
-    def read():
+    def Threadread():
         out_file = execute_tts(_text, readonly=True, aformat="wav")
 
         from xt_alitts.play import PlayInQThread
@@ -153,4 +153,4 @@ if __name__ == "__main__":
             # task2 = PlayInThread(oufile[1])
             task.as_completed()
 
-    read()
+    Threadread()

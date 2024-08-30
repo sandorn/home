@@ -12,9 +12,12 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+import wave
 from io import BytesIO
 from threading import Thread
+from time import sleep
 
+import pyaudio
 import pygame
 from PyQt6.QtCore import QThread, pyqtSignal
 from xt_alitts.ex_nss import execute_tts
@@ -167,10 +170,10 @@ class QThreadPlayText(QThread):
 
     _signal_done = pyqtSignal()
 
-    def __init__(self, textlist=None):
+    def __init__(self, texts=None):
         super().__init__()
         self.execute_tts = execute_tts
-        self.textlist = textlist or []
+        self.textlist = texts or []
         self.datas_list = []
         self._running = True
 
@@ -318,10 +321,104 @@ def create_read_thread(meta):
 Synt_Read_Thread = create_read_thread(Thread)
 Synt_Read_QThread = create_read_thread(QThread)
 
+
+def record_audio(filename, duration, sample_rate=44100, channels=2, chunk=1024):
+    """录制音频并保存为.wav文件"""
+    audio_format = pyaudio.paInt16
+    audio = pyaudio.PyAudio()
+    stream = audio.open(
+        format=audio_format,
+        channels=channels,
+        rate=sample_rate,
+        input=True,
+        frames_per_buffer=chunk,
+    )
+    frames = []
+    print("开始录制音频...")
+    for i in range(0, int(sample_rate / chunk * duration)):
+        data = stream.read(chunk)
+        frames.append(data)
+    print("录制完成！")
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()
+    wf = wave.open(filename, "wb")
+    wf.setnchannels(channels)
+    wf.setsampwidth(audio.get_sample_size(audio_format))
+    wf.setframerate(sample_rate)
+    wf.writeframes(b"".join(frames))
+    wf.close()
+
+
+def play_audio(filename):
+    """加载并播放.wav文件"""
+    audio = pyaudio.PyAudio()
+    wf = wave.open(filename, "rb")
+    stream = audio.open(
+        format=audio.get_format_from_width(wf.getsampwidth()),
+        channels=wf.getnchannels(),
+        rate=wf.getframerate(),
+        input=True,
+        output=True,
+    )
+    chunk = 1024
+    data = wf.readframes(chunk)
+    print("开始播放音频...")
+    while data:
+        stream.write(data)
+        data = wf.readframes(chunk)
+    print("播放完成！")
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()
+
+
+class MyPyaudioPlayer:
+    def __init__(self):
+        self._running = True
+        self.audio_p = pyaudio.PyAudio()
+        self.stream = self.audio_p.open(
+            rate=16000,  # 采样率
+            channels=1,  # 设置通道数
+            format=pyaudio.paInt16,  # 设置采样大小和格式
+            output=True,  # 指定为输出流
+            input=True,  # 指定输入流
+        )
+        print("MyPyaudioPlayer 准备完毕...")
+
+    def stop(self):
+        self._running = False
+        self.stream.stop_stream()
+        print("MyPyaudioPlayer Stop!!!")
+        self.close()
+
+    def close(self):
+        self.stream.close()  # 关闭音频流，释放PortAudio系统资源
+        self.audio_p.terminate()  # 终止PyAudio对象，释放占用的系统资源
+        print("MyPyaudioPlayer Close!!!")
+
+    def play(self, data):
+        def __play():
+            print("MyPyaudioPlayer playing...")
+            self.stream.write(data)
+
+            while self._running:
+                sleep(0.1)
+
+        Thread(target=__play, name="Play").start()
+
+
 if __name__ == "__main__":
     text_list = [
         "2022世界杯小组赛C组第二轮,阿根廷2:0力克墨西哥,重新掌握出线主动权。第64分钟,梅西世界波破门,打入个人世界杯第8个进球,进球数追平马拉多纳。",
         "第87分钟,恩索·费尔南德斯锁定胜局！目前,波兰积4分,阿根廷和沙特同积3分,阿根廷以净胜球优势排名第二,墨西哥积1分。",
     ]
 
-    QThreadPlayText(textlist=text_list)
+    # QTa = QThreadPlayText(texts=text_list)
+    # QTa.run()
+
+    out_file = execute_tts(text_list, readonly=True, aformat="wav")
+    mypp = MyPyaudioPlayer()
+    mypp.play(out_file[0][1])
+    sleep(4)
+    mypp.stop()
