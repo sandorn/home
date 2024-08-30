@@ -15,7 +15,6 @@ Github       : https://github.com/sandorn/home
 import wave
 from io import BytesIO
 from threading import Thread
-from time import sleep
 
 import pyaudio
 import pygame
@@ -144,7 +143,7 @@ class ThreadPlayText(Thread):
                 print("ThreadPlayText | py_mixer new loading......")
                 _data = self.datas_list.pop(0)
                 pygame.mixer.Sound(_data).play()
-                QThread.msleep(200)
+                QThread.msleep(20)
                 continue
 
             elif (
@@ -211,7 +210,7 @@ class QThreadPlayText(QThread):
                 # 朗读完毕,有未加载数据
                 _data = self.datas_list.pop(0)
                 pygame.mixer.Sound(_data).play()
-                QThread.msleep(200)
+                QThread.msleep(20)
                 print("QThreadPlayText | py_mixer new loading......")
                 continue
 
@@ -278,7 +277,7 @@ def create_read_thread(meta):
                 # 朗读完毕,有未加载数据
                 _data = self.datas_list.pop(0)
                 pygame.mixer.Sound(_data).play()
-                QThread.msleep(200)
+                QThread.msleep(20)
                 print(f"{meta}_ReadText | py_mixer new loading......")
                 continue
 
@@ -325,6 +324,9 @@ Synt_Read_QThread = create_read_thread(QThread)
 def record_audio(filename, duration, sample_rate=44100, channels=2, chunk=1024):
     """录制音频并保存为.wav文件"""
     audio_format = pyaudio.paInt16
+    frames = []
+
+    print("开始录制音频...")
     audio = pyaudio.PyAudio()
     stream = audio.open(
         format=audio_format,
@@ -333,44 +335,54 @@ def record_audio(filename, duration, sample_rate=44100, channels=2, chunk=1024):
         input=True,
         frames_per_buffer=chunk,
     )
-    frames = []
-    print("开始录制音频...")
-    for i in range(0, int(sample_rate / chunk * duration)):
-        data = stream.read(chunk)
-        frames.append(data)
-    print("录制完成！")
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
-    wf = wave.open(filename, "wb")
-    wf.setnchannels(channels)
-    wf.setsampwidth(audio.get_sample_size(audio_format))
-    wf.setframerate(sample_rate)
-    wf.writeframes(b"".join(frames))
-    wf.close()
+
+    try:
+        for i in range(0, int(sample_rate / chunk * duration)):
+            data = stream.read(chunk)
+            frames.append(data)
+    except Exception as e:
+        print("录制音频出现异常:", e)
+    finally:
+        print("录制完成！")
+        stream.stop_stream()
+        stream.close()
+
+    with wave.open(filename, "wb") as wf:
+        wf.setnchannels(channels)
+        wf.setsampwidth(audio.get_sample_size(audio_format))
+        wf.setframerate(sample_rate)
+        wf.writeframes(b"".join(frames))
+
+    print("音频已保存为", filename)
 
 
 def play_audio(filename):
     """加载并播放.wav文件"""
+    chunk = 1024
     audio = pyaudio.PyAudio()
     wf = wave.open(filename, "rb")
+
+    formats = audio.get_format_from_width(wf.getsampwidth())
+    channels = wf.getnchannels()
+    rate = wf.getframerate()
+
     stream = audio.open(
-        format=audio.get_format_from_width(wf.getsampwidth()),
-        channels=wf.getnchannels(),
-        rate=wf.getframerate(),
-        input=True,
-        output=True,
+        format=formats, channels=channels, rate=rate, input=True, output=True
     )
-    chunk = 1024
-    data = wf.readframes(chunk)
+
     print("开始播放音频...")
-    while data:
-        stream.write(data)
+    try:
         data = wf.readframes(chunk)
-    print("播放完成！")
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
+        while data:
+            stream.write(data)
+            data = wf.readframes(chunk)
+    except Exception as e:
+        print("播放音频时出现错误:", e)
+    finally:
+        print("播放完成！")
+        stream.stop_stream()
+        stream.close()
+        audio.terminate()
 
 
 class MyPyaudioPlayer:
@@ -382,30 +394,127 @@ class MyPyaudioPlayer:
             channels=1,  # 设置通道数
             format=pyaudio.paInt16,  # 设置采样大小和格式
             output=True,  # 指定为输出流
-            input=True,  # 指定输入流
+            # input=True,  # 指定输入流
         )
         print("MyPyaudioPlayer 准备完毕...")
 
-    def stop(self):
+    def stop(self, wait=0):
+        QThread.msleep(wait)
         self._running = False
         self.stream.stop_stream()
-        print("MyPyaudioPlayer Stop!!!")
-        self.close()
-
-    def close(self):
         self.stream.close()  # 关闭音频流，释放PortAudio系统资源
         self.audio_p.terminate()  # 终止PyAudio对象，释放占用的系统资源
-        print("MyPyaudioPlayer Close!!!")
+        print("MyPyaudioPlayer Stop!!!")
 
     def play(self, data):
         def __play():
             print("MyPyaudioPlayer playing...")
-            self.stream.write(data)
+            chunk_length_ms = 100  # 每块20ms
+            chunks = [
+                data[i : i + chunk_length_ms]
+                for i in range(0, len(data), chunk_length_ms)
+            ]
+            for chunk in chunks:
+                if not self._running:
+                    QThread.msleep(20)
+                    break
+                else:
+                    self.stream.write(chunk)
 
-            while self._running:
-                sleep(0.1)
+        self.playthread = Thread(target=__play, name="Play")
+        self.playthread.start()
 
-        Thread(target=__play, name="Play").start()
+
+class QThreadPyaudioText(QThread):
+    _signal_done = pyqtSignal()
+
+    def __init__(self, texts=None):
+        super().__init__()
+        self.execute_tts = execute_tts
+        self.textlist = texts or []
+        self.datas_list = []
+        self.chunks = []
+        self._running = True
+        self.aformat = "wav"
+        self.audio_p = pyaudio.PyAudio()
+        self.stream = self.audio_p.open(
+            rate=16000,  # 采样率
+            channels=1,  # 设置通道数
+            format=pyaudio.paInt16,  # 设置采样大小和格式
+            output=True,  # 指定为输出流
+        )
+        self.create_vioce()  # 启动语音生成
+        print("QThreadPyaudioText 准备完毕...")
+
+    def create_vioce(self):
+        def __create_vioce():
+            while self._running and len(self.textlist) > 0:
+                text = self.textlist.pop(0)
+                resdata = self.execute_tts(text, readonly=True, aformat=self.aformat)
+                self.datas_list.extend([item[1] for item in resdata])
+
+            print("QThreadPyaudioText | ViceFactryMonitor Stop!!!")
+
+        self.ViceFactryMonitor = Thread(
+            target=__create_vioce, daemon=True, name="ViceFactryMonitor"
+        )
+        self.ViceFactryMonitor.start()
+
+    def run(self):
+        print("QThreadPyaudioText | starting......")
+        while self._running:
+            if len(self.chunks) > 0:
+                self.stream.write(self.chunks.pop(0))
+                continue
+
+            elif len(self.chunks) == 0 and len(self.datas_list) > 0:
+                print("QThreadPyaudioText | new loading......")
+                _data = self.datas_list.pop(0)
+                chunk_length_ms = 100  # 每块100ms
+                self.chunks = [
+                    _data[i : i + chunk_length_ms]
+                    for i in range(0, len(_data), chunk_length_ms)
+                ]
+                continue
+
+            elif (
+                not self.ViceFactryMonitor.is_alive()
+                and len(self.textlist) == 0
+                and len(self.datas_list) == 0
+                and len(self.chunks) == 0
+            ):
+                print("QThreadPyaudioText | all recod play finished!!!!")
+                self.stop()
+                self._signal_done.emit()
+
+    def play(self, data):
+        def __play():
+            print("MyPyaudioPlayer playing...")
+            chunk_length_ms = 100  # 每块100ms
+            chunks = [
+                data[i : i + chunk_length_ms]
+                for i in range(0, len(data), chunk_length_ms)
+            ]
+            for chunk in chunks:
+                if not self._running:
+                    break
+                else:
+                    self.stream.write(chunk)
+
+        self.playthread = Thread(target=__play, name="Play")
+        self.playthread.start()
+
+    def stop(self, wait=0):
+        QThread.msleep(wait)
+        self._running = False
+        self.stream.stop_stream()
+        self.stream.close()  # 关闭音频流，释放PortAudio系统资源
+        self.audio_p.terminate()  # 终止PyAudio对象，释放占用的系统资源
+        print("QThreadPyaudioText Stop!!!")
+
+    def as_completed(self):
+        self.wait()
+        self.stop()
 
 
 if __name__ == "__main__":
@@ -414,11 +523,19 @@ if __name__ == "__main__":
         "第87分钟,恩索·费尔南德斯锁定胜局！目前,波兰积4分,阿根廷和沙特同积3分,阿根廷以净胜球优势排名第二,墨西哥积1分。",
     ]
 
-    # QTa = QThreadPlayText(texts=text_list)
-    # QTa.run()
+    def m1():
+        QTa = QThreadPlayText(texts=text_list)
+        QTa.run()
 
-    out_file = execute_tts(text_list, readonly=True, aformat="wav")
-    mypp = MyPyaudioPlayer()
-    mypp.play(out_file[0][1])
-    sleep(4)
-    mypp.stop()
+    def m2():
+        out_file = execute_tts(text_list, readonly=True, aformat="wav")
+        mypp = MyPyaudioPlayer()
+        mypp.play(out_file[0][1])
+        mypp.stop(3000)
+
+    def m3():
+        RR = QThreadPyaudioText(text_list)
+        RR.run()
+        # RR.stop(3000)
+
+    m3()

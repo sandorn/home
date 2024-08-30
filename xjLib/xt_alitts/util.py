@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2023-10-18 11:44:46
-FilePath     : /CODE/xjLib/xt_Alispeech/util.py
+LastEditTime : 2024-08-30 09:45:57
+FilePath     : /CODE/xjLib/xt_alitts/util.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -34,7 +34,10 @@ def handle_result(res):
 
 def get_voice_data(voice_data_list):
     """情形1-不保存文件,返回音频数据,用于朗读"""
-    return [[index, open(item[1], "rb").read()] for index, item in enumerate(voice_data_list)]
+    return [
+        [index, open(item[1], "rb").read()]
+        for index, item in enumerate(voice_data_list)
+    ]
 
 
 def save_sound_file(voice_data_list, path=None):
@@ -71,8 +74,10 @@ def merge_sound_file(voice_data_list, args, path=None):
     if path is None:
         path = get_desktop()
     # 将声音列表初始化为AudioSegment格式
-    sound_list = [AudioSegment.from_file(item[1], format=args["aformat"]) for item in voice_data_list]
-    # [[item[0], AudioSegment.from_file(item[1], format=format)] for item in voice_data_list]
+    sound_list = [
+        AudioSegment.from_file(item[1], format=args["aformat"])
+        for item in voice_data_list
+    ]
 
     # 使用sum函数来快速完成声音文件相加，无需循环
     SumSound = sum(sound_list)

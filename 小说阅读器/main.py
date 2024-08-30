@@ -14,7 +14,7 @@ Github       : https://github.com/sandorn/home
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QThread, pyqtSlot
 from read_ui import Ui_Window
-from xt_alitts.play import QThreadPlayText
+from xt_alitts.play import QThreadPyaudioText as QThreadPlayText
 from xt_ls_bqg import get_contents, get_download_url
 from xt_pyqt import event_loop
 
@@ -62,12 +62,12 @@ class NyWindow(Ui_Window):
     @pyqtSlot()
     @event_loop
     def on_okB_clicked(self):
+        self.okB.setEnabled(False)
         self.listWidget.clean()
         self.QTextEdit.clear()
 
         self.getlist(f"{self.baseurl}{self.book_number}/")
         self.bindList()  # 对列表进行填充
-        self.okB.setEnabled(False)
 
     @pyqtSlot()
     def on_readB_clicked(self):

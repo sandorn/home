@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-11-08 09:18:15
-LastEditTime : 2024-08-20 09:54:08
+LastEditTime : 2024-08-30 09:53:52
 FilePath     : /CODE/xjLib/xt_xfspeech/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -17,10 +17,10 @@ https://console.xfyun.cn/services/tts
 from xt_enum import StrEnum
 
 
-class cfg(StrEnum):
-    APPID = ("2269c784", "讯飞开放平台的APPID")
-    APISecret = ("OWI0NGJmYmQxZTA1OTI1Yjg5MTM4OGUy", "讯飞开放平台的APISecret")
-    APIKey = ("5206d42c6146ead1ee5411b106965114", "讯飞开放平台的APIKey")
+class CFG(StrEnum):
+    APPID = ("2269c784", "讯飞开放平台APPID")
+    APISecret = ("OWI0NGJmYmQxZTA1OTI1Yjg5MTM4OGUy", "讯飞开放平台APISecret")
+    APIKey = ("5206d42c6146ead1ee5411b106965114", "讯飞开放平台APIKey")
 
     @property
     def code(self):
