@@ -19,7 +19,6 @@ from xt_ls_bqg import get_contents, get_download_url
 from xt_pyqt import event_loop
 
 """
-音质不好，有杂音；
 朗读反应较慢；
 """
 

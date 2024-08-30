@@ -12,7 +12,12 @@ Github       : https://github.com/sandorn/home
 """
 
 from PyQt6.QtCore import Qt, QThread
-from PyQt6.QtGui import QAction, QCursor, QStandardItem, QStandardItemModel
+from PyQt6.QtGui import (
+    QAction,
+    QCursor,
+    QStandardItem,
+    QStandardItemModel,
+)
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -738,6 +743,9 @@ class xt_QTextBrowser(QTextBrowser):
         self.setReadOnly(True)
         self.fontsize = 16
         self.setFontPointSize(self.fontsize)  # 设置字号
+        self.scrollbar = self.verticalScrollBar()
+        self.scroll_down_count = 0
+        self.scroll_up_count = 0
         self.ensureCursorVisible()  # 游标可用
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)  # 设置垂直滚动条按需可见
         # Qt.ScrollBarAlwaysOff  #禁用垂直滚动条
@@ -755,22 +763,29 @@ class xt_QTextBrowser(QTextBrowser):
             | Qt.TextSelectableByMouse
         )
 
-    def event(self, event):
-        if event.type() == event.Wheel:
-            scrollbar = self.verticalScrollBar()
-            current_value = scrollbar.value()
+    def event(self, e):
+        if e.type() == e.Wheel:
+            current_value = self.scrollbar.value()
 
-            if current_value == scrollbar.maximum():
-                QThread.msleep(400)
-                self.scroll_to_bottom_event()
-                return True  # 拦截滚动事件，不再传递给滚动条
+            if current_value == self.scrollbar.maximum():
+                QThread.msleep(100)
+                self.scroll_down_count += 1
+                if self.scroll_down_count >= 3:
+                    self.scroll_down_count = 0
+                    self.scroll_to_bottom_event()
+                    self.scrollbar.setValue(0)
+                    return True  # 拦截滚动事件，不再传递给滚动条
 
-            elif current_value == scrollbar.minimum():
-                QThread.msleep(400)
-                self.scroll_to_top_event()
-                return True  # 拦截滚动事件，不再传递给滚动条
+            elif current_value == self.scrollbar.minimum():
+                QThread.msleep(100)
+                self.scroll_up_count += 1
+                if self.scroll_up_count >= 3:
+                    self.scroll_up_count = 0
+                    self.scroll_to_top_event()
+                    self.scrollbar.setValue(0)
+                    return True  # 拦截滚动事件，不再传递给滚动条
 
-        return super().event(event)
+        return super().event(e)
 
     def scroll_to_bottom_event(self):
         # 在滚动到底部时触发的函数

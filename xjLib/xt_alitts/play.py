@@ -165,7 +165,7 @@ class ThreadPlayText(Thread):
 
 
 class QThreadPlayText(QThread):
-    """文字转语音，并播放"""
+    """文字转语音，并播放,需要在pyqt环境下运行start"""
 
     _signal_done = pyqtSignal()
 
@@ -234,7 +234,7 @@ class QThreadPlayText(QThread):
 
 
 def create_read_thread(meta):
-    """type完全动态构建类"""
+    """type完全动态构建类,用于创建语音播放线程,qthread需要在pyqt环境下运行start"""
 
     def __init__fn(self, textlist=None):
         meta.__init__(self)
@@ -426,6 +426,8 @@ class MyPyaudioPlayer:
 
 
 class QThreadPyaudioText(QThread):
+    """文字转语音，并播放,需要在pyqt环境下运行start"""
+
     _signal_done = pyqtSignal()
 
     def __init__(self, texts=None):
@@ -534,8 +536,8 @@ if __name__ == "__main__":
         mypp.stop(3000)
 
     def m3():
-        RR = QThreadPyaudioText(text_list)
-        RR.run()
-        # RR.stop(3000)
+        mypp = QThreadPyaudioText(text_list)
+        mypp.run()
+        mypp.stop(3000)
 
-    m3()
+    m2()
