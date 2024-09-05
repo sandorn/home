@@ -1,22 +1,21 @@
 # !/usr/bin/env python
 """
-#==============================================================
-#Descripttion : None
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2019-05-03 23:26:06
-#FilePath     : /xjLib/xt_DAO/xt_mysql.py
-#LastEditTime : 2020-07-08 20:40:16
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2024-09-05 09:53:31
+FilePath     : /CODE/xjLib/xt_database/mysql.py
+Github       : https://github.com/sandorn/home
+==============================================================
 """
 
 import MySQLdb
 import pymysql
 from sqlalchemy import text
 from xt_database.cfg import DB_CFG
-from xt_database.xt_untilsql import make_insert_sql, make_update_sql
+from xt_database.untilsql import make_insert_sql, make_update_sql
 
 
 class DbEngine:

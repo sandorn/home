@@ -6,11 +6,12 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2024-06-28 17:32:08
 LastEditTime : 2024-08-26 17:22:37
-FilePath     : /CODE/xjLib/xt_pyqt/eventLoop.py
+FilePath     : /CODE/xjLib/xt_pyqt/utils.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+import sys
 from functools import wraps
 
 from PyQt6.QtCore import QEventLoop, Qt
@@ -38,3 +39,9 @@ def event_loop(func):
             QApplication.processEvents()  # 交还控制权
 
     return wrapper
+
+
+def appexec(main_window):
+    app = QApplication(sys.argv)
+    _ = main_window()
+    sys.exit(app.exec())

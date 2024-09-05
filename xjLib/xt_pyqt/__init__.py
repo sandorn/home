@@ -11,6 +11,6 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from .eventLoop import event_loop
+from .utils import appexec, event_loop
 
-__all__ = ["event_loop"]
+__all__ = ("event_loop", "appexec")

@@ -11,7 +11,6 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from PyQt6 import QtWidgets
 from PyQt6.QtCore import QThread, pyqtSlot
 from read_ui import Ui_Window
 from xt_alitts.play import QThreadPyaudioText as QThreadPlayText
@@ -128,8 +127,6 @@ class NyWindow(Ui_Window):
 
 
 if __name__ == "__main__":
-    import sys
+    from xt_pyqt import appexec
 
-    app = QtWidgets.QApplication(sys.argv)
-    ui = NyWindow()
-    sys.exit(app.exec())
+    appexec(NyWindow)

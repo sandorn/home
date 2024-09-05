@@ -4,9 +4,9 @@
 Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
-Date         : 2023-01-23 00:23:58
-LastEditTime : 2023-02-04 20:42:41
-FilePath     : /CODE/xjLib/xt_DAO/xt_asynOrm.py
+Date         : 2024-07-22 17:01:49
+LastEditTime : 2024-09-05 09:53:03
+FilePath     : /CODE/xjLib/xt_database/asynsqlorm.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -17,8 +17,8 @@ from typing import Optional
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from xt_database.cfg import connect_str
-from xt_database.xt_sqlorm_meta import ErrorMetaClass, get_db_model
-from xt_database.xt_untilsql import make_insert_sql, make_update_sql
+from xt_database.sqlorm_meta import ErrorMetaClass, get_db_model
+from xt_database.untilsql import make_insert_sql, make_update_sql
 from xt_singleon import SingletonMetaCls
 
 

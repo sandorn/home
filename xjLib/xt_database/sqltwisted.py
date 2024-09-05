@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-21 00:08:37
-LastEditTime : 2024-08-20 14:19:36
-FilePath     : /CODE/xjLib/xt_database/xt_sqltwisted.py
+LastEditTime : 2024-09-05 09:58:21
+FilePath     : /CODE/xjLib/xt_database/sqltwisted.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -14,7 +14,7 @@ Github       : https://github.com/sandorn/home
 from twisted.enterprise import adbapi
 from twisted.internet import reactor
 from xt_database.cfg import DB_CFG
-from xt_database.xt_untilsql import make_insert_sql, make_update_sql
+from xt_database.untilsql import make_insert_sql, make_update_sql
 
 
 class SqlTwisted:

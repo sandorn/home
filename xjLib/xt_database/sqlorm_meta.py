@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2024-07-24 08:59:42
-LastEditTime : 2024-07-24 16:04:10
-FilePath     : /CODE/xjLib/xt_database/xt_sqlorm_meta.py
+LastEditTime : 2024-09-05 09:56:13
+FilePath     : /CODE/xjLib/xt_database/sqlorm_meta.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 sqlalchemy创建异步sqlite会话 sqlalchemy async_mob64ca140caeb2的技术博客_51CTO博客

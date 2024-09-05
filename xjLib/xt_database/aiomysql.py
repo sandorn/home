@@ -1,14 +1,14 @@
 # !/usr/bin/env python
-"""==============================================================
-Descripttion : mysql 异步版本
+"""
+==============================================================
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2020-08-17 11:53:01
-FilePath     : /xjLib/xt_DAO/xt_Aiomysql.py
-LastEditTime : 2021-04-14 16:15:59
+Author       : sandorn sandorn@live.cn
+Date         : 2023-01-29 23:35:00
+LastEditTime : 2024-09-05 09:50:54
+FilePath     : /CODE/xjLib/xt_database/aiomysql.py
 Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
 https://www.yangyanxing.com/article/aiomysql_in_python.html
 https://blog.csdn.net/ydyang1126/article/details/78226701/
 """
@@ -19,7 +19,7 @@ from typing import Optional
 
 import aiomysql.sa as aiosa
 from xt_database.cfg import DB_CFG
-from xt_database.xt_untilsql import make_insert_sql, make_update_sql
+from xt_database.untilsql import make_insert_sql, make_update_sql
 
 
 class AioMysql:

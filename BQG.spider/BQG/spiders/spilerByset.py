@@ -15,7 +15,7 @@ import os
 import sys
 
 import scrapy
-from xt_database.xt_sqlorm import SqlConnection
+from xt_database.sqlorm import SqlConnection
 from xt_ls_bqg import clean_Content
 from xt_str import Str_Replace, align
 

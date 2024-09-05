@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2024-07-22 09:23:24
-LastEditTime : 2024-07-22 09:23:25
-FilePath     : /CODE/xjLib/xt_database/xt_sqlorm.py
+LastEditTime : 2024-09-05 09:56:47
+FilePath     : /CODE/xjLib/xt_database/sqlorm.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -17,7 +17,7 @@ import pandas
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from xt_database.cfg import connect_str
-from xt_database.xt_sqlorm_meta import ErrorMetaClass, get_db_model
+from xt_database.sqlorm_meta import ErrorMetaClass, get_db_model
 from xt_singleon import SingletonMetaCls
 
 

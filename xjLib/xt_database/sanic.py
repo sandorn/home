@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-25 16:55:39
-FilePath     : /CODE/xjLib/xt_database/xt_sanic.py
+LastEditTime : 2024-09-05 09:55:30
+FilePath     : /CODE/xjLib/xt_database/sanic.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """

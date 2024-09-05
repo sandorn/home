@@ -1,13 +1,12 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  :
+Description  : 头部注释
 Develop      : VSCode
-Author       : Even.Sand
-Contact      : sandorn@163.com
-Date         : 2022-12-07 17:18:41
-LastEditTime : 2022-12-15 14:45:41
-FilePath     : /xjLib/xt_Excel.py
+Author       : sandorn sandorn@live.cn
+Date         : 2022-12-22 17:35:56
+LastEditTime : 2024-09-05 09:54:43
+FilePath     : /CODE/xjLib/xt_database/openpyxl.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 https://blog.csdn.net/qq_44614026/article/details/113275741

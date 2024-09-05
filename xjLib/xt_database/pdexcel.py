@@ -1,4 +1,15 @@
 # !/usr/bin/env python
+"""
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2024-07-26 10:09:40
+LastEditTime : 2024-09-05 09:55:09
+FilePath     : /CODE/xjLib/xt_database/pdexcel.py
+Github       : https://github.com/sandorn/home
+==============================================================
+"""
 
 import os
 from typing import IO, List, Optional, Union

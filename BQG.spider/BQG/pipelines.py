@@ -24,12 +24,12 @@ from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from twisted.enterprise import adbapi
 from xt_database.cfg import DB_CFG
-from xt_database.xt_aiomysql import AioMysql
-from xt_database.xt_aiomysqlpool import AioSqlPool
-from xt_database.xt_asynsqlorm import AsynSqlOrm
-from xt_database.xt_mysql import DbEngine as mysql
-from xt_database.xt_sqlorm import SqlConnection
-from xt_database.xt_sqlorm_meta import Base_Model
+from xt_database.aiomysql import AioMysql
+from xt_database.aiomysqlpool import AioSqlPool
+from xt_database.asynsqlorm import AsynSqlOrm
+from xt_database.mysql import DbEngine as mysql
+from xt_database.sqlorm import SqlConnection
+from xt_database.sqlorm_meta import Base_Model
 
 
 def make_model(_BOOKNAME):
