@@ -89,7 +89,6 @@ def connect_str(key, odbc=None):
     if not hasattr(DB_CFG, key):
         raise ValueError(f"错误提示:检查数据库配置:{key}")
     cfg = DB_CFG[key].value
-
     db_types = cfg["type"]
     odbc = db_types if odbc is None else odbc
 

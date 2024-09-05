@@ -22,7 +22,7 @@ from xt_database.cfg import DB_CFG
 from xt_database.untilsql import make_insert_sql, make_update_sql
 
 
-class AioMysql:
+class AioMySql:
     def __init__(self, db_key="default", tablename=None):
         self.coro_list = []
         self.db_key = db_key
@@ -34,7 +34,7 @@ class AioMysql:
     async def _create_engine(self, autocommit=True):
         if not hasattr(DB_CFG, self.db_key):
             raise ValueError(f"错误提示:检查数据库配置:{self.db_key}")
-        cfg = DB_CFG[self.db_key].value
+        cfg = DB_CFG[self.db_key].value.copy()
         cfg.pop("type", None)
         try:
             self.engine = await aiosa.create_engine(
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         "会员到期日": "9999-12-31 00:00:00",
     }
 
-    aio = AioMysql("TXbx", "users2")
+    aio = AioMySql("TXbx", "users2")
     # res = aio.insert([item1])
     # print(res)
     # res = aio.insert([item1, item1], autorun=False)

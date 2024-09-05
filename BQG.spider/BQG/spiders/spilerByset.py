@@ -30,32 +30,17 @@ class Spider(scrapy.Spider):
 
     custom_settings = {
         "ITEM_PIPELINES": {
-            "BQG.pipelines.Pipeline2Csv": 4
-            # 'BQG.pipelines.PipelineToSqlTwisted': 10,  # 25s
-            # 'BQG.pipelines.PipelineToAiomysqlpool': 20,  # 27s
-            # 'BQG.pipelines.PipelineToAsynorm': 80,  # 32s
-            # 'BQG.pipelines.PipelineToAiomysql': 100,  # 33s
-            # 'BQG.pipelines.PipelineToSqlalchemy': 200,  # 135s
-            # 'BQG.pipelines.PipelineToMysql': 300,  # 170s
+            "BQG.pipelines.Pipeline3Csv": 20,
+            # "BQG.pipelines.PipelineToSqlTwisted": 50,  # 30s
+            # "BQG.pipelines.PipelineToAioMySqlOrm": 80,  # 32s
+            # "BQG.pipelines.PipelineToAiomySql": 100,  # 33s
+            # "BQG.pipelines.PipelineToSqlalchemy": 200,  # 135s
+            # "BQG.pipelines.PipelineToMysql": 300,  # 170s
         }
     }
 
-    # ... 其他代码
-
     start_urls = ["https://www.bigee.cc/book/6909/"]
     baseurl = "https://www.bigee.cc/"
-
-    # 编写爬取方法
-    # def start_requests(self):
-    #     # 循环生成需要爬取的地址
-    #     self.connect = mysql("TXbook", "MySQLdb")
-    #     self.db = set()
-    #     for url in self.start_urls:
-    #         yield scrapy.Request(
-    #             url=url,
-    #             callback=self.parse,
-    #             dont_filter=True,
-    #         )
 
     def parse(self, response, **kwargs):
         # #获取书籍名称

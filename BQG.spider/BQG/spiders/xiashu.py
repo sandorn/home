@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2024-08-23 16:01:33
-LastEditTime : 2024-09-04 09:27:43
+LastEditTime : 2024-09-05 16:48:30
 FilePath     : /CODE/BQG.spider/BQG/spiders/xiashu.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -30,11 +30,12 @@ class XiashuSpider(scrapy.Spider):
 
     custom_settings = {
         "ITEM_PIPELINES": {
-            # "BQG.pipelines.Pipeline2Csv": 40
-            "BQG.pipelines.PipelineToTxt": 100,
+            "BQG.pipelines.Pipeline3Csv": 20,
+            # "BQG.pipelines.Pipeline2Csv": 40,
+            # "BQG.pipelines.PipelineToTxt": 100,
             # "BQG.pipelines.PipelineToJson": 200,
-            # 'BQG.pipelines.PipelineToJsonExp': 250,
-            # 'BQG.pipelines.PipelineToCsv': 300,
+            # "BQG.pipelines.PipelineToJsonExp": 250,
+            # "BQG.pipelines.PipelineToCsv": 300,
         }
     }
 

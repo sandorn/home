@@ -58,7 +58,7 @@ class LogCls(SingletonMixin):
                     "class": "logging.handlers.RotatingFileHandler",  # 打印到文件
                     "formatter": "standard",
                     "filename": self.filename,
-                    "maxBytes": 1024 * 1024 * 5,
+                    "maxBytes": 1024 * 1024 * 5 * 10,
                     "backupCount": 5,
                     "encoding": "utf-8",
                 },  # 保存到文件  # 日志文件  # 日志大小 5M  # 日志文件的编码

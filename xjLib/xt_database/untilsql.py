@@ -5,11 +5,13 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-02-04 22:34:26
-LastEditTime : 2023-02-04 22:36:18
-FilePath     : /CODE/xjLib/xt_DAO/untilsql.py
+LastEditTime : 2024-09-05 15:29:27
+FilePath     : /CODE/xjLib/xt_database/untilsql.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+
+# from sqlalchemy import text # text() 用于防止sql注入
 
 
 def make_insert_sql(item, table_name):
@@ -17,7 +19,7 @@ def make_insert_sql(item, table_name):
     vals = ", ".join(f"'{v}'" for v in item.values())
     sql = f"INSERT INTO `{table_name}`({cols}) VALUES({vals})"
     sql = sql.replace("%", "%%")
-    return sql  # text() 用于防止sql注入
+    return sql
 
 
 def make_update_sql(item, condition, table_name):
@@ -26,4 +28,4 @@ def make_update_sql(item, condition, table_name):
     cond_v = ", ".join([f"'{v}'" for v in condition.values()])
     sql = f"UPDATE `{table_name}` SET {item_kv} WHERE ({cond_k})=({cond_v})"
     sql = sql.replace("%", "%%")
-    return sql  # text() 用于防止sql注入
+    return sql

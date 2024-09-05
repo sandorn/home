@@ -37,7 +37,7 @@ FEED_EXPORT_ENCODING = "utf-8"
 LOG_LEVEL = "ERROR"
 
 
-class CustomJsonLinesItemExporter(JsonLinesItemExporter):
+class CustomJsonExporter(JsonLinesItemExporter):
     def __init__(self, file, **kwargs):
         super().__init__(file, encoding="utf-8", ensure_ascii=False, **kwargs)
 
@@ -113,17 +113,17 @@ DOWNLOADER_MIDDLEWARES = {
     # 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 101,
 }
 ITEM_PIPELINES = {
-    "BQG.pipelines.PipelineToAiomysql": 20,
-    "BQG.pipelines.PipelineToSqlalchemy": 20,
-    "BQG.pipelines.PipelineToMysql": 20,
-    "BQG.pipelines.PipelineToSqlTwisted": 30,
-    "BQG.pipelines.PipelineToSql": 40,
+    "BQG.pipelines.PipelineToSqlTwisted": 20,  # 25s
+    "BQG.pipelines.PipelineToAioMySqlOrm": 80,  # 32s
+    "BQG.pipelines.PipelineToAiomySql": 100,  # 33s
+    "BQG.pipelines.PipelineToSqlalchemy": 200,  # 135s
+    "BQG.pipelines.PipelineToMysql": 300,  # 170s
+    "BQG.pipelines.Pipeline2Csv": 40,
     "BQG.pipelines.PipelineToTxt": 100,
     "BQG.pipelines.PipelineToJson": 200,
     "BQG.pipelines.PipelineToJsonExp": 250,
     "BQG.pipelines.PipelineToCsv": 300,
-    "BQG.pipelines.Pipeline2Csv": 400,
-    "BQG.pipelines.PipelineMysql2Txt": 500,
+    "BQG.pipelines.Pipeline3Csv": 400,
 }
 """
 # PROXIES = [{'ip_port': '111.11.228.75:80', 'user_pass': ''}]

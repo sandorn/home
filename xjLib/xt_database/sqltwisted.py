@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-21 00:08:37
-LastEditTime : 2024-09-05 09:58:21
+LastEditTime : 2024-09-05 16:43:28
 FilePath     : /CODE/xjLib/xt_database/sqltwisted.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -22,7 +22,7 @@ class SqlTwisted:
         self.table_name = table_name
         if not hasattr(DB_CFG, db_key):
             raise ValueError(f"错误提示:检查数据库配置:{db_key}")
-        cfg = DB_CFG[db_key].value
+        cfg = DB_CFG[db_key].value.copy()
         cfg.pop("type", None)
         self.dbpool = adbapi.ConnectionPool("MySQLdb", **cfg)  # 'MySQLdb' , 'pymysql'
         reactor.callWhenRunning(self.close)

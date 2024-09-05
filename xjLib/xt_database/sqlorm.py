@@ -192,24 +192,25 @@ if __name__ == "__main__":
         }
     ]
 
-    ASO = SqlConnection("TXbx", "users2", "users")
+    # ASO = SqlConnection("TXbx", "users2", "users")
+    ASO = SqlConnection("TXbook", "人道大圣", "dbtable")
     # res = ASO.insert(item)
     # print(1111, res)
     # res = ASO.update(value={"username": "刘澈"}, conds={"ID": 4})
     # print(2222, res)
-    res = ASO.run_sql(query_list[0])
-    print(3333, res)
-    # res = ASO.query()
-    # print(4444, res)
+    # res = ASO.run_sql(query_list[0])
+    # print(3333, res)
+    res = ASO.query()
+    print(4444, res)
     # res = ASO.filter_by({"ID": 4})
     # print(5555, res)
-    resfrom_statement = ASO.from_statement(
-        "select * from users2 where id=:id", {"id": 5}
-    )
-    print(6666, resfrom_statement)
-    print(ASO.Base.make_dict(resfrom_statement))
-    print(7777, resfrom_statement[0].to_dict(), ASO.Base.to_dict(resfrom_statement[0]))
+    # resfrom_statement = ASO.from_statement(
+    #     "select * from users2 where id=:id", {"id": 5}
+    # )
+    # print(6666, resfrom_statement)
+    # print(ASO.Base.make_dict(resfrom_statement))
+    # print(7777, resfrom_statement[0].to_dict(), ASO.Base.to_dict(resfrom_statement[0]))
     # deleNum = ASO.delete({"ID": 3})
     # print(8888, deleNum)
-    res = ASO.select({"username": "刘新军"}, ["ID", "username"], 0)
-    print(9999, res)
+    # res = ASO.select({"username": "刘新军"}, ["ID", "username"], 0)
+    # print(9999, res)

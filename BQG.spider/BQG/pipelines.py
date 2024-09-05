@@ -18,15 +18,15 @@
 import codecs
 import csv
 import json
+import os
 
-from scrapy.exporters import JsonItemExporter
+from scrapy.exporters import CsvItemExporter, JsonItemExporter
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from twisted.enterprise import adbapi
+from xt_database.aiomysql import AioMySql
+from xt_database.asynsqlorm import AioMySqlOrm
 from xt_database.cfg import DB_CFG
-from xt_database.aiomysql import AioMysql
-from xt_database.aiomysqlpool import AioSqlPool
-from xt_database.asynsqlorm import AsynSqlOrm
 from xt_database.mysql import DbEngine as mysql
 from xt_database.sqlorm import SqlConnection
 from xt_database.sqlorm_meta import Base_Model
@@ -60,18 +60,19 @@ class PipelineToSqlTwisted:
     @classmethod
     def from_settings(cls, settings):
         # #用于获取settings配置文件中的信息
-        cfg = DB_CFG["TXbook"].value
-        cfg.pop("type", None)
-        dbpool = adbapi.ConnectionPool("MySQLdb", **cfg)
-        return cls(dbpool)
+        return cls("TXbook")
 
-    def __init__(self, dbpool):
-        self.dbpool = dbpool
+    def __init__(self, db_key):
+        cfg = DB_CFG[db_key].value.copy()
+        cfg.pop("type", None)
+        self.dbpool = adbapi.ConnectionPool("MySQLdb", **cfg)  # 'MySQLdb' , 'pymysql'
+        print(111111111111111111, self.dbpool)
 
     def process_item(self, item, spider):
         # 使用twisted将mysql插入变成异步执行
         query = self.dbpool.runInteraction(self.do_insert, item)
         query.addErrback(self.handle_error, item, spider)  # 处理异常
+
         return item
 
     def handle_error(self, failure, item, spider):
@@ -93,67 +94,39 @@ class PipelineToSqlTwisted:
         cursor.execute(insert_sql)
 
 
-class PipelineToAiomysqlpool:
+class PipelineToAioMySqlOrm:
     def __init__(self):
-        self.sql_list = []
-
-    def process_item(self, item, spider):
-        self.sql_list.append(self.Create_Sql(item))
-        return item
-
-    def Create_Sql(self, item):
-        return """
-        Insert into %s(`BOOKNAME`, `INDEX`, `ZJNAME`, `ZJTEXT`, `ZJHERF`) values('%s', %d, '%s', '%s', '%s')
-        """ % (
-            item["BOOKNAME"],
-            item["BOOKNAME"],
-            item["INDEX"],
-            item["ZJNAME"],
-            item["ZJTEXT"],
-            item["ZJHERF"],
-        )
-
-    def close_spider(self, spider):
-        AioSqlPool("TXbook").executeall(self.sql_list)
-
-
-class PipelineToAsynorm:
-    def __init__(self):
-        self.db = set()
         self.sqlconn = None
 
     def process_item(self, item, spider):
         self._BOOKNAME = item["BOOKNAME"]
-        if self._BOOKNAME not in self.db:
-            self.db.add(self._BOOKNAME)
-            self.DBtable = make_model(self._BOOKNAME)
+        #     self.DBtable = make_model(self._BOOKNAME)
         if self.sqlconn is None:
-            self.sqlconn = AsynSqlOrm(self.DBtable, "TXbook", self._BOOKNAME)
-
-        self.sqlconn.insert(dict(item), autorun=False)
+            self.sqlconn = AioMySqlOrm("TXbook", self._BOOKNAME, "dbtable")
+        self.sqlconn.insert(dict(item))  # , autorun=False)
 
         return item
 
     def close_spider(self, spider):
         if self.sqlconn is not None:
             self.sqlconn.run_in_loop()
-            del self.db
 
 
-class PipelineToAiomysql:
+class PipelineToAiomySql:
     def __init__(self):
         self.sql_list = []
-        self.AioMysql = None
+        self.mysql_clent = None
 
     def process_item(self, item, spider):
-        if self.AioMysql is None:
-            self.AioMysql = AioMysql("TXbook", item["BOOKNAME"])
-        self.AioMysql.insert(dict(item), autorun=False)
+        if self.mysql_clent is None:
+            self.mysql_clent = AioMySql("TXbook", item["BOOKNAME"])
+        self.mysql_clent.insert(dict(item))  # , autorun=False)
+
         return item
 
     def close_spider(self, spider):
-        if self.AioMysql is not None:
-            self.AioMysql.run_in_loop()
+        if self.mysql_clent is not None:
+            self.mysql_clent.run_in_loop()
 
 
 class PipelineToSqlalchemy:
@@ -164,8 +137,7 @@ class PipelineToSqlalchemy:
         _BOOKNAME = item["BOOKNAME"]
         if _BOOKNAME not in self.db:
             self.db.add(_BOOKNAME)
-            DBtable = make_model(_BOOKNAME)
-            self.sqlconn = SqlConnection(DBtable, "TXbook")
+            self.sqlconn = SqlConnection("TXbook", _BOOKNAME, "dbtable")
 
         self.sqlconn.insert(item)
         return item
@@ -189,7 +161,6 @@ class PipelineToMysql:
             self.db.add(_BOOKNAME)
 
         _result = self.conn.get_all_from_db(_BOOKNAME)
-        assert isinstance(_result, (list, tuple))
         ZJHERF_list = [res[5] for res in _result]
 
         if item["ZJHERF"] in ZJHERF_list:
@@ -247,8 +218,6 @@ class PipelineToJson:
 
 class PipelineToJsonExp:
     # # 调用 scrapy 提供的 json exporter 导出 json 文件
-    def __init__(self):
-        pass
 
     def open_spider(self, spider):
         self.file = open("Items_exp.json", "wb")
@@ -256,21 +225,27 @@ class PipelineToJsonExp:
         self.exporter = JsonItemExporter(
             self.file, encoding="utf-8", ensure_ascii=False
         )
-        self.exporter.start_exporting()  # 开启倒数
+        self.exporter.start_exporting()
+        self.bookname = None
 
     # 将 Item 实例导出到 json 文件
     def process_item(self, item, spider):
         self.exporter.export_item(item)
+        if self.bookname is None:
+            self.bookname = item["BOOKNAME"]
         return item
 
     def close_spider(self, spider):
         self.exporter.finish_exporting()
         self.file.close()
+        if self.bookname:
+            new_file_name = f"{self.bookname}_2.json"
+            os.rename(self.file.name, new_file_name)
 
 
 class PipelineToCsv:
     def __init__(self):
-        self.file = any
+        self.file = None
 
     def process_item(self, item, spider):
         self.file = codecs.open(item["BOOKNAME"] + ".csv", "a", encoding="utf-8")
@@ -280,7 +255,8 @@ class PipelineToCsv:
         return item
 
     def close_spider(self, spider):
-        self.file.close()
+        if self.file:
+            self.file.close()
 
 
 class Pipeline2Csv:
@@ -292,9 +268,41 @@ class Pipeline2Csv:
         self.file = open(item["BOOKNAME"] + "_2.csv", "a", newline="")
         self.writer = csv.writer(self.file, dialect="excel")  # csv写法
         self.writer.writerow(
-            [item["BOOKNAME"], item["INDEX"], item["ZJNAME"], item["ZJTEXT"]]
+            [
+                item["BOOKNAME"],
+                item["INDEX"],
+                item["ZJNAME"],
+                item["ZJTEXT"],
+                item["ZJHERF"],
+            ]
         )
         return item
 
     def close_spider(self, spider):
         self.file.close()
+
+
+class Pipeline3Csv:
+    def __init__(self, file_name):
+        self.file = open(file_name, "wb")
+        self.exporter = CsvItemExporter(self.file)
+        self.exporter.start_exporting()
+        self.bookname = None
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        file_name = crawler.settings.get("CSV_FILE_NAME", "output_3.csv")
+        return cls(file_name)
+
+    def process_item(self, item, spider):
+        self.exporter.export_item(item)
+        if self.bookname is None:
+            self.bookname = item["BOOKNAME"]
+        return item
+
+    def close_spider(self, spider):
+        self.exporter.finish_exporting()
+        self.file.close()
+        if self.bookname:
+            new_file_name = f"{self.bookname}_3.csv"
+            os.rename(self.file.name, new_file_name)

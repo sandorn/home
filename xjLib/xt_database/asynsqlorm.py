@@ -22,7 +22,7 @@ from xt_database.untilsql import make_insert_sql, make_update_sql
 from xt_singleon import SingletonMetaCls
 
 
-class AsynSqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
+class AioMySqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
     def __init__(self, db_key="default", new_table_name=None, old_table_name=None):
         self.engine = create_engine(connect_str(db_key))
         self.Base = get_db_model(self.engine, new_table_name, old_table_name)
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         "会员到期日": "9999-12-31 00:00:00",
     }
 
-    aio = AsynSqlOrm("TXbx", "users2", "users")
+    aio = AioMySqlOrm("TXbx", "users2", "users")
     # res = aio.add_all([item1])
     # print(1111, res)
     # res = aio.insert([item1])

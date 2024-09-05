@@ -29,7 +29,7 @@ class DbEngine:
         self.odbc = odbc
         if not hasattr(DB_CFG, db_key):
             raise ValueError(f"错误提示:检查数据库配置:{db_key}")
-        self.cfg = DB_CFG[db_key].value
+        self.cfg = DB_CFG[db_key].value.copy()
         self.cfg.pop("type", None)
 
         try:
@@ -99,7 +99,7 @@ class DbEngine:
             keys = list(datas[0].keys())
         cols = ", ".join(f"`{k}`" for k in keys)
         val_cols = ", ".join(f"%({k})s" for k in keys)
-        res_sql = text(f"insert into `{tb_name}`({cols}) values({val_cols})")
+        res_sql = f"insert into `{tb_name}`({cols}) values({val_cols})"
 
         try:
             self.cur.executemany(res_sql, datas)
@@ -118,18 +118,18 @@ class DbEngine:
         if not isinstance(data, dict):
             raise ValueError("must dict type")
         res_sql = make_insert_sql(data, tb_name)
-        self.execute(text(res_sql))
+        self.execute(res_sql)
 
     def update(self, new_data, condition, tb_name):
         if not isinstance(new_data, dict):
             raise ValueError("must dict type")
         sql = make_update_sql(new_data, condition, tb_name)
-        self.execute(text(sql))
+        self.execute(sql)
 
     def ver(self):
         sql = "SELECT VERSION()"
         #  使用execute方法执行SQL语句
-        self.cur.execute(text(sql))
+        self.cur.execute(sql)
         #  使用 fetchone() 方法获取一条数据库。
         _版本号 = self.cur.fetchone()
         return _版本号[0] if _版本号 else None
@@ -143,7 +143,7 @@ class DbEngine:
 
     def get_all_from_db(self, table_name, args=None):
         sql = f" select * from {table_name}"
-        self.cur.execute(text(sql), args)
+        self.cur.execute(sql, args)
         return self.cur.fetchall()
 
     def get_dict(self, sql):
@@ -160,7 +160,7 @@ class DbEngine:
 
 
 if __name__ == "__main__":
-    DB = DbEngine("TXbx", "MySQLdb")
-    # DB = DbEngine("TXbx")
-    t = DB.query("select * from users2")
-    print(t)
+    db_clent = DbEngine("TXbx")  # , "MySQLdb")
+    print(db_clent.query("select * from users2"))
+    print(db_clent.get_all_from_db("users2"))
+    print(db_clent.ver())

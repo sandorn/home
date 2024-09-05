@@ -40,7 +40,7 @@ class AioSqlPool(SingletonMixin):
         db_key = self.db_key
         if not hasattr(DB_CFG, db_key):
             raise ValueError(f"错误提示:检查数据库配置:{db_key}")
-        cfg = DB_CFG[db_key].value
+        cfg = DB_CFG[db_key].value.copy()
         cfg.pop("type", None)
         try:
             self.pool = await aiomysql.create_pool(
