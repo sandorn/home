@@ -44,7 +44,7 @@ class DbEngine:
         except Exception as error:
             print(f"{self.odbc} connect<{self.db_key}> error:{repr(error)}")
             return None
-        else:
+        finally:
             self.cur = self.conn.cursor()
             print(f"{self.odbc}  connect<{self.db_key}> Ok!")
 
@@ -144,11 +144,8 @@ class DbEngine:
 
     def get_all_from_db(self, table_name, args=None):
         sql = f" select * from {table_name}"
-        try:
-            self.cur.execute(text(sql), args)
-            return self.cur.fetchall()
-        except Exception as e:
-            print(e)
+        self.cur.execute(text(sql), args)
+        return self.cur.fetchall()
 
     def get_dict(self, sql):
         # 重新定义游标格式
@@ -164,7 +161,7 @@ class DbEngine:
 
 
 if __name__ == "__main__":
-    # DB = DbEngine('TXbx', 'MySQLdb')
-    DB = DbEngine("TXbx")
+    DB = DbEngine("TXbx", "MySQLdb")
+    # DB = DbEngine("TXbx")
     t = DB.query("select * from users2")
     print(t)
