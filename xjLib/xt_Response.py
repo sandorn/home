@@ -16,9 +16,8 @@ from typing import Sequence
 
 from chardet import detect
 from html2text import HTML2Text
-from lxml import etree
+from lxml import html
 from pyquery import PyQuery
-from requests_html import HTML
 
 
 class htmlResponse:
@@ -123,13 +122,18 @@ class htmlResponse:
 
     @property
     def element(self):
-        return etree.HTML(self.content, parser=None)
+        # self.content 有decode问题,self._content 有乱码问题
+        # from lxml import etree
+        # return etree.HTML(self.content, parser=None)
+        return html.fromstring(self.text, parser=None)
 
     @property
     def dom(self):
         """
         返回requests_html对象,支持html对象操作:find, xpath, render(先安装chromium浏览器)
         """
+        from requests_html import HTML
+
         html = HTML(html=self._content)
         setattr(html, "url", self.url)
         return html
@@ -167,5 +171,14 @@ class ACResponse(htmlResponse):
 
 
 if __name__ == "__main__":
-    print(res := htmlResponse(""))
-    print(res.text)
+    from xt_requests import get
+
+    url = "https://www.baidu.com"
+    url = "https://www.bigee.cc/book/6909/"
+    rep = get(url)
+    title_name = "title" if url == "https://www.baidu.com" else "h1"
+    print(res := htmlResponse(rep))
+    print(res.url, res.dom)
+    print(res.xpath(f"//{title_name}/text()"))
+    print(res.dom.xpath(f"//{title_name}/text()"))
+    print(res.query(f"{title_name}").text())

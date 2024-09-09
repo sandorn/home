@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
 LastEditTime : 2024-06-07 10:35:33
-FilePath     : /CODE/xjLib/xt_Requests.py
+FilePath     : /CODE/xjLib/xt_requests.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 requests 简化调用
@@ -144,8 +144,9 @@ if __name__ == "__main__":
 
     print(222222222222222222222, partial(_parse, "HEAD")("http://httpbin.org/headers"))
     print(333333333333333333333, res := get("http://www.163.com"))
-    print("1".ljust(10), ":", res.xpath("//title/text()"))
-    print("2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
+    # print(res.encoding, res.code_type, res.text)
+    print("xpath-1".ljust(10), ":", res.xpath("//title/text()"))
+    print("xpath-2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
     print(
         "blank".ljust(10),
         ":",
@@ -153,7 +154,7 @@ if __name__ == "__main__":
     )
     print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
     print("html".ljust(10), ":", res.html.xpath("//title/text()"))
-    print("elemsent".ljust(10), ":", res.element.xpath("//title/text()"))
+    print("element".ljust(10), ":", res.element.xpath("//title/text()"))
     print("query".ljust(10), ":", res.query("title").text())
     """
     ###############################################################
