@@ -156,7 +156,7 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
 
     def from_statement(self, sql, whrere_dict: Optional[dict] = None):
         """使用完全基于字符串的语句"""
-        query = self._query.from_statement(text(sql))
+        query = self._query.from_statement(sql)
         return query.params(**whrere_dict).all() if whrere_dict else query.all()
 
     def filter_by(self, whrere_dict: Optional[dict], countNum: Optional[int] = None):
