@@ -24,11 +24,11 @@ from scrapy.exporters import CsvItemExporter, JsonItemExporter
 from sqlalchemy import Column
 from sqlalchemy.dialects.mysql import INTEGER, TEXT, VARCHAR
 from twisted.enterprise import adbapi
-from xt_database.aiomysql import AioMySql
-from xt_database.asynsqlorm import AioMySqlOrm
+from xt_database.amysql import AioMySql
 from xt_database.cfg import DB_CFG
 from xt_database.mysql import DbEngine as mysql
 from xt_database.sqlorm import SqlConnection
+from xt_database.sqlorm_async import AioMySqlOrm
 from xt_database.sqlorm_meta import Base_Model
 
 

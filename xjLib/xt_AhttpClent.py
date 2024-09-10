@@ -12,6 +12,7 @@ Github       : https://github.com/sandorn/home
 """
 
 import asyncio
+import sys
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_ahttp import Method_List
@@ -21,10 +22,24 @@ from xt_response import ACResponse
 
 
 class AioHttpClient:
+    cfg_flag = False
+
     def __init__(self):
-        self._loop = asyncio.get_event_loop_policy().new_event_loop()
+        self.set_config()
+
+        self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
-        self._session = ClientSession(connector=TCPConnector(ssl=True))
+        self._session = self._loop.run_until_complete(self.create_session())
+
+    @staticmethod
+    def set_config():
+        if sys.platform == "win32" and not AioHttpClient.cfg_flag:
+            print("asyncio - on windows aiodns needs SelectorEventLoop")
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+            AioHttpClient.cfg_flag = True
+
+    async def create_session(self):
+        return ClientSession(connector=TCPConnector(ssl=False), loop=self._loop)
 
     def __enter__(self):
         return self
@@ -53,7 +68,7 @@ class AioHttpClient:
 
     def _make_parse(self, url, **kwargs):
         return self._loop.run_until_complete(
-            self._retry_request(url, inde=id(url), **kwargs)
+            self._retry_request(url, index=id(url), **kwargs)
         )
 
     @log_decorator
@@ -78,7 +93,7 @@ class AioHttpClient:
             return callback(result) if callable(callback) else result
         except Exception as err:
             print(err_str := f"AioHttpClient:{self} | URL:{url} | RetryErr:{err!r}")
-            return ACResponse("", err_str, index)
+            return ACResponse(None, err_str.encode(), index)
 
     async def request_all(self, urls_list, **kwargs):
         task_list = [

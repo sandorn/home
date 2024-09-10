@@ -16,44 +16,35 @@ from typing import Sequence
 
 from chardet import detect
 from html2text import HTML2Text
-from lxml import html
 from pyquery import PyQuery
+
+DEFAULT_ENCODING = "utf-8"
 
 
 class htmlResponse:
     """封装网页结果,标准化"""
 
-    __slots__ = ("raw", "_content", "index", "encoding", "code_type")
+    __slots__ = ("raw", "content", "index", "encoding")
 
-    def __init__(self, response, content=None, index=None):
+    def __init__(self, response=None, content=None, index=None):
         self.index: int = index or id(self)
-
-        if response:
-            self.raw = response
-            self._content: bytes = (
-                content if isinstance(content, bytes) else response.content
+        self.raw = response
+        self.content: bytes = (
+            content.encode(DEFAULT_ENCODING, "replace")
+            if isinstance(content, str)
+            else (
+                content
+                if isinstance(content, bytes)
+                else (response.content if response else b"")
             )
-            self.encoding = (
-                response.encoding if hasattr(response, "encoding") else "utf-8"
-            )
-            self.code_type = (
-                detect(self._content)["encoding"]
-                if isinstance(self._content, bytes)
-                else "utf-8"
-            )
-        else:
-            self.raw = None
-            self._content = (
-                content.encode("utf-8", "replace")
-                if isinstance(content, str)
-                else (content or b"")
-            )
-            self.encoding = "utf-8"
-            self.code_type = "utf-8"
+        )
+        self.encoding = detect(self.content).get("encoding") or getattr(
+            response, "encoding", DEFAULT_ENCODING
+        )
 
     def __repr__(self):
         if self.raw is None:
-            return f"<htmlResponse [None] | ID:[{self.index}]>"
+            return f"<htmlResponse [999] | {self.content} | ID:[{self.index}]>"
         return f"<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>"
 
     def __str__(self):
@@ -66,16 +57,13 @@ class htmlResponse:
         return len(self.text) if self.text else 0
 
     @property
-    def content(self):
-        if isinstance(self.code_type, str):
-            return self._content.decode(self.code_type, "ignore")
-
-    @property
     def text(self):
         if self.raw:
-            return self.raw.text.encode(self.encoding).decode(self.code_type, "ignore")
+            return self.raw.text.encode(self.encoding).decode(self.encoding, "ignore")
+        elif isinstance(self.content, str):
+            return self.content.encode(self.encoding).decode(self.encoding, "ignore")
         else:
-            return self.content
+            return self.content.decode(self.encoding, "ignore")
 
     @property
     def elapsed(self):
@@ -109,23 +97,24 @@ class htmlResponse:
 
     @property
     def status(self):
-        if self.raw:
-            return (
-                self.raw.status if hasattr(self.raw, "status") else self.raw.status_code
-            )
+        return getattr(self.raw, "status", getattr(self.raw, "status_code", 999))
 
     @property
     def html(self, filter="//script"):
         element = self.element
         [item.getparent().remove(item) for item in element.xpath(filter)]
+
         return element
 
     @property
     def element(self):
-        # self.content 有decode问题,self._content 有乱码问题
-        # from lxml import etree
-        # return etree.HTML(self.content, parser=None)
-        return html.fromstring(self.text, parser=None)
+        from lxml import etree
+
+        return etree.HTML(self.content, parser=None)
+
+        # from lxml import html
+
+        # return html.fromstring(self.text, parser=None)
 
     @property
     def dom(self):
@@ -134,13 +123,13 @@ class htmlResponse:
         """
         from requests_html import HTML
 
-        html = HTML(html=self._content)
+        html = HTML(html=self.content)
         setattr(html, "url", self.url)
         return html
 
     @property
     def query(self):
-        return PyQuery(self.html)  # , parser='xml')
+        return PyQuery(self.html)
 
     def xpath(self, selectors: str | Sequence[str] = "") -> list:
         """
@@ -177,8 +166,11 @@ if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
     rep = get(url)
     title_name = "title" if url == "https://www.baidu.com" else "h1"
-    print(res := htmlResponse(rep))
-    print(res.url, res.dom)
-    print(res.xpath(f"//{title_name}/text()"))
-    print(res.dom.xpath(f"//{title_name}/text()"))
-    print(res.query(f"{title_name}").text())
+    print(rep.url, rep.dom)
+    print(rep.xpath(f"//{title_name}/text()"))
+    print(rep.dom.xpath(f"//{title_name}/text()"))
+    print(rep.query(f"{title_name}").text())
+    print(rep, rep.raw)
+    print(rep.status)
+    print(rep.encoding)
+    print(r := htmlResponse(None, "参数ele:666", 1), r, r.text, r.dom, end="\n\n")

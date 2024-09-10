@@ -14,6 +14,7 @@ https://www.cnblogs.com/haoabcd2010/p/10615364.html
 """
 
 import asyncio
+import sys
 from asyncio.coroutines import iscoroutinefunction
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import wraps
@@ -54,7 +55,7 @@ def async_inexecutor_decorator(func):
             if iscoroutinefunction(func):
                 result = await func(*args, **kwargs)
             else:
-                loop = asyncio.get_event_loop()
+                loop = asyncio.get_running_loop()
                 result = await loop.run_in_executor(None, func, *args, **kwargs)
             return result
 
@@ -83,11 +84,21 @@ def async_run_decorator(func):
 
 
 class AioHttpCrawl:
+    cfg_flag = False
+
     def __init__(self):
         self.future_list = []
 
+    @staticmethod
+    def set_config():
+        if sys.platform == "win32" and not AioHttpCrawl.cfg_flag:
+            print("asyncio - on windows aiodns needs SelectorEventLoop")
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+            AioHttpCrawl.cfg_flag = True
+
     def add_tasks(self, url_list, method="GET", **kwargs):
         """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
+        self.set_config()
         return asyncio.run(self.tasks_run(url_list, method=method, **kwargs))
 
     async def tasks_run(self, url_list, method, **kwargs):
@@ -116,7 +127,7 @@ class AioHttpCrawl:
             ) as session, session.request(
                 method, url, raise_for_status=True, **kwargs
             ) as response:
-                content = await response.read()
+                content = await response.content.read()
                 response.text = await response.text()
                 return response, content, index
 
@@ -126,7 +137,7 @@ class AioHttpCrawl:
             return callback(result) if callable(callback) else result
         except Exception as err:
             print(err_str := f"AioCrawl_run_task:{self} | URL:{url} | RetryErr:{err!r}")
-            return ACResponse("", err_str, index)
+            return ACResponse(None, err_str.encode(), index)
 
     def add_pool(self, func, *args, callback=None, **kwargs):
         """添加函数(同步异步均可)及参数,异步运行，返回结果"""

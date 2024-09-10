@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2024-07-22 17:01:49
 LastEditTime : 2024-09-05 09:53:03
-FilePath     : /CODE/xjLib/xt_database/asynsqlorm.py
+FilePath     : /CODE/xjLib/xt_database/sqlorm_async.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -17,7 +17,7 @@ from typing import Optional
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from xt_database.cfg import connect_str
-from xt_database.sqlorm_meta import ErrorMetaClass, get_db_model
+from xt_database.sqlorm_meta import ErrorMetaClass, copy_db_model
 from xt_database.untilsql import make_insert_sql, make_update_sql
 from xt_singleon import SingletonMetaCls
 
@@ -25,7 +25,7 @@ from xt_singleon import SingletonMetaCls
 class AioMySqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
     def __init__(self, db_key="default", new_table_name=None, old_table_name=None):
         self.engine = create_engine(connect_str(db_key))
-        self.Base = get_db_model(self.engine, new_table_name, old_table_name)
+        self.Base = copy_db_model(self.engine, new_table_name, old_table_name)
         # 创建引擎
         self.async_engine = create_async_engine(
             connect_str(key=db_key, odbc="aiomysql"),

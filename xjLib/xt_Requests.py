@@ -43,13 +43,15 @@ def _retry_request(method, url, **kwargs):
         return callback(result) if callable(callback) else result
     except Exception as err:
         print(err_str := f"Request_tretry:{method} | URL:{url} | Err:{err!r}")
-        return htmlResponse("", err_str, id(url))
+        return htmlResponse(None, err_str.encode(), id(url))
 
 
 @log_decorator
 def _parse(method, url, **kwargs) -> htmlResponse:
     if method.lower() not in Method_List:
-        return htmlResponse("", f"Method:{method} not in {Method_List}", id(url))
+        return htmlResponse(
+            None, f"Method:{method} not in {Method_List}".encode(), id(url)
+        )
     kwargs.setdefault("headers", Head().randua)
     kwargs.setdefault("timeout", TIMEOUT)  # @超时
     kwargs.setdefault("cookies", {})
@@ -120,7 +122,7 @@ class SessionClient:
             return self.callback(result) if callable(self.callback) else result
         except requests.exceptions.RequestException as err:
             print(err_str := f"SessionClient:{self} | URL:{self.url} | Err:{err!r}")
-            return htmlResponse("", err_str, id(self.url))
+            return htmlResponse(None, err_str.encode(), id(self.url))
 
     def update_cookies(self, cookie_dict):
         self.session.cookies.update(cookie_dict)
@@ -132,19 +134,17 @@ class SessionClient:
 if __name__ == "__main__":
     sion = SessionClient()
     print(111111111111111111111, getattr(sion, "get")("https://httpbin.org/get"))
-    # urls = [
-    #     "http://www.baidu.com",
-    #     "http://www.163.com",
-    #     "http://dangdang.com",
-    #     "https://httpbin.org",
-    #     "https://www.google.com",
-    # ]
-    # for url in urls:
-    #     print(get(url))
+    urls = [
+        "http://www.baidu.com",
+        "http://www.163.com",
+        "http://dangdang.com",
+        "https://httpbin.org",
+        "https://www.google.com",
+    ]
 
     print(222222222222222222222, partial(_parse, "HEAD")("http://httpbin.org/headers"))
-    print(333333333333333333333, res := get("http://www.163.com"))
-    # print(res.encoding, res.code_type, res.text)
+    print(252525252525252525252, res := get(urls[4]))
+    print(333333333333333333333, res := get(urls[1]))
     print("xpath-1".ljust(10), ":", res.xpath("//title/text()"))
     print("xpath-2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
     print(

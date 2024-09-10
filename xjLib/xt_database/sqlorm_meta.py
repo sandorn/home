@@ -13,10 +13,20 @@ sqlalchemy创建异步sqlite会话 sqlalchemy async_mob64ca140caeb2的技术博�
 https://blog.51cto.com/u_16213668/9806859
 """
 
-from sqlalchemy import Table, inspect
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import INTEGER, Column, DateTime, Table, create_engine, inspect
+from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.sql import func
 from xt_class import ItemMixin
 from xt_database.cfg import connect_str
+
+
+class TimestampMixin:
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class IdMixin:
+    ID = Column(INTEGER, primary_key=True)
 
 
 class ErrorMetaClass:
@@ -59,16 +69,19 @@ class ErrorMetaClass:
         raise NotImplementedError
 
 
-class OrmExt(ItemMixin):
-    """SQLAlchemy Base ORM Model,下标取值赋值、打印显示、生成字段列表"""
+class ModelExt(ItemMixin):
+    """SQLAlchemy Base ORM Model Ext,下标取值赋值、打印显示、生成字段列表"""
 
-    __str__ = __repr__ = lambda self: self.__class__.__name__ + str(
-        {
-            key: getattr(self, key)
-            for key in self.keys()
-            if getattr(self, key) is not None
-        }
-    )
+    def __str__(self):
+        return self.__class__.__name__ + str(
+            {
+                key: getattr(self, key)
+                for key in self.keys()
+                if getattr(self, key) is not None
+            }
+        )
+
+    __repr__ = __str__
 
     @classmethod
     def columns(cls):
@@ -104,7 +117,7 @@ class OrmExt(ItemMixin):
         """单一记录record转字典,使用:record.to_dict()"""
         return self.make_dict(self)
 
-    def model_to_dict(self, alias_dict: dict = None, exclude_none=True) -> dict:
+    def model_to_dict(self, alias_dict=None, exclude_none=True) -> dict:
         """
         数据库模型转成字典
         Args:
@@ -128,7 +141,7 @@ class OrmExt(ItemMixin):
             }
 
 
-Base = Base_Model = declarative_base(cls=OrmExt)
+Base = Base_Model = declarative_base(cls=ModelExt)
 metadata = Base.metadata  # 等价于：sqlalchemy.MetaData()
 
 
@@ -157,7 +170,7 @@ def inherit_table_cls(new_table_name, parent_table_cls):
     return type(new_table_name, (parent_table_cls,), table_structure)
 
 
-def get_db_model(engine, new_table_name, old_table_name=None):
+def copy_db_model(engine, new_table_name, old_table_name=None):
     """
     读取数据库表;或copy源表结构,创建新表;返回model类
     Base_Model.metadata.reflect(engine)
@@ -220,7 +233,7 @@ def get_db_model(engine, new_table_name, old_table_name=None):
     table_structure = {
         "__table__": Table(
             str(tablename),  # 判断从哪个表复制结构
-            metadata,
+            Base_Model.metadata,
             extend_existing=True,
             autoload_with=engine,
         ),
@@ -228,40 +241,53 @@ def get_db_model(engine, new_table_name, old_table_name=None):
     }
 
     if not tableinpool:
-        table_structure[
-            "__table__"
-        ].name = new_table_name  # @关键语句，决定是否创建新表
-        metadata.create_all(engine)  # 创建表
+        table_structure["__table__"].name = new_table_name
+        # @关键语句，决定是否创建新表
+        Base.metadata.create_all(engine)  # 创建表
     return type(new_table_name, (Base_Model,), table_structure)
-    # return Table(new_table_name, metadata, autoload_with=engine) # 反射单个表
+    # return Table(new_table_name, Base.metadata, autoload_with=engine) # 反射单个表
 
 
 def db_to_model(tablename, key="default"):
-    """
-    #@无用
-    根据已有数据库生成模型
-    sqlacodegen --tables users2 --outfile db.py mysql+pymysql://sandorn:123456@cdb-lfp74hz4.bj.tencentcdb.com:10014/bxflb?charset=utf
-    """
     import subprocess
 
-    com_list = f"sqlacodegen --tables `{tablename}` --outfile {tablename}_db.py {connect_str(key)}"
+    com_list = f"sqlacodegen {connect_str(key)} --tables {tablename} --outfile={tablename}_db.py "
     return subprocess.call(com_list, shell=True)
 
 
+def reflect(tablename, key="default"):
+    "反射已经存在的表，返回表对象和会话对象"
+    engine = create_engine(connect_str(key))
+    # 反射数据库表
+    Base_Model.metadata.reflect(bind=engine)  # , only=[tablename])
+    session = sessionmaker(bind=engine)()
+    # 获取表对象
+    table_obj = Base_Model.metadata.tables[tablename]
+    # table_obj = Table(tablename, Base_Model.metadata, autoload_with=engine)
+
+    # 定义数据模型
+    class NewTableModel(ParentBaseModel):
+        __table__ = table_obj
+
+    return NewTableModel, session
+
+
 if __name__ == "__main__":
-    from sqlalchemy import INTEGER, TEXT, VARCHAR, Column
 
-    class table_model(ParentBaseModel):
-        __tablename__ = "ModelTable"
+    def ceshi(key="default"):
+        from sqlalchemy import TEXT, VARCHAR, Column
 
-        ID = Column(INTEGER, primary_key=True)
-        BOOKNAME = Column(VARCHAR(255), nullable=False)
-        INDEX = Column(INTEGER, nullable=False)
-        ZJNAME = Column(VARCHAR(255), nullable=False)
-        ZJTEXT = Column(TEXT, nullable=False)
-        ZJHERF = Column(VARCHAR(255), nullable=False)
+        class table_model(ParentBaseModel, TimestampMixin, IdMixin):
+            __tablename__ = "books"
+            BOOKNAME = Column(VARCHAR(255), nullable=False)
+            INDEX = Column(INTEGER, nullable=False)
+            ZJNAME = Column(VARCHAR(255), nullable=False)
+            ZJTEXT = Column(TEXT, nullable=False)
+            ZJHERF = Column(VARCHAR(255), nullable=False)
 
-    def ceshi():
+        engine = create_engine(connect_str(key))
+        ParentBaseModel.metadata.create_all(bind=engine)
+
         print(1111, db := table_model, db.__mro__)
         # print(1111,db := inherit_table_cls("NT", table_model), db.__mro__)
         print(2222, db.__tablename__, db, db.columns())
@@ -273,17 +299,12 @@ if __name__ == "__main__":
         print(6666, res.to_dict())
         print(7777, res.model_to_dict())
 
-    from sqlalchemy import Column, DateTime, Integer, String
-    from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy.sql import func
+    def ceshi2(tablename, key="default"):
+        table_model, sess = reflect(tablename, key)
+        print(table_model.columns())
+        print(table_model.keys())
+        print(sess.query(table_model).all())
 
-    class TimestampMixin:
-        created_at = Column(DateTime, server_default=func.now())
-        updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-
-    class User(ParentBaseModel, TimestampMixin):
-        __tablename__ = "users"
-        id = Column(Integer, primary_key=True)
-        username = Column(String)
-
-    ceshi()
+    # ceshi()
+    # ceshi2("users2")
+    # db_to_model("users2")

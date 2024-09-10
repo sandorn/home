@@ -12,6 +12,7 @@ Github       : https://github.com/sandorn/home
 """
 
 import asyncio
+import sys
 from functools import partial
 from threading import Thread
 
@@ -38,9 +39,12 @@ Method_List = (
 class AsyncTask:
     """aiohttp异步任务"""
 
+    cfg_flag = False
+
     def __init__(self, index=None):
         self.index = index or id(self)
         self.result = None
+        self.set_config()
 
     def __getitem__(self, method):
         if method.lower() in Method_List:
@@ -75,7 +79,7 @@ class AsyncTask:
             ) as self.session, self.session.request(
                 self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
             ) as self.response:
-                self.content = await self.response.read()
+                self.content = await self.response.content.read()
                 self.response.text = await self.response.text()
                 return self.response, self.content, self.index
 
@@ -87,14 +91,23 @@ class AsyncTask:
 
         except Exception as err:
             print(err_str := f"Async_fetch:{self} | RetryErr:{err!r}")
-            self.result = ACResponse("", err_str, self.index)
+            self.result = ACResponse(None, err_str.encode(), self.index)
             return self.result
+
+    @staticmethod
+    def set_config():
+        if sys.platform == "win32" and not AsyncTask.cfg_flag:
+            print("asyncio - on windows aiodns needs SelectorEventLoop")
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+            AsyncTask.cfg_flag = True
 
 
 def create_task(method, url, index=None, *args, **kwargs):
     """构建任务"""
     if method.lower() not in Method_List:
-        return ACResponse("", f"Method:{method} not in {Method_List}", id(url))
+        return ACResponse(
+            None, f"Method:{method} not in {Method_List}".encode(), id(url)
+        )
 
     return getattr(AsyncTask(index), method)(url, *args, **kwargs)
 

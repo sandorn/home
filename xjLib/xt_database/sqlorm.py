@@ -17,7 +17,7 @@ import pandas
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from xt_database.cfg import connect_str
-from xt_database.sqlorm_meta import ErrorMetaClass, get_db_model
+from xt_database.sqlorm_meta import ErrorMetaClass, copy_db_model
 from xt_singleon import SingletonMetaCls
 
 
@@ -40,7 +40,7 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
             future=True,  # 使用异步模式
             # poolclass=NullPool, # 禁用池
         )
-        self.Base = get_db_model(
+        self.Base = copy_db_model(
             self.engine, target_table_name, source_table_name
         )  # #获取orm基类,同时创建表
         self.conn = self.engine.connect()  # pd使用
@@ -82,8 +82,8 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
         Args:
             sql: sql语句
             params: sql参数, eg. {":id_val": 10, ":name_val": "hui"}
-            query_one: 是否查询单条，默认False查询多条
-            session: 数据库会话对象，如果为 None，则通过装饰器在方法内部开启新的事务
+            query_one: 是否查询单条,默认False查询多条
+            session: 数据库会话对象，如果为 None,则通过装饰器在方法内部开启新的事务
         Returns:
             执行sql的结果
         """

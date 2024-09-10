@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-29 23:35:00
 LastEditTime : 2024-09-05 09:50:54
-FilePath     : /CODE/xjLib/xt_database/aiomysql.py
+FilePath     : /CODE/xjLib/xt_database/amysql.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 https://www.yangyanxing.com/article/aiomysql_in_python.html
