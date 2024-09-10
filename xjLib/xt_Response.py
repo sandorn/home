@@ -147,6 +147,7 @@ class htmlResponse:
 
     @property
     def ctext(self):
+        "纯净字符串"
         h = HTML2Text()
         h.ignore_links = True
         if self.raw:
@@ -172,5 +173,4 @@ if __name__ == "__main__":
     print(rep.query(f"{title_name}").text())
     print(rep, rep.raw)
     print(rep.status)
-    print(rep.encoding)
-    print(r := htmlResponse(None, "参数ele:666", 1), r, r.text, r.dom, end="\n\n")
+    # print(r := htmlResponse(None, "参数ele:666", 1), r, r.text, r.dom, end="\n\n")

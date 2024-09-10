@@ -24,16 +24,13 @@ from xt_singleon import SingletonMixin
 
 class AioSqlPool(SingletonMixin):
     def __init__(self, key="default", autocommit=True):
-        self.pool = None
         self.autocommit = autocommit
-        self.coro_list = []
         self.db_key = key
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)  # @解决循环的关键点
         self.run_in_loop([self.create_pool()])
 
-    def run_in_loop(self, coro_list: Optional[list] = None):
-        coro_list = coro_list or self.coro_list
+    def run_in_loop(self, coro_list: list):
         return self.loop.run_until_complete(asyncio.gather(*coro_list))
 
     async def create_pool(self):
@@ -42,6 +39,7 @@ class AioSqlPool(SingletonMixin):
             raise ValueError(f"错误提示:检查数据库配置:{db_key}")
         cfg = DB_CFG[db_key].value.copy()
         cfg.pop("type", None)
+
         try:
             self.pool = await aiomysql.create_pool(
                 # minsize=5,  # 连接池最小值
@@ -103,20 +101,20 @@ class AioSqlPool(SingletonMixin):
         finally:
             await self.closeCurosr(conn, cur)
 
-    def query(self, sql_list, params: Optional[dict] = None, autorun=True):
+    def query(self, sql_list, params: Optional[dict] = None):
         sql_list = [sql_list] if isinstance(sql_list, str) else sql_list
         _coro = [self._query(_sql, params) for _sql in sql_list]
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro)
 
-    def execute(self, sql_list, args=None, autorun=True):
+    def execute(self, sql_list, args=None):
         sql_list = [sql_list] if isinstance(sql_list, str) else sql_list
         args = [args] * len(sql_list) if not isinstance(args, (tuple, list)) else args
         _coro = [self._execute(sql, data) for sql, data in zip(sql_list, args)]
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro)
 
-    def executeall(self, sql, args=None, autorun=True):
+    def executeall(self, sql, args=None):
         _coro = [self._executeall(sql, args)]
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro)
 
 
 if __name__ == "__main__":
@@ -129,13 +127,11 @@ if __name__ == "__main__":
     up_sql = ("update users2 set username='刘新新' where ID = 2",)
     ups_sql = "update users2 set username=%s where ID = %s"
     ups_data = [("刘澈", 1), ("刘新军", 2)]
-    # self = AioSqlPool("TXbx")
-    # print(self.query(query_list[0]))
-    # res = self.execute(up_sql)
-    # print(111111111111111111, res)
-    # res = self.executeall(ups_sql, ups_data)
-    # print(222222222222222222, res)
     self = AioSqlPool("TXbx")
+    res = self.execute(up_sql)
+    print(111111111111111111, res)
+    res = self.executeall(ups_sql, ups_data)
+    print(222222222222222222, res)
     res = self.query("select * from users2")
     for item in res[0]:
         print(item)

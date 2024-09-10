@@ -119,7 +119,7 @@ if __name__ == "__main__":
         "会员到期日": "9999-12-31 00:00:00",
     }
 
-    aio = AioMySqlOrm("TXbx", "users2", "users")
+    aio = AioMySqlOrm("TXbx", "users2", "users_model")
     # res = aio.add_all([item1])
     # print(1111, res)
     # res = aio.insert([item1])

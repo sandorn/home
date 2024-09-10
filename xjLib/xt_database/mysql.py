@@ -13,7 +13,6 @@ Github       : https://github.com/sandorn/home
 
 import MySQLdb
 import pymysql
-from sqlalchemy import text
 from xt_database.cfg import DB_CFG
 from xt_database.untilsql import make_insert_sql, make_update_sql
 
