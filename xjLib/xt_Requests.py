@@ -16,7 +16,7 @@ from functools import partial
 
 import requests
 from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_decorator
+from xt_log import log_catch_decor, retry_log_catch_decor
 from xt_response import htmlResponse
 
 Method_List = [
@@ -33,8 +33,8 @@ Method_List = [
 
 
 @TRETRY  # from xt_tools import try_except_wraps
-def _retry_request(method, url, **kwargs):
-    """利用 TRETRY 库实现重试"""
+def _retry_request1(method, url, **kwargs):
+    """无用暂存，利用 TRETRY 库实现重试"""
     callback = kwargs.pop("callback", None)
     try:
         response = requests.request(method, url, **kwargs)
@@ -43,10 +43,20 @@ def _retry_request(method, url, **kwargs):
         return callback(result) if callable(callback) else result
     except Exception as err:
         print(err_str := f"Request_tretry:{method} | URL:{url} | Err:{err!r}")
+        raise ValueError(err_str)
         return htmlResponse(None, err_str.encode(), id(url))
 
 
-@log_decorator
+@retry_log_catch_decor()  # type: ignore
+def _retry_request(method, url, **kwargs):
+    """利用 TRETRY 库实现重试"""
+    callback = kwargs.pop("callback", None)
+    response = requests.request(method, url, **kwargs)
+    response.raise_for_status()
+    result = htmlResponse(response)
+    return callback(result) if callable(callback) else result
+
+
 def _parse(method, url, **kwargs) -> htmlResponse:
     if method.lower() not in Method_List:
         return htmlResponse(
@@ -96,7 +106,7 @@ class SessionClient:
     def __getattr__(self, method):
         return self.__getitem__(method)
 
-    @log_decorator
+    @log_catch_decor
     def create_task(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
@@ -132,30 +142,43 @@ class SessionClient:
 
 
 if __name__ == "__main__":
-    sion = SessionClient()
-    print(111111111111111111111, getattr(sion, "get")("https://httpbin.org/get"))
-    urls = [
-        "http://www.baidu.com",
-        "http://www.163.com",
-        "http://dangdang.com",
-        "https://httpbin.org",
-        "https://www.google.com",
-    ]
 
-    print(222222222222222222222, partial(_parse, "HEAD")("http://httpbin.org/headers"))
-    print(252525252525252525252, res := get(urls[4]))
-    print(333333333333333333333, res := get(urls[1]))
-    print("xpath-1".ljust(10), ":", res.xpath("//title/text()"))
-    print("xpath-2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
-    print(
-        "blank".ljust(10),
-        ":",
-        res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
-    )
-    print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
-    print("html".ljust(10), ":", res.html.xpath("//title/text()"))
-    print("element".ljust(10), ":", res.element.xpath("//title/text()"))
-    print("query".ljust(10), ":", res.query("title").text())
+    def main():
+        sion = SessionClient()
+        print(111111111111111111111, getattr(sion, "get")("https://httpbin.org/get"))
+        urls = [
+            "http://www.baidu.com",
+            "http://www.163.com",
+            "http://dangdang.com",
+            "https://httpbin.org",
+            "https://www.google.com",
+        ]
+
+        print(
+            222222222222222222222, partial(_parse, "HEAD")("http://httpbin.org/headers")
+        )
+        # print(252525252525252525252, res := get(urls[4]))
+        print(333333333333333333333, res := get(urls[1]))
+        print("xpath-1".ljust(10), ":", res.xpath("//title/text()"))
+        print("xpath-2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
+        print(
+            "blank".ljust(10),
+            ":",
+            res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+        )
+        print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
+        print("html".ljust(10), ":", res.html.xpath("//title/text()"))
+        print("element".ljust(10), ":", res.element.xpath("//title/text()"))
+        print("query".ljust(10), ":", res.query("title").text())
+
+    main()
+
+    @TRETRY
+    def my_func():
+        return get("https://www.google.com")
+
+    # print(my_func())
+
     """
     ###############################################################
     # allow_redirects=False #取消重定向

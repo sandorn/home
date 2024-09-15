@@ -89,7 +89,11 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
         """
         _sql = text(sql)
         result = self.session.execute(_sql, params)
-        return result.all() if result.returns_rows else result.rowcount
+        return (
+            result.all()
+            if getattr(result, "returns_rows", None)
+            else getattr(result, "rowcount", 0)
+        )
 
     def query(self, whrere_dict: Optional[dict] = None):
         whrere_dict = whrere_dict or {}
@@ -143,12 +147,13 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
         countNum:返回的记录数
         return:处理后的list,内含dict(未选择列),或tuple(选择列)
         """
-        if isinstance(Columns_list, Sequence) and len(Columns_list) > 0:
-            __Columns_list = [self.params.get(key) for key in Columns_list]
-        else:
-            __Columns_list = [self.Base]
+        _columns_list: list = (
+            [self.params.get(key) for key in Columns_list]
+            if isinstance(Columns_list, Sequence) and len(Columns_list) > 0
+            else [self.Base]
+        )
 
-        query = self.session.query(*__Columns_list)
+        query = self.session.query(*_columns_list)
         if whrere_dict is not None:
             query = query.filter_by(**whrere_dict)
 
@@ -156,10 +161,11 @@ class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):
 
     def from_statement(self, sql, whrere_dict: Optional[dict] = None):
         """使用完全基于字符串的语句"""
-        query = self._query.from_statement(sql)
+        _sql = text(sql)
+        query = self._query.from_statement(_sql)
         return query.params(**whrere_dict).all() if whrere_dict else query.all()
 
-    def filter_by(self, whrere_dict: Optional[dict], countNum: Optional[int] = None):
+    def filter_by(self, whrere_dict: dict, countNum: Optional[int] = None):
         """
         filter_by用于简单查询,不支持比较运算符,不需要额外指定类名。
         filter_by的参数直接支持组合查询。
@@ -202,13 +208,11 @@ if __name__ == "__main__":
     # print(3333, res)
     res = ASO.query()
     print(4444, res)
-    # res = ASO.filter_by({"ID": 4})
-    # print(5555, res)
-    resfrom_statement = ASO.from_statement(
-        "select * from users2 where id=:id", {"id": 5}
-    )
+    print(ASO.Base.make_dict(res))
+    res = ASO.filter_by({"ID": 1})
+    print(5555, res)
+    resfrom_statement = ASO.from_statement("select * from users2", {"ID": 2})
     print(6666, resfrom_statement)
-    # print(ASO.Base.make_dict(resfrom_statement))
     # print(7777, resfrom_statement[0].to_dict(), ASO.Base.to_dict(resfrom_statement[0]))
     # deleNum = ASO.delete({"ID": 3})
     # print(8888, deleNum)

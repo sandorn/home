@@ -62,7 +62,7 @@ class htmlResponse:
             return self.raw.text.encode(self.encoding).decode(self.encoding, "ignore")
         elif isinstance(self.content, str):
             return self.content.encode(self.encoding).decode(self.encoding, "ignore")
-        else:
+        elif isinstance(self.content, bytes):
             return self.content.decode(self.encoding, "ignore")
 
     @property
@@ -100,20 +100,18 @@ class htmlResponse:
         return getattr(self.raw, "status", getattr(self.raw, "status_code", 999))
 
     @property
-    def html(self, filter="//script"):
+    def html(self):
+        _filter = "//script"
         element = self.element
-        [item.getparent().remove(item) for item in element.xpath(filter)]
+        [item.getparent().remove(item) for item in element.xpath(_filter)]
 
         return element
 
     @property
     def element(self):
-        from lxml import etree
+        from lxml import etree  # , html
 
-        return etree.HTML(self.content, parser=None)
-
-        # from lxml import html
-
+        return etree.HTML(self.text, parser=None)
         # return html.fromstring(self.text, parser=None)
 
     @property

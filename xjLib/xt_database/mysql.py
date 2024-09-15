@@ -88,7 +88,7 @@ class DbEngine:
             self.conn.commit()
             return True
         except Exception as error:
-            return self.__handler_err("self.odbc error |  [", error, sql)
+            return self.__handler_err(f"{self.odbc} error |  [", error, sql)
 
     def insertMany(self, datas, tb_name, keys=None):
         if not isinstance(datas, (list, tuple)):
@@ -105,7 +105,7 @@ class DbEngine:
             self.conn.commit()
             return True
         except Exception as error:
-            return self.__handler_err("self.odbc error | [", error, res_sql)
+            return self.__handler_err(f"{self.odbc} error | [", error, res_sql)
 
     # TODO Rename this here and in `execute` and `insertMany`
     def __handler_err(self, arg0, error, arg2):
@@ -159,7 +159,6 @@ class DbEngine:
 
 
 if __name__ == "__main__":
-    db_clent = DbEngine("TXbx")  # , "MySQLdb")
-    print(db_clent.query("select * from users2"))
-    print(db_clent.get_all_from_db("users2"))
-    print(db_clent.ver())
+    db_clent = DbEngine("TXbx", "MySQLdb")
+    print(1111111111, db_clent.query("select * from users2"))
+    print(2222222222, db_clent.get_all_from_db("users2"))

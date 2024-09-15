@@ -22,7 +22,8 @@ from functools import wraps
 from types import FunctionType
 from typing import Any, Callable, Optional, Type
 
-import wrapt
+from wrapt import decorator
+from xt_log import create_basemsg
 
 
 class ExceptContext:
@@ -52,7 +53,7 @@ class ExceptContext:
         return return_code
 
     def __call__(self, func: Callable[..., Any]) -> Callable[..., Any]:
-        @wrapt.decorator
+        @decorator
         def wrapper(
             func: Callable[..., Any],
             instance: Optional[Any],
@@ -87,7 +88,7 @@ def call_later(
     return     :
     """
 
-    @wrapt.decorator
+    @decorator
     def decorate(
         func: Callable[..., Any],
         instance: Optional[Any],
@@ -171,13 +172,15 @@ func_code_name_list: list[str] = [
 ]
 
 
-@wrapt.decorator
-def catch_wraps(func, instance, args, kwargs) -> Any | None:
+@decorator
+def catch_wrapt(func, instance, args, kwargs):
+    """捕获函数异常,无括号调用"""
+
     try:
         return func(*args, **kwargs)
     except Exception as err:
-        print(f"catch_wraps: [{func.__name__}]\tError: {err!r}")
-        return None
+        print(err_str := f"{create_basemsg(func)}] | catch_wraps | Error:{err!r}")
+        return err_str
 
 
 def try_except_wraps(
@@ -213,12 +216,12 @@ def try_except_wraps(
     :return: 被装饰函数的执行结果。
     """
 
-    @wrapt.decorator
-    def wrapper(func, instance, args, kwargs):
+    @decorator
+    def wrapper(wrapped, instance, args, kwargs):
         func_exc = None
         for index in range(max_retries):
             try:
-                result = func(*args, **kwargs)
+                result = wrapped(*args, **kwargs)
                 if callable(validate_fn) and validate_fn(result) is False:
                     continue
                 return callback_fn(result) if callable(callback_fn) else result
@@ -226,50 +229,29 @@ def try_except_wraps(
                 func_exc, _ = ex, traceback.format_exc()
                 sleep_fn(delay + step * index)  # #延迟重试
 
-        print(f"try_except_wraps: [{func.__name__}]\tError: {func_exc!r}")
+        print(f"try_except_wraps: [{wrapped.__name__}]\tError: {func_exc!r}")
         return default_res() if callable(default_res) else default_res
-
-    return wrapper
-
-
-def retry_on_exception(max_retry=3):
-    """Retry 3 times if the function throws an exception."""
-
-    @wrapt.decorator
-    def wrapper(func, instance, args, kwargs):
-        for _ in range(max_retry):
-            try:
-                return func(*args, **kwargs)
-            except Exception as err:
-                print(f"retry_on_exception: [{func.__name__}]\tError: {err!r}")
-        return None
 
     return wrapper
 
 
 if __name__ == "__main__":
 
-    @try_except_wraps()
-    def simple() -> float:
-        """简单函数"""
-        return 6 / 0
+    @catch_wrapt
+    def example_function():
+        # import requests
 
-    @catch_wraps
+        # return requests.get("http://www.google.com")
+        return 9 / 0
+
+    @try_except_wraps()
     def readFile(filename) -> None:
         with open(file=filename) as f:
             print(len(f.readlines()))
 
     def add(a, b) -> float:
         with ExceptContext():
-            return int(x=a) / int(x=b)
-
-    @try_except_wraps()
-    def assertSumIsPositive(a, b) -> float:
-        return int(x=a) / int(x=b)
-
-    @retry_on_exception()
-    def checkLen(a, b) -> float:
-        return int(a) / int(b)
+            raise ValueError("除法o异常")
 
     def fre() -> None:
         # 可变对象默认装饰器
@@ -287,12 +269,10 @@ if __name__ == "__main__":
 
         print(list1 is list3)
 
-    def fu() -> None:
+    def make_func() -> None:
         # #函数创建器
         foo_func = _create_func("def foo():a=3;return 3")
-
         print(foo_func())
-
         for attr in func_attr_name_list:
             ...
             # print(attr, ":", getattr(foo_func, attr))
@@ -302,11 +282,8 @@ if __name__ == "__main__":
             # print(f"foo_func.__code__.{attr.ljust(33)}", ":", getattr(foo_func.__code__, attr))
         print(foo_func.__dict__)
 
-    print(simple())
+    print(example_function())
     # readFile("UnexistFile.txt")
     # print(add(123, 0))
-    # print(assertSumIsPositive(6, 0))
-    # print(checkLen(a=5, b=0))
-
     # fre()
-    # fu()
+    # make_func()

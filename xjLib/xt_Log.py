@@ -14,11 +14,10 @@ Github       : https://github.com/sandorn/home
 import logging
 import re
 from datetime import datetime
-from functools import wraps
-from inspect import currentframe
 from logging.config import dictConfig
 from time import perf_counter
 
+from wrapt import decorator
 from xt_singleon import SingletonMixin
 
 standard_format = "[%(asctime)s][%(threadName)s:%(thread)d]\t%(message)s"
@@ -76,69 +75,110 @@ class LogCls(SingletonMixin):
         dictConfig(self.conf_dic)
         self.logger = logging.getLogger(logname)
 
-    def __getattr__(self, item):
-        if item in logging._levelToName:
-            return getattr(self.logger, item)
-        raise AttributeError(
-            f"'{type(self).__name__}' object has no attribute '{item}'"
-        )
+    def __getattr__(self, attr):
+        if attr in logging._levelToName:
+            return getattr(self.logger, attr)
+        raise AttributeError(f"object[{type(self).__name__}] has no attribute '{attr}'")
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         return [
-            getattr(self.logger, LevelDict[self.level])(item) for item in list(args)
+            getattr(self.logger, LevelDict[self.level])(arg, **kwargs)
+            for arg in list(args)
         ]
 
 
-def get_fn_fileinfo(callfn):
-    _filename = _f_lineno = "None"
-    if callfn:
-        frame = callfn.f_back
-        if frame:
-            _f_lineno = frame.f_lineno
-            _filename = frame.f_code.co_filename.split("\\")[-1].split(".")[0]
-    return _filename, _f_lineno
-
-
-def format_strings(obj):
+def obj_to_str(obj):
+    """将对象转换为字符串, 递归处理,无用暂存"""
     if isinstance(obj, (list, tuple, set)):
-        return ", ".join(map(format_strings, obj))
+        return ", ".join(map(obj_to_str, obj))
     elif isinstance(obj, dict):
-        return ", ".join(f"{k}: {format_strings(v)}" for k, v in obj.items())
+        return ", ".join(f"{k}: {obj_to_str(v)}" for k, v in obj.items())
     elif isinstance(obj, str):
         return re.sub(r"<([^<>]+)>", r"\<\1\>", obj)
     else:
         return str(obj)
 
 
-def log_decorator(func):
-    _filename, _f_lineno = get_fn_fileinfo(currentframe())
+def create_basemsg(func):
+    code = getattr(func, "__code__")
+    _filename = code.co_filename
+    _f_lineno = code.co_firstlineno
+    return f"[{_filename}@{_f_lineno}|{func.__name__}]"
+
+
+@decorator
+def log_catch_decor(func, instance, args, kwargs):
+    """日志及异常装饰器，打印并记录函数的入参、出参、耗时、异常信息"""
     logger = LogCls(pyfile="XtLog")
+    base_log_msg = create_basemsg(func)
+    logger(f"{base_log_msg} | <args:{args!r}> | <kwargs:{kwargs!r}>")
 
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        args_str = format_strings(args)
-        kwargs_str = format_strings(kwargs)
-        base_log_msg = f"[{_filename}|fn:{func.__name__}@{_f_lineno}]"
+    duration = perf_counter()
+    try:
+        result = func(*args, **kwargs)
+        logger(
+            f"{base_log_msg} | <result:{result!r}> | <used time:{perf_counter() - duration:.4f}s>"
+        )
+        return result
+    except Exception as err:
+        logger(err_str := f"{base_log_msg} | LCD Exception | <raise:{err!r}>")
+        return err_str
 
-        logger(f"{base_log_msg}|<参数：{args_str} | 关键字参数：{kwargs_str}>")
+
+@decorator
+def log_decor(func, instance, args, kwargs):
+    """日志装饰器，打印并记录函数的入参、出参、耗时"""
+
+    logger = LogCls(pyfile="XtLog")
+    base_log_msg = create_basemsg(func)
+    logger(f"{base_log_msg} | <args:{args!r}> | <kwargs:{kwargs!r}>")
+
+    duration = perf_counter()
+    result = func(*args, **kwargs)
+
+    logger(
+        f"{base_log_msg} | <result:{result!r}> | <used time:{perf_counter() - duration:.4f}s>"
+    )
+    return result
+
+
+def retry_log_catch_decor(max_retry=3):
+    """重试装饰器,处理异常,记录日志,括号调用"""
+
+    @decorator
+    def wrapper(wrapped, instance, args, kwargs):
+        from tenacity import retry, stop_after_attempt, wait_random
+
+        @retry(reraise=True, stop=stop_after_attempt(max_retry), wait=wait_random())
+        def retry_function():
+            return log_decor(wrapped)(*args, **kwargs)  # type: ignore
+
         duration = perf_counter()
-
         try:
-            result = func(*args, **kwargs)
-            result_str = format_strings(str(result))
-            duration = perf_counter() - duration
-            logger(f"{base_log_msg}|<返回结果：{result_str} >|<耗时：{duration:.4f}s>")
+            result = retry_function()
             return result
-        except Exception as e:
-            logger("exception", f"{base_log_msg}|<报错：{e}>")
+        except Exception as err:
+            logger = LogCls(pyfile="XtLog")
+            logger(
+                err_str
+                := f"{create_basemsg(wrapped)} | RLCD Exception | <raise:{err!r}> | <used time:{perf_counter() - duration:.4f}s>"
+            )
+            return err_str
 
     return wrapper
 
 
 if __name__ == "__main__":
 
-    @log_decorator
-    def test2(a, b=1):
-        return a / b
+    @retry_log_catch_decor()
+    def test2(*args):
+        return 9 / 0
 
-    test2(1)
+    test2(6)
+    import requests
+
+    @retry_log_catch_decor()
+    def get_html() -> float:
+        return requests.request("get", "https://www.google.com")
+
+    # print(get_html())

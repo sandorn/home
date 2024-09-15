@@ -24,7 +24,6 @@ from xt_database.untilsql import make_insert_sql, make_update_sql
 
 class AioMySql:
     def __init__(self, db_key="default", tablename=None):
-        self.coro_list = []
         self.db_key = db_key
         self.tablename = tablename
         self.loop = asyncio.new_event_loop()
@@ -46,18 +45,17 @@ class AioMySql:
             print("create_engine error:", err)
             raise  # 重新抛出异常以便上层可以捕获和处理
 
-    def run_in_loop(self, coro_list=None):
-        coro_list = coro_list or self.coro_list
+    def run_in_loop(self, coro_list):
+        coro_list = coro_list
         return self.loop.run_until_complete(asyncio.gather(*coro_list))
 
-    def query(self, sql, autorun=True):
+    def query(self, sql):
         _coro = (
             [self.__query(sql)]
             if isinstance(sql, str)
             else [self.__query(_sql) for _sql in sql]
         )
-
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro)
 
     async def __query(self, sql, params: Optional[dict] = None):
         try:
@@ -69,18 +67,17 @@ class AioMySql:
             print(traceback.format_exc())
             raise  # 重新抛出异常以便上层可以捕获和处理
 
-    def insert(self, dict_in_list, tablename=None, autorun=True):
+    def insert(self, dict_in_list, tablename=None):
         tablename = tablename or self.tablename
         if isinstance(dict_in_list, dict):
             dict_in_list = [dict_in_list]
         insert_sql_list = [
             make_insert_sql(data_dict, tablename) for data_dict in dict_in_list
         ]
-
         _coro = [self.__query(insert_sql) for insert_sql in insert_sql_list]
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro)
 
-    def update(self, dict_in_list, whrere_dict_list, tablename=None, autorun=True):
+    def update(self, dict_in_list, whrere_dict_list, tablename=None):
         tablename = tablename or self.tablename
         if isinstance(dict_in_list, dict):
             dict_in_list = [dict_in_list]
@@ -88,9 +85,8 @@ class AioMySql:
             make_update_sql(data_dict, whrere_dict, tablename)
             for data_dict, whrere_dict in zip(dict_in_list, whrere_dict_list)
         ]
-
         _coro = [self.__query(update_sql) for update_sql in update_sql_list]
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro)
 
 
 if __name__ == "__main__":

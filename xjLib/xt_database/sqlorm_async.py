@@ -24,6 +24,7 @@ from xt_singleon import SingletonMetaCls
 
 class AioMySqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
     def __init__(self, db_key="default", new_table_name=None, old_table_name=None):
+        self.tablename = new_table_name
         self.engine = create_engine(connect_str(db_key))
         self.Base = copy_db_model(self.engine, new_table_name, old_table_name)
         # 创建引擎
@@ -44,42 +45,43 @@ class AioMySqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
             # expire_on_commit=True, # 提交后自动过期
             # class_=AsyncSession,
         )
-        self.coro_list = []
-        self.tablename = new_table_name
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)  # @解决循环的关键点
 
-    def run_in_loop(self, coro_list=None):
-        coro_list = coro_list or self.coro_list
+    def run_in_loop(self, coro_list):
+        coro_list = coro_list
         return self.loop.run_until_complete(asyncio.gather(*coro_list))
 
-    def query(self, sql_list, params: Optional[dict] = None, autorun=True):
+    def query(self, sql_list, params: Optional[dict] = None):
         sql_list = [sql_list] if isinstance(sql_list, str) else sql_list
         _coro = [self.__query(_sql, params) for _sql in sql_list]
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro)
 
     async def __query(self, sql, params: Optional[dict] = None):
         async with self.async_session() as session:  # self.async_engine.connect()
             result = await session.execute(text(sql), params)
             try:
                 await session.commit()
-                return result.all() if result.returns_rows else result.rowcount
+                return (
+                    result.all()
+                    if getattr(result, "returns_rows", None)
+                    else getattr(result, "rowcount", 0)
+                )
             except BaseException:
                 await session.rollback()
-                return 0
+                return None
 
-    def insert(self, dict_in_list, tablename=None, autorun=True):
+    def insert(self, dict_in_list, tablename=None):
         tablename = tablename or self.tablename
         if isinstance(dict_in_list, dict):
             dict_in_list = [dict_in_list]
         insert_sql_list = [
             make_insert_sql(data_dict, tablename) for data_dict in dict_in_list
         ]
-
         _coro = [self.__query(insert_sql) for insert_sql in insert_sql_list]
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro)
 
-    def update(self, dict_in_list, whrere_dict_list, tablename=None, autorun=True):
+    def update(self, dict_in_list, whrere_dict_list, tablename=None):
         tablename = tablename or self.tablename
         if isinstance(dict_in_list, dict):
             dict_in_list = [dict_in_list]
@@ -88,15 +90,14 @@ class AioMySqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
             make_update_sql(data_dict, whrere_dict, tablename)
             for data_dict, whrere_dict in zip(dict_in_list, whrere_dict_list)
         ]
-
         _coro = [self.__query(update_sql) for update_sql in update_sql_list]
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        return self.run_in_loop(_coro)
 
     def add_all(self, dict_in_list, autorun=True):
-        _coro = [self.__add_all(dict_in_list)]
-        return self.run_in_loop(_coro) if autorun else self.coro_list.extend(_coro)
+        _coro = [self._add_all(dict_in_list)]
+        return self.run_in_loop(_coro)
 
-    async def __add_all(self, dict_in_list):
+    async def _add_all(self, dict_in_list):
         items_list = [self.Base(**__d) for __d in dict_in_list]
         async with self.async_session() as session:
             session.add_all(items_list)
@@ -105,7 +106,7 @@ class AioMySqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):
                 return len(items_list)
             except BaseException:
                 await session.rollback()
-                return 0
+                return None
 
 
 if __name__ == "__main__":

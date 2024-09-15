@@ -124,18 +124,14 @@ if __name__ == "__main__":
         "update users2 set username='刘新军1' where ID = 2",
         "select * from users2 where ID = 2",
     ]
-    up_sql = ("update users2 set username='刘新新' where ID = 2",)
+    up_sql = "update users2 set username='刘新新' where ID = 2"
     ups_sql = "update users2 set username=%s where ID = %s"
-    ups_data = [("刘澈", 1), ("刘新军", 2)]
+    ups_data = [("刘澈", 2), ("刘新军", 1)]
     self = AioSqlPool("TXbx")
-    res = self.execute(up_sql)
-    print(111111111111111111, res)
-    res = self.executeall(ups_sql, ups_data)
-    print(222222222222222222, res)
-    res = self.query("select * from users2")
-    for item in res[0]:
-        print(item)
-    print(self.query(query_list[1]))
+    print(111111111111111111, self.execute(up_sql))
+    print(222222222222222222, self.executeall(ups_sql, ups_data))
+    print(333333333333333333, res := self.query(query_list[0]))
+    print(444444444444444444, self.query(query_list[1]))
 
 """
 python并发编程之asyncio协程(三) - 天宇之游 - 博客园
