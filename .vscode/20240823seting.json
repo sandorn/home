@@ -135,7 +135,7 @@
     },
     // [[Terminal]]
     "terminal.integrated.fontSize": 14, // 集成终端字号
-    "terminal.integrated.fontFamily": "Consolas,Source Code Pro,Droid Sans Mono,等距更纱黑体 SC",
+    "terminal.integrated.fontFamily": "Fira Code,Consolas,等距更纱黑体 SC",
     "terminal.integrated.tabs.showActions": "always", // 始终显示“新建终端”按钮旁的“终端拆分”和“终止”按钮
     "terminal.integrated.tabs.showActiveTerminal": "always", // 集成终端启用视觉化铃声
     "terminal.integrated.gpuAcceleration": "on", // 集成终端使用GPU加速
@@ -187,7 +187,7 @@
     "editor.fontSize": 15,
     "editor.wordWrap": "bounded",
     "editor.wordWrapColumn": 480,
-    "editor.fontFamily": "Fira Code,Inconsolata,等距更纱黑体 SC",
+    "editor.fontFamily": "Fira Code,Consolas,等距更纱黑体 SC",
     //"'Fira Code','Inconsolata',"Consolas,'Courier New','Source Code Pro','Droid Sans Mono','YaHei Consolas Hybrid','等距更纱黑体 SC','YaCons'",
     "editor.tabCompletion": "on",
     "editor.renderLineHighlightOnlyWhenFocus": true,
