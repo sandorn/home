@@ -22,13 +22,13 @@ from xt_time import fn_timer
 
 
 @fn_timer
-def aiohttpcrawl_task(bookname, urls: list[str]):
+def aiohttpcrawl_task(book_name, urls: list[str]):
     myaio = AioHttpCrawl()
     resps = myaio.add_tasks(urls)
     texts = 结果处理(resps)
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(f"{files}&{bookname}AioHttpCrawl_task.txt", texts, br="\n")
+    savefile(f"{files}&{book_name}AioHttpCrawl_task.txt", texts, br="\n")
 
 
 @fn_timer
@@ -41,27 +41,27 @@ def AioHttpCrawl_pool(book_name, urls):
 
 
 @fn_timer
-def ahttp_GetAll(bookname, urls):
+def ahttp_GetAll(book_name, urls):
     texts = ahttpGetAll(urls, callback=handle_back_ait)
     files = os.path.basename(__file__).split(".")[0]
-    savefile(f"{files}&{bookname}ahttpGetAll.txt", texts, br="\n")
+    savefile(f"{files}&{book_name}ahttpGetAll.txt", texts, br="\n")
 
 
 @fn_timer
-def AioHttpClient_run(bookname, urls):
+def AioHttpClient_run(book_name, urls):
     texts = []
     AHC = AioHttpClient()
     resps = AHC.getall(urls)
     texts = 结果处理(resps)
     texts.sort(key=lambda x: x[0])
     files = os.path.basename(__file__).split(".")[0]
-    savefile(f"{files}&{bookname}AioHttpClient_run.txt", texts, br="\n")
+    savefile(f"{files}&{book_name}AioHttpClient_run.txt", texts, br="\n")
 
 
 if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
     book_name, urls, _ = get_download_url(url)
-    # AioHttpCrawl_pool(bookname, urls)  # |perf_counter: 68.29s  #160线程
-    # ahttp_GetAll(bookname, urls)  # |perf_counter: 56.20s
-    # aiohttpcrawl_task(bookname, urls)  # |perf_counter: 53.93s
+    # AioHttpCrawl_pool(book_name, urls)  # |perf_counter: 68.29s  #160线程
+    # ahttp_GetAll(book_name, urls)  # |perf_counter: 56.20s
+    # aiohttpcrawl_task(book_name, urls)  # |perf_counter: 53.93s
     AioHttpClient_run(book_name, urls)  # |perf_counter: 42.20s
