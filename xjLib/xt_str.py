@@ -20,24 +20,6 @@ import string
 from functools import reduce
 from typing import Sequence  # Sequence是更通用的类型，可以包含列表和元组
 
-from pydantic import BaseModel, constr, field_validator
-
-
-class User(BaseModel):
-    """https://zhuanlan.zhihu.com/p/696103020"""
-
-    id: int
-    username: str
-    password: constr(min_length=8)
-
-    @field_validator("password")
-    def validate_password(cls, value):
-        if not any(char.isdigit() for char in value):
-            raise ValueError("Password must contain at least one digit")
-        if not any(char.isalpha() for char in value):
-            raise ValueError("Password must contain at least one letter")
-        return value
-
 
 def dictToObj(results, to_class):
     """

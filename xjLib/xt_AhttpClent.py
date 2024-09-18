@@ -17,7 +17,7 @@ import sys
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_ahttp import Method_List
 from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_decorator
+from xt_log import log_catch_decor
 from xt_response import ACResponse
 
 
@@ -71,7 +71,7 @@ class AioHttpClient:
             self._retry_request(url, index=id(url), **kwargs)
         )
 
-    @log_decorator
+    @log_catch_decor
     async def _retry_request(self, url, index=None, **kwargs):
         kwargs.setdefault("headers", Head().randua)
         kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))

@@ -16,8 +16,9 @@ from functools import partial
 
 import requests
 from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_catch_decor, retry_log_catch_decor
+from xt_log import log_catch_decor
 from xt_response import htmlResponse
+from xt_retry import retry_log_by_tenacity
 
 Method_List = [
     "get",
@@ -47,7 +48,7 @@ def _retry_request1(method, url, **kwargs):
         return htmlResponse(None, err_str.encode(), id(url))
 
 
-@retry_log_catch_decor()  # type: ignore
+@retry_log_by_tenacity()  # type: ignore
 def _retry_request(method, url, **kwargs):
     """利用 TRETRY 库实现重试"""
     callback = kwargs.pop("callback", None)

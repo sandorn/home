@@ -13,11 +13,28 @@ sqlalchemy创建异步sqlite会话 sqlalchemy async_mob64ca140caeb2的技术博�
 https://blog.51cto.com/u_16213668/9806859
 """
 
+from pydantic import BaseModel, constr, field_validator
 from sqlalchemy import INTEGER, Column, DateTime, Table, create_engine, inspect
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.sql import func
 from xt_class import ItemMixin
 from xt_database.cfg import connect_str
+
+
+class User(BaseModel):
+    """https://zhuanlan.zhihu.com/p/696103020"""
+
+    id: int
+    username: str
+    password: constr(min_length=8)
+
+    @field_validator("password")
+    def validate_password(cls, value):
+        if not any(char.isdigit() for char in value):
+            raise ValueError("Password must contain at least one digit")
+        if not any(char.isalpha() for char in value):
+            raise ValueError("Password must contain at least one letter")
+        return value
 
 
 class TimestampMixin:
@@ -305,6 +322,6 @@ if __name__ == "__main__":
         print(table_model.keys())
         print(sess.query(table_model).all())
 
-    # ceshi()
+    ceshi()
     # ceshi2("users2")
     # db_to_model("users2")

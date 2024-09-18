@@ -18,7 +18,7 @@ from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_decorator
+from xt_log import log_catch_decor
 from xt_response import ACResponse
 
 __all__ = ("ahttpGet", "ahttpGetAll", "ahttpPost", "ahttpPostAll")
@@ -68,7 +68,7 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
-    @log_decorator
+    @log_catch_decor
     async def start(self):
         """执行核心操作,单任务和多任务均调用"""
 

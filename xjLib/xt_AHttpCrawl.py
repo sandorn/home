@@ -22,7 +22,7 @@ from functools import wraps
 import wrapt
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_decorator
+from xt_log import log_catch_decor
 from xt_response import ACResponse
 
 
@@ -111,7 +111,7 @@ class AioHttpCrawl:
 
         return await asyncio.gather(*tasks, return_exceptions=True)
 
-    @log_decorator
+    @log_catch_decor
     async def _retry_request(self, url, method, index, **kwargs):
         """运行任务"""
         kwargs.setdefault("headers", Head().randua)
