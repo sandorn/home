@@ -107,7 +107,7 @@ class SessionClient:
     def __getattr__(self, method):
         return self.__getitem__(method)
 
-    @log_catch_decor
+    @log_catch_decor  # type: ignore
     def create_task(self, *args, **kwargs):
         self.url = args[0]
         self.args = args[1:]
