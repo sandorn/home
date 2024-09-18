@@ -26,13 +26,15 @@ from xt_singleon import SingletonMetaCls
 class TimeFormatEnum(StrEnum):
     """时间格式化枚举"""
 
-    DateTime = "%Y-%m-%d %H:%M:%S"
     DateOnly = "%Y-%m-%d"
     TimeOnly = "%H:%M:%S"
+    DateTime = f"{DateOnly} {TimeOnly}"  # "%Y-%m-%d %H:%M:%S.%f"
+    DataTimeFull = f"{DateTime}.%f"
 
-    DateTime_CN = "%Y年%m月%d日 %H时%M分%S秒"
     DateOnly_CN = "%Y年%m月%d日"
     TimeOnly_CN = "%H时%M分%S秒"
+    DateTime_CN = f"{DateOnly_CN} {TimeOnly_CN}"
+    DataTimeFull_CN = f"{DateTime_CN}.%f"
 
 
 class TimeUnitEnum(StrEnum):
@@ -71,7 +73,7 @@ class TimeUtil(metaclass=SingletonMetaCls):
         """
         时间工具类初始化
         Args:
-            datetime_obj: 待处理的datetime对象，不传时默认取当前时间
+            datetime_obj: 待处理的datetime对象,不传时默认取当前时间
             format_str: 时间格式化字符串
         """
         self.datetime_obj = datetime_obj or datetime.now()
@@ -144,12 +146,10 @@ class TimeUtil(metaclass=SingletonMetaCls):
         format_str = format_str or self.format_str
         return datetime.fromtimestamp(timestamp).strftime(format_str)
 
-    def str_to_timestamp(
-        self, time_str: str, format_str: Optional[str] = None
-    ) -> float:
+    def str_to_timestamp(self, time_str: str, format_str: Optional[str] = None) -> int:
         """将时间字符串转换为时间戳"""
         format_str = format_str or self.format_str
-        return time.mktime(time.strptime(time_str, format_str))
+        return int(time.mktime(time.strptime(time_str, format_str)))
 
     @staticmethod
     def timestamp_to_datetime(timestamp: float) -> datetime:
@@ -225,11 +225,9 @@ class TimeUtil(metaclass=SingletonMetaCls):
         self, datetime_obj: datetime, include_end_date: bool = True
     ) -> int:
         """计算两个日期之间的工作日数量
-
         Args:
             datetime_obj: datetime 对象
             include_end_date: 是否包含结束日期（默认为 True）
-
         Returns:
             两个日期之间的工作日数量
         """
@@ -256,10 +254,6 @@ class TimeUtil(metaclass=SingletonMetaCls):
                 weekdays += 1
 
         return weekdays
-
-
-def now():
-    return datetime.now()
 
 
 @decorator
@@ -291,46 +285,38 @@ class TimerDecorator:
 
 
 def get_time():
-    return now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    return TimeUtil().datetime_to_str(format_str=TimeFormatEnum.DataTimeFull.value)
 
 
 def get_lite_time():
-    return now().strftime("%H:%M:%S.%f")
+    return TimeUtil().datetime_to_str(format_str="%H:%M:%S")
 
 
 def get_sql_time():
-    # return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return f"{now():%F %X}"
-    # #'the time is 2020-06-15 13:28:27'
+    return TimeUtil().datetime_to_str(format_str="%F %X")
 
 
-def get_10_timestamp(timestr=None):
-    """获取当前时间的时间戳-10位"""
+def get_timestamp(timestr=None, format_str=None, size=10):
+    """获取当前时间的时间戳"""
     if timestr is None:
-        timestr = time.time()
-        return int(round(timestr))
+        if size == 13:
+            return int(TimeUtil().timestamp * 1000)
+        return int(TimeUtil().timestamp)
     else:
-        timearray = time.strptime(timestr, "%Y-%m-%d %H:%M:%S")
-        return int(time.mktime(timearray))
-
-
-def get_13_timestamp(timestr=None):
-    """获取当前时间的时间戳-13位"""
-    return get_10_timestamp(timestr) * 1000
+        return TimeUtil().str_to_timestamp(timestr, format_str=format_str)
 
 
 if __name__ == "__main__":
     # print(get_time())
     # print(get_lite_time())
     # print(get_sql_time())
-    # print(get_10_timestamp("2020-06-15 13:28:27"))
-    # print(get_13_timestamp("2020-06-15 13:28:27"))
-    # TT = TimeUtil()
-    # print(TT.yesterday)
+    # print(get_timestamp())
+    # print(get_timestamp(size=13))
+    print(get_timestamp("2020-06-15 13:28:27"))
 
     @TimerDecorator
     def test_timer():
         time.sleep(0.01)
         print("test_timer Function executed")
 
-    test_timer()
+    # test_timer()

@@ -129,6 +129,33 @@ if __name__ == "__main__":
 
         return requests.get("https://www.google.com")
 
-    print(test())
+    # print(test())
+
     # print(test2())
     # print(get_html())
+
+    def decorator1(func):
+        def wrapper(*args, **kwargs):
+            print("in 执行装饰器1")
+            resrult = func(*args, **kwargs)
+            print("out 执行装饰器1")
+            return resrult
+
+        return wrapper
+
+    def decorator2(func):
+        def wrapper(*args, **kwargs):
+            print("in 执行装饰器2")
+            resrult = func(*args, **kwargs)
+            print("out 执行装饰器2")
+            return resrult
+
+        return wrapper
+
+    @decorator1  # 最先执行，最后返回(先进后出)
+    @decorator2  # 最后执行，最先返回(后进先出)
+    def my_function():  # 原始函数
+        print("in 执行原始函数")
+        return "out 执行原始函数"
+
+    print(my_function())
