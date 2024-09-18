@@ -99,12 +99,14 @@ def handle_back_ait(resp):
     if not isinstance(resp, (ACResponse, htmlResponse)):
         return [0, resp, ""]
 
-    index = resp.index
-    title = resp.query("h1").text()
-    content = resp.query("#chaptercontent").text()
-    title = "".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
-    content = clean_Content(content).strip()
-    return [index, title, content]
+    try:
+        title = resp.query("h1").text()
+        content = resp.query("#chaptercontent").text()
+        title = "".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
+        content = clean_Content(content).strip()
+        return [resp.index, title, content]
+    except Exception as e:
+        print(f"出现错误{e!r}")
 
 
 def 结果处理(resps):
@@ -114,7 +116,8 @@ def 结果处理(resps):
     for resp in resps:
         if not isinstance(resp, (ACResponse, htmlResponse)):
             continue
-        texts.append(handle_back_ait(resp))
+        else:
+            texts.append(handle_back_ait(resp))
 
     texts.sort(key=lambda x: x[0])
     # texts = sorted(texts, key=lambda x: x[0])

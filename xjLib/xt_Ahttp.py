@@ -76,11 +76,10 @@ class AsyncTask:
         async def _fetch_run():
             async with ClientSession(
                 cookies=self.cookies, connector=TCPConnector()
-            ) as self.session, self.session.request(
+            ) as session, session.request(
                 self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
             ) as self.response:
                 self.content = await self.response.content.read()
-                self.response.text = await self.response.text()
                 return self.response, self.content, self.index
 
         try:
@@ -160,16 +159,38 @@ if __name__ == "__main__":
     url_post = "https://httpbin.org/post"
     url_headers = "https://httpbin.org/headers"
 
-    res = ahttpGet(url_get)
-    print(1111111111111111, res)
+    # print(1111111111111111,  ahttpGet(url_get))
 
-    res = ahttpPost(url_post, data=b"data")
-    print(2222222222222222, res)
+    # print(2222222222222222,  ahttpPost(url_post, data=b"data"))
 
     def handle_back_ait(resp):
         """help"""
         if isinstance(resp, ACResponse):
             return resp
 
-    res = ahttpGetAll([url_headers, url_get, url1], callback=handle_back_ait)
-    print(3333333333333333, res)
+    # print(3333333333333333, ahttpGetAll([url_headers, url_get, url1], callback=handle_back_ait))
+    def main():
+        print(111111111111111111111, ahttpGet("https://httpbin.org/get"))
+        urls = [
+            "http://www.baidu.com",
+            "http://www.163.com",
+            "http://dangdang.com",
+            "https://httpbin.org",
+            "https://www.google.com",
+        ]
+
+        print(222222222222222222222, ahttpPost(url_post, data=b"data"))
+        print(333333333333333333333, res := ahttpGet(urls[1]))
+        print("xpath-1".ljust(10), ":", res.xpath("//title/text()"))
+        print("xpath-2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
+        print(
+            "blank".ljust(10),
+            ":",
+            res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+        )
+        print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
+        print("html".ljust(10), ":", res.html.xpath("//title/text()"))
+        print("query".ljust(10), ":", res.query("title").text())
+        print("text".ljust(10), ":", res.text[1000:1300])
+
+    main()

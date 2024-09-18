@@ -59,11 +59,15 @@ class htmlResponse:
     @property
     def text(self):
         if self.raw:
-            return self.raw.text.encode(self.encoding).decode(self.encoding, "ignore")
-        elif isinstance(self.content, str):
-            return self.content.encode(self.encoding).decode(self.encoding, "ignore")
+            return (
+                self.raw.text.encode(self.encoding).decode(self.encoding, "ignore")
+                if not callable(self.raw.text)
+                else self.raw.text()
+            )
         elif isinstance(self.content, bytes):
             return self.content.decode(self.encoding, "ignore")
+        elif isinstance(self.content, str):
+            return self.content.encode(self.encoding).decode(self.encoding, "ignore")
 
     @property
     def elapsed(self):
@@ -101,18 +105,15 @@ class htmlResponse:
 
     @property
     def html(self):
-        _filter = "//script"
-        element = self.element
-        [item.getparent().remove(item) for item in element.xpath(_filter)]
+        from lxml import html
 
-        return element
+        return html.fromstring(self.content.decode(self.encoding), parser=None)
 
     @property
     def element(self):
-        from lxml import etree  # , html
+        from lxml import etree
 
-        return etree.HTML(self.text, parser=None)
-        # return html.fromstring(self.text, parser=None)
+        return etree.HTML(self.content.decode(self.encoding), parser=None)
 
     @property
     def dom(self):
@@ -138,7 +139,7 @@ class htmlResponse:
         ele_list = [selectors] if isinstance(selectors, str) else list(selectors)
 
         return [
-            self.element.xpath(ele_item)
+            self.dom.xpath(ele_item)
             for ele_item in ele_list
             if isinstance(ele_item, str) and ele_item.strip()
         ]
@@ -155,7 +156,14 @@ class htmlResponse:
 class ACResponse(htmlResponse):
     """封装aiohttp网页抓取结果,标准化"""
 
-    ...
+    @property
+    def text(self):
+        if isinstance(self.content, bytes):
+            return self.content.decode(self.encoding, "ignore")
+        elif isinstance(self.content, str):
+            return self.content.encode(self.encoding).decode(self.encoding, "ignore")
+        elif self.raw:
+            return self.raw.text().encode(self.encoding).decode(self.encoding, "ignore")
 
 
 if __name__ == "__main__":
@@ -168,7 +176,9 @@ if __name__ == "__main__":
     print(rep.url, rep.dom)
     print(rep.xpath(f"//{title_name}/text()"))
     print(rep.dom.xpath(f"//{title_name}/text()"))
+    print(rep.element.xpath(f"//{title_name}/text()"))
     print(rep.query(f"{title_name}").text())
     print(rep, rep.raw)
     print(rep.status)
+    print(rep.text[1000:1300])
     # print(r := htmlResponse(None, "参数ele:666", 1), r, r.text, r.dom, end="\n\n")

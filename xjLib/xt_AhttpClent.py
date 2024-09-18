@@ -84,7 +84,7 @@ class AioHttpClient:
                 self.method, url, raise_for_status=True, **kwargs
             ) as response:
                 content = await response.content.read()
-                response.text = await response.text()
+                await response.text()
                 return response, content, index
 
         try:

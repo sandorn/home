@@ -169,8 +169,8 @@ if __name__ == "__main__":
         )
         print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
         print("html".ljust(10), ":", res.html.xpath("//title/text()"))
-        print("element".ljust(10), ":", res.element.xpath("//title/text()"))
         print("query".ljust(10), ":", res.query("title").text())
+        print("text".ljust(10), ":", res.text[1000:1300])
 
     main()
 
