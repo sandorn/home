@@ -17,13 +17,44 @@ https://github.com/ShichaoMa
 
 import time
 import traceback
-from copy import deepcopy
 from functools import wraps
-from types import FunctionType
 from typing import Any, Callable, Optional, Type
 
 from wrapt import decorator
 from xt_log import create_basemsg
+
+
+def call_later(callback, *call_args, immediately=True, interval=1):
+    """
+    应用场景：
+    被装饰的方法需要大量调用，随后需要调用保存方法，但是因为被装饰的方法访问量很高，而保存方法开销很大
+    所以设计在装饰方法持续调用一定间隔后，再调用保存方法。规定间隔内，无论调用多少次被装饰方法，保存方法只会
+    调用一次,除非immediately=True
+    :param callback: 随后需要调用的方法名
+    :param call_args: 随后需要调用的方法所需要的参数
+    :param immediately: 是否立即调用
+    :param interval: 调用间隔
+    :return:
+    """
+
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            self = args[0]
+            try:
+                return func(*args, **kwargs)
+            finally:
+                if immediately:
+                    getattr(self, callback)(*call_args)
+                else:
+                    now = time.time()
+                    if now - self.__dict__.get("last_call_time", 0) > interval:
+                        getattr(self, callback)(*call_args)
+                        self.__dict__["last_call_time"] = now
+
+        return wrapper
+
+    return decorate
 
 
 class ExceptContext:
@@ -74,113 +105,18 @@ class ExceptContext:
     def default_res_finalback(has_error: bool): ...
 
 
-def call_later(
-    callback_fn: str, call_args: tuple = (), immediately: bool = True, interval: int = 1
-) -> Callable[..., Any]:
-    """
-    被装饰的方法需要大量调用,随后需要调用保存方法,但是因为被装饰的方法访问量很高,而保存方法开销很大
-    所以设计在装饰方法持续调用一定间隔后,再调用保存方法。规定间隔内,无论调用多少次被装饰方法,保存方法只会
-    调用一次,除非  immediately=True
-    callback_fn   : 随后需要调用的方法名
-    call_args  : 随后需要调用的方法所需要的参数
-    immediately: 是否立即调用
-    interval   : 调用间隔
-    return     :
-    """
-
-    @decorator
-    def decorate(
-        func: Callable[..., Any],
-        instance: Optional[Any],
-        args: tuple[Any],
-        kwargs: dict[Any, Any],
-    ) -> Any:
-        self = args[0]
-        try:
-            return func(*args, **kwargs)
-        finally:
-            if immediately:
-                getattr(self, callback_fn)(*call_args)
-            else:
-                now = time.time()
-                if now - self.__dict__.get("last_call_time", 0) > interval:
-                    getattr(self, callback_fn)(*call_args)
-                    self.__dict__["last_call_time"] = now
-
-    return decorate
-
-
-def freshdefault(func: Callable[..., Any]) -> Callable[..., Any]:
-    """装饰函数,使可变对象[list|dict]可以作为默认值"""
-    default_args = func.__defaults__
-    ftypes = func.__annotations__  # 函数注解
+def catch_wrapt(func):
+    """异常处理装饰器"""
 
     @wraps(func)
-    def wrapper(*args: tuple[Any], **kwargs: dict[Any, Any]) -> Any:
-        if default_args:
-            func.__defaults__ = deepcopy(default_args)
-        if ftypes:
-            for key in ftypes.keys():
-                if key not in kwargs.keys():
-                    kwargs[key] = deepcopy(ftypes[key])
-        return func(*args, **kwargs)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as err:
+            print(err_str := f"{create_basemsg(func)} | catch_wraps | Error:{err!r}")
+            return err_str
 
     return wrapper
-
-
-def _create_func(code_body, **kwargs) -> Callable[..., Any]:
-    """动态函数创建器"""
-    kwargs.setdefault("globals", {})
-    filename = kwargs.pop("filename", "xt_tools._create_func")
-    exmethod = kwargs.pop("exmethod", "exec")
-    module_code = compile(code_body, filename, exmethod)
-    return FunctionType(module_code.co_consts[0], **kwargs)
-
-    # FunctionType(code, globals, name=None, argdefs=None, closure=None)
-    # FunctionType(wrapper.__code__, wrapper.__globals__, name=func.__name__, argdefs=wrapper.__defaults__, closure=wrapper.__closure__)
-
-
-func_attr_name_list: list[str] = [
-    # #函数的内置属性
-    "__closure__",
-    "__code__",
-    "__defaults__",
-    # "__default_ress__",
-    "__dict__",
-    "__doc__",
-    "__globals__",
-    "__name__",
-]
-func_code_name_list: list[str] = [
-    # #函数.__code__的内置属性
-    "co_argcount",
-    "co_cellvars",
-    "co_code",
-    "co_consts",
-    "co_filename",
-    "co_firstlineno",
-    "co_flags",
-    "co_freevars",
-    "co_kwonlyargcount",
-    "co_lnotab",
-    "co_name",
-    "co_names",
-    "co_nlocals",
-    "co_posonlyargcount",
-    "co_stacksize",
-    "co_varnames",
-]
-
-
-@decorator
-def catch_wrapt(func, instance, args, kwargs):
-    """捕获函数异常,无括号调用"""
-
-    try:
-        return func(*args, **kwargs)
-    except Exception as err:
-        print(err_str := f"{create_basemsg(func)}] | catch_wraps | Error:{err!r}")
-        return err_str
 
 
 def try_except_wraps(
@@ -218,7 +154,7 @@ def try_except_wraps(
 
     @decorator
     def wrapper(wrapped, instance, args, kwargs):
-        func_exc = None
+        func_exc = ""
         for index in range(max_retries):
             try:
                 result = wrapped(*args, **kwargs)
@@ -227,9 +163,11 @@ def try_except_wraps(
                 return callback_fn(result) if callable(callback_fn) else result
             except Exception as ex:
                 func_exc, _ = ex, traceback.format_exc()
+                print(
+                    f"{create_basemsg(wrapped)} | try_except_wraps | Error: {func_exc!r}"
+                )
                 sleep_fn(delay + step * index)  # #延迟重试
 
-        print(f"try_except_wraps: [{wrapped.__name__}]\tError: {func_exc!r}")
         return default_res() if callable(default_res) else default_res
 
     return wrapper
@@ -238,52 +176,12 @@ def try_except_wraps(
 if __name__ == "__main__":
 
     @catch_wrapt
-    def example_function():
-        # import requests
-
-        # return requests.get("http://www.google.com")
-        return 9 / 0
-
-    @try_except_wraps()
-    def readFile(filename) -> None:
-        with open(file=filename) as f:
-            print(len(f.readlines()))
+    def example_function() -> None:
+        raise ValueError("异常")
 
     def add(a, b) -> float:
         with ExceptContext():
-            raise ValueError("除法o异常")
-
-    def fre() -> None:
-        # 可变对象默认装饰器
-        @freshdefault
-        def extend_list(v, li=[]):
-            li.append(v)
-            return li
-
-        list1 = extend_list(99)
-        list2 = extend_list([1, 2, 3, 4], [])
-        list3 = extend_list("a")
-        print(list1)
-        print(list2)
-        print(list3, list1)
-
-        print(list1 is list3)
-
-    def make_func() -> None:
-        # #函数创建器
-        foo_func = _create_func("def foo():a=3;return 3")
-        print(foo_func())
-        for attr in func_attr_name_list:
-            ...
-            # print(attr, ":", getattr(foo_func, attr))
-
-        for attr in func_code_name_list:
-            ...
-            # print(f"foo_func.__code__.{attr.ljust(33)}", ":", getattr(foo_func.__code__, attr))
-        print(foo_func.__dict__)
+            raise ValueError("异常")
 
     print(example_function())
-    # readFile("UnexistFile.txt")
     # print(add(123, 0))
-    # fre()
-    # make_func()

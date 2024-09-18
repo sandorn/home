@@ -78,7 +78,7 @@ class LogCls(SingletonMixin):
     def __getattr__(self, attr):
         if attr in logging._levelToName:
             return getattr(self.logger, attr)
-        raise AttributeError(f"object[{type(self).__name__}] has no attribute '{attr}'")
+        raise AttributeError(f"Object[{type(self).__name__}] has no attribute '{attr}'")
 
     def __call__(self, *args, **kwargs):
         return [
@@ -109,19 +109,19 @@ def create_basemsg(func):
 @decorator
 def log_catch_decor(func, instance, args, kwargs):
     """日志及异常装饰器，打印并记录函数的入参、出参、耗时、异常信息"""
-    logger = LogCls(pyfile="XtLog")
+    logger = LogCls()
     base_log_msg = create_basemsg(func)
-    logger(f"{base_log_msg} | <args:{args!r}> | <kwargs:{kwargs!r}>")
+    logger(f"{base_log_msg} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
 
     duration = perf_counter()
     try:
         result = func(*args, **kwargs)
         logger(
-            f"{base_log_msg} | <result:{result!r}> | <used time:{perf_counter() - duration:.4f}s>"
+            f"{base_log_msg} | <Result:{result!r}> | <Used time:{perf_counter() - duration:.4f}s>"
         )
         return result
     except Exception as err:
-        logger(err_str := f"{base_log_msg} | LCD Exception | <raise:{err!r}>")
+        logger(err_str := f"{base_log_msg} | LCD Exception | <Raise:{err!r}>")
         return err_str
 
 
@@ -129,56 +129,28 @@ def log_catch_decor(func, instance, args, kwargs):
 def log_decor(func, instance, args, kwargs):
     """日志装饰器，打印并记录函数的入参、出参、耗时"""
 
-    logger = LogCls(pyfile="XtLog")
+    logger = LogCls()
     base_log_msg = create_basemsg(func)
-    logger(f"{base_log_msg} | <args:{args!r}> | <kwargs:{kwargs!r}>")
+    logger(f"{base_log_msg} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
 
     duration = perf_counter()
     result = func(*args, **kwargs)
 
     logger(
-        f"{base_log_msg} | <result:{result!r}> | <used time:{perf_counter() - duration:.4f}s>"
+        f"{base_log_msg} | <Result:{result!r}> | <Used time:{perf_counter() - duration:.4f}s>"
     )
     return result
 
 
-def retry_log_catch_decor(max_retry=3):
-    """重试装饰器,处理异常,记录日志,括号调用"""
-
-    @decorator
-    def wrapper(wrapped, instance, args, kwargs):
-        from tenacity import retry, stop_after_attempt, wait_random
-
-        @retry(reraise=True, stop=stop_after_attempt(max_retry), wait=wait_random())
-        def retry_function():
-            return log_decor(wrapped)(*args, **kwargs)  # type: ignore
-
-        duration = perf_counter()
-        try:
-            result = retry_function()
-            return result
-        except Exception as err:
-            logger = LogCls(pyfile="XtLog")
-            logger(
-                err_str
-                := f"{create_basemsg(wrapped)} | RLCD Exception | <raise:{err!r}> | <used time:{perf_counter() - duration:.4f}s>"
-            )
-            return err_str
-
-    return wrapper
-
-
 if __name__ == "__main__":
 
-    @retry_log_catch_decor()
+    @log_decor
+    def test1(*args):
+        return 9 / 0
+
+    @log_catch_decor
     def test2(*args):
         return 9 / 0
 
-    test2(6)
-    import requests
-
-    @retry_log_catch_decor()
-    def get_html() -> float:
-        return requests.request("get", "https://www.google.com")
-
-    # print(get_html())
+    test2()
+    # test1()
