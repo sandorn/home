@@ -60,10 +60,10 @@ class TimeUtil(metaclass=SingletonMetaCls):
     时间工具类
     """
 
-    @classmethod
-    def instance(cls, reinit=True, *args, **kwargs):
-        instance = cls(*args, reinit=reinit, **kwargs)
-        return instance
+    # @classmethod
+    # def instance(cls, reinit=True, *args, **kwargs):
+    #     instance = cls(*args, reinit=reinit, **kwargs)
+    #     return instance
 
     def __init__(
         self,
@@ -260,15 +260,16 @@ class TimeUtil(metaclass=SingletonMetaCls):
 def fn_timer(func, instance, args, kwargs):
     duration = perf_counter()
     result = func(*args, **kwargs)
-    duration = perf_counter() - duration
-    print(f"[Timer | fn:'{func.__name__}']|<perf_counter: {duration:.2f}s>")
+    print(
+        f"[Timer | Function:`{func.__name__}`] | <run for {perf_counter() - duration:.4f}s>"
+    )
     return result
 
 
 timeit = fn_timer
 
 
-class TimerDecorator:
+class TimerWrapt:
     """
     计时器装饰器,装饰函数
     """
@@ -276,11 +277,16 @@ class TimerDecorator:
     def __init__(self, func):
         self.func = func
 
+    @property
+    def __name__(self):
+        return self.func.__name__
+
     def __call__(self, *args, **kwargs):
         start_time = perf_counter()
         result = self.func(*args, **kwargs)
-        end_time = perf_counter()
-        print(f"fn:[{self.func.__name__}] run for {end_time - start_time:.2f}s")
+        print(
+            f"[TimerWrapt | Function:`{self.__name__}`] | <run for {perf_counter() - start_time:.4f}s>"
+        )
         return result
 
 
@@ -314,9 +320,10 @@ if __name__ == "__main__":
     # print(get_timestamp(size=13))
     print(get_timestamp("2020-06-15 13:28:27"))
 
-    @TimerDecorator
+    @timeit
+    @TimerWrapt
     def test_timer():
         time.sleep(0.01)
         print("test_timer Function executed")
 
-    # test_timer()
+    test_timer()
