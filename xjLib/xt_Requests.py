@@ -34,7 +34,7 @@ Method_List = [
 
 
 @TRETRY  # from xt_tools import try_except_wraps
-def _retry_request1(method, url, **kwargs):
+def _retry_request_0(method, url, **kwargs):
     """无用暂存，利用 TRETRY 库实现重试"""
     callback = kwargs.pop("callback", None)
     try:
@@ -48,7 +48,7 @@ def _retry_request1(method, url, **kwargs):
         return htmlResponse(None, err_str.encode(), id(url))
 
 
-@retry_log_by_tenacity()  # type: ignore
+@retry_log_by_tenacity()
 def _retry_request(method, url, **kwargs):
     """利用 TRETRY 库实现重试"""
     callback = kwargs.pop("callback", None)
@@ -67,8 +67,7 @@ def _parse(method, url, **kwargs) -> htmlResponse:
     kwargs.setdefault("timeout", TIMEOUT)  # @超时
     kwargs.setdefault("cookies", {})
 
-    result = _retry_request(method, url, **kwargs)
-    return result
+    return _retry_request(method, url, **kwargs)
 
 
 get = partial(_parse, "get")
@@ -125,11 +124,11 @@ class SessionClient:
     def _retry_request(self):
         """利用 TRETRY 库实现重试"""
         try:
-            self.response = self.session.request(
+            response = self.session.request(
                 self.method, self.url, *self.args, **self.kwargs
             )
-            self.update_cookies(self.response.cookies)
-            result = htmlResponse(self.response)
+            self.update_cookies(response.cookies)
+            result = htmlResponse(response, None, id(self.url))
             return self.callback(result) if callable(self.callback) else result
         except requests.exceptions.RequestException as err:
             print(err_str := f"SessionClient:{self} | URL:{self.url} | Err:{err!r}")
