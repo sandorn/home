@@ -84,11 +84,10 @@ class AioHttpClient:
                 self.method, url, raise_for_status=True, **kwargs
             ) as response:
                 content = await response.content.read()
-                await response.text()
-                return response, content, index
+                return response, content
 
         try:
-            response, content, index = await __fetch()
+            response, content = await __fetch()
             result = ACResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:

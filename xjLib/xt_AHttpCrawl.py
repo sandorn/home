@@ -128,11 +128,10 @@ class AioHttpCrawl:
                 method, url, raise_for_status=True, **kwargs
             ) as response:
                 content = await response.content.read()
-                await response.text()
-                return response, content, index
+                return response, content
 
         try:
-            response, content, index = await _fetch()
+            response, content = await _fetch()
             result = ACResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:
@@ -176,7 +175,7 @@ class AioHttpCrawl:
         return result_list
 
     def reset(self):
-        """重置线程池和future_list（慎用，可能导致正在运行的任务被取消）"""
+        """重置线程池和future_list(慎用,可能导致正在运行的任务被取消)"""
         self.future_list.clear()
 
 
@@ -189,7 +188,7 @@ if __name__ == "__main__":
         "https://www.126.com",
         "https://www.bigee.cc/book/6909/2.html",
     ]
-    print(111111, myaio.add_tasks(url_list * 1, "get"))
+    print(111111, res := myaio.add_tasks(url_list * 1, "get")[0])
     # $add_func########################################################
     from xt_requests import get
 

@@ -12,33 +12,32 @@ Github       : https://github.com/sandorn/home
 """
 
 import time
-from functools import wraps
+from functools import partial, wraps
 from time import perf_counter
 
 from wrapt import decorator
 from xt_log import LogCls, create_basemsg, log_decor
 
 
-def retry(max_retry=3, delay=0.1):
-    """重试装饰器"""
+def retry(wrapped=None, max_retry=3, delay=0.1):
+    """重试装饰器，有无括号都可以"""
+    if wrapped is None:
+        return partial(retry, max_retry=max_retry, delay=delay)
 
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            for index in range(max_retry):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as err:
-                    print(f"| retry {index}/{max_retry} times | <Error:{err!r}>")
-                    if index + 1 == max_retry:
-                        print(f"| retry | Exception | MaxRetryError | <Error:{err!r}>")
-                        return err
-                    else:
-                        time.sleep(delay)
+    @decorator
+    def wrapper(wrapped, instance, args, kwargs):
+        for index in range(max_retry):
+            try:
+                return wrapped(*args, **kwargs)
+            except Exception as err:
+                print(f"| retry {index}/{max_retry} times | <Error:{err!r}>")
+                if index + 1 == max_retry:
+                    print(f"| retry | Exception | MaxRetryError | <Error:{err!r}>")
+                    return err
+                else:
+                    time.sleep(delay)
 
-        return wrapper
-
-    return decorator
+    return wrapper(wrapped)
 
 
 def retry_log_wrapper(max_retry=3, exception=Exception, interval=0.1):
@@ -62,7 +61,7 @@ def retry_log_wrapper(max_retry=3, exception=Exception, interval=0.1):
                 try:
                     result = func(*args, **kwargs)
                     logger(
-                        f"{base_log_msg} | <Result:{result!r}> | <Used time:{perf_counter() - duration:.4f}s>"
+                        f"{base_log_msg} | <Result:{result!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
                     )
                     return result
                 except exception as err:
@@ -73,7 +72,7 @@ def retry_log_wrapper(max_retry=3, exception=Exception, interval=0.1):
                     if index >= max_retry:
                         logger(
                             err_str
-                            := f"{base_log_msg} | RLW Exception | MaxRetryError | <Raise:{err!r}> | <Used time:{perf_counter() - duration:.4f}s>"
+                            := f"{base_log_msg} | RLW Exception | MaxRetryError | <Raise:{err!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
                         )
                         return err_str
                     else:
@@ -84,8 +83,10 @@ def retry_log_wrapper(max_retry=3, exception=Exception, interval=0.1):
     return out_wrapper
 
 
-def retry_log_by_tenacity(max_retry=3):
-    """tenacity.retry重试装饰器,处理异常,记录日志,括号调用"""
+def retry_log_by_tenacity(wrapped=None, max_retry=3):
+    """tenacity.retry重试装饰器,处理异常,记录日志,有无括号都可以"""
+    if wrapped is None:
+        return partial(retry_log_by_tenacity, max_retry=max_retry)
 
     @decorator
     def wrapper(wrapped, instance, args, kwargs):
@@ -103,16 +104,16 @@ def retry_log_by_tenacity(max_retry=3):
             logger = LogCls()
             logger(
                 err_str
-                := f"{create_basemsg(wrapped)} | RLCD Exception | MaxRetryError | <Raise:{err!r}> | <Used time:{perf_counter() - duration:.4f}s>"
+                := f"{create_basemsg(wrapped)} | RLCD Exception | MaxRetryError | <Raise:{err!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
             )
             return err_str
 
-    return wrapper
+    return wrapper(wrapped)
 
 
 if __name__ == "__main__":
 
-    @retry()
+    @retry
     @log_decor
     def test(*args):
         return 1 / 0
@@ -132,30 +133,4 @@ if __name__ == "__main__":
     # print(test())
 
     # print(test2())
-    # print(get_html())
-
-    def decorator1(func):
-        def wrapper(*args, **kwargs):
-            print("in 执行装饰器1")
-            resrult = func(*args, **kwargs)
-            print("out 执行装饰器1")
-            return resrult
-
-        return wrapper
-
-    def decorator2(func):
-        def wrapper(*args, **kwargs):
-            print("in 执行装饰器2")
-            resrult = func(*args, **kwargs)
-            print("out 执行装饰器2")
-            return resrult
-
-        return wrapper
-
-    @decorator1  # 最先执行，最后返回(先进后出)
-    @decorator2  # 最后执行，最先返回(后进先出)
-    def my_function():  # 原始函数
-        print("in 执行原始函数")
-        return "out 执行原始函数"
-
-    print(my_function())
+    print(get_html())

@@ -261,7 +261,7 @@ def fn_timer(func, instance, args, kwargs):
     duration = perf_counter()
     result = func(*args, **kwargs)
     print(
-        f"[Timer | Function:`{func.__name__}`] | <run for {perf_counter() - duration:.4f}s>"
+        f"[Timer | Function:`{func.__name__}`] | <Time-Consuming {perf_counter() - duration:.4f}s>"
     )
     return result
 
@@ -285,7 +285,7 @@ class TimerWrapt:
         start_time = perf_counter()
         result = self.func(*args, **kwargs)
         print(
-            f"[TimerWrapt | Function:`{self.__name__}`] | <run for {perf_counter() - start_time:.4f}s>"
+            f"[TimerWrapt | Function:`{self.__name__}`] | <Time-Consuming {perf_counter() - start_time:.4f}s>"
         )
         return result
 

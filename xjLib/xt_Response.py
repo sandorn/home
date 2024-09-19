@@ -58,16 +58,18 @@ class htmlResponse:
 
     @property
     def text(self):
-        if self.raw:
+        if isinstance(self.content, bytes):
+            return self.content.decode(self.encoding, "ignore")
+        elif isinstance(self.content, str):
+            return self.content.encode(self.encoding).decode(self.encoding, "ignore")
+        elif self.raw:
             return (
                 self.raw.text.encode(self.encoding).decode(self.encoding, "ignore")
                 if not callable(self.raw.text)
                 else self.raw.text()
+                .encode(self.encoding)
+                .decode(self.encoding, "ignore")
             )
-        elif isinstance(self.content, bytes):
-            return self.content.decode(self.encoding, "ignore")
-        elif isinstance(self.content, str):
-            return self.content.encode(self.encoding).decode(self.encoding, "ignore")
 
     @property
     def elapsed(self):
@@ -139,7 +141,7 @@ class htmlResponse:
         ele_list = [selectors] if isinstance(selectors, str) else list(selectors)
 
         return [
-            self.dom.xpath(ele_item)
+            self.element.xpath(ele_item)
             for ele_item in ele_list
             if isinstance(ele_item, str) and ele_item.strip()
         ]
@@ -156,14 +158,7 @@ class htmlResponse:
 class ACResponse(htmlResponse):
     """封装aiohttp网页抓取结果,标准化"""
 
-    @property
-    def text(self):
-        if isinstance(self.content, bytes):
-            return self.content.decode(self.encoding, "ignore")
-        elif isinstance(self.content, str):
-            return self.content.encode(self.encoding).decode(self.encoding, "ignore")
-        elif self.raw:
-            return self.raw.text().encode(self.encoding).decode(self.encoding, "ignore")
+    ...
 
 
 if __name__ == "__main__":

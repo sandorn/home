@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-26 10:37:51
+LastEditTime : 2024-09-19 08:41:17
 FilePath     : /CODE/xjLib/xt_alitts/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -79,8 +79,8 @@ class Voice(StrEnum):
 
 
 if __name__ == "__main__":
-    res = SpeechArgs()
     resss = Constant()
     print(resss.token, Constant.token)
-    res.text = "你好"
-    print(res, res.get_dict())
+    # res = SpeechArgs()
+    # res.text = "你好"
+    # print(res, res.get_dict())

@@ -78,20 +78,18 @@ class AsyncTask:
                 cookies=self.cookies, connector=TCPConnector()
             ) as session, session.request(
                 self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
-            ) as self.response:
-                self.content = await self.response.content.read()
-                return self.response, self.content, self.index
+            ) as response:
+                content = await response.content.read()
+                return response, content
 
         try:
-            await _fetch_run()
-            _result = ACResponse(self.response, self.content, self.index)
-            self.result = self.callback(_result) if callable(self.callback) else _result
-            return self.result
+            response, content = await _fetch_run()
+            _result = ACResponse(response, content, self.index)
+            return self.callback(_result) if callable(self.callback) else _result
 
         except Exception as err:
             print(err_str := f"Async_fetch:{self} | RetryErr:{err!r}")
-            self.result = ACResponse(None, err_str.encode(), self.index)
-            return self.result
+            return ACResponse(None, err_str.encode(), self.index)
 
     @staticmethod
     def set_config():
@@ -170,15 +168,14 @@ if __name__ == "__main__":
 
     # print(3333333333333333, ahttpGetAll([url_headers, url_get, url1], callback=handle_back_ait))
     def main():
-        print(111111111111111111111, ahttpGet("https://httpbin.org/get"))
         urls = [
             "http://www.baidu.com",
             "http://www.163.com",
             "http://dangdang.com",
             "https://httpbin.org",
-            "https://www.google.com",
+            # "https://www.google.com",
         ]
-
+        print(111111111111111111111, ahttpGetAll(urls))
         print(222222222222222222222, ahttpPost(url_post, data=b"data"))
         print(333333333333333333333, res := ahttpGet(urls[1]))
         print("xpath-1".ljust(10), ":", res.xpath("//title/text()"))
@@ -189,6 +186,7 @@ if __name__ == "__main__":
             res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
         )
         print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
+        print("element".ljust(10), ":", res.element.xpath("//title/text()"))
         print("html".ljust(10), ":", res.html.xpath("//title/text()"))
         print("query".ljust(10), ":", res.query("title").text())
         print("text".ljust(10), ":", res.text[1000:1300])
