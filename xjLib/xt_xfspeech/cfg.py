@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-11-08 09:18:15
-LastEditTime : 2024-08-30 09:53:52
+LastEditTime : 2024-09-20 17:33:17
 FilePath     : /CODE/xjLib/xt_xfspeech/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -14,21 +14,16 @@ https://console.xfyun.cn/services/tts
 在线语音合成(流式版)API:"wss://tts-api.xfyun.cn/v2/tts"
 """
 
-from xt_enum import StrEnum
+import configparser
+
+config = configparser.ConfigParser()
+config.read(".vscode/CFG.ini")
 
 
-class CFG(StrEnum):
-    APPID = ("2269c784", "讯飞开放平台APPID")
-    APISecret = ("OWI0NGJmYmQxZTA1OTI1Yjg5MTM4OGUy", "讯飞开放平台APISecret")
-    APIKey = ("5206d42c6146ead1ee5411b106965114", "讯飞开放平台APIKey")
-
-    @property
-    def code(self):
-        return self.value
-
-    @property
-    def msg(self):
-        return self.desc
+class CFG:
+    APPID = config.get("xfyun", "APPID")
+    APISecret = config.get("xfyun", "APISecret")
+    APIKey = config.get("xfyun", "APIKey")
 
 
 """
@@ -75,9 +70,4 @@ rdn	string	否	合成音频数字发音方式
 			3:字符串优先
 """
 if __name__ == "__main__":
-    print(11111111, cfg.get_members())
-    print(22222222, cfg.get_values())
-    print(33333333, cfg.get_names())
-    print(cfg.APPID.value)
-    print(cfg.APIKey.msg)
-    print(cfg.APISecret.code)
+    print(11111111, CFG.APPID)

@@ -14,9 +14,9 @@ from wsgiref.handlers import format_date_time
 import requests
 from xt_xfspeech.cfg import CFG
 
-APPID = CFG.APPID.value
-APIKey = CFG.APIKey.value
-APISecret = CFG.APISecret.value
+APPID = CFG.APPID
+APIKey = CFG.APIKey
+APISecret = CFG.APISecret
 
 
 class TestTask:

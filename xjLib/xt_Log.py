@@ -16,6 +16,7 @@ import re
 from datetime import datetime
 from logging.config import dictConfig
 from time import perf_counter
+from typing import Any
 
 from wrapt import decorator
 from xt_singleon import SingletonMixin
@@ -99,7 +100,7 @@ class LogCls(SingletonMixin):
             return getattr(self.logger, attr)
         raise AttributeError(f"Object[{type(self).__name__}] has no attribute '{attr}'")
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Any:
         return [
             getattr(self.logger, LevelDict[self.level])(arg, **kwargs)
             for arg in list(args)
@@ -174,7 +175,7 @@ def log_decor(func, instance, args, kwargs):
 
 if __name__ == "__main__":
 
-    @log_catch_decor
+    @log_catch_decor  # log_decor
     def test1(*args):
         return 9 / 0
 

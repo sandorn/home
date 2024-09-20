@@ -28,9 +28,9 @@ from wsgiref.handlers import format_date_time
 import websocket
 from xt_xfspeech.cfg import CFG
 
-APPID = CFG.APPID.value
-APIKey = CFG.APIKey.value
-APISecret = CFG.APISecret.value
+APPID = CFG.APPID
+APIKey = CFG.APIKey
+APISecret = CFG.APISecret
 
 STATUS_FIRST_FRAME = 0  # 第一帧的标识
 STATUS_CONTINUE_FRAME = 1  # 中间帧标识

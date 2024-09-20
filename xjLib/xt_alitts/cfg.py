@@ -9,10 +9,9 @@ LastEditTime : 2024-09-19 08:41:17
 FilePath     : /CODE/xjLib/xt_alitts/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-用户登录名称:sandorn_ram@1915355838841755.onaliyun.com
-登录密码:rH17b#9{$gDqRiJXB3flDaWqbMPAEz{n
 """
 
+import configparser
 from typing import Optional
 
 from nls.token import getToken
@@ -20,31 +19,21 @@ from pydantic import BaseModel, Field
 from xt_class import ReDictMixin
 from xt_enum import StrEnum
 
-
-class CFG(StrEnum):
-    ACCESS_APPKEY = ("Ofm34215thIUdSIX", "阿里开放平台的APPID")
-    ACCESS_KeyId = ("LTAI4G5TRjsGy8BNKPtctjXQ", "阿里开放平台的APISecret")
-    ACCESS_Secret = ("hS8Kl0b9orxNUW7IOeBIFUfzgcVn00", "阿里开放平台的APIKey")
-
-    @property
-    def code(self):
-        return self.value
-
-    @property
-    def msg(self):
-        return self.desc
+config = configparser.ConfigParser()
+config.read(".vscode/CFG.ini")
 
 
-class Constant(BaseModel):
+class Constant:
     """Constant : 常量参数"""
 
-    appKey = property(lambda cls: CFG.ACCESS_APPKEY.value)
-    accessKeyId = property(lambda cls: CFG.ACCESS_KeyId.value)
-    accessKeySecret = property(lambda cls: CFG.ACCESS_Secret.value)
+    appKey = property(lambda cls: config.get("AliTTS", "ACCESS_APPKEY"))
+    accessKeyId = property(lambda cls: config.get("AliTTS", "ACCESS_KeyId"))
+    accessKeySecret = property(lambda cls: config.get("AliTTS", "ACCESS_Secret"))
 
-    # token = property(lambda cls: cls.__token)
+    token = property(lambda cls: getToken(cls.accessKeyId, cls.accessKeySecret))
+
     @property  # 第二种方法
-    def token(self):
+    def _token(self):
         return getToken(self.accessKeyId, self.accessKeySecret)
 
 
@@ -80,7 +69,7 @@ class Voice(StrEnum):
 
 if __name__ == "__main__":
     resss = Constant()
-    print(resss.token, Constant.token)
+    print(resss.token)
     # res = SpeechArgs()
     # res.text = "你好"
     # print(res, res.get_dict())
