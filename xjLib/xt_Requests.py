@@ -58,7 +58,7 @@ def _retry_request(method, url, **kwargs):
     return callback(result) if callable(callback) else result
 
 
-def _parse(method, url, **kwargs) -> htmlResponse:
+def _parse(method, url, **kwargs):
     if method.lower() not in Method_List:
         return htmlResponse(
             None, f"Method:{method} not in {Method_List}".encode(), id(url)
@@ -67,7 +67,7 @@ def _parse(method, url, **kwargs) -> htmlResponse:
     kwargs.setdefault("timeout", TIMEOUT)  # @超时
     kwargs.setdefault("cookies", {})
 
-    return _retry_request(method, url, **kwargs)
+    return _retry_request(method.lower(), url, **kwargs)
 
 
 get = partial(_parse, "get")
@@ -83,9 +83,7 @@ class SessionClient:
         "url",
         "args",
         "kwargs",
-        "response",
         "callback",
-        "result",
     ]
 
     def __init__(self):
@@ -98,10 +96,9 @@ class SessionClient:
         self.session.close()
 
     def __getitem__(self, method):
-        if method.lower() in Method_List:
-            self.method = method.lower()  # 保存请求方法
-            return self.create_task  # 调用方法
-            # return lambda *args, **kwargs: self.create_task(*args, **kwargs)
+        self.method = method.lower()  # 保存请求方法
+        return self.create_task  # 调用方法
+        # return lambda *args, **kwargs: self.create_task(*args, **kwargs)
 
     def __getattr__(self, method):
         return self.__getitem__(method)
@@ -109,6 +106,12 @@ class SessionClient:
     @log_catch_decor  # type: ignore
     def create_task(self, *args, **kwargs):
         self.url = args[0]
+        if self.method not in Method_List:
+            return htmlResponse(
+                None,
+                f"Method:{self.method} not in {Method_List}".encode(),
+                id(self.url),
+            )
         self.args = args[1:]
 
         self.update_headers(kwargs.pop("headers", Head().randua))
@@ -116,9 +119,7 @@ class SessionClient:
         self.callback = kwargs.pop("callback", None)
         kwargs.setdefault("timeout", TIMEOUT)
         self.kwargs = kwargs
-
-        self.result = self._retry_request()
-        return self.result
+        return self._retry_request()
 
     @TRETRY
     def _retry_request(self):
@@ -145,7 +146,7 @@ if __name__ == "__main__":
 
     def main():
         sion = SessionClient()
-        print(111111111111111111111, getattr(sion, "get")("https://httpbin.org/get"))
+        print(111111111111111111111, sion.get("https://httpbin.org/get"))
         urls = [
             "http://www.baidu.com",
             "http://www.163.com",

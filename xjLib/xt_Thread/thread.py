@@ -265,15 +265,15 @@ if __name__ == "__main__":
 
     def func(*arg, **kwargs):
         thread_print(*arg, **kwargs)
-        sleep(1)
+        sleep(2)
         return arg
 
     a = SigThread(print, 111111111111111)
-    print(a.getResult(), a.__name__, type(a))
+    print(22222222222, a.getResult(), a.__name__, type(a))
     b = SigThread(func, 2, 3)
-    print(b.getResult())
+    print(33333333333, b.getResult())
     c = SigThreadQ([func, 2, 3])
-    print(c.getResult(), c.__name__, type(c))
+    print(44444444444, c.getResult(), c.__name__, type(c))
     """
     tpool = ThreadPoolWraps(200)
 

@@ -70,6 +70,8 @@ class htmlResponse:
                 .encode(self.encoding)
                 .decode(self.encoding, "ignore")
             )
+        else:
+            return ""
 
     @property
     def elapsed(self):

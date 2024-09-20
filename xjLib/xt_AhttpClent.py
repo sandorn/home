@@ -15,7 +15,6 @@ import asyncio
 import sys
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_ahttp import Method_List
 from xt_head import TIMEOUT, TRETRY, Head
 from xt_log import log_catch_decor
 from xt_response import ACResponse
@@ -53,10 +52,10 @@ class AioHttpClient:
         self._loop.run_until_complete(self.close_session())
 
     def __getitem__(self, method):
-        if method.lower() in Method_List:
-            self.method = method.lower()  # 保存请求方法
-            return self._make_parse  # 调用方法
-            # return lambda *args, **kwargs: self._make_parse(*args, **kwargs)
+        # if method.lower() in Method_List:
+        self.method = method.lower()  # 保存请求方法
+        return self._make_parse  # 调用方法
+        # return lambda *args, **kwargs: self._make_parse(*args, **kwargs)
 
     def __getattr__(self, method):
         return self.__getitem__(method)
@@ -71,7 +70,7 @@ class AioHttpClient:
             self._retry_request(url, index=id(url), **kwargs)
         )
 
-    @log_catch_decor
+    @log_catch_decor  # type:ignore
     async def _retry_request(self, url, index=None, **kwargs):
         kwargs.setdefault("headers", Head().randua)
         kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
@@ -80,7 +79,7 @@ class AioHttpClient:
 
         @TRETRY
         async def __fetch():
-            async with self._session.request(
+            async with self._session.request(  # type:ignore
                 self.method, url, raise_for_status=True, **kwargs
             ) as response:
                 content = await response.content.read()
