@@ -160,8 +160,10 @@ if __name__ == "__main__":
         )
         # print(252525252525252525252, res := get(urls[4]))
         print(333333333333333333333, res := get(urls[1]))
-        print("xpath-1".ljust(10), ":", res.xpath("//title/text()"))
-        print("xpath-2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
+        print("xpath".ljust(10), ":", res.xpath("//title/text()"))
+        print(
+            "xpath-list".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"])
+        )
         print(
             "blank".ljust(10),
             ":",

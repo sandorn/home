@@ -90,8 +90,7 @@ class htmlResponse:
 
     @property
     def url(self):
-        if self.raw and hasattr(self.raw, "url"):
-            return self.raw.url
+        return getattr(self.raw, "url", "")
 
     @property
     def cookies(self):
@@ -109,25 +108,34 @@ class htmlResponse:
 
     @property
     def html(self):
+        """解析HTML，返回一个单一元素/文档。
+        这个方法尝试最小化地解析文本块，而不知道它是片段还是文档。
+        base_url将设置文档的base_url属性（以及树的docinfo.URL）
+        html.base_url # 返回文档的基本URL
+        """
         from lxml import html
 
-        return html.fromstring(self.content.decode(self.encoding), parser=None)
+        return html.fromstring(self.content.decode(self.encoding), base_url=self.url)
 
     @property
     def element(self):
+        """
+        解析字符串常量的HTML文档。返回根节点(或解析器目标返回的结果)。此函数可用于在Python代码中嵌入“HTML文字”。
+        element.base # 返回文档的基本URL
+        """
         from lxml import etree
 
-        return etree.HTML(self.content.decode(self.encoding), parser=None)
+        return etree.HTML(self.content.decode(self.encoding), base_url=self.url)
 
     @property
     def dom(self):
         """
         返回requests_html对象,支持html对象操作:find, xpath, render(先安装chromium浏览器)
+        dom.url # 返回文档的基本URL
         """
         from requests_html import HTML
 
-        html = HTML(html=self.content)
-        setattr(html, "url", self.url)
+        html = HTML(html=self.content, url=self.url)
         return html
 
     @property
@@ -170,12 +178,13 @@ if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
     rep = get(url)
     title_name = "title" if url == "https://www.baidu.com" else "h1"
-    print(rep.url, rep.dom)
-    print(rep.xpath(f"//{title_name}/text()"))
-    print(rep.dom.xpath(f"//{title_name}/text()"))
-    print(rep.element.xpath(f"//{title_name}/text()"))
-    print(rep.query(f"{title_name}").text())
-    print(rep, rep.raw)
-    print(rep.status)
-    print(rep.text[1000:1300])
+    print(1111111, rep.dom.url, rep.dom)
+    print(2222222, rep.xpath(f"//{title_name}/text()"))
+    print(3333333, rep.dom.xpath(f"//{title_name}/text()"))
+    print(4444444, rep.element.base, rep.element.xpath(f"//{title_name}/text()"))
+    print(4545454, rep.html.base_url, rep.html.xpath(f"//{title_name}/text()"))
+    print(5555555, rep.query(f"{title_name}").text())
+    print(6666666, rep, rep.raw)
+    print(7777777, rep.status)
+    print(8888888, rep.text[1000:1300])
     # print(r := htmlResponse(None, "参数ele:666", 1), r, r.text, r.dom, end="\n\n")
