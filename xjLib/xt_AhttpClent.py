@@ -12,7 +12,7 @@ Github       : https://github.com/sandorn/home
 """
 
 import asyncio
-import sys
+import selectors
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, TRETRY, Head
@@ -20,22 +20,20 @@ from xt_log import log_catch_decor
 from xt_response import ACResponse
 
 
+class MyPolicy(asyncio.DefaultEventLoopPolicy):
+    def new_event_loop(self):
+        selector = selectors.SelectSelector()
+        return asyncio.SelectorEventLoop(selector)
+
+
+asyncio.set_event_loop_policy(MyPolicy())
+
+
 class AioHttpClient:
-    cfg_flag = False
-
     def __init__(self):
-        self.set_config()
-
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
         self._session = self._loop.run_until_complete(self.create_session())
-
-    @staticmethod
-    def set_config():
-        if sys.platform == "win32" and not AioHttpClient.cfg_flag:
-            print("asyncio - on windows aiodns needs SelectorEventLoop")
-            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-            AioHttpClient.cfg_flag = True
 
     async def create_session(self):
         return ClientSession(connector=TCPConnector(ssl=False), loop=self._loop)
@@ -52,7 +50,6 @@ class AioHttpClient:
         self._loop.run_until_complete(self.close_session())
 
     def __getitem__(self, method):
-        # if method.lower() in Method_List:
         self.method = method.lower()  # 保存请求方法
         return self._make_parse  # 调用方法
         # return lambda *args, **kwargs: self._make_parse(*args, **kwargs)
@@ -66,8 +63,9 @@ class AioHttpClient:
             self._session = None
 
     def _make_parse(self, url, **kwargs):
+        index = kwargs.pop("index", id(url))
         return self._loop.run_until_complete(
-            self._retry_request(url, index=id(url), **kwargs)
+            self._retry_request(url, index=index, **kwargs)
         )
 
     @log_catch_decor  # type:ignore
@@ -93,7 +91,8 @@ class AioHttpClient:
             print(err_str := f"AioHttpClient:{self} | URL:{url} | RetryErr:{err!r}")
             return ACResponse(None, err_str.encode(), index)
 
-    async def request_all(self, urls_list, **kwargs):
+    async def request_all(self, method, urls_list, **kwargs):
+        self.method = method
         task_list = [
             self._retry_request(url, index=index, **kwargs)
             for index, url in enumerate(urls_list, start=1)
@@ -101,12 +100,14 @@ class AioHttpClient:
         return await asyncio.gather(*task_list, return_exceptions=True)
 
     def getall(self, urls_list, **kwargs):
-        self.method = "get"
-        return self._loop.run_until_complete(self.request_all(urls_list, **kwargs))
+        return self._loop.run_until_complete(
+            self.request_all("get", urls_list, **kwargs)
+        )
 
     def postall(self, urls_list, **kwargs):
-        self.method = "post"
-        return self._loop.run_until_complete(self.request_all(urls_list, **kwargs))
+        return self._loop.run_until_complete(
+            self.request_all("post", urls_list, **kwargs)
+        )
 
 
 if __name__ == "__main__":
@@ -114,7 +115,5 @@ if __name__ == "__main__":
     AHC = AioHttpClient()
     res = AHC.get(url)
     print(111111, res)
-    res = AHC.getall([url, url, "https://www.bigee.cc/book/6909/2.html"])
+    res = AHC.getall([url, "https://www.bigee.cc/book/6909"])
     print(222222, res)
-    # print(333333, res.headers)
-    # print(444444, res.status)

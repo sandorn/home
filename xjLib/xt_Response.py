@@ -111,11 +111,12 @@ class htmlResponse:
         """解析HTML，返回一个单一元素/文档。
         这个方法尝试最小化地解析文本块，而不知道它是片段还是文档。
         base_url将设置文档的base_url属性（以及树的docinfo.URL）
-        html.base_url # 返回文档的基本URL
         """
         from lxml import html
 
-        return html.fromstring(self.content.decode(self.encoding), base_url=self.url)
+        return html.fromstring(
+            self.content.decode(self.encoding), base_url=str(self.url)
+        )
 
     @property
     def element(self):
@@ -125,7 +126,7 @@ class htmlResponse:
         """
         from lxml import etree
 
-        return etree.HTML(self.content.decode(self.encoding), base_url=self.url)
+        return etree.HTML(self.text, base_url=str(self.url))
 
     @property
     def dom(self):
@@ -135,12 +136,12 @@ class htmlResponse:
         """
         from requests_html import HTML
 
-        html = HTML(html=self.content, url=self.url)
+        html = HTML(html=self.content, url=str(self.url))
         return html
 
     @property
     def query(self):
-        return PyQuery(self.html)
+        return PyQuery(self.text)
 
     def xpath(self, selectors: str | Sequence[str] = "") -> list:
         """
@@ -151,7 +152,7 @@ class htmlResponse:
         ele_list = [selectors] if isinstance(selectors, str) else list(selectors)
 
         return [
-            self.element.xpath(ele_item)
+            self.dom.xpath(ele_item)
             for ele_item in ele_list
             if isinstance(ele_item, str) and ele_item.strip()
         ]
@@ -174,17 +175,29 @@ class ACResponse(htmlResponse):
 if __name__ == "__main__":
     from xt_requests import get
 
-    url = "https://www.baidu.com"
-    url = "https://www.bigee.cc/book/6909/"
-    rep = get(url)
-    title_name = "title" if url == "https://www.baidu.com" else "h1"
-    print(1111111, rep.dom.url, rep.dom)
-    print(2222222, rep.xpath(f"//{title_name}/text()"))
-    print(3333333, rep.dom.xpath(f"//{title_name}/text()"))
-    print(4444444, rep.element.base, rep.element.xpath(f"//{title_name}/text()"))
-    print(4545454, rep.html.base_url, rep.html.xpath(f"//{title_name}/text()"))
-    print(5555555, rep.query(f"{title_name}").text())
-    print(6666666, rep, rep.raw)
-    print(7777777, rep.status)
-    print(8888888, rep.text[1000:1300])
-    # print(r := htmlResponse(None, "参数ele:666", 1), r, r.text, r.dom, end="\n\n")
+    urls = [
+        "https://www.163.com",
+        "https://httpbin.org/get",
+        "https://httpbin.org/post",
+        "https://httpbin.org/headers",
+        "https://www.google.com",
+    ]
+    elestr = "//title/text()"
+
+    def main():
+        print(111111111111111111111, get(urls[3]))
+        print(222222222222222222222, res := get(urls[0]))
+        # print(3333333333333333333, get(urls[4]))
+        print("xpath-1".ljust(10), ":", res.xpath(elestr))
+        print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
+        print(
+            "blank".ljust(10),
+            ":",
+            res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+        )
+        print("dom".ljust(10), ":", res.dom.url, res.dom.xpath(elestr))
+        print("query".ljust(10), ":", res.query("title").text())
+        print("element".ljust(10), ":", res.element.base, res.element.xpath(elestr))
+        print("html".ljust(10), ":", res.html.base_url, res.html.xpath(elestr))
+
+    main()

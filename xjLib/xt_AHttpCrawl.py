@@ -14,7 +14,7 @@ https://www.cnblogs.com/haoabcd2010/p/10615364.html
 """
 
 import asyncio
-import sys
+import selectors
 from asyncio.coroutines import iscoroutinefunction
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import wraps
@@ -24,6 +24,15 @@ from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, TRETRY, Head
 from xt_log import log_catch_decor
 from xt_response import ACResponse
+
+
+class MyPolicy(asyncio.DefaultEventLoopPolicy):
+    def new_event_loop(self):
+        selector = selectors.SelectSelector()
+        return asyncio.SelectorEventLoop(selector)
+
+
+asyncio.set_event_loop_policy(MyPolicy())
 
 
 @wrapt.decorator
@@ -71,11 +80,7 @@ def async_run_decorator(func):
     def _wrapper(*args, **kwargs):
         @wraps(func)
         async def __wrapper(*args, **kwargs):
-            callback = kwargs.pop("fu_callback", None)
-
             task = coroutine_decorator(func)(*args, **kwargs)
-            if callback:
-                task.add_done_callback(callback)
             return await asyncio.gather(task, return_exceptions=True)
 
         return asyncio.run(__wrapper(*args, **kwargs))
@@ -84,21 +89,11 @@ def async_run_decorator(func):
 
 
 class AioHttpCrawl:
-    cfg_flag = False
-
     def __init__(self):
         self.future_list = []
 
-    @staticmethod
-    def set_config():
-        if sys.platform == "win32" and not AioHttpCrawl.cfg_flag:
-            print("asyncio - on windows aiodns needs SelectorEventLoop")
-            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-            AioHttpCrawl.cfg_flag = True
-
     def add_tasks(self, url_list, method="GET", **kwargs):
         """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
-        self.set_config()
         return asyncio.run(self.tasks_run(url_list, method=method, **kwargs))
 
     async def tasks_run(self, url_list, method, **kwargs):
@@ -188,7 +183,7 @@ if __name__ == "__main__":
         "https://www.126.com",
         "https://www.bigee.cc/book/6909/2.html",
     ]
-    print(111111, res := myaio.add_tasks(url_list * 1, "get")[0])
+    print(111111, myaio.add_tasks(url_list * 1, "get"))
     # $add_func########################################################
     from xt_requests import get
 

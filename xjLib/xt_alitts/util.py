@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-30 09:45:57
+LastEditTime : 2024-09-20 17:53:32
 FilePath     : /CODE/xjLib/xt_alitts/util.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -16,7 +16,7 @@ import shutil
 
 from pydub import AudioSegment
 from xt_file import get_desktop
-from xt_time import get_10_timestamp
+from xt_time import get_timestamp
 
 
 def handle_result(res):
@@ -83,7 +83,7 @@ def merge_sound_file(voice_data_list, args, path=None):
     SumSound = sum(sound_list)
 
     # $保存音频文件
-    __fname = f"{path}\\{get_10_timestamp()}_{args['voice']}_tts.{args['aformat']}"
+    __fname = f"{path}\\{get_timestamp()}_{args['voice']}_tts.{args['aformat']}"
     SumSound.export(__fname, format=args["aformat"])  # 保存文件
 
     # $[[1, 'D:\\Desktop\\1.mp3'],]

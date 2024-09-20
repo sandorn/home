@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
             # 4、下载到本地
             Download_addres = query_result
-            f = requests.get(Download_addres)
+            f = requests.get(query_result)
             # 下载文件，根据需要更改文件后缀
             filename = "tts.mp3"
             with open(filename, "wb") as code:

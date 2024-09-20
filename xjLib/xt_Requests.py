@@ -54,11 +54,11 @@ def _retry_request(method, url, **kwargs):
     callback = kwargs.pop("callback", None)
     response = requests.request(method, url, **kwargs)
     response.raise_for_status()
-    result = htmlResponse(response)
+    return htmlResponse(response)
     return callback(result) if callable(callback) else result
 
 
-def _parse(method, url, **kwargs):
+def single_parse(method, url, **kwargs):
     if method.lower() not in Method_List:
         return htmlResponse(
             None, f"Method:{method} not in {Method_List}".encode(), id(url)
@@ -70,8 +70,8 @@ def _parse(method, url, **kwargs):
     return _retry_request(method.lower(), url, **kwargs)
 
 
-get = partial(_parse, "get")
-post = partial(_parse, "post")
+get = partial(single_parse, "get")
+post = partial(single_parse, "post")
 
 
 class SessionClient:
@@ -143,36 +143,33 @@ class SessionClient:
 
 
 if __name__ == "__main__":
+    urls = [
+        "https://www.163.com",
+        "https://httpbin.org/get",
+        "https://httpbin.org/post",
+        "https://httpbin.org/headers",
+        "https://www.google.com",
+    ]
+    elestr = "//title/text()"
 
     def main():
         sion = SessionClient()
-        print(111111111111111111111, sion.get("https://httpbin.org/get"))
-        urls = [
-            "http://www.baidu.com",
-            "http://www.163.com",
-            "http://dangdang.com",
-            "https://httpbin.org",
-            "https://www.google.com",
-        ]
+        print(111111111111111111111, sion.get(urls[3]))
 
-        print(
-            222222222222222222222, partial(_parse, "HEAD")("http://httpbin.org/headers")
-        )
-        # print(252525252525252525252, res := get(urls[4]))
-        print(333333333333333333333, res := get(urls[1]))
-        print("xpath".ljust(10), ":", res.xpath("//title/text()"))
-        print(
-            "xpath-list".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"])
-        )
+        print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
+        # print(3333333333333333333, res := get(urls[4]))
+        res = get(urls[0])
+        print("xpath-1".ljust(10), ":", res.xpath(elestr))
+        print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
         print(
             "blank".ljust(10),
             ":",
             res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
         )
-        print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
-        print("html".ljust(10), ":", res.html.xpath("//title/text()"))
+        print("dom".ljust(10), ":", res.dom.url, res.dom.xpath(elestr))
         print("query".ljust(10), ":", res.query("title").text())
-        print("text".ljust(10), ":", res.text[1000:1300])
+        print("element".ljust(10), ":", res.element.base, res.element.xpath(elestr))
+        print("html".ljust(10), ":", res.html.base_url, res.html.xpath(elestr))
 
     main()
 

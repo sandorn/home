@@ -12,14 +12,25 @@ Github       : https://github.com/sandorn/home
 """
 
 import asyncio
+import selectors
 import sys
 from functools import partial
 from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_catch_decor
+from xt_log import log_decor
 from xt_response import ACResponse
+
+
+class MyPolicy(asyncio.DefaultEventLoopPolicy):
+    def new_event_loop(self):
+        selector = selectors.SelectSelector()
+        return asyncio.SelectorEventLoop(selector)
+
+
+asyncio.set_event_loop_policy(MyPolicy())
+
 
 __all__ = ("ahttpGet", "ahttpGetAll", "ahttpPost", "ahttpPostAll")
 
@@ -37,14 +48,10 @@ Method_List = (
 
 
 class AsyncTask:
-    """aiohttp异步任务"""
-
-    cfg_flag = False
+    """aiohttp异步任务原型"""
 
     def __init__(self, index=None):
         self.index = index or id(self)
-        self.result = None
-        self.set_config()
 
     def __getitem__(self, method):
         if method.lower() in Method_List:
@@ -68,7 +75,7 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
-    @log_catch_decor
+    @log_decor
     async def start(self):
         """执行核心操作,单任务和多任务均调用"""
 
@@ -86,45 +93,40 @@ class AsyncTask:
             response, content = await _fetch_run()
             _result = ACResponse(response, content, self.index)
             return self.callback(_result) if callable(self.callback) else _result
-
         except Exception as err:
             print(err_str := f"Async_fetch:{self} | RetryErr:{err!r}")
             return ACResponse(None, err_str.encode(), self.index)
 
     @staticmethod
     def set_config():
-        if sys.platform == "win32" and not AsyncTask.cfg_flag:
+        if sys.platform == "win32":
             print("asyncio - on windows aiodns needs SelectorEventLoop")
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-            AsyncTask.cfg_flag = True
 
 
-def create_task(method, url, index=None, *args, **kwargs):
-    """构建任务"""
+def single_parse(method, url, *args, **kwargs):
+    """构建并运行单任务"""
     if method.lower() not in Method_List:
         return ACResponse(
             None, f"Method:{method} not in {Method_List}".encode(), id(url)
         )
 
-    return getattr(AsyncTask(index), method)(url, *args, **kwargs)
-
-
-def __parse(method, url, *args, **kwargs):
-    """发起单任务"""
-    task = partial(create_task, method)(url, *args, **kwargs)
+    task = getattr(AsyncTask(), method)(url, *args, **kwargs)
     coro = task.start()
     return asyncio.run(coro)
 
 
-ahttpGet = partial(__parse, "get")
-ahttpPost = partial(__parse, "post")
+ahttpGet = partial(single_parse, "get")
+ahttpPost = partial(single_parse, "post")
 
 
-async def __run_many_parse(tasks_list, channel=None):
-    coro_list = []
-    for index, task in enumerate(tasks_list, start=1):
-        task.index = index
-        coro_list.append(task.start())
+async def _multi_fetch(method, urls, *args, channel=None, **kwargs):
+    """构建并运行多任务"""
+    tasks_list = [
+        getattr(AsyncTask(index), method)(url, *args, **kwargs)
+        for index, url in enumerate(urls, start=1)
+    ]
+    coro_list = [task.start() for task in tasks_list]
 
     if channel == "thread":
         """异步，子线程,不同session,不推荐"""
@@ -142,57 +144,45 @@ async def __run_many_parse(tasks_list, channel=None):
         return await asyncio.gather(*coro_list, return_exceptions=True)
 
 
-def _many_parse(method, urls, *args, **kwargs):
+def multi_parse(method, urls, *args, **kwargs):
     """发起多任务"""
-    tasks_list = [partial(create_task, method)(url, *args, **kwargs) for url in urls]
-    return asyncio.run(__run_many_parse(tasks_list))
+    return asyncio.run(_multi_fetch(method, urls, *args, **kwargs))
 
 
-ahttpGetAll = partial(_many_parse, "get")
-ahttpPostAll = partial(_many_parse, "post")
+ahttpGetAll = partial(multi_parse, "get")
+ahttpPostAll = partial(multi_parse, "post")
 
 if __name__ == "__main__":
-    url1 = "https://www.163.com"
-    url_get = "https://httpbin.org/get"
-    url_post = "https://httpbin.org/post"
-    url_headers = "https://httpbin.org/headers"
-
-    # print(1111111111111111,  ahttpGet(url_get))
-
-    # print(2222222222222222,  ahttpPost(url_post, data=b"data"))
+    urls = [
+        "https://www.163.com",
+        "https://httpbin.org/get",
+        "https://httpbin.org/post",
+        "https://httpbin.org/headers",
+        "https://www.google.com",
+    ]
+    elestr = "//title/text()"
 
     def handle_back_ait(resp):
-        """help"""
         if isinstance(resp, ACResponse):
             return resp
 
-    print(
-        3333333333333333,
-        ahttpGetAll([url_headers, url_get, url1], callback=handle_back_ait),
-    )
-
     def main():
-        urls = [
-            "http://www.baidu.com",
-            "http://www.163.com",
-            "http://dangdang.com",
-            "https://httpbin.org",
-            # "https://www.google.com",
-        ]
-        print(111111111111111111111, ahttpGetAll(urls))
-        print(222222222222222222222, ahttpPost(url_post, data=b"data"))
-        print(333333333333333333333, res := ahttpGet(urls[1]))
-        print("xpath-1".ljust(10), ":", res.xpath("//title/text()"))
-        print("xpath-2".ljust(10), ":", res.xpath(["//title/text()", "//title/text()"]))
+        print(
+            111111111111111111111,
+            ahttpGetAll([urls[0], urls[1], urls[3]], callback=handle_back_ait),
+        )
+        print(222222222222222222222, ahttpPost(urls[2], data=b"data"))
+        print(333333333333333333333, res := ahttpGet(urls[0]))
+        print("xpath-1".ljust(10), ":", res.xpath(elestr))
+        print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
         print(
             "blank".ljust(10),
             ":",
             res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
         )
-        print("dom".ljust(10), ":", res.dom.xpath("//title/text()"))
-        print("element".ljust(10), ":", res.element.xpath("//title/text()"))
-        print("html".ljust(10), ":", res.html.xpath("//title/text()"))
+        print("dom".ljust(10), ":", res.dom.url, res.dom.xpath(elestr))
         print("query".ljust(10), ":", res.query("title").text())
-        print("text".ljust(10), ":", res.text[1000:1300])
+        print("element".ljust(10), ":", res.element.base, res.element.xpath(elestr))
+        print("html".ljust(10), ":", res.html.base_url, res.html.xpath(elestr))
 
-    # main()
+    main()

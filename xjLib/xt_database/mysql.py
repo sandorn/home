@@ -150,7 +150,7 @@ class DbEngine:
         if self.DictCursor is None:
             self.cursorDict = self.conn.cursor(dictionary=True)
             # #mysql.connector独有
-        else:
+        elif isinstance(self.DictCursor, int):
             self.cursorDict = self.conn.cursor(self.DictCursor)
 
         self.cursorDict.execute(sql)

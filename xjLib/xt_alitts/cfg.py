@@ -26,9 +26,9 @@ config.read(".vscode/CFG.ini")
 class Constant:
     """Constant : 常量参数"""
 
-    appKey = property(lambda cls: config.get("AliTTS", "ACCESS_APPKEY"))
-    accessKeyId = property(lambda cls: config.get("AliTTS", "ACCESS_KeyId"))
-    accessKeySecret = property(lambda cls: config.get("AliTTS", "ACCESS_Secret"))
+    appKey = config.get("AliTTS", "ACCESS_APPKEY")
+    accessKeyId = config.get("AliTTS", "ACCESS_KeyId")
+    accessKeySecret = config.get("AliTTS", "ACCESS_Secret")
 
     token = property(lambda cls: getToken(cls.accessKeyId, cls.accessKeySecret))
 
@@ -69,7 +69,8 @@ class Voice(StrEnum):
 
 if __name__ == "__main__":
     resss = Constant()
-    print(resss.token)
+    print(Constant().appKey)
+    print(Constant().token)
     # res = SpeechArgs()
     # res.text = "你好"
     # print(res, res.get_dict())

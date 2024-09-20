@@ -20,10 +20,10 @@ from xt_alitts.cfg import Constant, SpeechArgs
 from xt_alitts.state import on_state_cls
 from xt_alitts.util import get_voice_data, merge_sound_file, save_sound_file
 from xt_str import str2list
-from xt_time import get_10_timestamp
+from xt_time import get_timestamp
 
 _ACCESS_APPKEY = Constant().appKey
-_ACCESS_TOKEN = Constant().token
+_ACCESS_TOKEN = "3fa6eadc5ab344bf8bd3bd1df34c8abe"  # Constant().token
 Sem = Semaphore(2)  # 限制线程并发数
 
 
@@ -38,7 +38,7 @@ class NSS(on_state_cls):
         self.__id = tid or id(self.__th)
         self.args = args or {}
         self.__text = text
-        __fname = f"{self.__id}_{get_10_timestamp()}_{self.args['voice']}_tts.{ self.args['aformat']}"
+        __fname = f"{self.__id}_{get_timestamp()}_{self.args['voice']}_tts.{ self.args['aformat']}"
         self.__file_name = f"{os.getenv('TMP')}\\{__fname}"
         self.start()
 
@@ -146,11 +146,11 @@ if __name__ == "__main__":
     def Threadread():
         out_file = execute_tts(_text, readonly=True, aformat="wav")
 
-        from xt_alitts.play import PlayInQThread
+        from xt_alitts.play import PlayInThread
 
         for oufile in out_file:
-            task = PlayInQThread(oufile[1])
-            # task2 = PlayInThread(oufile[1])
+            # task = PlayInQThread(oufile[1])
+            task = PlayInThread(oufile[1])
             task.as_completed()
 
     Threadread()
