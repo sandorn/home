@@ -16,7 +16,7 @@ from functools import partial
 
 import requests
 from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_catch_decor
+from xt_log import log_decor
 from xt_response import htmlResponse
 from xt_retry import retry_log_by_tenacity
 
@@ -51,11 +51,11 @@ def _retry_request_0(method, url, **kwargs):
 @retry_log_by_tenacity()
 def _retry_request(method, url, **kwargs):
     """利用 TRETRY 库实现重试"""
-    callback = kwargs.pop("callback", None)
+    # callback = kwargs.pop("callback", None)
     response = requests.request(method, url, **kwargs)
     response.raise_for_status()
     return htmlResponse(response)
-    return callback(result) if callable(callback) else result
+    # return callback(result) if callable(callback) else result
 
 
 def single_parse(method, url, **kwargs):
@@ -103,7 +103,7 @@ class SessionClient:
     def __getattr__(self, method):
         return self.__getitem__(method)
 
-    @log_catch_decor  # type: ignore
+    @log_decor
     def create_task(self, *args, **kwargs):
         self.url = args[0]
         if self.method not in Method_List:
