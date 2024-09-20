@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:57
-LastEditTime : 2024-08-21 10:18:24
+LastEditTime : 2024-09-20 09:19:24
 FilePath     : /CODE/项目包/自定义库thread_CustomThread-6星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -42,5 +42,5 @@ def ByCustomThread(target):
 
 
 if __name__ == "__main__":
-    ByThreadPoolWraps("https://www.bigee.cc/book/6909/")  # |perf_counter: 85.40s
-    # ByCustomThread("https://www.bigee.cc/book/6909/")  # |perf_counter: 83.58s
+    # ByThreadPoolWraps("https://www.bigee.cc/book/6909/")  # |perf_counter: 77.40s
+    ByCustomThread("https://www.bigee.cc/book/6909/")  # |perf_counter: 83.58s

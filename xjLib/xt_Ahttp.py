@@ -166,7 +166,11 @@ if __name__ == "__main__":
         if isinstance(resp, ACResponse):
             return resp
 
-    # print(3333333333333333, ahttpGetAll([url_headers, url_get, url1], callback=handle_back_ait))
+    print(
+        3333333333333333,
+        ahttpGetAll([url_headers, url_get, url1], callback=handle_back_ait),
+    )
+
     def main():
         urls = [
             "http://www.baidu.com",
@@ -191,4 +195,4 @@ if __name__ == "__main__":
         print("query".ljust(10), ":", res.query("title").text())
         print("text".ljust(10), ":", res.text[1000:1300])
 
-    main()
+    # main()

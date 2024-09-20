@@ -5,14 +5,18 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-03 12:52:03
-LastEditTime : 2024-08-23 14:00:38
+LastEditTime : 2024-09-20 09:31:39
 FilePath     : /CODE/项目包/ProessPool-8星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
 import os
-from concurrent.futures import ProcessPoolExecutor
+
+# from concurrent.futures import ProcessPoolExecutor as PExecutor
+# ProcessPoolExecutor 丢包, 但是速度快
+# ThreadPoolExecutor 不丢包, 但是速度慢
+from concurrent.futures import ThreadPoolExecutor as PExecutor
 from multiprocessing import Pool as ProcPool
 
 from xt_file import savefile
@@ -41,7 +45,7 @@ def MPpool(bookname, urls):
 
 @fn_timer
 def PPoolExecutor(bookname, urls):
-    with ProcessPoolExecutor(60) as executor:
+    with PExecutor(60) as executor:
         task_list = [
             executor.submit(get_contents, i, url) for i, url in enumerate(urls, 1)
         ]
@@ -56,5 +60,5 @@ def PPoolExecutor(bookname, urls):
 if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
     bookname, urls, _ = get_download_url(url)
-    # MPpool(bookname, urls)  # |<perf_counter: 70.98s>
-    PPoolExecutor(bookname, urls)  # |<perf_counter: 72.30s>
+    # MPpool(bookname, urls)  # |<perf_counter: 55.4s>
+    PPoolExecutor(bookname, urls)  # |<perf_counter: 76s>
