@@ -22,7 +22,7 @@ DEFAULT_ENCODING = "utf-8"
 
 
 class htmlResponse:
-    """封装网页结果,标准化"""
+    """封装网页结果"""
 
     __slots__ = ("raw", "content", "index", "encoding")
 

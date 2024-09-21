@@ -51,11 +51,11 @@ def _retry_request_0(method, url, **kwargs):
 @retry_log_by_tenacity()
 def _retry_request(method, url, **kwargs):
     """利用 TRETRY 库实现重试"""
-    # callback = kwargs.pop("callback", None)
+    callback = kwargs.pop("callback", None)
     response = requests.request(method, url, **kwargs)
     response.raise_for_status()
-    return htmlResponse(response)
-    # return callback(result) if callable(callback) else result
+    result = htmlResponse(response)
+    return callback(result) if callable(callback) else result
 
 
 def single_parse(method, url, **kwargs):
