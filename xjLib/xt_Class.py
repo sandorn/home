@@ -194,6 +194,16 @@ class IterMixin:
 class ReprMixin:
     """用于打印显示"""
 
+    def get_dict(self) -> dict[str, Any]:
+        """把对象转换成字典"""
+        if not hasattr(self, "__dict__") or len(self.__dict__) == 0:
+            self.__dict__ = {
+                key: getattr(self, key)
+                for key in dir(self)
+                if not key.startswith("__") and not callable(getattr(self, key))
+            }
+        return self.__dict__
+
     def __repr__(self) -> str:
         if __name__ == "__main__":
             print("ReprMixin:")
@@ -208,7 +218,7 @@ class BaseCls(AttrMixin, ItemMixin, IterMixin, ReprMixin): ...
 class SetOnceDict:
     """限制下标[key]赋值,key不存在时可赋值；对属性访问无用"""
 
-    # __slots__ = ("_dict",)
+    __slots__ = ("_dict",)
 
     def __init__(self):
         if __name__ == "__main__":
@@ -246,7 +256,6 @@ class MixinClsMeta(type):
         MixinItem = True
         MixinIter = True
         MixinRepr = True
-        MixinDict = True
     """
 
     def __new__(
@@ -261,9 +270,6 @@ class MixinClsMeta(type):
         bases_mixins += (ItemMixin,) if "MixinItem" in dct and dct["MixinItem"] else ()
         bases_mixins += (AttrMixin,) if "MixinAttr" in dct and dct["MixinAttr"] else ()
         bases_mixins += (IterMixin,) if "MixinIter" in dct and dct["MixinIter"] else ()
-        bases_mixins += (
-            (ReDictMixin,) if "MixinDict" in dct and dct["MixinDict"] else ()
-        )
         bases_mixins += (ReprMixin,) if "MixinRepr" in dct and dct["MixinRepr"] else ()
         return type(name, bases_mixins, dct, **kwds)
 
@@ -296,7 +302,7 @@ class MethodClsMeta(type):
         if "MixinItem" in dct and dct["MixinItem"]:
             UpMethod_list.append(ItemMixin)
         if "MixinRepr" in dct and dct["MixinRepr"]:
-            UpMethod_list.append(ReprMixin, ReDictMixin)
+            UpMethod_list.append(ReprMixin)
 
         for UpMethod in UpMethod_list:
             dct.update(UpMethod.__dict__)  # 动态添加属性和方法
@@ -378,13 +384,12 @@ if __name__ == "__main__":
             my_dict["username"] = "sand"
             my_dict["me"] = "orny"
             my_dict["efvtgn"] = "sandorny"
-            my_dict.me = 99
-            my_dict.me = 9009
-            my_dict["me"] = "49"
+            my_dict.old = 49  # 会报错
+            my_dict["me"] = "lxj"  # 无效
 
         except Exception as err:
-            print(err)
-        print(99999, my_dict, my_dict.me)
+            print("Exception:", err)
+        print(99999, my_dict, my_dict["me"])
 
     def 可迭代对象():
         class Animal(IterMixin, ReprMixin):
@@ -424,20 +429,19 @@ if __name__ == "__main__":
             MixinItem = True
             MixinIter = True
             MixinRepr = True
-            MixinDict = True
 
             def __init__(self):
                 self.name = "liuxinjun"
                 self.age = 12
                 self._i = 787
-                self.姓名 = "行云流水"
+                self.网名 = "行云流水"
 
             def ddd(self, value):
                 print("ddd")
 
         bb = MyCls()
-        bb["姓名"] = "象牙黑"
-        print(bb, "\n", bb.name, bb.姓名, bb["name"], bb.get_dict())
+        bb["网名"] = "象牙黑"
+        print(bb, "\n", bb.name, "\n", bb.网名, "\n", bb["name"], "\n", bb.get_dict())
 
     # 赋值一次的字典()
     # 可迭代对象()

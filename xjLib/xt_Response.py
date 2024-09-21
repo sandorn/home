@@ -121,7 +121,8 @@ class htmlResponse:
     @property
     def element(self):
         """
-        解析字符串常量的HTML文档。返回根节点(或解析器目标返回的结果)。此函数可用于在Python代码中嵌入“HTML文字”。
+        解析字符串常量的HTML文档。返回根节点(或解析器目标返回的结果)。
+        此函数可用于在Python代码中嵌入“HTML文字”。
         element.base # 返回文档的基本URL
         """
         from lxml import etree
