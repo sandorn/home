@@ -91,10 +91,10 @@ if __name__ == "__main__":
     # print(get_desktop())
     # print(os.getenv("TMP"))
     nums = [4, [9, 99, 999, 9999], 16, 25, 36, 49]
-    savefile("c:\\1.txt", str(nums))
+    # savefile("c:\\1.txt", str(nums))
 
     def f(x):
         print("调用次数", x)
-        return x**0.5
+        return x**2
 
-    # print([n for i in nums if (n := f(i)) >= 5])
+    print([n for i in range(50) if (n := f(i)) >= 5])
