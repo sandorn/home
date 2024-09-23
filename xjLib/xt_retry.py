@@ -31,7 +31,7 @@ def retry(wrapped=None, max_retry=3, delay=0.1):
                 return wrapped(*args, **kwargs)
             except Exception as err:
                 print(f"| retry {index}/{max_retry} times | <Error:{err!r}>")
-                if index + 1 == max_retry:
+                if index + 1 >= max_retry:
                     print(f"| retry | Exception | MaxRetryError | <Error:{err!r}>")
                     return err
                 else:
