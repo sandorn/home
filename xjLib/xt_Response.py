@@ -196,9 +196,9 @@ if __name__ == "__main__":
             ":",
             res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
         )
-        print("dom".ljust(10), ":", res.dom.url, res.dom.xpath(elestr))
+        print("dom".ljust(10), ":", res.dom.xpath(elestr), res.dom.url)
         print("query".ljust(10), ":", res.query("title").text())
-        print("element".ljust(10), ":", res.element.base, res.element.xpath(elestr))
-        print("html".ljust(10), ":", res.html.base_url, res.html.xpath(elestr))
+        print("element".ljust(10), ":", res.element.xpath(elestr), res.element.base)
+        print("html".ljust(10), ":", res.html.xpath(elestr), res.html.base_url)
 
     main()
