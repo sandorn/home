@@ -95,7 +95,7 @@ def clean_Content(in_str):
     return in_str
 
 
-def handle_back_ait(resp):
+def handle_resp(resp):
     if not isinstance(resp, (ACResponse, htmlResponse)):
         return [0, resp, ""]
 
@@ -117,7 +117,7 @@ def 结果处理(resps):
         if not isinstance(resp, (ACResponse, htmlResponse)):
             continue
         else:
-            texts.append(handle_back_ait(resp))
+            texts.append(handle_resp(resp))
 
     texts.sort(key=lambda x: x[0])
     # texts = sorted(texts, key=lambda x: x[0])
