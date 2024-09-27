@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2024-09-23 17:17:17
-LastEditTime : 2024-09-23 17:17:23
-FilePath     : /CODE/xjLib/test/excel构建图表.py
+LastEditTime : 2024-09-27 17:06:19
+FilePath     : /CODE/test/excel构建图表.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -15,15 +15,14 @@ import xlsxwriter
 
 # 创建一个新的 Excel 文件和工作表
 workbook = xlsxwriter.Workbook("chart.xlsx")
-print(1111111111, workbook.sheetname_count)
 worksheet = workbook.get_worksheet_by_name("总指标")
 
 
 # 一些数据
-# data = [10, 40, 50, 20, 10, 50]
+data = [10, 40, 50, 20, 10, 50]
 
 # 将数据写入工作表
-# worksheet.write_column("A1", data)
+worksheet.write_column("A1", data)
 
 # 创建一个图表对象
 chart = workbook.add_chart({"type": "line"})

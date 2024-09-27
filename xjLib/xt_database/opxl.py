@@ -16,7 +16,7 @@ https://blog.csdn.net/weixin_45417815/article/details/122015992
 
 import os
 
-import openpyxl
+from openpyxl import Workbook, load_workbook
 from openpyxl.utils import column_index_from_string, get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 
@@ -24,7 +24,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 def rename(file_path):
     filepath, tempfilename = os.path.split(file_path)
     filename, extension = os.path.splitext(tempfilename)
-    return os.path.join(filepath, f"{filename}--modified by openpyxl{extension}")
+    return os.path.join(filepath, f"{filename}-opxl{extension}")
 
 
 class ExcelHandler:
@@ -32,14 +32,15 @@ class ExcelHandler:
 
     def __init__(self, file, sheet_name=None):
         """初始化函数"""
-        self.file = rename(file)
-        if not os.path.exists(file):
+        self.file = file
+        print(11111111111, self.file)
+        if not os.path.exists(self.file):
             # 新建一个新工作表
-            _wb = openpyxl.Workbook()
+            _wb = Workbook()
             _wb.save(self.file)
             _wb.close()
 
-        self.wb = openpyxl.load_workbook(file)
+        self.wb = load_workbook(self.file)
         self.sh_name_list = self.wb.sheetnames
 
         if sheet_name is None:
