@@ -306,8 +306,7 @@ class Head:
 
     @property
     def ua(self):
-        user_agent = random.choice(USER_AGENTS)
-        self.headers["User-Agent"] = user_agent
+        self.headers["User-Agent"] = random.choice(USER_AGENTS)
         return self.headers
 
 

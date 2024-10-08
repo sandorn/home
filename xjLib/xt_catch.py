@@ -183,5 +183,10 @@ if __name__ == "__main__":
         with ExceptContext():
             raise ValueError("异常")
 
+    @try_except_wraps()
+    def retry_function() -> None:
+        raise ValueError("异常")
+
     print(example_function())
-    # print(add(123, 0))
+    print(add(123, 0))
+    print(retry_function())
