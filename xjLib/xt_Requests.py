@@ -20,7 +20,7 @@ from xt_log import log_decor
 from xt_response import htmlResponse
 from xt_retry import retry_log_by_tenacity
 
-Method_List = [
+request_methods = (
     "get",
     "post",
     "head",
@@ -30,7 +30,7 @@ Method_List = [
     "trace",
     "connect",
     "patch",
-]
+)
 
 
 @TRETRY  # from xt_tools import try_except_wraps
@@ -59,9 +59,9 @@ def _retry_request(method, url, **kwargs):
 
 
 def single_parse(method, url, **kwargs):
-    if method.lower() not in Method_List:
+    if method.lower() not in request_methods:
         return htmlResponse(
-            None, f"Method:{method} not in {Method_List}".encode(), id(url)
+            None, f"Method:{method} not in {request_methods}".encode(), id(url)
         )
     kwargs.setdefault("headers", Head().randua)
     kwargs.setdefault("timeout", TIMEOUT)  # @超时
@@ -106,10 +106,10 @@ class SessionClient:
     @log_decor
     def create_task(self, *args, **kwargs):
         self.url = args[0]
-        if self.method not in Method_List:
+        if self.method not in request_methods:
             return htmlResponse(
                 None,
-                f"Method:{self.method} not in {Method_List}".encode(),
+                f"Method:{self.method} not in {request_methods}".encode(),
                 id(self.url),
             )
         self.args = args[1:]

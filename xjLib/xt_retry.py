@@ -19,10 +19,10 @@ from wrapt import decorator
 from xt_log import LogCls, create_basemsg, log_decor
 
 
-def retry(wrapped=None, max_retry=3, delay=0.1):
+def retry_wraper(wrapped=None, max_retry=3, delay=0.1):
     """重试装饰器，有无括号都可以"""
     if wrapped is None:
-        return partial(retry, max_retry=max_retry, delay=delay)
+        return partial(retry_wraper, max_retry=max_retry, delay=delay)
 
     @decorator
     def wrapper(wrapped, instance, args, kwargs):
@@ -113,7 +113,7 @@ def retry_log_by_tenacity(wrapped=None, max_retry=3):
 
 if __name__ == "__main__":
 
-    @retry
+    @retry_wraper
     @log_decor
     def test(*args):
         return 1 / 0
