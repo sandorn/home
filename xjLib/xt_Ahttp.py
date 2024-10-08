@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-08 12:13:33
+LastEditTime : 2024-10-07 10:40:07
 FilePath     : /CODE/xjLib/xt_ahttp.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -31,10 +31,9 @@ class MyPolicy(asyncio.DefaultEventLoopPolicy):
 
 asyncio.set_event_loop_policy(MyPolicy())
 
-
 __all__ = ("ahttpGet", "ahttpGetAll", "ahttpPost", "ahttpPostAll")
 
-Method_List = (
+request_methods = (
     "get",
     "post",
     "head",
@@ -54,7 +53,7 @@ class AsyncTask:
         self.index = index or id(self)
 
     def __getitem__(self, method):
-        if method.lower() in Method_List:
+        if method.lower() in request_methods:
             self.method = method.lower()  # 保存请求方法
             return self._make_parse  # 调用方法
             # return lambda *args, **kwargs: self._make_parse(*args, **kwargs)
@@ -80,7 +79,7 @@ class AsyncTask:
         """执行核心操作,单任务和多任务均调用"""
 
         @TRETRY
-        async def _fetch_run():
+        async def _single_fetch():
             async with ClientSession(
                 cookies=self.cookies, connector=TCPConnector()
             ) as session, session.request(
@@ -90,7 +89,7 @@ class AsyncTask:
                 return response, content
 
         try:
-            response, content = await _fetch_run()
+            response, content = await _single_fetch()
             _result = ACResponse(response, content, self.index)
             return self.callback(_result) if callable(self.callback) else _result
         except Exception as err:
@@ -98,7 +97,7 @@ class AsyncTask:
             return ACResponse(None, err_str.encode(), self.index)
 
     @staticmethod
-    def set_config():
+    def set_config() -> None:
         if sys.platform == "win32":
             print("asyncio - on windows aiodns needs SelectorEventLoop")
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -106,9 +105,9 @@ class AsyncTask:
 
 def single_parse(method, url, *args, **kwargs):
     """构建并运行单任务"""
-    if method.lower() not in Method_List:
+    if method.lower() not in request_methods:
         return ACResponse(
-            None, f"Method:{method} not in {Method_List}".encode(), id(url)
+            None, f"Method:{method} not in {request_methods}".encode(), id(url)
         )
 
     task = getattr(AsyncTask(), method)(url, *args, **kwargs)

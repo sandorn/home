@@ -116,7 +116,7 @@ class AioHttpCrawl:
         index = index or id(url)
 
         @TRETRY
-        async def _fetch():
+        async def _single_fetch():
             async with ClientSession(
                 cookies=cookies, connector=TCPConnector(ssl=False)
             ) as session, session.request(
@@ -126,7 +126,7 @@ class AioHttpCrawl:
                 return response, content
 
         try:
-            response, content = await _fetch()
+            response, content = await _single_fetch()
             result = ACResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:
@@ -135,9 +135,9 @@ class AioHttpCrawl:
 
     def add_pool(self, func, *args, callback=None, **kwargs):
         """添加函数(同步异步均可)及参数,异步运行，返回结果"""
-        return asyncio.run(self.__pool_run(func, *args, callback=callback, **kwargs))
+        return asyncio.run(self._multi_fetch(func, *args, callback=callback, **kwargs))
 
-    async def __pool_run(self, func, *args, callback=None, **kwargs):
+    async def _multi_fetch(self, func, *args, callback=None, **kwargs):
         _loop = asyncio.get_running_loop()
 
         tasks = []

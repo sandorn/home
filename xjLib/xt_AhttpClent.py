@@ -76,7 +76,7 @@ class AioHttpClient:
         index = index or id(url)
 
         @TRETRY
-        async def __fetch():
+        async def _single_fetch():
             async with self._session.request(  # type:ignore
                 self.method, url, raise_for_status=True, **kwargs
             ) as response:
@@ -84,14 +84,14 @@ class AioHttpClient:
                 return response, content
 
         try:
-            response, content = await __fetch()
+            response, content = await _single_fetch()
             result = ACResponse(response, content, index)
             return callback(result) if callable(callback) else result
         except Exception as err:
             print(err_str := f"AioHttpClient:{self} | URL:{url} | RetryErr:{err!r}")
             return ACResponse(None, err_str.encode(), index)
 
-    async def request_all(self, method, urls_list, **kwargs):
+    async def _multi_fetch(self, method, urls_list, **kwargs):
         self.method = method
         task_list = [
             self._retry_request(url, index=index, **kwargs)
@@ -101,12 +101,12 @@ class AioHttpClient:
 
     def getall(self, urls_list, **kwargs):
         return self._loop.run_until_complete(
-            self.request_all("get", urls_list, **kwargs)
+            self._multi_fetch("get", urls_list, **kwargs)
         )
 
     def postall(self, urls_list, **kwargs):
         return self._loop.run_until_complete(
-            self.request_all("post", urls_list, **kwargs)
+            self._multi_fetch("post", urls_list, **kwargs)
         )
 
 

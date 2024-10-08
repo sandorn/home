@@ -20,7 +20,7 @@ def factorial(n, acc=1):
         n, acc = n - 1, acc * n
 
 
-# print(factorial(6))
+print(factorial(6))
 
 
 def add(x):
