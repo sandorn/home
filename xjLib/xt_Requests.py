@@ -52,9 +52,10 @@ def _retry_request_0(method, url, **kwargs):
 def _retry_request(method, url, **kwargs):
     """利用 TRETRY 库实现重试"""
     callback = kwargs.pop("callback", None)
+    index = kwargs.pop("index", None)
     response = requests.request(method, url, **kwargs)
     response.raise_for_status()
-    result = htmlResponse(response)
+    result = htmlResponse(response=response, index=index)
     return callback(result) if callable(callback) else result
 
 
