@@ -18,7 +18,7 @@ import requests
 from xt_head import TIMEOUT, TRETRY, Head
 from xt_log import log_decor
 from xt_response import htmlResponse
-from xt_retry import retry_log_by_tenacity
+from xt_retry import RetryLogWrapper  # retry_log_by_tenacity
 
 request_methods = (
     "get",
@@ -33,7 +33,7 @@ request_methods = (
 )
 
 
-@TRETRY  # from xt_tools import try_except_wraps
+@TRETRY  # from xt_catch import try_except_wraps
 def _retry_request_0(method, url, **kwargs):
     """无用暂存，利用 TRETRY 库实现重试"""
     callback = kwargs.pop("callback", None)
@@ -48,7 +48,7 @@ def _retry_request_0(method, url, **kwargs):
         return htmlResponse(None, err_str.encode(), id(url))
 
 
-@retry_log_by_tenacity()
+@RetryLogWrapper  # retry_log_by_tenacity()
 def _retry_request(method, url, **kwargs):
     """利用 TRETRY 库实现重试"""
     callback = kwargs.pop("callback", None)
@@ -153,12 +153,11 @@ if __name__ == "__main__":
     elestr = "//title/text()"
 
     def main():
-        sion = SessionClient()
-        print(111111111111111111111, sion.get(urls[3]))
+        # print(111111111111111111111, SessionClient().get(urls[3]))
 
-        print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
-        # print(3333333333333333333, res := get(urls[4]))
-        res = get(urls[0])
+        # print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
+        print(3333333333333333333, get(urls[4]))
+        print(4444444444444444444, res := get(urls[0]))
         print("xpath-1".ljust(10), ":", res.xpath(elestr))
         print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
         print(

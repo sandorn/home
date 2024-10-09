@@ -20,20 +20,39 @@ import wrapt
 from PyQt6.QtCore import QThread
 
 
-@wrapt.decorator
-def thread_safe(func, instance, args, kwargs):
-    """
-    函数的线程安全化，可以装饰普通函数和类中的方法
-    """
-    if func.__module__ == builtins.__name__:  # 判断内置函数
-        with Lock():
-            return func(*args, **kwargs)
+class ThreadSafe(wrapt.ObjectProxy):
+    """线程安全化，可以装饰普通函数和内部函数"""
 
+    def __init__(self, wrapped):
+        super().__init__(wrapped)
+
+    def __call__(self, *args, **kwargs):
+        if self.__wrapped__.__module__ == builtins.__name__:  # 判断内置函数
+            with Lock():
+                return self.__wrapped__(*args, **kwargs)
+        else:
+            if not hasattr(self, "__lock__"):
+                self.__lock__ = Lock()
+            with self.__lock__:
+                return self.__wrapped__(*args, **kwargs)  # 普通函数和类方法
+
+
+def thread_safe(func):
+    """线程安全化，装饰函数和类方法"""
+    if func.__module__ == builtins.__name__:  # 判断内置函数
+
+        def wrapper(*args, **kwargs):
+            with Lock():
+                return func(*args, **kwargs)
     else:
-        if not hasattr(func, "__lock__"):
-            func.__lock__ = Lock()
-        with func.__lock__:
-            return func(*args, **kwargs)  # 普通函数和类方法
+
+        def wrapper(*args, **kwargs):
+            if not hasattr(func, "__lock__"):
+                func.__lock__ = Lock()
+            with func.__lock__:
+                return func(*args, **kwargs)  # 普通函数和类方法
+
+    return wrapper
 
 
 @wrapt.decorator
@@ -186,15 +205,15 @@ if __name__ == "__main__":
 
     @qthread_decorator
     def c(i):
-        print(9999999999999, "in c")
+        print(9999999999999, "in c", i)
         return i * 11
 
     # bb = b(8)
     # thread_print(bb.Result)
     # thread_print(bb)
 
-    cc = c(3, callback=lambda x: x * 11)
-    thread_print("Result:", cc.getResult())
+    # cc = c(3, callback=lambda x: x * 11)
+    # thread_print("Result:", cc.getResult())
     # thread_print("callback:", cc.callback, "daemon:", cc.daemon, "objectName:", cc.objectName())
 
     @parallelize_decorator
@@ -204,13 +223,13 @@ if __name__ == "__main__":
     # thread_print(parallel_task(list(range(10))))
 
     class MyClass:
-        def __init__(self): ...
-
         @thread_safe
-        def MyClass_method(self, message):
+        def samethod(self, message):
             print(f"MyClass func with message: {message}")
 
-    # my_instance = MyClass()
+    my_instance = MyClass()
 
-    # for i in range(3):
-    #     t = my_instance.MyClass_method(f"Thread {i}")
+    for i in range(3):
+        t = my_instance.samethod(f"Thread {i}")
+    ThreadSafe(c)("ThreadSafe C")
+    ThreadSafe(print)("ThreadSafe print")

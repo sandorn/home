@@ -126,50 +126,54 @@ class Log_Catch_Wrapt(LogCls):
         duration = perf_counter()
         try:
             result = wrapped(*args, **kwargs)
+            used_time = perf_counter() - duration
             self.print(
-                f"{self.blm } | <Result:{result!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
+                f"{self.blm } | <Result:{result!r}> | <Time-Consuming:{used_time:.4f}s>"
             )
             return result
         except Exception as err:
+            used_time = perf_counter() - duration
             self.print(
-                err_str := f"{self.blm} | Log_Catch_Wrapt Exception | <Raise:{err!r}>"
+                err_str
+                := f"{self.blm} | Log_Catch_Wrapt Exception | <Raise:{err!r}> | <Time-Consuming:{used_time:.4f}s>"
             )
             return err_str
 
 
 @decorator
-def log_catch_decor(func, instance, args, kwargs):
+def log_catch_decor(wrapped, instance, args, kwargs):
     """日志及异常装饰器，打印并记录函数的入参、出参、耗时、异常信息"""
     logger = LogCls()
-    blm = create_basemsg(func)
+    blm = create_basemsg(wrapped)
     logger(f"{blm} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
 
     duration = perf_counter()
     try:
-        result = func(*args, **kwargs)
-        logger(
-            f"{blm} | <Result:{result!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
-        )
+        result = wrapped(*args, **kwargs)
+        used_time = perf_counter() - duration
+        logger(f"{blm} | <Result:{result!r}> | <Time-Consuming:{used_time:.4f}s>")
         return result
     except Exception as err:
-        logger(err_str := f"{blm} | LCD Exception | <Raise:{err!r}>")
+        used_time = perf_counter() - duration
+        logger(
+            err_str
+            := f"{blm} | log_catch_decor Exception | <Raise:{err!r}> | <Time-Consuming:{used_time:.4f}s>"
+        )
         return err_str
 
 
 @decorator
-def log_decor(func, instance, args, kwargs):
+def log_decor(wrapped, instance, args, kwargs):
     """日志装饰器，打印并记录函数的入参、出参、耗时"""
 
     logger = LogCls()
-    blm = create_basemsg(func)
+    blm = create_basemsg(wrapped)
     logger(f"{blm} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
 
     duration = perf_counter()
-    result = func(*args, **kwargs)
-
-    logger(
-        f"{blm} | <Result:{result!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
-    )
+    result = wrapped(*args, **kwargs)
+    used_time = perf_counter() - duration
+    logger(f"{blm} | <Result:{result!r}> | <Time-Consuming:{used_time:.4f}s>")
     return result
 
 
