@@ -20,7 +20,7 @@ from typing import Any
 
 
 class ItemGetMixin:
-    """下标调用（索引操作）[key]"""
+    """下标调用(索引操作)[key]"""
 
     def __getitem__(self, key: str) -> Any:
         if __name__ == "__main__":
@@ -132,7 +132,7 @@ class ItemMixinS:
 
 
 class AttrGetMixin:
-    """原点调用（属性访问）cls.key"""
+    """原点调用(属性访问)cls.key"""
 
     def __getattr__(self, key: str) -> Any:
         if __name__ == "__main__":

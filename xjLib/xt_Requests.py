@@ -63,9 +63,9 @@ def single_parse(method, url, **kwargs):
         return htmlResponse(
             None, f"Method:{method} not in {request_methods}".encode(), id(url)
         )
-    kwargs.setdefault("headers", Head().randua)
-    kwargs.setdefault("timeout", TIMEOUT)  # @超时
-    kwargs.setdefault("cookies", {})
+    kwargs.setdefault("headers", Head().randua)  # @headers
+    kwargs.setdefault("timeout", TIMEOUT)  # @timeout
+    kwargs.setdefault("cookies", {})  # @cookies
 
     return _retry_request(method.lower(), url, **kwargs)
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         # print(111111111111111111111, SessionClient().get(urls[3]))
 
         # print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
-        print(3333333333333333333, get(urls[4]))
+        # print(3333333333333333333, get(urls[4]))
         print(4444444444444444444, res := get(urls[0]))
         print("xpath-1".ljust(10), ":", res.xpath(elestr))
         print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
