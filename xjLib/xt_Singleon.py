@@ -17,7 +17,7 @@ from threading import Lock
 
 class SingletonMetaCls(type):
     """
-    单例元类,可多次init，构建类时调用
+    单例元类,可多次init,构建类时调用
     class MyCls(ParentCls,metaclass=SingletonMetaCls)
     """
 
