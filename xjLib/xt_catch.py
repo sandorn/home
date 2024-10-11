@@ -60,8 +60,8 @@ def call_later(callback, *call_args, immediately=True, interval=1):
 class ExceptContext:
     def __init__(
         self,
-        exception: Type[Exception] = Exception,
         func_name: str = "",
+        exception: Type[Exception] = Exception,
         errback: Optional[Callable[..., Any]] = None,
         finalback: Optional[Callable[..., Any]] = None,
     ):
@@ -98,7 +98,7 @@ class ExceptContext:
 
     @staticmethod
     def default_res_errback(func_name: str, exc_type: str, exc_val: str, exc_tb: str):
-        print(f"Exception in {func_name}: {exc_val}, {exc_tb}")
+        print(f"ExceptContext Raise in Function[{func_name}]: {exc_val}, {exc_tb}")
         return True
 
     @staticmethod
@@ -155,6 +155,7 @@ def try_except_wraps(
     @decorator
     def wrapper(wrapped, instance, args, kwargs):
         func_exc = ""
+        err_str = default_res if default_res is not None else ""
         for index in range(max_retries):
             try:
                 result = wrapped(*args, **kwargs)
@@ -164,11 +165,12 @@ def try_except_wraps(
             except Exception as ex:
                 func_exc, _ = ex, traceback.format_exc()
                 print(
-                    f"{create_basemsg(wrapped)} | try_except_wraps | Error: {func_exc!r}"
+                    err_str
+                    := f"{create_basemsg(wrapped)} | try_except_wraps | Error: {func_exc!r}"
                 )
                 sleep_fn(delay + step * index)  # #延迟重试
 
-        return default_res() if callable(default_res) else default_res
+        return default_res() if callable(default_res) else err_str
 
     return wrapper
 
@@ -176,17 +178,18 @@ def try_except_wraps(
 if __name__ == "__main__":
 
     @catch_wrapt
-    def example_function() -> None:
-        raise ValueError("异常")
+    def example_function():
+        raise ValueError("example_function异常")
 
-    def add(a, b) -> float:
-        with ExceptContext():
-            raise ValueError("异常")
+    def add(a, b):
+        with ExceptContext("add"):
+            raise ValueError("add异常")
 
     @try_except_wraps()
-    def retry_function() -> None:
-        raise ValueError("异常")
+    def retry_function():
+        raise ValueError("retry_function异常")
+        return 4
 
-    print(example_function())
-    print(add(123, 0))
-    print(retry_function())
+    print(1111111111, example_function())
+    print(2222222222, add(123, 0))
+    print(3333333333, retry_function())
