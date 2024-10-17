@@ -13,6 +13,7 @@ Github       : https://github.com/sandorn/home
 """
 
 import random
+from typing import Dict
 
 from fake_useragent import UserAgent
 from tenacity import retry, stop_after_attempt, wait_random
@@ -297,7 +298,7 @@ MYHEAD = {
 
 class Head:
     def __init__(self):
-        self.headers = MYHEAD.copy()
+        self.headers = MYHEAD.copy() or {}
 
     @property
     def randua(self):
@@ -308,6 +309,9 @@ class Head:
     def ua(self):
         self.headers["User-Agent"] = random.choice(USER_AGENTS)
         return self.headers
+
+    def update_headers(self, headers: Dict[str, str]):
+        self.headers.update(headers)
 
 
 if __name__ == "__main__":
