@@ -188,4 +188,6 @@ if __name__ == "__main__":
         return 9 / 0
 
     # test1()
-    test2()
+    # test2()
+    # LogCls().print("Hello World!1111")
+    # LogCls()("Hello World!2222")
