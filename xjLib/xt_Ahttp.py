@@ -11,6 +11,7 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+## 异步请求，多任务数量过大可能导致大量请求失败，建议分批次请求
 import asyncio
 import selectors
 from functools import partial
@@ -137,7 +138,7 @@ async def _multi_fetch(method, urls, *args, channel=None, **kwargs):
 
 def multi_parse(method, urls, *args, **kwargs):
     """发起多任务"""
-    return asyncio.run(_multi_fetch(method, urls, *args, **kwargs), debug=True)
+    return asyncio.run(_multi_fetch(method, urls, *args, **kwargs))  # , debug=True)
 
 
 ahttpGetAll = partial(multi_parse, "get")
@@ -154,7 +155,7 @@ if __name__ == "__main__":
     elestr = "//title/text()"
 
     def main():
-        print(111111111111111111111, ahttpGetAll([urls[0], urls[1]] * 1500))
+        print(111111111111111111111, ahttpGetAll([urls[0], urls[1]] * 1))
         # print(222222222222222222222, ahttpPost(urls[2], data=b"data"))
         # print(333333333333333333333, res := ahttpGet(urls[0]))
         # print("xpath-1".ljust(10), ":", res.xpath(elestr))
