@@ -137,7 +137,7 @@ async def _multi_fetch(method, urls, *args, channel=None, **kwargs):
 
 def multi_parse(method, urls, *args, **kwargs):
     """发起多任务"""
-    return asyncio.run(_multi_fetch(method, urls, *args, **kwargs))
+    return asyncio.run(_multi_fetch(method, urls, *args, **kwargs), debug=True)
 
 
 ahttpGetAll = partial(multi_parse, "get")
