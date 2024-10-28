@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-03 12:52:03
-LastEditTime : 2024-09-20 09:31:39
+LastEditTime : 2024-10-28 13:09:51
 FilePath     : /CODE/项目包/ProessPool-8星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -60,5 +60,5 @@ def PPoolExecutor(bookname, urls):
 if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
     bookname, urls, _ = get_download_url(url)
-    # MPpool(bookname, urls)  # |<perf_counter: 55.4s>
-    PPoolExecutor(bookname, urls)  # |<perf_counter: 76s>
+    MPpool(bookname, urls)  # |<perf_counter: 55.4s>
+    # PPoolExecutor(bookname, urls)  # |<perf_counter: 76s>

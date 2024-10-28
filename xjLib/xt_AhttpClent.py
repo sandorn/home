@@ -38,6 +38,11 @@ class AioHttpClient:
     async def create_session(self):
         return ClientSession(connector=TCPConnector(ssl=False), loop=self._loop)
 
+    async def close_session(self):
+        if hasattr(self, "_session") and self._session is not None:
+            await self._session.close()
+            self._session = None
+
     def __enter__(self):
         return self
 
@@ -56,11 +61,6 @@ class AioHttpClient:
 
     def __getattr__(self, method):
         return self.__getitem__(method)
-
-    async def close_session(self):
-        if hasattr(self, "_session") and self._session is not None:
-            await self._session.close()
-            self._session = None
 
     def _make_parse(self, url, **kwargs):
         index = kwargs.pop("index", id(url))

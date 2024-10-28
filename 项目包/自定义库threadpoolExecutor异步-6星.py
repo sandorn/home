@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-31 08:03:42
-LastEditTime : 2024-08-05 14:51:08
+LastEditTime : 2024-10-28 13:14:47
 FilePath     : /CODE/项目包/自定义库threadpoolExecutor异步-6星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -40,5 +40,5 @@ def FnInPoolfunc(bookname, urls):
 if __name__ == "__main__":
     url_list = ["https://www.bigee.cc/book/6909/"]
     bookname, urls, _ = get_download_url(url_list[0])
-    # ThreadPool_add_tasks(bookname, urls, get_contents)  # |perf_counter: 81.59s
-    FnInPoolfunc(bookname, urls)  # |perf_counter: 83.51s|
+    ThreadPool_add_tasks(bookname, urls, get_contents)  # |perf_counter: 81.59s
+    # FnInPoolfunc(bookname, urls)  # |perf_counter: 83.51s|

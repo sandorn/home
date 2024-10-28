@@ -13,7 +13,6 @@ Github       : https://github.com/sandorn/home
 
 import asyncio
 import selectors
-import sys
 from functools import partial
 from threading import Thread
 
@@ -96,12 +95,6 @@ class AsyncTask:
             print(err_str := f"Async_fetch:{self} | RetryErr:{err!r}")
             return ACResponse(None, err_str.encode(), self.index)
 
-    @staticmethod
-    def set_config() -> None:
-        if sys.platform == "win32":
-            print("asyncio - on windows aiodns needs SelectorEventLoop")
-            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
 
 def single_parse(method, url, *args, **kwargs):
     """构建并运行单任务"""
@@ -111,8 +104,7 @@ def single_parse(method, url, *args, **kwargs):
         )
 
     task = getattr(AsyncTask(), method)(url, *args, **kwargs)
-    coro = task.start()
-    return asyncio.run(coro)
+    return asyncio.run(task.start())
 
 
 ahttpGet = partial(single_parse, "get")
@@ -161,27 +153,20 @@ if __name__ == "__main__":
     ]
     elestr = "//title/text()"
 
-    def handle_back_ait(resp):
-        if isinstance(resp, ACResponse):
-            return resp
-
     def main():
-        print(
-            111111111111111111111,
-            ahttpGetAll([urls[0], urls[1], urls[3]], callback=handle_back_ait),
-        )
-        print(222222222222222222222, ahttpPost(urls[2], data=b"data"))
-        print(333333333333333333333, res := ahttpGet(urls[0]))
-        print("xpath-1".ljust(10), ":", res.xpath(elestr))
-        print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
-        print(
-            "blank".ljust(10),
-            ":",
-            res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
-        )
-        print("dom".ljust(10), ":", res.dom.xpath(elestr), res.dom.url)
-        print("query".ljust(10), ":", res.query("title").text())
-        print("element".ljust(10), ":", res.element.xpath(elestr), res.element.base)
-        print("html".ljust(10), ":", res.html.xpath(elestr), res.html.base_url)
+        print(111111111111111111111, ahttpGetAll([urls[0], urls[1]] * 1500))
+        # print(222222222222222222222, ahttpPost(urls[2], data=b"data"))
+        # print(333333333333333333333, res := ahttpGet(urls[0]))
+        # print("xpath-1".ljust(10), ":", res.xpath(elestr))
+        # print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
+        # print(
+        #     "blank".ljust(10),
+        #     ":",
+        #     res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+        # )
+        # print("dom".ljust(10), ":", res.dom.xpath(elestr), res.dom.url)
+        # print("query".ljust(10), ":", res.query("title").text())
+        # print("element".ljust(10), ":", res.element.xpath(elestr), res.element.base)
+        # print("html".ljust(10), ":", res.html.xpath(elestr), res.html.base_url)
 
     main()

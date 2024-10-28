@@ -20,9 +20,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import wraps
 
 import wrapt
-from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_catch_decor
+from aiohttp import ClientSession
 from xt_response import ACResponse
 
 
@@ -92,47 +90,6 @@ class AioHttpCrawl:
     def __init__(self):
         self.future_list = []
 
-    def add_tasks(self, url_list, method="GET", **kwargs):
-        """添加网址列表,异步并发爬虫，返回结果列表，可用wait_completed取结果"""
-        return asyncio.run(self.tasks_run(url_list, method=method, **kwargs))
-
-    async def tasks_run(self, url_list, method, **kwargs):
-        """分发任务"""
-        tasks = [
-            self._retry_request(url, method=method, index=index, **kwargs)
-            for index, url in enumerate(url_list, 1)
-        ]
-        self.future_list.extend(tasks)
-
-        return await asyncio.gather(*tasks, return_exceptions=True)
-
-    @log_catch_decor
-    async def _retry_request(self, url, method, index, **kwargs):
-        """运行任务"""
-        kwargs.setdefault("headers", Head().randua)
-        kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
-        cookies = kwargs.pop("cookies", {})
-        callback = kwargs.pop("callback", None)
-        index = index or id(url)
-
-        @TRETRY
-        async def _single_fetch():
-            async with ClientSession(
-                cookies=cookies, connector=TCPConnector(ssl=False)
-            ) as session, session.request(
-                method, url, raise_for_status=True, **kwargs
-            ) as response:
-                content = await response.content.read()
-                return response, content
-
-        try:
-            response, content = await _single_fetch()
-            result = ACResponse(response, content, index)
-            return callback(result) if callable(callback) else result
-        except Exception as err:
-            print(err_str := f"AioCrawl_run_task:{self} | URL:{url} | RetryErr:{err!r}")
-            return ACResponse(None, err_str.encode(), index)
-
     def add_pool(self, func, *args, callback=None, **kwargs):
         """添加函数(同步异步均可)及参数,异步运行，返回结果"""
         return asyncio.run(self._multi_fetch(func, *args, callback=callback, **kwargs))
@@ -183,27 +140,26 @@ if __name__ == "__main__":
         "https://www.126.com",
         "https://www.bigee.cc/book/6909/2.html",
     ]
-    print(111111, myaio.add_tasks(url_list * 1, "get"))
     # $add_func########################################################
     from xt_requests import get
 
-    print(222222, myaio.add_pool(get, url_list * 1))
+    print(11111111111111111, myaio.add_pool(get, url_list * 1))
 
-    # print(333333, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
-    # print(444444, myaio.wait_completed())
+    # print(2222222222222222, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
+    # print(3333333333333333, myaio.wait_completed())
     # $装饰器##########################################################
 
     @async_inexecutor_decorator
     def get_html(url):
         return get(url)
 
-    # print(444444, res := get_html("https://www.baidu.com"))
+    # print(44444444444444, res := get_html("https://www.baidu.com"))
 
     @async_run_decorator
     async def get_a_html(url):
         return get(url)
 
-    # print(555555, res := get_a_html("https://www.baidu.com"))
+    # print(5555555555555, res := get_a_html("https://www.baidu.com"))
 
     @async_run_decorator
     async def get_message(url):
@@ -211,11 +167,11 @@ if __name__ == "__main__":
             content = await response.content.read()
             return ACResponse(response, content, 0)
 
-    # print(666666, res := get_message("https://httpbin.org/get"))
+    # print(6666666666666, res := get_message("https://httpbin.org/get"))
 
     # print(
-    #     666666,
+    #     77777777777777,
     #     myaio.add_pool(get_message, ["https://httpbin.org/get"] * 3),
     # )
 
-    # print(666666, myaio._wait_completed())
+    # print(888888888888, myaio._wait_completed())
