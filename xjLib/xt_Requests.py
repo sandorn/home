@@ -50,7 +50,7 @@ def _retry_request_0(method, url, **kwargs):
 
 @RetryLogWrapper  # retry_log_by_tenacity()
 def _retry_request(method, url, **kwargs):
-    """利用 TRETRY 库实现重试"""
+    """利用 RetryLogWrapper 实现重试"""
     callback = kwargs.pop("callback", None)
     index = kwargs.pop("index", None)
     response = requests.request(method, url, **kwargs)

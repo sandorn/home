@@ -15,12 +15,12 @@ Github       : https://github.com/sandorn/home
 import asyncio
 import selectors
 from functools import partial
-from threading import Thread
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, TRETRY, Head
 from xt_log import log_decor
 from xt_response import ACResponse
+from xt_retry import retry_log_wrapper
 
 
 class MyPolicy(asyncio.DefaultEventLoopPolicy):
@@ -96,25 +96,15 @@ class AsyncTask:
             print(err_str := f"Async_fetch:{self} | RetryErr:{err!r}")
             return ACResponse(None, err_str.encode(), self.index)
 
-    @log_decor
+    @retry_log_wrapper()
     async def run(self, clent):
         """执行多任务"""
-
-        @TRETRY
-        async def _fetch():
-            async with clent.request(
-                self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
-            ) as response:
-                content = await response.content.read()
-                return response, content
-
-        try:
-            response, content = await _fetch()
+        async with clent.request(
+            self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
+        ) as response:
+            content = await response.content.read()
             _result = ACResponse(response, content, self.index)
             return self.callback(_result) if callable(self.callback) else _result
-        except Exception as err:
-            print(err_str := f"Async_fetch:{self} | RetryErr:{err!r}")
-            return ACResponse(None, err_str.encode(), self.index)
 
 
 def single_parse(method, url, *args, **kwargs):
@@ -132,31 +122,18 @@ ahttpGet = partial(single_parse, "get")
 ahttpPost = partial(single_parse, "post")
 
 
-async def _multi_fetch(method, urls, *args, channel="thread", **kwargs):
+async def _multi_fetch(method, urls, *args, **kwargs):
     """构建并运行多任务"""
     tasks_list = [
         getattr(AsyncTask(index), method)(url, *args, **kwargs)
         for index, url in enumerate(urls, start=1)
     ]
 
-    if channel == "thread":
-        """异步，子线程,不同session,不推荐"""
-        _child_thread_loop = asyncio.get_event_loop()
-        Thread(
-            target=_child_thread_loop.run_forever, name="ThreadSafe", daemon=True
-        ).start()
-        async with ClientSession(connector=TCPConnector(verify_ssl=False)) as clent:
-            future_list = [
-                asyncio.run_coroutine_threadsafe(coro, _child_thread_loop)
-                for coro in [task.run(clent) for task in tasks_list]
-            ]
-            return [future.result() for future in future_list]
-    else:
-        """异步,不同session"""
-        async with ClientSession(connector=TCPConnector()) as clent:
-            return await asyncio.gather(
-                *[task.run(clent) for task in tasks_list], return_exceptions=True
-            )
+    """异步,相同session"""
+    async with ClientSession(connector=TCPConnector()) as clent:
+        return await asyncio.gather(
+            *[task.run(clent) for task in tasks_list], return_exceptions=True
+        )
 
 
 def multi_parse(method, urls, *args, **kwargs):
@@ -178,7 +155,7 @@ if __name__ == "__main__":
     elestr = "//title/text()"
 
     def main():
-        print(111111111111111111111, ahttpGetAll([urls[0], urls[1]] * 1))
+        print(111111111111111111111, ahttpGetAll([urls[0], urls[1]] * 3))
         # print(222222222222222222222, ahttpPost(urls[2], data=b"data"))
         # print(333333333333333333333, res := ahttpGet(urls[0]))
         # print("xpath-1".ljust(10), ":", res.xpath(elestr))

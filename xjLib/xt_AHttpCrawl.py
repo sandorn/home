@@ -16,11 +16,11 @@ https://www.cnblogs.com/haoabcd2010/p/10615364.html
 import asyncio
 import selectors
 from asyncio.coroutines import iscoroutinefunction
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
-import wrapt
 from aiohttp import ClientSession
+from wrapt import decorator
 from xt_response import ACResponse
 
 
@@ -33,21 +33,25 @@ class MyPolicy(asyncio.DefaultEventLoopPolicy):
 asyncio.set_event_loop_policy(MyPolicy())
 
 
-@wrapt.decorator
+@decorator
 def future_decorator(func, instance, args, kwargs):
     """future装饰器"""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     future = asyncio.Future()
     result = func(*args, **kwargs)
     future.set_result(result)
+
+    loop.close()  # 关闭事件循环
     return future
 
 
 def coroutine_decorator(func):
-    """尝试将普通函数包装为返回协程的装饰器（但注意这不是真正的异步）"""
+    """将普通函数包装为返回协程的装饰器"""
 
     @wraps(func)
     async def wrapper(*args, **kwargs):
-        # 注意：这里直接调用同步函数，不等待任何异步操作
         return func(*args, **kwargs)
 
     return func if iscoroutinefunction(func) else wrapper
@@ -56,9 +60,9 @@ def coroutine_decorator(func):
 def async_inexecutor_decorator(func):
     """异步运行装饰器,装饰普通函数或async函数,运行并返回结果"""
 
-    @wrapt.decorator
-    def _wrapper(func, instance, args, kwargs):
-        async def __wrapper(*args, **kwargs):
+    @decorator
+    def wrapper(func, instance, args, kwargs):
+        async def main(*args, **kwargs):
             if iscoroutinefunction(func):
                 result = await func(*args, **kwargs)
             else:
@@ -66,9 +70,9 @@ def async_inexecutor_decorator(func):
                 result = await loop.run_in_executor(None, func, *args, **kwargs)
             return result
 
-        return asyncio.run(__wrapper(*args, **kwargs))
+        return asyncio.run(main(*args, **kwargs))
 
-    return _wrapper(func)
+    return wrapper(func)
 
 
 def async_run_decorator(func):
@@ -77,18 +81,18 @@ def async_run_decorator(func):
     @wraps(func)
     def _wrapper(*args, **kwargs):
         @wraps(func)
-        async def __wrapper(*args, **kwargs):
+        async def main(*args, **kwargs):
             task = coroutine_decorator(func)(*args, **kwargs)
             return await asyncio.gather(task, return_exceptions=True)
 
-        return asyncio.run(__wrapper(*args, **kwargs))
+        return asyncio.run(main(*args, **kwargs))
 
     return _wrapper
 
 
 class AioHttpCrawl:
     def __init__(self):
-        self.future_list = []
+        self._tasks = []
 
     def add_pool(self, func, *args, callback=None, **kwargs):
         """添加函数(同步异步均可)及参数,异步运行，返回结果"""
@@ -105,30 +109,14 @@ class AioHttpCrawl:
                     task.add_done_callback(callback)
                 tasks.append(task)
 
-        self.future_list.extend(tasks)
-
+        self._tasks.extend(tasks)
         return await asyncio.gather(*tasks, return_exceptions=True)
 
     def wait_completed(self):
-        if not self.future_list:
-            return []
-        # while not all([future.done() for future in self.future_list]):sleep(0.01);continue
-
-        result_list = []
-        for future in as_completed(self.future_list):
-            try:
-                result = future.result()
-                result_list.append(result)
-            except Exception as exc:
-                # 处理异常，例如记录日志
-                print(f"Task failed with exception: {exc}")
-
-        self.future_list.clear()
-        return result_list
-
-    def reset(self):
-        """重置线程池和future_list(慎用,可能导致正在运行的任务被取消)"""
-        self.future_list.clear()
+        """等待所有任务完成,返回结果"""
+        results = [task.result() for task in self._tasks]
+        self._tasks.clear()
+        return results
 
 
 if __name__ == "__main__":
@@ -143,7 +131,7 @@ if __name__ == "__main__":
     # $add_func########################################################
     from xt_requests import get
 
-    print(11111111111111111, myaio.add_pool(get, url_list * 1))
+    # print(11111111111111111, myaio.add_pool(get, url_list * 1))
 
     # print(2222222222222222, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
     # print(3333333333333333, myaio.wait_completed())
@@ -156,7 +144,7 @@ if __name__ == "__main__":
     # print(44444444444444, res := get_html("https://www.baidu.com"))
 
     @async_run_decorator
-    async def get_a_html(url):
+    def get_a_html(url):
         return get(url)
 
     # print(5555555555555, res := get_a_html("https://www.baidu.com"))
@@ -169,9 +157,29 @@ if __name__ == "__main__":
 
     # print(6666666666666, res := get_message("https://httpbin.org/get"))
 
-    # print(
-    #     77777777777777,
-    #     myaio.add_pool(get_message, ["https://httpbin.org/get"] * 3),
-    # )
+    @coroutine_decorator
+    def normal_function():
+        return "Hello, I'm a normal function!"
 
-    # print(888888888888, myaio._wait_completed())
+    # 使用await调用被装饰后的普通函数
+    async def main():
+        result = await normal_function()
+        # result = await coroutine_decorator(normal_function)()
+        print(777777777777777, result)
+
+    # asyncio.run(main())
+
+    # 使用future_decorator装饰器
+    @future_decorator
+    def add(a, b):
+        return a + b
+
+    # 调用被装饰的函数
+    # result_future = add(3, 5)
+
+    # 获取异步Future对象的结果
+    async def get_result(in_future):
+        result = await in_future
+        print("Result:", result)
+
+    # asyncio.run(get_result(add(3, 5)))

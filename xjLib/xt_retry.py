@@ -11,9 +11,9 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-import time
+import asyncio
 from functools import partial, wraps
-from time import perf_counter
+from time import perf_counter, sleep
 
 from wrapt import ObjectProxy, decorator
 from xt_log import LogCls, create_basemsg, log_decor
@@ -35,49 +35,83 @@ def retry_wraper(wrapped=None, max_retry=3, delay=0.1):
                     print(f"| retry_wraper Exception | MaxRetryError | <Error:{err!r}>")
                     return err
                 else:
-                    time.sleep(delay)
+                    sleep(delay)
 
     return wrapper(wrapped)
 
 
 def retry_log_wrapper(max_retry=3, interval=0.1):
     """
+    可以处理异步函数
     自编函数重试装饰器,记录日志
     :param max_retry: 重试次数
     :param interval: 重试间隔时间
-    :return:
     """
 
     def out_wrapper(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            logger = LogCls()
-            base_log_msg = create_basemsg(func)
-            logger(f"{base_log_msg} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
-            duration = perf_counter()
-            retries = 0
-            while True:
-                try:
-                    result = func(*args, **kwargs)
-                    logger(
-                        f"{base_log_msg} | <Result:{result!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
-                    )
-                    return result
-                except Exception as err:
-                    logger(
-                        f"{base_log_msg} | retry_log_wrapper retry {retries}/{max_retry} times | <Error:{err!r}>"
-                    )
-                    retries += 1
-                    if retries >= max_retry:
-                        logger(
-                            err_str
-                            := f"{base_log_msg} | retry_log_wrapper Exception | MaxRetryError | <Raise:{err!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
-                        )
-                        return err_str
-                    else:
-                        time.sleep(interval)
+        if asyncio.iscoroutinefunction(func):
 
-        return wrapper
+            @wraps(func)
+            async def coroutine_wrapper(*args, **kwargs):
+                logger = LogCls()
+                base_log_msg = create_basemsg(func)
+                logger(f"{base_log_msg} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
+                duration = perf_counter()
+                retries = 0
+                while True:
+                    try:
+                        result = await func(*args, **kwargs)
+                        logger(
+                            f"{base_log_msg} | <Result:{result!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
+                        )
+                        return result
+                    except Exception as err:
+                        logger(
+                            f"{base_log_msg} | retry_log_wrapper retry {retries}/{max_retry} times | <Error:{err!r}>"
+                        )
+                        retries += 1
+                        if retries >= max_retry:
+                            logger(
+                                err_str
+                                := f"{base_log_msg} | retry_log_wrapper Exception | MaxRetryError | <Raise:{err!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
+                            )
+                            return err_str
+                        else:
+                            await asyncio.sleep(interval)
+
+            return coroutine_wrapper
+
+        else:
+
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                logger = LogCls()
+                base_log_msg = create_basemsg(func)
+                logger(f"{base_log_msg} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
+                duration = perf_counter()
+                retries = 0
+                while True:
+                    try:
+                        result = func(*args, **kwargs)
+                        logger(
+                            f"{base_log_msg} | <Result:{result!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
+                        )
+                        return result
+                    except Exception as err:
+                        logger(
+                            f"{base_log_msg} | retry_log_wrapper retry {retries}/{max_retry} times | <Error:{err!r}>"
+                        )
+                        retries += 1
+                        if retries >= max_retry:
+                            logger(
+                                err_str
+                                := f"{base_log_msg} | retry_log_wrapper Exception | MaxRetryError | <Raise:{err!r}> | <Time-Consuming:{perf_counter() - duration:.4f}s>"
+                            )
+                            return err_str
+                        else:
+                            sleep(interval)
+
+            return wrapper
 
     return out_wrapper
 
@@ -109,7 +143,7 @@ class RetryLogWrapper(ObjectProxy):
                     f"{self.base_log_msg} | RetryLogWrapper retry {self.retries}/{self.max_retry} times | <Error:{err!r}>"
                 )
                 self.retries += 1
-                time.sleep(self.interval)
+                sleep(self.interval)
 
         self.logger(
             err_str
@@ -154,7 +188,7 @@ if __name__ == "__main__":
         return 1 / 0
         raise ValueError("raise by test_func")
 
-    @RetryLogWrapper
+    @retry_log_wrapper()
     def test2(*args):
         raise ValueError("raise by test2_func")
 
