@@ -98,7 +98,7 @@ class AsyncTask:
 
     @retry_log_wrapper()
     async def run(self, clent):
-        """执行多任务"""
+        """执行多任务,使用同一session"""
         async with clent.request(
             self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
         ) as response:
