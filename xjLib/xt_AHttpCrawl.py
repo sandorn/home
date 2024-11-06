@@ -14,6 +14,7 @@ https://www.cnblogs.com/haoabcd2010/p/10615364.html
 """
 
 import asyncio
+import functools
 import selectors
 from asyncio.coroutines import iscoroutinefunction
 from concurrent.futures import ThreadPoolExecutor
@@ -91,32 +92,26 @@ def async_run_decorator(func):
 
 
 class AioHttpCrawl:
-    def __init__(self):
-        self._tasks = []
+    def __init__(self): ...
 
-    def add_pool(self, func, *args, callback=None, **kwargs):
-        """添加函数(同步异步均可)及参数,异步运行，返回结果"""
-        return asyncio.run(self._multi_fetch(func, *args, callback=callback, **kwargs))
+    def add_pool(self, func, args_list, callback=None):
+        """添加函数(同步异步均可)及参数,异步运行，返回结果\n
+        [(url,),{'index':index}] for index, url in enumerate(urls_list,1)]"""
+        return asyncio.run(self.multi_fetch(func, args_list, callback=callback))
 
-    async def _multi_fetch(self, func, *args, callback=None, **kwargs):
+    async def multi_fetch(self, func, args_list, callback=None):
         _loop = asyncio.get_running_loop()
 
         tasks = []
         with ThreadPoolExecutor(160) as executor:
-            for arg in zip(*args):
-                task = _loop.run_in_executor(executor, func, *arg, **kwargs)
+            for arg, kwargs in args_list:
+                partial_func = functools.partial(func, *arg, **kwargs)
+                task = _loop.run_in_executor(executor, partial_func)
                 if callback:
                     task.add_done_callback(callback)
                 tasks.append(task)
 
-        self._tasks.extend(tasks)
         return await asyncio.gather(*tasks, return_exceptions=True)
-
-    def wait_completed(self):
-        """等待所有任务完成,返回结果"""
-        results = [task.result() for task in self._tasks]
-        self._tasks.clear()
-        return results
 
 
 if __name__ == "__main__":
@@ -131,10 +126,12 @@ if __name__ == "__main__":
     # $add_func########################################################
     from xt_requests import get
 
-    # print(11111111111111111, myaio.add_pool(get, url_list * 1))
-
-    # print(2222222222222222, myaio.add_pool(get, ["https://httpbin.org/get"] * 3))
-    # print(3333333333333333, myaio.wait_completed())
+    args_list = [
+        [("https://www.163.com",), {"index": 1}],
+        [("https://www.126.com",), {"index": 2}],
+        [("https://httpbin.org/get",), {"index": 3}],
+    ]
+    print(111111111, myaio.add_pool(get, args_list))
     # $装饰器##########################################################
 
     @async_inexecutor_decorator

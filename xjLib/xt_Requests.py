@@ -37,10 +37,11 @@ request_methods = (
 def _retry_request_0(method, url, **kwargs):
     """无用暂存，利用 TRETRY 库实现重试"""
     callback = kwargs.pop("callback", None)
+    index = kwargs.pop("index", None)
     try:
         response = requests.request(method, url, **kwargs)
         response.raise_for_status()  # 如果响应状态码不是200，则抛出HTTPError
-        result = htmlResponse(response)
+        result = htmlResponse(response=response, index=index)
         return callback(result) if callable(callback) else result
     except Exception as err:
         print(err_str := f"Request_tretry:{method} | URL:{url} | Err:{err!r}")
@@ -49,17 +50,18 @@ def _retry_request_0(method, url, **kwargs):
 
 
 @RetryLogWrapper  # retry_log_by_tenacity()
-def _retry_request(method, url, **kwargs):
+def _retry_request(method, url, *args, **kwargs):
     """利用 RetryLogWrapper 实现重试"""
     callback = kwargs.pop("callback", None)
     index = kwargs.pop("index", None)
-    response = requests.request(method, url, **kwargs)
+    response = requests.request(method, url, *args, **kwargs)
     response.raise_for_status()
     result = htmlResponse(response=response, index=index)
+
     return callback(result) if callable(callback) else result
 
 
-def single_parse(method, url, **kwargs):
+def single_parse(method, url, *args, **kwargs):
     if method.lower() not in request_methods:
         return htmlResponse(
             None, f"Method:{method} not in {request_methods}".encode(), id(url)
@@ -68,7 +70,7 @@ def single_parse(method, url, **kwargs):
     kwargs.setdefault("timeout", TIMEOUT)  # @timeout
     kwargs.setdefault("cookies", {})  # @cookies
 
-    return _retry_request(method.lower(), url, **kwargs)
+    return _retry_request(method.lower(), url, *args, **kwargs)
 
 
 get = partial(single_parse, "get")
@@ -158,7 +160,7 @@ if __name__ == "__main__":
 
         # print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
         # print(3333333333333333333, get(urls[4]))
-        print(4444444444444444444, res := get(urls[0]))
+        print(4444444444444444444, res := get(urls[0], index=66))
         print("xpath-1".ljust(10), ":", res.xpath(elestr))
         print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
         print(
