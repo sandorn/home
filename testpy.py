@@ -1,3 +1,16 @@
+# !/usr/bin/env python
+"""
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2024-11-06 13:52:06
+LastEditTime : 2024-11-06 17:40:40
+FilePath     : /CODE/testpy.py
+Github       : https://github.com/sandorn/home
+==============================================================
+"""
+
 import asyncio
 import functools
 
@@ -8,7 +21,7 @@ def get_html(url, **kwargs):
     return get(url, **kwargs)
 
 
-async def main():
+async def main1():
     loop = asyncio.get_running_loop()
 
     # 使用 functools.partial  传递关键字参数
@@ -19,4 +32,4 @@ async def main():
 
 
 # 运行异步主函数
-print(1111111111, asyncio.run(main()))
+# print(1111111111, asyncio.run(main1()))
