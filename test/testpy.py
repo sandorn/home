@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2024-11-11 09:23:51
-LastEditTime : 2024-11-12 17:37:59
-FilePath     : /CODE/testpy.py
+LastEditTime : 2024-11-13 09:03:50
+FilePath     : /CODE/test/testpy.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -32,4 +32,11 @@ async def main1():
 
 
 # 运行异步主函数
-print(1111111111, asyncio.run(main1()))
+# print(1111111111, asyncio.run(main1()))
+
+import datetime
+
+import ulid
+
+res = ulid.from_timestamp(datetime.datetime(1999, 1, 1))
+print(res)
