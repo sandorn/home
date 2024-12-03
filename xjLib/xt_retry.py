@@ -30,7 +30,9 @@ def retry_wraper(wrapped=None, max_retry=3, delay=0.1):
             try:
                 return wrapped(*args, **kwargs)
             except Exception as err:
-                print(f"| retry_wraper {retries}/{max_retry} times | <Error:{err!r}>")
+                print(
+                    f"| retry_wraper {retries + 1}/{max_retry} times | <Error:{err!r}>"
+                )
                 if retries + 1 >= max_retry:
                     print(f"| retry_wraper Exception | MaxRetryError | <Error:{err!r}>")
                     # raise  # 抛出异常以便外部捕获
@@ -91,7 +93,7 @@ def retry_log_wrapper(max_retry=3, interval=0.1):
                         return result
                     except Exception as err:
                         logger(
-                            f"{base_log_msg} | retry_log_wrapper retry {retries}/{max_retry} times | <Error:{err!r}>"
+                            f"{base_log_msg} | retry_log_wrapper retry {retries + 1}/{max_retry} times | <Error:{err!r}>"
                         )
                         retries += 1
                         if retries >= max_retry:
@@ -123,7 +125,7 @@ def retry_log_wrapper(max_retry=3, interval=0.1):
                         return result
                     except Exception as err:
                         logger(
-                            f"{base_log_msg} | retry_log_wrapper retry {retries}/{max_retry} times | <Error:{err!r}>"
+                            f"{base_log_msg} | retry_log_wrapper retry {retries + 1}/{max_retry} times | <Error:{err!r}>"
                         )
                         retries += 1
                         if retries >= max_retry:
@@ -209,7 +211,7 @@ if __name__ == "__main__":
     @retry_wraper
     @log_decor
     def test(*args):
-        return 1 / 0
+        # return 1 / 0
         raise ValueError("raise by test_func")
 
     @retry_log_wrapper()
@@ -223,6 +225,6 @@ if __name__ == "__main__":
 
         return requests.get("https://www.google.com")
 
-    # print(test())
-    print(test2())
+    print(test())
+    # print(test2())
     # print(get_html())
