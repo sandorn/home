@@ -33,11 +33,35 @@ def retry_wraper(wrapped=None, max_retry=3, delay=0.1):
                 print(f"| retry_wraper {retries}/{max_retry} times | <Error:{err!r}>")
                 if retries + 1 >= max_retry:
                     print(f"| retry_wraper Exception | MaxRetryError | <Error:{err!r}>")
+                    # raise  # 抛出异常以便外部捕获
                     return err
-                else:
-                    sleep(delay)
+                sleep(delay)
 
     return wrapper(wrapped)
+
+
+def retry_wrapper(wrapped=None, max_retry=3, delay=0.1):
+    """重试装饰器，使用functools.wraps,有无括号都可以"""
+    if wrapped is None:
+        return partial(retry_wrapper, max_retry=max_retry, delay=delay)
+
+    @wraps(wrapped)
+    def wrapper(*args, **kwargs):
+        for retries in range(max_retry):
+            try:
+                return wrapped(*args, **kwargs)
+            except Exception as err:
+                print(
+                    f"| retry_wrapper {retries + 1}/{max_retry} times | <Error:{err!r}>"
+                )
+                if retries + 1 == max_retry:
+                    print(
+                        f"| retry_wrapper Exception | MaxRetryError | <Error:{err!r}>"
+                    )
+                    raise  # 抛出异常以便外部捕获
+                sleep(delay)
+
+    return wrapper
 
 
 def retry_log_wrapper(max_retry=3, interval=0.1):
