@@ -24,9 +24,9 @@ class ItemGetMixin:
 
     def __getitem__(self, key: str) -> Any:
         if __name__ == "__main__":
-            print("ItemGetMixin:", key)
-        return getattr(self, key, None)
-        # return self.__dict__.get(key, None)
+            print(f"ItemGetMixin: {key}")
+        # return getattr(self, key, None)
+        return self.__dict__.get(key, None)
 
 
 class ItemSetMixin:
@@ -34,8 +34,7 @@ class ItemSetMixin:
 
     def __setitem__(self, key: str, value: Any) -> None:
         if __name__ == "__main__":
-            print("ItemSetMixin:", key, value)
-        # return setattr(self, key, value)
+            print(f"ItemSetMixin: {key}, {value}")
         self.__dict__[key] = value
 
 
@@ -44,9 +43,7 @@ class ItemDelMixin:
 
     def __delitem__(self, key: str) -> None:
         if __name__ == "__main__":
-            print("ItemDelMixin:", key)
-        # return delattr(self, key)
-        # del self.__dict__[key]
+            print(f"ItemDelMixin: {key}")
         self.__dict__.pop(key)
 
 
@@ -61,73 +58,22 @@ class ItemMixinS:
         self._data = {}
 
     def __setitem__(self, key: str, value: Any) -> None:
-        """
-        设置与指定键相关联的值。
-
-        参数:
-        key (str): 要设置的键。
-        value (Any): 与键相关联的值。
-        """
-        # 将键值对存储在_data字典中
         self._data[key] = value
 
     def __getitem__(self, key: str) -> Any:
-        """
-        获取与指定键相关联的值。
+        return self._data.get(key)
 
-        参数:
-        key (str): 要获取值的键。
-
-        返回:
-        Any: 与键相关联的值。
-
-        抛出:
-        KeyError: 如果键不存在于_data字典中。
-        """
-        # 从_data字典中获取与键相关联的值
-        return self._data[key]
-
-    # 可选: 提供一个方法来删除键值对
     def __delitem__(self, key: str) -> None:
-        """
-        删除与指定键相关联的值。
+        if key in self._data:
+            del self._data[key]
 
-        参数:
-        key (str): 要删除的键。
-
-        抛出:
-        KeyError: 如果键不存在于_data字典中。
-        """
-        del self._data[key]
-
-    # 可选: 提供一个方法来获取所有键
     def keys(self) -> list:
-        """
-        获取所有键的列表。
-
-        返回:
-        list: 所有键的列表。
-        """
         return list(self._data.keys())
 
-    # 可选: 提供一个方法来获取所有值
     def values(self) -> list:
-        """
-        获取所有值的列表。
-
-        返回:
-        list: 所有值的列表。
-        """
         return list(self._data.values())
 
-    # 可选: 提供一个方法来获取所有键值对
     def items(self) -> list:
-        """
-        获取所有键值对的列表。
-
-        返回:
-        list: 所有键值对的列表（每个元素是一个(key, value)元组）。
-        """
         return list(self._data.items())
 
 
@@ -136,10 +82,12 @@ class AttrGetMixin:
 
     def __getattr__(self, key: str) -> Any:
         if __name__ == "__main__":
-            print("AttrGetMixin:", key)
-        return getattr(self, key, None)
-        # return super().__getattribute__(key)  #可能会导致递归调用
-        # return self.__dict__.get(key, None)
+            print(f"AttrGetMixin: {key}")
+        # return getattr(self, key, None)
+        try:
+            return super().__getattribute__(key)
+        except AttributeError:
+            return None
 
 
 class AttrSetMixin:
@@ -147,8 +95,8 @@ class AttrSetMixin:
 
     def __setattr__(self, key: str, value: Any) -> None:
         if __name__ == "__main__":
-            print("AttrSetMixin:", key, value)
-        return super().__setattr__(key, value)
+            print(f"AttrSetMixin: {key}, {value}")
+        return super().__setattr__(key, value)  # 直接调用父类方法
 
 
 class AttrDelMixin:
@@ -156,8 +104,8 @@ class AttrDelMixin:
 
     def __delattr__(self, key: str) -> None:
         if __name__ == "__main__":
-            print("AttrDelMixin:", key)
-        return super().__delattr__(key)
+            print(f"AttrDelMixin: {key}")
+        return super().__delattr__(key)  # 直接调用父类方法
 
 
 class AttrMixin(AttrGetMixin, AttrSetMixin, AttrDelMixin): ...
@@ -166,7 +114,7 @@ class AttrMixin(AttrGetMixin, AttrSetMixin, AttrDelMixin): ...
 class ReDictMixin:
     """get_dict重新生成 __dict__ 类字典,主要用于readonly限制"""
 
-    def get_dict(self) -> dict[str, Any]:
+    def get_dict0(self) -> dict[str, Any]:
         """把对象转换成字典"""
         if not hasattr(self, "__dict__") or len(self.__dict__) == 0:
             self.__dict__ = {
@@ -174,6 +122,17 @@ class ReDictMixin:
                 for key in dir(self)
                 if not key.startswith("__") and not callable(getattr(self, key))
             }
+        return self.__dict__
+
+    def get_dict(self) -> dict[str, Any]:
+        """把对象转换成字典"""
+        if not hasattr(self, "__dict__") or not self.__dict__:
+            self.__dict__ = {
+                key: value
+                for key, value in self.__class__.__dict__.items()
+                if not key.startswith("__") and not callable(value)
+            }
+            print("ReDictMixin: get_dict")
         return self.__dict__
 
 
@@ -191,18 +150,8 @@ class IterMixin:
         # return iter(self.get_dict().items())
 
 
-class ReprMixin:
+class ReprMixin(ReDictMixin):
     """用于打印显示"""
-
-    def get_dict(self) -> dict[str, Any]:
-        """把对象转换成字典"""
-        if not hasattr(self, "__dict__") or len(self.__dict__) == 0:
-            self.__dict__ = {
-                key: getattr(self, key)
-                for key in dir(self)
-                if not key.startswith("__") and not callable(getattr(self, key))
-            }
-        return self.__dict__
 
     def __repr__(self) -> str:
         if __name__ == "__main__":
@@ -216,7 +165,7 @@ class BaseCls(AttrMixin, ItemMixin, IterMixin, ReprMixin): ...
 
 
 class SetOnceDict:
-    """限制下标[key]赋值,key不存在时可赋值；对属性访问无用"""
+    """限制下标[key]赋值,key不存在时可赋值;对属性访问无用"""
 
     __slots__ = ("_dict",)
 
@@ -228,8 +177,9 @@ class SetOnceDict:
     def __setitem__(self, key: str, value: Any) -> None:
         if __name__ == "__main__":
             print("SetOnceDict.__setitem__", key, value)
-        if key in self._dict.keys():
-            raise ValueError(f"Key '{key}' already exists:{value}")
+        if key in self._dict.keys() and self._dict[key] is not None:
+            # raise ValueError(f"Key '{key}' already exists:{value}")
+            print(f"Key:'{key}' already exists: {value}")
         self._dict[key] = value
 
     def __getitem__(self, key: str) -> Any:
@@ -416,9 +366,10 @@ if __name__ == "__main__":
         a["name"] = "张三李四"
         print(a["names99"])
         del a["姓名"]
+        print(a.name555s)
+
         b = Anima()
         b.pi = 567
-        print(a.name555s)
         del b.name
         print(a.__dict__, id(a))
         print(b.__dict__, id(b))
@@ -446,7 +397,7 @@ if __name__ == "__main__":
     # 赋值一次的字典()
     # 可迭代对象()
     # itat()
-    动态元类()
+    # 动态元类()
 
 """
 方法1:工厂函数
