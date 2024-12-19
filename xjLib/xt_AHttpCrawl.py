@@ -127,9 +127,9 @@ if __name__ == "__main__":
     from xt_requests import get
 
     args_list = [
-        [("https://www.163.com",), {"index": 1}],
+        [("https://www.163.com",), {"index": 3}],
         [("https://www.126.com",), {"index": 2}],
-        [("https://httpbin.org/get",), {"index": 3}],
+        [("https://httpbin.org/get",), {"index": 4}],
     ]
     print(111111111, myaio.add_pool(get, args_list))
     # $装饰器##########################################################

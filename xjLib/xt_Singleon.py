@@ -28,7 +28,7 @@ class SingletonMetaCls(type):
         super().__init__(*args, **kwargs)
 
     def _init_instance(cls, *args, **kwargs):
-        if cls._instance:
+        if cls._instance is not None:
             # 存在实例对象直接返回，减少锁竞争，提高性能
             return cls._instance
 
@@ -54,22 +54,22 @@ class SingletonMixin:
     """
 
     _lock = Lock()  # 保护实例字典的线程锁
-    _instance = {}  # 保存实例的字典
+    _instances = {}  # 保存实例的字典
 
     def __new__(cls, *args, **kwargs):
         with cls._lock:
-            if cls not in cls._instance:
+            if cls not in cls._instances:
                 # 调用基类的__new__方法，创建实例，并将其添加到实例字典
-                instance = super().__new__(
-                    cls
-                )  # 为实例添加一个标志，用于跟踪是否初始化
+                instance = super().__new__(cls)
+                # 为实例添加一个标志，用于跟踪是否初始化
                 setattr(instance, "_initialized", False)
-                cls._instance[cls] = instance
+                cls._instances[cls] = instance
 
-        return cls._instance[cls]
+        return cls._instances[cls]
 
     def __del__(self):
-        self.__class__._instance[self] = None
+        # self.__class__._instances[self] = None  # ??
+        self.__class__._instances[self.__class__] = None
 
 
 class SingletonDecoratorClass:
@@ -88,11 +88,11 @@ class SingletonDecoratorClass:
         return self._instance
 
 
-def singleton_decorator_class(_cls):
+def singleton_decorator_factory(_cls):
     """单例类装饰器,多次init,返回类,类属性及方法通用
     # 可通过self._initialized判断,设定初始化次数"""
 
-    class Class_Wrapper(_cls):
+    class ClassWrapper(_cls):
         _lock = Lock()
         _instance = None
 
@@ -102,7 +102,7 @@ def singleton_decorator_class(_cls):
                     cls._instance = super().__new__(cls)
                     cls._instance.__qualname__ = _cls.__name__
                     cls._instance.__name__ = (
-                        f"<{_cls.__name__} | by singleton_decorator_class>"
+                        f"<{_cls.__name__} | by singleton_decorator_factory>"
                     )
                     cls._instance._initialized = False
             return cls._instance
@@ -111,10 +111,10 @@ def singleton_decorator_class(_cls):
             self.__class__._instance = None
             self.__class__._initialized = False
 
-    return Class_Wrapper
+    return ClassWrapper
 
 
-def singleton_wraps_class(cls_obj):
+def singleton_wraps_factory(cls_obj):
     """单例装饰器,返回类"""
     _instance_dic = {}
     _instance_lock = Lock()
@@ -122,7 +122,7 @@ def singleton_wraps_class(cls_obj):
     @wraps(cls_obj)
     def wrapper(*args, **kwargs):
         if cls_obj in _instance_dic:
-            cls_obj.__name__ = f"<{cls_obj.__name__} | by singleton_wraps_class>"
+            cls_obj.__name__ = f"<{cls_obj.__name__} | by singleton_wraps_factory>"
             return _instance_dic.get(cls_obj)
 
         with _instance_lock:
@@ -131,7 +131,7 @@ def singleton_wraps_class(cls_obj):
                 _instance_dic[cls_obj]._intialed = False
                 _instance_dic[
                     cls_obj
-                ].__name__ = f"<{cls_obj.__name__} | by singleton_wraps_class>"
+                ].__name__ = f"<{cls_obj.__name__} | by singleton_wraps_factory>"
         return _instance_dic.get(cls_obj)
 
     return wrapper
@@ -140,9 +140,9 @@ def singleton_wraps_class(cls_obj):
 if __name__ == "__main__":
 
     class sss:
-        def __init__(self, name, age=12):
-            self.name = name
-            self.age = age
+        def __init__(self, value):
+            self.value = value
+            self._initialized = True
 
     super_sss = type("super_sss", (sss, SingletonMixin), {})
 
@@ -150,44 +150,22 @@ if __name__ == "__main__":
 
     class sample_mixin(sss, SingletonMixin): ...
 
-    @singleton_wraps_class
+    @singleton_wraps_factory
     class sample_class_wrap(sss): ...
 
-    @singleton_decorator_class
-    class singleton_decorator_class_f(sss): ...
+    @singleton_decorator_factory
+    class singleton_decorator_factory_f(sss): ...
 
-    singleton_decorator_class_line = singleton_decorator_class(sss)
+    singleton_decorator_factory_line = singleton_decorator_factory(sss)
 
-    # a = sss("习近平")
-    # t = super_sss("毛泽东")
-    # b = sample("胡锦涛")
-    # c = sample_mixin("江泽民")
-    # d = sample_class_wrap("李鹏")
-    # dd = sample_class_wrap("李鹏2")
-    # z = singleton_decorator_class_f("邓小平")
-    # e = singleton_decorator_class_line("朱镕基")
+    a = sss("习近平")
+    t = super_sss("毛泽东")
+    b = sample("胡锦涛")
+    c = sample_mixin("江泽民")
+    d = sample_class_wrap("李鹏")
+    dd = sample_class_wrap("李鹏2")
+    z = singleton_decorator_factory_f("邓小平")
+    e = singleton_decorator_factory_line("朱镕基")
 
-    # print(id(a), id(t), id(b), id(c), d is dd)
-    # print(e is z, id(e), id(z), e)
-
-    from functools import singledispatch
-
-    @singledispatch
-    def process(value):
-        """默认处理函数 ，用于未注册的类型"""
-        print(f"Default processing for type {type(value).__name__}: {value}")
-
-    @process.register(int)
-    def _(value: int):
-        """处理整数类型"""
-        print(f"Processing integer: {value * 2}")
-
-    @process.register(str)
-    def _(value: str):
-        """处理字符串类型"""
-        print(f"Processing string: {value.upper()}")
-
-    # 示例调用
-    process(10)  # 输出: Processing integer: 20
-    process("hello")  # 输出: Processing string: HELLO
-    process(3.14)  # 输出: Default processing for type float: 3.14
+    print(id(a), id(t), id(b), id(c), d is dd)
+    print(e is z, id(e), id(z), e)
