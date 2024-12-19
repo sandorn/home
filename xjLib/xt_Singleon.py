@@ -29,7 +29,6 @@ class SingletonMetaCls(type):
 
     def _init_instance(cls, *args, **kwargs):
         if cls._instance is not None:
-            # 存在实例对象直接返回，减少锁竞争，提高性能
             return cls._instance
 
         with cls._instance_lock:
@@ -57,19 +56,21 @@ class SingletonMixin:
     _instances = {}  # 保存实例的字典
 
     def __new__(cls, *args, **kwargs):
+        if cls in cls._instances:
+            return cls._instances[cls]
+
         with cls._lock:
             if cls not in cls._instances:
                 # 调用基类的__new__方法，创建实例，并将其添加到实例字典
                 instance = super().__new__(cls)
-                # 为实例添加一个标志，用于跟踪是否初始化
-                setattr(instance, "_initialized", False)
+                instance._initialized = False  # 为实例添加标志，用于跟踪是否初始化
                 cls._instances[cls] = instance
 
         return cls._instances[cls]
 
     def __del__(self):
-        # self.__class__._instances[self] = None  # ??
-        self.__class__._instances[self.__class__] = None
+        # 清理实例字典中的引用
+        self.__class__._instances.pop(self.__class__, None)
 
 
 class SingletonDecoratorClass:
@@ -97,6 +98,9 @@ def singleton_decorator_factory(_cls):
         _instance = None
 
         def __new__(cls, *args, **kwargs):
+            if cls._instance is not None:
+                return cls._instance
+
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
@@ -121,18 +125,19 @@ def singleton_wraps_factory(cls_obj):
 
     @wraps(cls_obj)
     def wrapper(*args, **kwargs):
+        # 检查实例是否已存在
         if cls_obj in _instance_dic:
-            cls_obj.__name__ = f"<{cls_obj.__name__} | by singleton_wraps_factory>"
-            return _instance_dic.get(cls_obj)
+            return _instance_dic[cls_obj]
 
         with _instance_lock:
+            # 再次检查以防多个线程同时创建实例
             if cls_obj not in _instance_dic:
-                _instance_dic[cls_obj] = cls_obj(*args, **kwargs)
-                _instance_dic[cls_obj]._intialed = False
-                _instance_dic[
-                    cls_obj
-                ].__name__ = f"<{cls_obj.__name__} | by singleton_wraps_factory>"
-        return _instance_dic.get(cls_obj)
+                instance = cls_obj(*args, **kwargs)
+                instance._initialized = False
+                instance.__name__ = f"<{cls_obj.__name__} | by singleton_wraps_factory>"
+                _instance_dic[cls_obj] = instance
+
+        return _instance_dic[cls_obj]
 
     return wrapper
 
