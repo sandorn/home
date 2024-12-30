@@ -398,7 +398,6 @@ if __name__ == "__main__":
     # 可迭代对象()
     # itat()
     # 动态元类()
-
 """
 方法1:工厂函数
 def createClass(cls):
