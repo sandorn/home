@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2024-06-27 15:49:06
-LastEditTime : 2024-06-28 12:59:21
-FilePath     : /CODE/xjLib/xt_AhttpClent.py
+LastEditTime : 2024-06-28 13:30:00
+FilePath     : /d:/CODE/xjLib/xt_ahttpclent.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
@@ -36,7 +36,7 @@ class AioHttpClient:
         self._session = self._loop.run_until_complete(self.create_session())
 
     async def create_session(self):
-        return ClientSession(connector=TCPConnector(ssl=False), loop=self._loop)
+        return ClientSession(connector=TCPConnector(ssl=False))
 
     async def close_session(self):
         if hasattr(self, "_session") and self._session is not None:
@@ -46,7 +46,7 @@ class AioHttpClient:
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, _exc_type, _exc_val, _exc_tb):
         """关闭会话"""
         self._loop.run_until_complete(self.close_session())
 

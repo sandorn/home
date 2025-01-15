@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-08-03 10:29:47
+LastEditTime : 2025-01-15 11:57:50
 FilePath     : /CODE/xjLib/xt_file.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -15,25 +15,24 @@ import os
 import winreg
 
 
-class filesize:
+class FileSize:
     def __init__(self, filePath):
-        self.Bytes = os.path.getsize(filePath)
+        self.bytes = os.path.getsize(filePath)
 
     @property
-    def MB(self):
-        return self.Bytes / 1024 / 1024
+    def mb(self):
+        return self.bytes / (1024**2)
 
     @property
-    def KB(self):
-        return self.Bytes / 1024
+    def kb(self):
+        return self.bytes / 1024
 
     def __str__(self):
-        if self.MB > 1.00:
-            return f"{self.MB:.2f} MB"
-        elif self.KB > 1.00:
-            return f"{self.KB:.2f} KB"
-        else:
-            return f"{self.Bytes} Bytes"
+        if self.mb >= 1.00:
+            return f"{self.mb:.2f} MB"
+        elif self.kb >= 1.00:
+            return f"{self.kb:.2f} KB"
+        return f"{self.bytes} Bytes"
 
 
 class qsstools:
