@@ -60,17 +60,21 @@ func_code_name_list = [
 
 if __name__ == "__main__":
 
-    def make_func() -> None:
+    def make_func():
         # #函数创建器
         foo_func = _create_func("def foo(*args):a=3;b=6;return a*b")
-        print(foo_func())
         for attr in func_attr_name_list:
-            ...
-            # print(attr, ":", getattr(foo_func, attr))
+            print(attr, ":", getattr(foo_func, attr))
 
         for attr in func_code_name_list:
-            ...
-            # print(f"foo_func.__code__.{attr.ljust(33)}", ":", getattr(foo_func.__code__, attr))
+            print(
+                f"foo_func.__code__.{attr.ljust(33)}",
+                ":",
+                getattr(foo_func.__code__, attr),
+            )
         print(foo_func.__globals__, foo_func.__name__)
 
-    make_func()
+        return foo_func
+
+    funaa = make_func()
+    print(f"程序结果：{funaa()}")
