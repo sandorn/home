@@ -34,8 +34,12 @@ def GetForegroundWindow():
 
 def GetWindowText(hwnd):
     """获取句柄对应窗口标题"""
-    return user32.GetWindowText(hwnd)
+    # return user32.GetWindowText(hwnd)
     # return win32gui.GetWindowText(hwnd)
+    length = user32.GetWindowTextLengthW(hwnd)
+    buffer = ctypes.create_unicode_buffer(length + 1)
+    user32.GetWindowTextW(hwnd, buffer, length + 1)
+    return buffer.value
 
 
 def GetCursorPos():
@@ -238,22 +242,33 @@ def SetWindowIconSmall(hwnd, icon):
     win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_SMALL, icon)
 
 
-def SetWindowIconPath(hwnd, iconpath):
+def set_window_icon_path(hwnd, icon_path):
     """通过句柄更改窗口图标"""
-    icon = win32gui.LoadImage(
+    new_icon = win32gui.LoadImage(
         0,
-        iconpath,
+        icon_path,
         win32con.IMAGE_ICON,
         0,
         0,
         win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED,
     )
-    win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_BIG, icon)
+
+    if new_icon:  # 检查图标是否成功加载
+        win32gui.SendMessage(
+            hwnd,
+            win32con.WM_SETICON,
+            win32con.ICON_BIG,
+            ctypes.cast(new_icon, ctypes.c_void_p).value,
+            ## new_icon
+            ## int(new_icon)
+        )
+    else:
+        print("图标加载失败，请检查路径是否正确。")
 
 
 def SetWindowIconPathSmall(hwnd, iconpath):
     """通过句柄更改窗口小图标"""
-    icon = win32gui.LoadImage(
+    newicon = win32gui.LoadImage(
         0,
         iconpath,
         win32con.IMAGE_ICON,
@@ -261,7 +276,7 @@ def SetWindowIconPathSmall(hwnd, iconpath):
         0,
         win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE | win32con.LR_SHARED,
     )
-    win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_SMALL, icon)
+    win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_SMALL, newicon)
 
 
 def GetPixel(hwnd, x, y):
@@ -292,6 +307,7 @@ def EnumWindows():
 
 
 get_thread_process_id_c = user32.GetWindowThreadProcessId
+get_thread_process_id_c.restype = wintypes.DWORD
 get_thread_process_id_c.argtypes = (wintypes.HWND, ctypes.POINTER(wintypes.DWORD))
 
 
@@ -304,15 +320,15 @@ def getThreadProcessId(hwnd):
 def postThreadMessage(hwnd, msgType, wParam, lParam):
     process_id = wintypes.DWORD()
     pro_id = get_thread_process_id_c(hwnd, ctypes.byref(process_id))
-    win32api.PostThreadMessage(pro_id, msgType, wParam, lParam)
+    return win32api.PostThreadMessage(pro_id, msgType, wParam, lParam)
 
 
 def quit(hwnd):
-    postThreadMessage(hwnd, win32con.WM_QUIT, 0, 0)
+    return postThreadMessage(hwnd, win32con.WM_QUIT, 0, 0)
 
 
 def close(hwnd):
-    win32api.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+    return win32api.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
 
 
 def isVisible(hwnd):
@@ -352,35 +368,36 @@ def isUnicode(hwnd):
     processHandle = ctypes.windll.kernel32.OpenProcess(
         win32con.PROCESS_QUERY_INFORMATION, False, processID
     )
+
+    if not processHandle:
+        return False  # 如果无法打开进程，直接返回False
+
     # 获取进程的PEB结构体信息
     peb = wintypes.LPVOID()
     ctypes.windll.ntdll.NtQueryInformationProcess(
         processHandle, 0, ctypes.byref(peb), ctypes.sizeof(peb), None
     )
 
-    # 获取进程的ANSI code page和Unicode code page信息
-    ansiCodePage = wintypes.ULONG()
-    unicodeCodePage = wintypes.ULONG()
-    ctypes.windll.kernel32.ReadProcessMemory(
-        processHandle,
-        peb + 0x038,
-        ctypes.byref(ansiCodePage),
-        ctypes.sizeof(ansiCodePage),
-        None,
-    )
-    ctypes.windll.kernel32.ReadProcessMemory(
-        processHandle,
-        peb + 0x03C,
-        ctypes.byref(unicodeCodePage),
-        ctypes.sizeof(unicodeCodePage),
-        None,
-    )
+    # 定义一个函数来读取内存
+    def read_memory(offset):
+        code_page = wintypes.ULONG()
+        ctypes.windll.kernel32.ReadProcessMemory(
+            processHandle,
+            peb + offset,
+            ctypes.byref(code_page),
+            ctypes.sizeof(code_page),
+            None,
+        )
+        return code_page.value
 
-    isUnicode = unicodeCodePage != 0
+    # 获取进程的ANSI code page和Unicode code page信息
+    ansiCodePage = read_memory(0x038)
+    unicodeCodePage = read_memory(0x03C)
+
     # 关闭进程句柄，释放资源
     ctypes.windll.kernel32.CloseHandle(processHandle)
 
-    return isUnicode
+    return unicodeCodePage != 0
 
 
 # waitEx函数：等待窗口出现
@@ -390,18 +407,24 @@ def waitEx(
     hwnd = None
     count = 0
 
-    while True:
+    while count <= 10:
         hwndList = []
-        if parentHwnd is None:
-            win32gui.EnumWindows(lambda h, p: p.append(h), hwndList)
-        else:
-            win32gui.EnumChildWindows(parentHwnd, lambda h, p: p.append(h), hwndList)
+
+        # 根据parentHwnd选择合适的枚举函数
+        enum_func = win32gui.EnumChildWindows if parentHwnd else win32gui.EnumWindows
+        enum_func(parentHwnd, lambda h, p: p.append(h), hwndList)
+
+        # 过滤符合条件的窗口
         hwndList = [
             hwnd
             for hwnd in hwndList
-            if classNamePattern in win32gui.GetClassName(hwnd)
-            and titlePattern in win32gui.GetWindowText(hwnd)
+            if (
+                classNamePattern in win32gui.GetClassName(hwnd)
+                and titlePattern in win32gui.GetWindowText(hwnd)
+            )
         ]
+
+        # 检查是否找到了目标窗口
         if len(hwndList) >= index:
             hwnd = hwndList[index - 1]
             if controlId is not None:
@@ -410,8 +433,6 @@ def waitEx(
 
         time.sleep(0.5)
         count += 1
-        if count > 10:
-            break
 
     return hwnd
 
@@ -554,14 +575,16 @@ def orphanWindow(ctrl, hwnd):
 
 
 def click(hwnd, cmdId=None, *args):
-    if not cmdId:
+    if cmdId is None:
         win32api.PostMessage(hwnd, win32api.BM_CLICK, 0, 0)
     else:
-        _, cid = findMenu(hwnd, cmdId, *args)
-    if cid:
-        win32api.PostMessage(hwnd, win32api.WM_COMMAND, cid, 0)
-    else:
-        win32api.PostMessage(hwnd, win32api.WM_COMMAND, cmdId, 0)
+        result = findMenu(hwnd, cmdId, *args)
+        if result is None or len(result) < 2:
+            # 处理 findMenu 返回 None 或者返回值不足的情况
+            win32api.PostMessage(hwnd, win32api.WM_COMMAND, cmdId, 0)
+        else:
+            _, cid = result
+            win32api.PostMessage(hwnd, win32api.WM_COMMAND, cid if cid else cmdId, 0)
 
 
 def findSubMenu(hMenu, label, *args):

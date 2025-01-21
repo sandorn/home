@@ -11,8 +11,65 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+from concurrent.futures import (
+    ALL_COMPLETED,
+    Future,
+    ThreadPoolExecutor,
+    as_completed,
+    wait,
+)
 from os import cpu_count
+from typing import Any, Callable, List
+
+
+class EnhancedThreadPool:
+    def __init__(
+        self, max_workers: int = None, thread_name_prefix: str = "EnhancedThreadPool"
+    ):
+        """初始化增强型线程池"""
+        self.executor = ThreadPoolExecutor(
+            max_workers=max_workers, thread_name_prefix=thread_name_prefix
+        )
+        self.futures: List[Future] = []
+        self.results: List[Any] = []
+        self._lock = threading.Lock()
+        self.task_count = 0
+
+    def submit_task(self, fn: Callable, *args, **kwargs) -> Future:
+        """提交任务到线程池"""
+        future = self.executor.submit(self._task_wrapper, fn, *args, **kwargs)
+        with self._lock:
+            self.futures.append(future)
+            self.task_count += 1
+        return future
+
+    def _task_wrapper(self, fn: Callable, *args, **kwargs):
+        """任务包装器，用于收集结果和处理异常"""
+        try:
+            result = fn(*args, **kwargs)
+            with self._lock:
+                self.results.append(result)
+            return result
+        except Exception as e:
+            print(f"任务执行异常: {e}")
+            raise
+
+    def wait_for_completion(self, timeout: float = None) -> bool:
+        """等待所有任务完成"""
+        done, not_done = wait(self.futures, timeout=timeout, return_when=ALL_COMPLETED)
+        with self._lock:
+            self.futures = list(not_done)
+        return not not_done
+
+    def get_results(self) -> List[Any]:
+        """获取已完成任务的结果"""
+        with self._lock:
+            return self.results.copy()
+
+    def shutdown(self, wait: bool = True):
+        """关闭线程池"""
+        self.executor.shutdown(wait=wait)
 
 
 class ThreadPool(ThreadPoolExecutor):
@@ -79,7 +136,31 @@ if __name__ == "__main__":
     ]
     res = FnInPool(get, url_list * 1)
     print(111111, res.result)
+
     # POOL = ThreadPool()
     # POOL.add_tasks(get, url_list)
     # res = POOL.wait_completed()
     # print(222222, res)
+    def test_fn(urls):
+        thread_pool = EnhancedThreadPool(max_workers=5)
+
+        # 提交多个任务
+        futures = []
+        for i in range(10):
+            future = thread_pool.submit_task(get, urls[i])
+            futures.append(future)
+
+        # 等待所有任务完成
+        thread_pool.wait_for_completion()
+
+        # 获取并打印结果
+        results = thread_pool.get_results()
+        for result in results:
+            print(result)
+
+        # 关闭线程池
+        thread_pool.shutdown()
+        return results
+
+    res = test_fn(url_list * 4)
+    print(333333, res)

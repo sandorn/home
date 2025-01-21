@@ -13,15 +13,165 @@ Github       : https://github.com/sandorn/home
 
 import ctypes
 import inspect
+import queue
+import threading
+import time
 from queue import Empty, Queue
 from threading import Event, Thread, main_thread
 from threading import enumerate as thread_enumerate
-from time import sleep, time
+from time import sleep
+from typing import Callable, List
 
+import psutil
 import wrapt
 from xt_class import ItemGetMixin
-from xt_singleon import SingletonMixin, singleton_decorator_class
+from xt_singleon import SingletonMixin, singleton_decorator_factory
 from xt_thread import thread_print
+
+
+class DynamicThreadPool:
+    def __init__(
+        self, min_workers: int = 2, max_workers: int = 10, queue_size: int = 100
+    ):
+        """初始化动态线程池"""
+        self.min_workers = min_workers
+        self.max_workers = max_workers
+        self.task_queue = Queue(maxsize=queue_size)
+        self.workers = []
+        self.active = True
+        self.lock = threading.Lock()
+
+        # 启动监控线程
+        self.monitor = threading.Thread(target=self._monitor_resources)
+        self.monitor.start()
+
+        # 启动初始工作线程
+        self._adjust_worker_count(min_workers)
+
+    def _monitor_resources(self):
+        """监控系统资源和任务队列，动态调整线程数"""
+        while self.active:
+            cpu_percent = psutil.cpu_percent()
+            queue_size = self.task_queue.qsize()
+            current_workers = len(self.workers)
+
+            if queue_size > current_workers * 2 and cpu_percent < 80:
+                # 队列积压且CPU资源充足，增加线程
+                self._adjust_worker_count(min(current_workers + 2, self.max_workers))
+            elif queue_size < current_workers and current_workers > self.min_workers:
+                # 任务较少，减少线程
+                self._adjust_worker_count(max(current_workers - 1, self.min_workers))
+
+            time.sleep(5)  # 监控间隔
+
+    def _adjust_worker_count(self, target_count: int):
+        """调整工作线程数量"""
+        with self.lock:
+            current_count = len(self.workers)
+            if target_count > current_count:
+                # 增加工作线程
+                for _ in range(target_count - current_count):
+                    worker = threading.Thread(target=self._worker_loop)
+                    worker.start()
+                    self.workers.append(worker)
+            elif target_count < current_count:
+                # 标记多余的工作线程退出
+                for _ in range(current_count - target_count):
+                    self.task_queue.put(None)
+
+    def _worker_loop(self):
+        """工作线程主循环"""
+        while self.active:
+            try:
+                task = self.task_queue.get(timeout=1)
+                if task is None:  # 退出信号
+                    with self.lock:
+                        self.workers.remove(threading.current_thread())
+                    break
+
+                func, args, kwargs = task
+                try:
+                    func(*args, **kwargs)
+                except Exception as e:
+                    print(f"任务执行异常: {e}")
+                finally:
+                    self.task_queue.task_done()
+            except Queue.Empty:
+                continue
+
+    def submit(self, func: Callable, *args, **kwargs):
+        """提交任务到线程池"""
+        if not self.active:
+            raise RuntimeError("线程池已关闭")
+        self.task_queue.put((func, args, kwargs))
+
+    def shutdown(self, wait: bool = True):
+        """关闭线程池"""
+        self.active = False
+        if wait:
+            for worker in self.workers:
+                worker.join()
+        self.monitor.join()
+
+
+class ProductionSystem:
+    def __init__(self, queue_size: int = 10):
+        """初始化生产系统"""
+        self.queue = queue.Queue(maxsize=queue_size)
+        self.should_stop = threading.Event()
+        self.producers: List[threading.Thread] = []
+        self.consumers: List[threading.Thread] = []
+
+    def add_producer(self, producer_fn, name: str = None):
+        """添加生产者线程"""
+        producer = threading.Thread(
+            target=self._producer_wrapper,
+            args=(producer_fn,),
+            name=name or f"Producer-{len(self.producers)}",
+        )
+        self.producers.append(producer)
+        producer.start()
+
+    def add_consumer(self, consumer_fn, name: str = None):
+        """添加消费者线程"""
+        consumer = threading.Thread(
+            target=self._consumer_wrapper,
+            args=(consumer_fn,),
+            name=name or f"Consumer-{len(self.consumers)}",
+        )
+        self.consumers.append(consumer)
+        consumer.start()
+
+    def _producer_wrapper(self, producer_fn):
+        """生产者包装函数，处理异常和停止信号"""
+        while not self.should_stop.is_set():
+            try:
+                item = producer_fn()
+                self.queue.put(item, timeout=1)
+            except queue.Full:
+                continue
+            except Exception as e:
+                print(f"生产者发生错误: {e}")
+                break
+
+    def _consumer_wrapper(self, consumer_fn):
+        """消费者包装函数，处理异常和停止信号"""
+        while not self.should_stop.is_set():
+            try:
+                item = self.queue.get(timeout=1)
+                consumer_fn(item)
+                self.queue.task_done()
+            except queue.Empty:
+                continue
+            except Exception as e:
+                print(f"消费者发生错误: {e}")
+                break
+
+    def stop(self):
+        """停止所有生产者和消费者"""
+        self.should_stop.set()
+        for thread in self.producers + self.consumers:
+            thread.join()
 
 
 class CustomThreadMeta(Thread, ItemGetMixin):
@@ -250,8 +400,8 @@ class SingletonThread(SingletonMixin, CustomThread): ...
 
 
 def _create_singleton_thread_class(parent_cls, new_class_name):
-    # #使用类装饰器 singleton_decorator_class 转换为单例类
-    _cls = singleton_decorator_class(parent_cls)
+    # #使用类装饰器 singleton_decorator_factory 转换为单例类
+    _cls = singleton_decorator_factory(parent_cls)
     _cls.__name__ = new_class_name  # @单例线程运行结束判断依据
     _cls.result_list = []  # @单独配置结果字典
     _cls.wait_completed, _cls.getAllResult = _cls.getAllResult, _cls.wait_completed
@@ -263,17 +413,17 @@ SigThreadQ = _create_singleton_thread_class(CustomThread_Queue, "SigThreadQ")
 
 if __name__ == "__main__":
 
-    def func(*arg, **kwargs):
+    def func_print(*arg, **kwargs):
         thread_print(*arg, **kwargs)
         sleep(2)
         return arg
 
-    a = SigThread(print, 111111111111111)
-    print(22222222222, a.getResult(), a.__name__, type(a))
-    b = SigThread(func, 2, 3)
-    print(33333333333, b.getResult())
-    c = SigThreadQ([func, 2, 3])
-    print(44444444444, c.getResult(), c.__name__, type(c))
+    # a = SigThread(print, 111111111111111)
+    # print(22222222222, a.getResult(), a.__name__, type(a))
+    # b = SigThread(func, 2, 3)
+    # print(33333333333, b.getResult())
+    # c = SigThreadQ([func, 2, 3])
+    # print(44444444444, c.getResult(), c.__name__, type(c))
     """
     tpool = ThreadPoolWraps(200)
 
@@ -281,3 +431,38 @@ if __name__ == "__main__":
         tpool(func)(arg, kwargs)
     text_list = tpool.wait_completed()
     """
+
+    def func(*arg, **kwargs):
+        # 定义生产者函数
+
+        import random
+
+        def producer_function():
+            """生产者生成随机数"""
+            time.sleep(random.uniform(0.1, 0.5))  # 模拟生产时间
+            item = random.randint(1, 100)  # 生成随机数
+            print(f"生产者生成: {item}")
+            return item
+
+        # 定义消费者函数
+        def consumer_function(item):
+            """消费者处理生成的随机数"""
+            time.sleep(random.uniform(0.1, 0.5))  # 模拟消费时间
+            print(f"消费者消费: {item}")
+
+        # 创建生产系统实例
+        production_system = ProductionSystem(queue_size=5)
+
+        # 添加生产者和消费者
+        for _ in range(3):  # 添加3个生产者
+            production_system.add_producer(producer_function)
+
+        for _ in range(2):  # 添加2个消费者
+            production_system.add_consumer(consumer_function)
+
+        # 运行一段时间后停止
+        time.sleep(5)  # 让生产和消费运行5秒
+        production_system.stop()  # 停止所有生产者和消费者
+        print("生产系统已停止。")
+
+    func()

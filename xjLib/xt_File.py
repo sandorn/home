@@ -82,7 +82,7 @@ def savefile(_filename, _str_list, br=""):
         else:
             _file.write(str(_str_list) + br)
 
-    size = f"size: {filesize(_filename)}"
+    size = f"size: {FileSize(_filename)}"
     print(f"[{_filename}]保存完成,\tfile {size}。")
 
 

@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-10-09 09:41:16
+LastEditTime : 2025-01-21 14:03:45
 FilePath     : /CODE/xjLib/xt_thread/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -20,7 +20,7 @@ from .decorator import (
     thread_print,
     thread_safe,
 )
-from .futures import FnInPool, ThreadPool
+from .futures import EnhancedThreadPool, FnInPool, ThreadPool
 from .Process import CustomProcess, Do_CustomProcess
 from .qThread import CustomQThread, SingletonQThread
 from .thread import (
@@ -56,4 +56,5 @@ __all__ = (
     "stop_thread",
     "create_mixin_class",
     "_create_singleton_thread_class",
+    "EnhancedThreadPool",
 )
