@@ -57,7 +57,7 @@ class EnhancedThreadPool:
 
     def wait_for_completion(self, timeout: float = None) -> bool:
         """等待所有任务完成"""
-        done, not_done = wait(self.futures, timeout=timeout, return_when=ALL_COMPLETED)
+        _, not_done = wait(self.futures, timeout=timeout, return_when=ALL_COMPLETED)
         with self._lock:
             self.futures = list(not_done)
         return not not_done

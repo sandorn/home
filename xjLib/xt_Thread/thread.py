@@ -62,7 +62,7 @@ class DynamicThreadPool:
                 # 任务较少，减少线程
                 self._adjust_worker_count(max(current_workers - 1, self.min_workers))
 
-            time.sleep(5)  # 监控间隔
+            time.sleep(2)  # 监控间隔
 
     def _adjust_worker_count(self, target_count: int):
         """调整工作线程数量"""
@@ -96,7 +96,7 @@ class DynamicThreadPool:
                     print(f"任务执行异常: {e}")
                 finally:
                     self.task_queue.task_done()
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
     def submit(self, func: Callable, *args, **kwargs):
@@ -432,7 +432,7 @@ if __name__ == "__main__":
     text_list = tpool.wait_completed()
     """
 
-    def func(*arg, **kwargs):
+    def Production(*arg, **kwargs):
         # 定义生产者函数
 
         import random
@@ -465,4 +465,29 @@ if __name__ == "__main__":
         production_system.stop()  # 停止所有生产者和消费者
         print("生产系统已停止。")
 
-    func()
+    # Production()
+
+    # 定义一个简单的任务函数
+    def DynamicT(task_id):
+        """模拟一个耗时的任务"""
+        import random
+
+        sleep_time = random.uniform(0.1, 1.0)  # 随机等待一段时间
+        print(f"任务 {task_id} 开始，预计耗时 {sleep_time:.2f} 秒")
+        time.sleep(sleep_time)
+        print(f"任务 {task_id} 完成")
+
+    def func2():
+        # 创建动态线程池实例
+        thread_pool = DynamicThreadPool(min_workers=2, max_workers=5, queue_size=10)
+
+        # 提交多个任务
+        for i in range(15):
+            thread_pool.submit(DynamicT, i)
+
+        # 运行一段时间后关闭线程池
+        time.sleep(10)  # 让任务运行一段时间
+        thread_pool.shutdown(wait=True)  # 等待所有任务完成后关闭线程池
+        print("动态线程池已关闭。")
+
+    func2()
