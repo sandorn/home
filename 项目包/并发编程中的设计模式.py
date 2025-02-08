@@ -58,14 +58,14 @@ class EventDrivenWorker:
             try:
                 event = await self.event_queue.get()
                 print(
-                    f"EventDrivenWorker {self.worker_id} | 接收到事件: {event.event_type}"
+                    f"EventDrivenWorker _event_loop {self.worker_id} | 接收到事件: {event.event_type}"
                 )
                 if event.event_type in self.event_handlers:
                     handlers = self.event_handlers[event.event_type]
                     await asyncio.gather(*[handler(event) for handler in handlers])
                 self.event_queue.task_done()
             except Exception as e:
-                print(f"事件处理异常: {e}")
+                print(f"EventDrivenWorker _event_loop 事件处理异常: {e}")
 
 
 class EventDrivenSystem:
@@ -91,7 +91,7 @@ class EventDrivenSystem:
             try:
                 event = await self.event_bus.get()
                 print(
-                    f"EventDrivenSystem  分发事件: {event.event_type} | 目标: {event.worker_id}"
+                    f"EventDrivenSystem  _event_dispatcher_loop 分发事件: {event.event_type} | 目标: {event.worker_id}"
                 )
                 if event.worker_id is not None and event.worker_id in self.workers:
                     # 发布事件到指定工作者
@@ -103,11 +103,14 @@ class EventDrivenSystem:
                     )
                 self.event_bus.task_done()
             except Exception as e:
-                print(f"事件分发异常: {e}")
+                print(f"EventDrivenSystem  _event_dispatcher_loop 事件分发异常: {e}")
 
     async def publish_event(self, event: WorkEvent):
         """发布事件到系统总线"""
         await self.event_bus.put(event)
+        print(
+            f"EventDrivenSystem  publish_event 发布事件: {event.event_type} | 目标: {event.worker_id}"
+        )
 
     def shutdown(self):
         """关闭系统"""
