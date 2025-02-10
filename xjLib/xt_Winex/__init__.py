@@ -391,7 +391,7 @@ def isUnicode(hwnd):
         return code_page.value
 
     # 获取进程的ANSI code page和Unicode code page信息
-    ansiCodePage = read_memory(0x038)
+    _ansiCodePage = read_memory(0x038)
     unicodeCodePage = read_memory(0x03C)
 
     # 关闭进程句柄，释放资源
@@ -419,7 +419,9 @@ def waitEx(
             hwnd
             for hwnd in hwndList
             if (
-                classNamePattern in win32gui.GetClassName(hwnd)
+                classNamePattern
+                and classNamePattern in win32gui.GetClassName(hwnd)
+                and titlePattern
                 and titlePattern in win32gui.GetWindowText(hwnd)
             )
         ]
