@@ -1,0 +1,10 @@
+import fsys; 
+fsys.createDir("~\lib\java\");
+fsys.copy( "\kotlinc","~\lib\java\" ); 
+
+
+import ide;
+ide.refreshStdLib();
+
+import win;
+win.msgboxTimeout("java.kotlinc 扩展库已安装成功!","aardio- java.kotlinc扩展库安装程序")

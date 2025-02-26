@@ -33,7 +33,7 @@ asyncio.set_event_loop_policy(MyPolicy())
 
 __all__ = ("ahttpGet", "ahttpGetAll", "ahttpPost", "ahttpPostAll")
 
-request_methods = (
+REQUEST_METHODS = (
     "get",
     "post",
     "head",
@@ -53,7 +53,7 @@ class AsyncTask:
         self.index = index or id(self)
 
     def __getitem__(self, method):
-        if method.lower() in request_methods:
+        if method.lower() in REQUEST_METHODS:
             self.method = method.lower()  # 保存请求方法
             return self._make_parse  # 调用方法
             # return lambda *args, **kwargs: self._make_parse(*args, **kwargs)
@@ -80,11 +80,18 @@ class AsyncTask:
 
         @TRETRY
         async def _fetch():
-            async with ClientSession(
-                cookies=self.cookies, connector=TCPConnector()
-            ) as session, session.request(
-                self.method, self.url, raise_for_status=True, *self.args, **self.kwargs
-            ) as response:
+            async with (
+                ClientSession(
+                    cookies=self.cookies, connector=TCPConnector()
+                ) as session,
+                session.request(
+                    self.method,
+                    self.url,
+                    raise_for_status=True,
+                    *self.args,
+                    **self.kwargs,
+                ) as response,
+            ):
                 content = await response.content.read()
                 return response, content
 
@@ -109,9 +116,9 @@ class AsyncTask:
 
 def single_parse(method, url, *args, **kwargs):
     """构建并运行单任务"""
-    if method.lower() not in request_methods:
+    if method.lower() not in REQUEST_METHODS:
         return ACResponse(
-            None, f"Method:{method} not in {request_methods}".encode(), id(url)
+            None, f"Method:{method} not in {REQUEST_METHODS}".encode(), id(url)
         )
 
     task = getattr(AsyncTask(), method)(url, *args, **kwargs)

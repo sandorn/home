@@ -1,0 +1,72 @@
+﻿import fsys;
+import java;
+..java.addClassPath("~\lib\java\kotlinc\.lib\lib");
+
+namespace java.kotlinc;
+
+var jvm;
+var jVersion = ..java.runtimeVersion(true) ;
+
+var args = {
+	"-Xmx256M","-Xms32M","-Dkotlin.home=" + ..fsys.shortpath("~\lib\java\kotlinc\.lib\")
+}
+if(jVersion>9){
+	..table.push(args, "--add-opens","java.base/java.util=ALL-UNNAMED")
+}
+if(jVersion<13){
+	..table.push(args, "--add-opens","java.base/java.util=ALL-UNNAMED")
+}
+
+jvm = ..java(args); 
+if( jvm.version < 0x10008/*_JNI_VERSION_1_8*/ ) error("kotlin编译器需要JRE 1.8以上版本,",2);
+
+if(!jvm.__isMainThread){
+	error("在导入 java.kotlinc 以前不应创建其他 Java 虚拟机对象。");
+}
+ 
+K2JVMCompiler = jvm.import( "org.jetbrains.kotlin.cli.jvm.K2JVMCompiler");
+K2JVMCompiler.main = K2JVMCompiler.getMethod("main","void(string[])");
+compile = function(...){
+	K2JVMCompiler.main(...)
+}
+
+runner = jvm.import( "org.jetbrains.kotlin.runner.Main");
+runner.main = runner.getMethod("main","void(string[])");
+run = function(path,...){
+	runner.main(..io.fullpath("path"),...)	
+}
+ 
+script = function(path,...){
+	return compile("-script" ,..io.fullpath(path) );
+}
+
+build = function(path,output,...){
+	return compile(..io.fullpath(path),"-d",..io.fullpath(output),... );
+}
+
+buildIncludeRuntime = function(path,output,...){
+	return compile(..io.fullpath(path),"-include-runtime"
+		,"-kotlin-home",..fsys.shortpath("~\lib\java\kotlinc\.lib\")
+		,"-d",..io.fullpath(output),... );
+}
+
+reopen = function(funcName,filename){
+	var outstream = jvm.loadClass( "java.io.FileOutputStream")( ..io.fullpath(filename) ); 
+	var printstream = jvm.loadClass("java.io.PrintStream").createInstanceEx("void(java.io.OutputStream)",outstream)	 
+	var reset = jvm.loadClass("java.lang.System").getMethod(funcName);	
+	reset(printstream);
+};
+
+setErr = function(path){
+	return reopen("setErr",path)
+}
+
+/**intellisense()
+java.kotlinc = Kotlin 编译器,错误信息默认输出到/error.txt
+java.kotlinc.compile(__) = 编译,支持多个字符串参数,参考官网文档,或输入"-help"参数查看帮助
+java.kotlinc.script(__) = 编译并执行kotlin脚本文件
+java.kotlinc.build(.("输入 Kotlin 文件","输出目录") = 编译并生成 class 文件,输出目录可指定一个 jar 路径
+java.kotlinc.buildIncludeRuntime(.("输入kotlin文件","输出目录") = 编译并生成 class 文件,输出目录可指定一个 jar 路径\n包含 Kotlin 运行时。
+java.kotlinc.run(__) = 运行 jar 文件。
+java.kotlinc.setErr("/error.txt") = 指定错误输出文件
+end intellisense**/

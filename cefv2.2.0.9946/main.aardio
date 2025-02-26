@@ -1,0 +1,65 @@
+import win.ui;
+/*DSG{{*/
+var winform = win.form(text="cef3";right=1315;bottom=795)
+winform.add()
+/*}}*/
+
+import web.cefx;
+var cef3 = web.cefx(winform)
+
+/*
+下面代码是可选的，可以省略。
+浏览器控件初始化以前触发此事件。
+调用 winform.show() 或 cef3.create()创建浏览器控件触发此事件，
+可以设置的参数请打开官网 https://www.webkitx.com/
+在主页上查找 "interface ISettings" 查看cefSettings参数的详细定义。
+aardio默认已经设置了部分参数,请参考web.cefx源码。
+*/
+cef3.onCreate2 = function(cefSettings,commandLineSwitches){
+    //可选修改user_agent,
+    cefSettings.user_agent = "Mozilla/5.0 (aardio) Chrome/64.0.3282.0"
+    
+    //允许内容过滤
+    cefSettings.filter_response = true 
+    cefSettings.access_control_allow_origin = "*"
+    cefSettings.remove_response_headers = "x-webkit-csp,content-security-policy,x-content-security-policy";
+}
+
+/*
+下面代码是可选的，可以省略。
+已初始化安成，已创建CEF进程，进程间IPC通信已准备就绪，
+*/
+cef3.onBrowserReady = function(){
+    //允许下载脚本(编辑模式下默认是禁止下载的)
+    cef3.downloadScripts = true;
+}
+
+/*
+下面代码是可选的，可以省略。
+网址完全下载完成触发这个事件,
+在这里可以切换编辑、浏览模式，也可以注册元素事件
+*/
+cef3.onLoadEnd = function(){
+ 
+    cef3.Preview();//切换到浏览模式
+    
+    //设置允许 cef3.onEvent 回调函数接收的事件
+    cef3.Events = 0x1000/*_DOM_EVENT_SELECTSTART*/ 
+    				| 0x100000/*_DOM_EVENT_DOMSUBTREEMODIFIED*/
+                    | 0x4000/*_DOM_EVENT_DOMFOCUSIN*/
+                    | 1/*_DOM_EVENT_CLICK*/
+                    | 0x400000/*_DOM_EVENT_EDITABLE_ELEMENT_CHANGED*/
+                    ; 
+    
+}
+
+/*
+请在设置好其他参数、回调事件以后，
+再调用cef3.create()函数,或者调用 winform.show()函数以实际的创建浏览器控件。
+*/
+winform.show();
+
+//打开网页
+cef3.go("http://imtip.aardio.com/"); 
+
+win.loopMessage();
