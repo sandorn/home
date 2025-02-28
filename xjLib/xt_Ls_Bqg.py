@@ -13,7 +13,7 @@ Github       : https://github.com/sandorn/home
 
 from functools import partial
 
-from xt_ahttp import ahttpGet
+from xt_Ahttp import ahttpGet
 from xt_requests import get
 from xt_response import ACResponse, htmlResponse
 from xt_str import Re_Sub, Str_Clean, Str_Replace
@@ -149,7 +149,7 @@ def get_download_url(url):
     temp_urls += temp_urls2
     bookname = "".join(bookname)
     # urls = ["/".join(url.split("/")[:-3]) + item for item in temp_urls]  # 章节链接
-    urls = [f"{url}{"".join(item.split("/")[-1:])}" for item in temp_urls]  # 章节链接
+    urls = [f"{url}{''.join(item.split('/')[-1:])}" for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
 

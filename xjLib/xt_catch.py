@@ -40,17 +40,19 @@ def call_later(callback, *call_args, immediately=True, interval=1):
     def decorate(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            self = args[0]
+            self = args[0] if args else None
             try:
                 return func(*args, **kwargs)
             finally:
-                if immediately:
-                    getattr(self, callback)(*call_args)
-                else:
+                if self is not None:
                     now = time.time()
-                    if now - self.__dict__.get("last_call_time", 0) > interval:
+                    last_call_time_key = f"_last_call_time_{callback}"
+                    if immediately and not hasattr(self, last_call_time_key):
                         getattr(self, callback)(*call_args)
-                        self.__dict__["last_call_time"] = now
+                        setattr(self, last_call_time_key, now)
+                    elif now - getattr(self, last_call_time_key, 0) > interval:
+                        getattr(self, callback)(*call_args)
+                        setattr(self, last_call_time_key, now)
 
         return wrapper
 

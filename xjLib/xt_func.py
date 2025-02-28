@@ -27,7 +27,7 @@ def _create_func(code_body, **kwargs) -> Callable[..., Any]:
     # FunctionType(wrapper.__code__, wrapper.__globals__, name=func.__name__, argdefs=wrapper.__defaults__, closure=wrapper.__closure__)
 
 
-func_attr_name_list = [
+func_attr_name_list = (
     # """函数的内置属性"""
     "__closure__",
     "__code__",
@@ -36,8 +36,8 @@ func_attr_name_list = [
     "__doc__",
     "__globals__",
     "__name__",
-]
-func_code_name_list = [
+)
+func_code_name_list = (
     # 函数.__code__的内置属性
     "co_argcount",
     "co_cellvars",
@@ -55,7 +55,7 @@ func_code_name_list = [
     "co_posonlyargcount",
     "co_stacksize",
     "co_varnames",
-]
+)
 
 
 if __name__ == "__main__":
