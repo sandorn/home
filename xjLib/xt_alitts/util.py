@@ -11,6 +11,7 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+import json
 import os
 import shutil
 
@@ -98,9 +99,13 @@ class AudioProcessor:
         res_list = []
 
         for key, values in res.items():
-            _dict = eval(values)  # 注意：eval使用需谨慎
-            dict_merged[key] = {**_dict["header"], **_dict["payload"]}
-            res_list.append((key, dict_merged[key]["result"]))
+            try:
+                _dict = json.loads(values)  # 使用 json.loads 替代 eval
+                dict_merged[key] = {**_dict["header"], **_dict["payload"]}
+                res_list.append((key, dict_merged[key]["result"]))
+            except (json.JSONDecodeError, KeyError) as e:
+                print(f"Error processing result for key {key}: {e}")
+                continue
 
         return res_list, dict_merged
 
@@ -113,19 +118,23 @@ class AudioProcessor:
 
     def _read_file(self, file_path):
         """读取文件内容"""
-        with open(file_path, "rb") as file:
-            return file.read()
+        try:
+            with open(file_path, "rb") as file:
+                return file.read()
+        except FileNotFoundError:
+            print(f"File not found: {file_path}")
+            return None
 
     def save_sound_file(self):
-        """情形2-保存音频文件指定到位置或桌面
-        Returns:
-            list: 更新后的音频数据列表
-        """
+        """情形2-保存音频文件指定到位置或桌面"""
         for index, item in enumerate(self.voice_data_list):
-            dest_path = self._move_file(
-                item[1], os.path.join(self.path, os.path.basename(item[1]))
-            )
-            self.voice_data_list[index][1] = dest_path
+            try:
+                dest_path = self._move_file(
+                    item[1], os.path.join(self.path, os.path.basename(item[1]))
+                )
+                self.voice_data_list[index][1] = dest_path
+            except (shutil.Error, FileNotFoundError) as e:
+                print(f"Error saving file {item[1]}: {e}")
 
         return self.voice_data_list
 
@@ -135,29 +144,38 @@ class AudioProcessor:
         return dest_path
 
     def merge_sound_file(self, args):
-        """情形3-合并音频,删除过程文件
-        Args:
-            args (dict): 音频参数
-        Returns:
-            list: 合并后的音频文件列表
-        """
-        sound_list = self._load_audio_segments()
-        sum_sound = sum(sound_list)
-        fname = self._generate_filename(args)
-        sum_sound.export(fname, format=args["aformat"])  # 保存文件
+        """情形3-合并音频,删除过程文件"""
+        try:
+            sound_list = self._load_audio_segments()
+            if not sound_list:
+                print("No valid audio segments to merge.")
+                return []
 
-        return [[1, fname]]
+            sum_sound = sum(sound_list)
+            fname = self._generate_filename(args)
+            sum_sound.export(fname, format=args["aformat"])  # 保存文件
+
+            return [[1, fname]]
+        except Exception as e:
+            print(f"Error merging sound files: {e}")
+            return []
 
     def _load_audio_segments(self):
         """加载音频段"""
-        return [
-            AudioSegment.from_file(item[1], format=item[1].split(".")[-1])
-            for item in self.voice_data_list
-        ]
+        segments = []
+        for item in self.voice_data_list:
+            try:
+                segment = AudioSegment.from_file(item[1], format=item[1].split(".")[-1])
+                segments.append(segment)
+            except Exception as e:
+                print(f"Error loading audio file {item[1]}: {e}")
+        return segments
 
     def _generate_filename(self, args):
         """生成音频文件名"""
-        return f"{self.path}/{get_timestamp()}_{args['voice']}_tts.{args['aformat']}"
+        return os.path.join(
+            self.path, f"{get_timestamp()}_{args['voice']}_tts.{args['aformat']}"
+        )
 
 
 # 使用示例
