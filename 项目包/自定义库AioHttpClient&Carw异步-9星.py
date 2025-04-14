@@ -17,7 +17,7 @@ from xt_ahttp import ahttpGetAll
 from xt_ahttpclent import AioHttpClient
 from xt_ahttpcrawl import AioHttpCrawl
 from xt_file import savefile
-from xt_ls_bqg import get_contents, get_download_url, 结果处理
+from xt_bqg import get_contents, get_download_url, 结果处理
 from xt_time import fn_timer
 
 

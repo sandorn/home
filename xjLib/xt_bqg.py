@@ -6,14 +6,14 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-14 23:30:19
 LastEditTime : 2023-10-27 15:59:02
-FilePath     : /CODE/xjLib/xt_Ls_Bqg.py
+FilePath     : /CODE/xjLib/xt_bqg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
 from functools import partial
 
-from xt_Ahttp import ahttpGet
+from xt_ahttp import ahttpGet
 from xt_requests import get
 from xt_response import ACResponse, htmlResponse
 from xt_str import Re_Sub, Str_Clean, Str_Replace
