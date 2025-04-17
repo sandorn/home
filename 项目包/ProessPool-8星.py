@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-03 12:52:03
-LastEditTime : 2024-10-28 13:09:51
+LastEditTime : 2025-04-17 09:39:03
 FilePath     : /CODE/项目包/ProessPool-8星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -19,8 +19,8 @@ import os
 from concurrent.futures import ThreadPoolExecutor as PExecutor
 from multiprocessing import Pool as ProcPool
 
+from xt_bqg import get_contents, get_download_url
 from xt_file import savefile
-from xt_ls_bqg import get_contents, get_download_url
 from xt_time import fn_timer
 
 
