@@ -118,7 +118,7 @@ class ProductionSystem:
     def __init__(self, queue_size: int = 10):
         """初始化生产系统"""
         self.queue = queue.Queue(maxsize=queue_size)
-        self.should_stop = threading.Event()
+        self.running = threading.Event()
         self.producers: List[threading.Thread] = []
         self.consumers: List[threading.Thread] = []
 
@@ -144,7 +144,7 @@ class ProductionSystem:
 
     def _producer_wrapper(self, producer_fn):
         """生产者包装函数，处理异常和停止信号"""
-        while not self.should_stop.is_set():
+        while not self.running.is_set():
             try:
                 item = producer_fn()
                 self.queue.put(item, timeout=1)
@@ -155,23 +155,28 @@ class ProductionSystem:
                 break
 
     def _consumer_wrapper(self, consumer_fn):
-        """消费者包装函数，处理异常和停止信号"""
-        while not self.should_stop.is_set():
+        """消费者包装函数，处理异常和停止信号，确保消费完队列后退出"""
+        while not (self.running.is_set() and self.queue.empty()):
+            # 条件：未停止 或 队列不为空，继续消费
+            # 停止信号已发且队列已空，退出循环
             try:
                 item = self.queue.get(timeout=1)
                 consumer_fn(item)
                 self.queue.task_done()
             except queue.Empty:
+                # 队列空，继续判断循环条件
                 continue
             except Exception as e:
                 print(f"消费者发生错误: {e}")
                 break
 
-    def stop(self):
-        """停止所有生产者和消费者"""
-        self.should_stop.set()
-        for thread in self.producers + self.consumers:
-            thread.join()
+    def shutdown(self):
+        """停止所有生产者和消费者，等待队列消费完毕"""
+        self.running.set()  # 发送停止信号，生产者停止生产
+        for thread in self.producers:
+            thread.join()  # 等待所有生产者线程结束
+        for thread in self.consumers:
+            thread.join()  # 等待所有消费者线程结束
 
 
 class CustomThreadMeta(Thread, ItemGetMixin):
@@ -461,11 +466,11 @@ if __name__ == "__main__":
             production_system.add_consumer(consumer_function)
 
         # 运行一段时间后停止
-        time.sleep(5)  # 让生产和消费运行5秒
-        production_system.stop()  # 停止所有生产者和消费者
+        time.sleep(2)  # 让生产和消费运行5秒
+        production_system.shutdown()  # 停止所有生产者和消费者
         print("生产系统已停止。")
 
-    # Production()
+    Production()
 
     # 定义一个简单的任务函数
     def DynamicT(task_id):
@@ -490,4 +495,4 @@ if __name__ == "__main__":
         thread_pool.shutdown(wait=True)  # 等待所有任务完成后关闭线程池
         print("动态线程池已关闭。")
 
-    func2()
+    # func2()

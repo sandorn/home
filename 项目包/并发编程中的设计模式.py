@@ -13,7 +13,7 @@ Github       : https://github.com/sandorn/home
 
 import asyncio
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Dict, Set
 
@@ -21,102 +21,104 @@ from typing import Any, Callable, Dict, Set
 @dataclass
 class WorkEvent:
     """工作事件数据类"""
-
     event_type: str
     payload: Any
     source_id: str = ""
     worker_id: str = ""
-    correlation_id: str = str(uuid.uuid4())
-
+    correlation_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
 class EventDrivenWorker:
     def __init__(self, worker_id: str):
-        """初始化事件驱动工作者"""
+        """初始化工人"""
         self.worker_id = worker_id
         self.event_handlers: Dict[str, Set[Callable]] = {}
         self.event_queue = asyncio.Queue()
         self.running = False
+        print(f"{self.worker_id} 工人初始化......")
 
     async def start(self):
-        """启动工作者"""
+        """启动工人"""
         self.running = True
         await self._event_loop()
+        print(f"启动 {self.worker_id} 工人待命......")
 
     def subscribe(self, event_type: str, handler: Callable):
-        """订阅特定事件"""
+        """订阅特殊指令"""
         if event_type not in self.event_handlers:
             self.event_handlers[event_type] = set()
         self.event_handlers[event_type].add(handler)
+        print(f"{self.worker_id} 工人订阅特殊指令:{event_type}。")
 
     async def publish(self, event: WorkEvent):
-        """发布事件到事件队列"""
+        """发布任务到任务队列"""
         await self.event_queue.put(event)
+        print(f"向 {self.worker_id} 工人下达任务指令......")
 
     async def _event_loop(self):
-        """事件处理循环"""
+        """任务处理循环"""
         while self.running:
             try:
                 event = await self.event_queue.get()
-                print(
-                    f"EventDrivenWorker _event_loop {self.worker_id} | 接收到事件: {event.event_type}"
-                )
-                if event.event_type in self.event_handlers:
+                print(f"工人: {self.worker_id} | 接收到任务: {event}")
+                if event.event_type in self.event_handlers:  # 特殊指令
                     handlers = self.event_handlers[event.event_type]
                     await asyncio.gather(*[handler(event) for handler in handlers])
                 self.event_queue.task_done()
             except Exception as e:
-                print(f"EventDrivenWorker _event_loop 事件处理异常: {e}")
+                print(f"工人 任务处理异常: {e}")
 
 
 class EventDrivenSystem:
     def __init__(self):
-        """初始化事件驱动系统"""
+        """初始化工场系统"""
         self.workers: Dict[str, EventDrivenWorker] = {}
         self.event_bus = asyncio.Queue()
         self.running = False
+        print("工场初始化......")
 
     async def add_worker(self, worker: EventDrivenWorker):
-        """添加工作者到系统"""
+        """添加工人到工场"""
         self.workers[worker.worker_id] = worker
+        print(f"添加工人 {worker.worker_id} 到工场......")
         asyncio.create_task(worker.start())
 
     async def start(self):
-        """启动事件系统"""
+        """启动工场运行"""
         self.running = True
+        print("启动工场运行......")
         await self._event_dispatcher_loop()
 
     async def _event_dispatcher_loop(self):
-        """事件分发器"""
+        """任务分发"""
         while self.running:
             try:
                 event = await self.event_bus.get()
-                print(
-                    f"EventDrivenSystem  _event_dispatcher_loop 分发事件: {event.event_type} | 目标: {event.worker_id}"
-                )
+                print("工场系统 分发任务......")
                 if event.worker_id is not None and event.worker_id in self.workers:
                     # 发布事件到指定工作者
+                    print(f"工场系统 分发任务: {event} | 目标: {event.worker_id}")
                     await self.workers[event.worker_id].publish(event)
                 else:
+                    print(f"工场系统 分发任务: {event} | 目标: {event.worker_id}")
                     # 广播事件给所有工作者
                     await asyncio.gather(
                         *[worker.publish(event) for worker in self.workers.values()]
                     )
                 self.event_bus.task_done()
             except Exception as e:
-                print(f"EventDrivenSystem  _event_dispatcher_loop 事件分发异常: {e}")
+                print(f"工场系统 任务分发异常: {e}")
 
     async def publish_event(self, event: WorkEvent):
-        """发布事件到系统总线"""
+        """发布任务到任务池"""
         await self.event_bus.put(event)
-        print(
-            f"EventDrivenSystem  publish_event 发布事件: {event.event_type} | 目标: {event.worker_id}"
-        )
+        print("工场系统 发布任务到任务池")
 
     def shutdown(self):
-        """关闭系统"""
+        """关闭工场"""
         self.running = False
         for worker in self.workers.values():
             worker.running = False
+        print("停止工场系统运行！！！")
 
 
 # 创建事件驱动系统实例
@@ -144,9 +146,9 @@ async def main():
     worker1.subscribe(handler_events[0], handle_task_completed)
     worker2.subscribe(handler_events[1], handle_data_processed)
 
-    # 启动系统和工作者（修正启动顺序）
-    asyncio.create_task(organizer.start())  # 先启动系统
-    await organizer.add_worker(worker1)  # 后添加工作者
+    # 启动工场和工人
+    asyncio.create_task(organizer.start())  # 启动工场
+    await organizer.add_worker(worker1)  # 添加工人
     await organizer.add_worker(worker2)
 
     # 确保系统初始化完成
@@ -156,8 +158,8 @@ async def main():
     events = [
         WorkEvent("task_1", {"task": "月度报告"}, worker_id=workers_id[0]),
         WorkEvent("data_2", {"data": "销售记录"}, worker_id=workers_id[1]),
-        WorkEvent("broadcast", {"msg": "系统通知"}),  # 广播事件
-        WorkEvent("ending", {"msg": "紧急通知"}),  # 广播事件
+        WorkEvent("系统通知", {"msg": "已经到中午午休时间，可以休息"}),  # 广播事件
+        WorkEvent("紧急通知", {"msg": "时间紧迫，请各位加紧工作！！"}),  # 广播事件
         WorkEvent(handler_events[0], {"task": "季度报告"}, worker_id=workers_id[0]),
         WorkEvent(handler_events[1], {"data": "库存数据"}, worker_id=workers_id[1]),
     ]
@@ -167,9 +169,9 @@ async def main():
         await organizer.publish_event(event)
 
     # 使用队列join等待处理完成（代替sleep）
-    await organizer.event_bus.join()
+    await organizer.event_bus.join()  # 等待工场任务安排完毕
     for worker in organizer.workers.values():
-        await worker.event_queue.join()
+        await worker.event_queue.join()  # 等待工人完成任务
 
     organizer.shutdown()
 
