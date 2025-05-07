@@ -20,7 +20,7 @@ from queue import Empty, Queue
 from threading import Event, Thread, main_thread
 from threading import enumerate as thread_enumerate
 from time import sleep
-from typing import Callable, List
+from typing import Any, Callable, List
 
 import psutil
 import wrapt
@@ -32,13 +32,19 @@ from xt_thread import thread_print
 class DynamicThreadPool:
     def __init__(
         self, min_workers: int = 2, max_workers: int = 10, queue_size: int = 100
-    ):
-        """初始化动态线程池"""
+    ) -> None:
+        """
+        动态调整的线程池实现
+
+        :param min_workers: 最小工作线程数（保持活跃）
+        :param max_workers: 最大工作线程数（根据负载自动调整）
+        :param queue_size: 任务队列最大容量
+        """
         self.min_workers = min_workers
         self.max_workers = max_workers
         self.task_queue = Queue(maxsize=queue_size)
         self.workers = []
-        self.active = True
+        self.isrunning = True
         self.lock = threading.Lock()
 
         # 启动监控线程
@@ -48,9 +54,16 @@ class DynamicThreadPool:
         # 启动初始工作线程
         self._adjust_worker_count(min_workers)
 
+    def __enter__(self) :
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        """安全关闭线程池"""
+        self.shutdown(wait=True)
+
     def _monitor_resources(self):
         """监控系统资源和任务队列，动态调整线程数"""
-        while self.active:
+        while self.isrunning:
             cpu_percent = psutil.cpu_percent()
             queue_size = self.task_queue.qsize()
             current_workers = len(self.workers)
@@ -81,7 +94,7 @@ class DynamicThreadPool:
 
     def _worker_loop(self):
         """工作线程主循环"""
-        while self.active:
+        while self.isrunning or not self.task_queue.empty():
             try:
                 task = self.task_queue.get(timeout=1)
                 if task is None:  # 退出信号
@@ -99,19 +112,31 @@ class DynamicThreadPool:
             except queue.Empty:
                 continue
 
-    def submit(self, func: Callable, *args, **kwargs):
+    def submit(self, func: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
         """提交任务到线程池"""
-        if not self.active:
+        if not self.isrunning:
             raise RuntimeError("线程池已关闭")
         self.task_queue.put((func, args, kwargs))
 
     def shutdown(self, wait: bool = True):
         """关闭线程池"""
-        self.active = False
+        self.isrunning = False  # 先停止接受新任务
         if wait:
+            # 等待队列处理完毕
+            while not self.task_queue.empty():
+                time.sleep(0.1)
+            # 等待所有工作线程完成当前任务
+            self.task_queue.join()
+            # 发送终止信号给工作线程
+            for _ in range(len(self.workers)):
+                self.task_queue.put(None)
+            # 等待线程终止
             for worker in self.workers:
                 worker.join()
+        # 确保监控线程终止
         self.monitor.join()
+        # 清空工作线程列表
+        self.workers.clear()
 
 
 class ProductionSystem:
@@ -155,20 +180,21 @@ class ProductionSystem:
                 break
 
     def _consumer_wrapper(self, consumer_fn):
-        """消费者包装函数，处理异常和停止信号，确保消费完队列后退出"""
+        """消费者包装函数（增强版），处理异常和停止信号，确保消费完队列后退出"""
         while not (self.running.is_set() and self.queue.empty()):
-            # 条件：未停止 或 队列不为空，继续消费
-            # 停止信号已发且队列已空，退出循环
             try:
                 item = self.queue.get(timeout=1)
-                consumer_fn(item)
-                self.queue.task_done()
+                try:
+                    consumer_fn(item)
+                except Exception as e:
+                    if hasattr(self, "error_callback"):
+                        self.error_callback(e, item)
+                    else:
+                        print(f"消费失败: {e}")
+                finally:
+                    self.queue.task_done()
             except queue.Empty:
-                # 队列空，继续判断循环条件
                 continue
-            except Exception as e:
-                print(f"消费者发生错误: {e}")
-                break
 
     def shutdown(self):
         """停止所有生产者和消费者，等待队列消费完毕"""
@@ -446,14 +472,14 @@ if __name__ == "__main__":
             """生产者生成随机数"""
             time.sleep(random.uniform(0.1, 0.5))  # 模拟生产时间
             item = random.randint(1, 100)  # 生成随机数
-            print(f"生产者生成: {item}")
+            thread_print(f"生产者生成: {item}")
             return item
 
         # 定义消费者函数
         def consumer_function(item):
             """消费者处理生成的随机数"""
             time.sleep(random.uniform(0.1, 0.5))  # 模拟消费时间
-            print(f"消费者消费: {item}")
+            thread_print(f"消费者消费: {item}")
 
         # 创建生产系统实例
         production_system = ProductionSystem(queue_size=5)
@@ -466,9 +492,9 @@ if __name__ == "__main__":
             production_system.add_consumer(consumer_function)
 
         # 运行一段时间后停止
-        time.sleep(2)  # 让生产和消费运行5秒
+        time.sleep(2)  # 让生产和消费运行2秒
         production_system.shutdown()  # 停止所有生产者和消费者
-        print("生产系统已停止。")
+        thread_print("生产系统已停止。")
 
     Production()
 
@@ -478,9 +504,9 @@ if __name__ == "__main__":
         import random
 
         sleep_time = random.uniform(0.1, 1.0)  # 随机等待一段时间
-        print(f"任务 {task_id} 开始，预计耗时 {sleep_time:.2f} 秒")
+        thread_print(f"任务 {task_id} 开始，预计耗时 {sleep_time:.2f} 秒")
         time.sleep(sleep_time)
-        print(f"任务 {task_id} 完成")
+        thread_print(f"任务 {task_id} 完成")
 
     def func2():
         # 创建动态线程池实例
@@ -491,8 +517,8 @@ if __name__ == "__main__":
             thread_pool.submit(DynamicT, i)
 
         # 运行一段时间后关闭线程池
-        time.sleep(10)  # 让任务运行一段时间
+        # time.sleep(10)  # 让任务运行一段时间
         thread_pool.shutdown(wait=True)  # 等待所有任务完成后关闭线程池
-        print("动态线程池已关闭。")
+        thread_print("动态线程池已关闭。")
 
     # func2()

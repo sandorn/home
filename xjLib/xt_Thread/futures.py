@@ -20,14 +20,18 @@ from concurrent.futures import (
     wait,
 )
 from os import cpu_count
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Optional
 
 
 class EnhancedThreadPool:
     def __init__(
         self, max_workers: int = None, thread_name_prefix: str = "EnhancedThreadPool"
     ):
-        """初始化增强型线程池"""
+        """
+        增强型线程池，提供任务结果收集和异常处理功能
+        :param max_workers: 最大工作线程数，默认根据CPU核心数自动计算
+        :param thread_name_prefix: 线程名前缀，用于调试和日志跟踪
+        """
         self.executor = ThreadPoolExecutor(
             max_workers=max_workers, thread_name_prefix=thread_name_prefix
         )
@@ -35,14 +39,17 @@ class EnhancedThreadPool:
         self.results: List[Any] = []
         self._lock = threading.Lock()
         self.task_count = 0
+        self.exception_handler: Optional[Callable[[Exception], None]] = None
 
-    def submit_task(self, fn: Callable, *args, **kwargs) -> Future:
-        """提交任务到线程池"""
-        future = self.executor.submit(self._task_wrapper, fn, *args, **kwargs)
-        with self._lock:
-            self.futures.append(future)
-            self.task_count += 1
-        return future
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.shutdown(wait=True)
+
+    def set_exception_handler(self, handler: Callable[[Exception], None]) -> None:
+        """设置全局异常处理器"""
+        self.exception_handler = handler
 
     def _task_wrapper(self, fn: Callable, *args, **kwargs):
         """任务包装器，用于收集结果和处理异常"""
@@ -52,8 +59,22 @@ class EnhancedThreadPool:
                 self.results.append(result)
             return result
         except Exception as e:
-            print(f"任务执行异常: {e}")
+            if self.exception_handler:
+                self.exception_handler(e)
+            else:
+                print(f"Task failed with exception: {e}")
             raise
+    def submit_task(self, fn: Callable, *args, **kwargs) -> Future:
+        """
+        提交异步任务到线程池
+        :param fn: 要执行的目标函数
+        :return: Future对象用于跟踪任务状态
+        """
+        future = self.executor.submit(self._task_wrapper, fn, *args, **kwargs)
+        with self._lock:
+            self.futures.append(future)
+            self.task_count += 1
+        return future
 
     def wait_for_completion(self, timeout: float = None) -> bool:
         """等待所有任务完成"""
@@ -73,10 +94,15 @@ class EnhancedThreadPool:
 
 
 class ThreadPool(ThreadPoolExecutor):
-    def __init__(self):
-        self.count = (cpu_count() or 4) * 4
-        super().__init__(self.count)
-        self._future_tasks = []
+    def __init__(self, io_bound: bool = True):
+        """
+        :param io_bound: 是否为I/O密集型任务，True则设置较多线程
+        """
+        base_count = cpu_count() or 4
+        # I/O密集型任务设置较多线程，CPU密集型任务设置较少线程
+        self.count = base_count * 4 if io_bound else base_count + 2
+        super().__init__(max_workers=self.count)
+        self._future_tasks: List[Future] = []
 
     def add_tasks(self, fn, *args_iter, callback=None):
         for item in zip(*args_iter):
@@ -134,20 +160,20 @@ if __name__ == "__main__":
         "https://xinghuo.xfyun.cn/desk",
         "http://www.163.com/",
     ]
-    res = FnInPool(get, url_list * 1)
-    print(111111, res.result)
+    # res = FnInPool(get, url_list * 1)
+    # print(111111, res.result)
 
     # POOL = ThreadPool()
     # POOL.add_tasks(get, url_list)
     # res = POOL.wait_completed()
     # print(222222, res)
     def test_fn(urls):
-        thread_pool = EnhancedThreadPool(max_workers=5)
+        thread_pool = EnhancedThreadPool()
 
         # 提交多个任务
         futures = []
-        for i in range(10):
-            future = thread_pool.submit_task(get, urls[i])
+        for url in urls:
+            future = thread_pool.submit_task(get, url)
             futures.append(future)
 
         # 等待所有任务完成
@@ -155,12 +181,12 @@ if __name__ == "__main__":
 
         # 获取并打印结果
         results = thread_pool.get_results()
-        for result in results:
-            print(result)
+        for result in results:...
+            # print(result)
 
         # 关闭线程池
         thread_pool.shutdown()
         return results
 
-    res = test_fn(url_list * 4)
-    print(333333, res)
+    res = test_fn(url_list*4)
+    print(333333,len(res), res)
