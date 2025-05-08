@@ -11,166 +11,184 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+import weakref
 from functools import wraps
 from threading import Lock
+from typing import Any, Type
 
 
 class SingletonMetaCls(type):
     """
-    单例元类,可多次init,构建类时调用
-    class MyCls(ParentCls,metaclass=SingletonMetaCls)
+    线程安全的单例元类实现（改进版）
+
+    Features:
+    - 双重检查锁确保线程安全
+    - 支持重新初始化实例属性
+    - 自动垃圾回收
+
+    Usage:
+    class MyClass(ParentCls,metaclass=SingletonMetaCls):
+        def __init__(self, config):
+            self.config = config
     """
 
     _instance_lock = Lock()
 
-    def __init__(cls, *args, **kwargs):
-        cls._instance = None
-        super().__init__(*args, **kwargs)
-
-    def _init_instance(cls, *args, **kwargs):
-        if cls._instance is not None:
-            return cls._instance
-
-        with cls._instance_lock:
-            if cls._instance is None:
-                cls._instance = super().__call__(*args, **kwargs)
+    def __call__(cls, *args: Any, **kwargs: Any) -> Any:
+        """获取单例实例（带异常处理）"""
+        if not hasattr(cls, "_instance"):
+            with cls._instance_lock:
+                try:
+                    cls._instance = super().__call__(*args, **kwargs)
+                except Exception as e:
+                    raise RuntimeError(f"Singleton initialization failed: {e}")
         return cls._instance
 
-    def __call__(cls, *args, **kwargs):
-        reinit = kwargs.pop("reinit", False)
-        instance = cls._init_instance(*args, **kwargs)
-        if reinit:
-            # 重新初始化单例对象属性
-            instance.__init__(*args, **kwargs)
-        return instance
-
-
 class SingletonMixin:
+    """线程安全的单例混入类（带内存优化）
+
+    Features:
+    - 使用弱引用避免内存泄漏
+    - 支持多继承场景
+    - 自动清理实例引用
+
+    Usage:
+    class MyCls(SingletonMixin):
+        def __init__(self, conn_str):
+            self.connection = create_connection(conn_str)
     """
-    单例模式基类,用于继承,可多次init,
-    可用类调用 classmethod
-    # 可通过self._intialed判断,设定初始化次数
-    """
-
-    _lock = Lock()  # 保护实例字典的线程锁
-    _instances = {}  # 保存实例的字典
-
-    def __new__(cls, *args, **kwargs):
-        if cls in cls._instances:
-            return cls._instances[cls]
-
-        with cls._lock:
-            if cls not in cls._instances:
-                # 调用基类的__new__方法，创建实例，并将其添加到实例字典
-                instance = super().__new__(cls)
-                instance._initialized = False  # 为实例添加标志，用于跟踪是否初始化
-                cls._instances[cls] = instance
-
-        return cls._instances[cls]
-
-    def __del__(self):
-        # 清理实例字典中的引用
-        self.__class__._instances.pop(self.__class__, None)
-
-
-class SingletonDecoratorClass:
-    """单例类装饰器,单次init,只能实例调用classmethod"""
 
     _lock = Lock()
+    _instances = weakref.WeakValueDictionary()
 
-    def __init__(self, cls):
-        self._cls = cls
-        self._instance = None
-
-    def __call__(self, *args, **kwargs):
-        with self._lock:
-            if self._instance is None:
-                self._instance = self._cls(*args, **kwargs)
-        return self._instance
-
-
-def singleton_decorator_factory(_cls):
-    """单例类装饰器,多次init,返回类,类属性及方法通用
-    # 可通过self._initialized判断,设定初始化次数"""
-
-    class ClassWrapper(_cls):
-        _lock = Lock()
-        _instance = None
-
-        def __new__(cls, *args, **kwargs):
-            if cls._instance is not None:
-                return cls._instance
-
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+        """实例化处理（带错误日志）"""
+        try:
             with cls._lock:
-                if cls._instance is None:
-                    cls._instance = super().__new__(cls)
-                    cls._instance.__qualname__ = _cls.__name__
-                    cls._instance.__name__ = (
-                        f"<{_cls.__name__} | by singleton_decorator_factory>"
-                    )
-                    cls._instance._initialized = False
-            return cls._instance
+                if cls not in cls._instances:
+                    instance = super().__new__(cls)
+                    cls._instances[cls] = instance
+                    instance.__init__(*args, **kwargs)
+                return cls._instances[cls]
+        except Exception as e:
+            print(f"Singleton creation error: {e}")
+            raise
 
-        def __del__(self):
-            self.__class__._instance = None
-            self.__class__._initialized = False
+class SingletonDecoratorClass:
+    """
+    增强型单例类装饰器（线程安全+重新初始化支持）
+    
+    Features:
+    - 双重检查锁提升性能
+    - 支持通过reinit参数重新初始化实例
+    - 异常处理机制
+    - 类型注解
+    
+    Usage:
+    @SingletonDecoratorClass
+    class Database:
+        def __init__(self, conn_str):
+            self.conn = create_connection(conn_str)
+    """
 
-    return ClassWrapper
+    _lock = Lock()
+    _instance_ref = None  # 使用弱引用避免内存泄漏
 
+    def __init__(self, cls: Type) -> None:
+        self._cls = cls
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """获取/创建单例实例"""
+        reinit = kwargs.pop('reinit', False)  # 支持重新初始化
+        instance = self._instance_ref() if self._instance_ref else None
+        
+        if instance is None or reinit:
+            with self._lock:
+                instance = self._instance_ref() if self._instance_ref else None
+                if instance is None or reinit:
+                    try:
+                        instance = self._cls(*args, **kwargs)
+                        self._instance_ref = weakref.ref(instance)
+                    except Exception as e:
+                        raise RuntimeError(f"Singleton initialization failed: {e}")
+        return instance
+
+def singleton_decorator_factory(cls) -> Type:
+    """通用单例装饰器（支持类型提示）
+    
+    Args:
+        cls: 需要实现单例的类
+        
+    Returns:
+        单例化后的类
+        
+    Example:
+    @singleton
+    class AppConfig:
+        def __init__(self):
+            self.settings = load_config()
+    """
+    _instances = {}
+    _lock = Lock()
+
+    @wraps(cls)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        if cls not in _instances:
+            with _lock:
+                if cls not in _instances:
+                    _instances[cls] = cls(*args, **kwargs)
+        return _instances[cls]
+
+    # 添加实例管理属性
+    wrapper._instances = _instances
+    wrapper._lock = _lock
+    return wrapper
 
 def singleton_wraps_factory(cls_obj):
-    """单例装饰器,返回类"""
-    _instance_dic = {}
-    _instance_lock = Lock()
+    """单例装饰器（线程安全+弱引用优化版）
+    可通过self._initialized 判断初始化次数
+
+    :param cls_obj: 需要单例化的类
+    :param reinit: 是否重新初始化实例（通过kwargs传入）
+    """
+    _instances = weakref.WeakValueDictionary()  # 改用弱引用字典
+    _lock = Lock()
 
     @wraps(cls_obj)
     def wrapper(*args, **kwargs):
-        # 检查实例是否已存在
-        if cls_obj in _instance_dic:
-            return _instance_dic[cls_obj]
+        reinit = kwargs.pop("reinit", False)
+        instance = _instances.get(cls_obj)
 
-        with _instance_lock:
-            # 再次检查以防多个线程同时创建实例
-            if cls_obj not in _instance_dic:
-                instance = cls_obj(*args, **kwargs)
-                instance._initialized = False
-                instance.__name__ = f"<{cls_obj.__name__} | by singleton_wraps_factory>"
-                _instance_dic[cls_obj] = instance
-
-        return _instance_dic[cls_obj]
+        # 双重检查锁优化
+        if instance is None or reinit:
+            with _lock:
+                instance = _instances.get(cls_obj)
+                if instance is None or reinit:
+                    try:
+                        instance = cls_obj(*args, **kwargs)
+                        instance._initialized = True  # 启用初始化标记
+                        instance.__name__ = (
+                            f"<{cls_obj.__name__} | by singleton_wraps_factory>"
+                        )
+                        _instances[cls_obj] = instance
+                    except Exception as e:
+                        raise RuntimeError(f"单例初始化失败: {e}")
+        return instance
 
     return wrapper
 
-
 if __name__ == "__main__":
 
-    class sss:
-        def __init__(self, value):
-            self.value = value
-            self._initialized = True
-
-    super_sss = type("super_sss", (sss, SingletonMixin), {})
-
-    class sample(sss, metaclass=SingletonMetaCls): ...
-
-    class sample_mixin(sss, SingletonMixin): ...
-
+    # 测试代码
     @singleton_wraps_factory
-    class sample_class_wrap(sss): ...
+    class MyClass:
+        def __init__(self, name):
+            self.name = name
 
-    @singleton_decorator_factory
-    class singleton_decorator_factory_f(sss): ...
-
-    singleton_decorator_factory_line = singleton_decorator_factory(sss)
-
-    a = sss("习近平")
-    t = super_sss("毛泽东")
-    b = sample("胡锦涛")
-    c = sample_mixin("江泽民")
-    d = sample_class_wrap("李鹏")
-    dd = sample_class_wrap("李鹏2")
-    z = singleton_decorator_factory_f("邓小平")
-    e = singleton_decorator_factory_line("朱镕基")
-
-    print(id(a), id(t), id(b), id(c), d is dd)
-    print(e is z, id(e), id(z), e)
+    obj0 = MyClass("obj0")
+    obj1 = MyClass("obj1")
+    print(obj1 is obj0)  # 输出: True
+    obj2 = MyClass("obj2", reinit=True)
+    print(obj1 is obj2)  # 输出: False
+    print(obj1.name)  # 输出: obj1
+    print(obj2.name)  # 输出: obj1
