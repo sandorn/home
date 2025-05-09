@@ -10,10 +10,12 @@ FilePath     : /CODE/xjLib/xt_thread/production.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 '''
+import asyncio
 import queue
 import threading
 import time
-from typing import List
+from random import randint
+from typing import Any, Callable, Coroutine, List
 
 from xt_thread import thread_print
 
@@ -106,6 +108,72 @@ class Production:
         return self.tasks
 
 
+class AsyncProduction:
+    def __init__(self, queue_size: int = 10):
+        self.queue = asyncio.Queue(maxsize=queue_size)
+        self.producer_tasks = []
+        self.consumer_tasks = []
+        self.running = False
+
+    async def start(
+        self,
+        num_producers: int,
+        num_consumers: int,
+        producer_fn: Callable[[], Coroutine[Any, Any, Any]],
+        consumer_fn: Callable[[Any], Coroutine[Any, Any, None]],
+    ):
+        self.running = True
+        # 创建任务并保存引用
+        self.producer_tasks = [
+            asyncio.create_task(self._producer_loop(producer_fn))
+            for _ in range(num_producers)
+        ]
+        self.consumer_tasks = [
+            asyncio.create_task(self._consumer_loop(consumer_fn))
+            for _ in range(num_consumers)
+        ]
+
+    async def _producer_loop(self, producer_fn):
+        while self.running:
+            try:
+                item = await producer_fn()
+                await self.queue.put(item)
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                print(f"生产者异常: {e}")
+                break
+
+    async def _consumer_loop(self, consumer_fn):
+        while self.running:
+            try:
+                item = await asyncio.wait_for(
+                    self.queue.get(),
+                    timeout=0.5,  # 关键优化：避免永久阻塞
+                )
+                await consumer_fn(item)
+                self.queue.task_done()
+            except asyncio.TimeoutError:
+                continue  # 超时后检查running状态
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                print(f"消费者异常: {e}")
+                break
+
+    async def stop(self):
+        """安全停止系统"""
+        self.running = False
+        # 取消所有任务
+        for task in self.producer_tasks + self.consumer_tasks:
+            task.cancel()
+        # 等待任务清理
+        await asyncio.gather(
+            *self.producer_tasks, *self.consumer_tasks, return_exceptions=True
+        )
+        print("系统已完全停止")
+
+
 if __name__ == "__main__":
 
     def test(*arg, **kwargs):
@@ -141,4 +209,38 @@ if __name__ == "__main__":
         time.sleep(2)  # 让生产和消费运行2秒
         return production_system.shutdown()  # 停止所有生产者和消费者
 
-    print(999999999999999,test())
+    # print(999999999999999,test())
+
+
+    """测试异步生产消费系统"""
+    import asyncio
+    from random import randint
+    from typing import Any, Coroutine
+
+
+    async def mock_producer() -> Coroutine[Any, Any, int]:
+        """模拟生产者：生成随机数"""
+        await asyncio.sleep(0.1)  # 模拟耗时操作
+        return randint(1, 100)
+
+
+    async def mock_consumer(item: Any) -> Coroutine[Any, Any, None]:
+        """模拟消费者：处理数据并打印"""
+        await asyncio.sleep(0.2)  # 模拟耗时操作
+        print(f"处理数据: {item}")
+
+
+    async def test_async_production(): 
+        system = AsyncProduction(queue_size=5)
+        await system.start( 
+            num_producers=2,
+            num_consumers=3,
+            producer_fn=mock_producer,
+            consumer_fn=mock_consumer
+        )
+        await asyncio.sleep(3)   # 运行3秒
+        await system.stop()   # 必须用await调用 
+
+
+    asyncio.run(test_async_production())
+
