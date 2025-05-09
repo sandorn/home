@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import builtins
 from concurrent.futures import ThreadPoolExecutor
-from os import cpu_count
 from threading import Lock, Thread
 from typing import Any, Callable
 
@@ -216,36 +215,6 @@ def create_mixin_class(name, cls, meta, **kwargs):
     """type动态混入继承,实质是调整 bases"""
     return type(name, (cls, meta), kwargs)
 
-class ThreadPoolManager:
-    """全局线程池单例管理
-    使用示例：
-    with ThreadPoolManager.get_pool() as executor:
-        future = executor.submit(task_function, args)
-    """
-    _instance: ThreadPoolExecutor | None = None
-    _lock = Lock()
-    
-    @classmethod
-    def get_pool(cls, max_workers: int | None = None) -> ThreadPoolExecutor:
-        """获取线程池实例
-        :param max_workers: None-自动计算(IO密集型推荐)，具体数值适用于CPU密集型任务
-        """
-        with cls._lock:
-            if not cls._instance or cls._instance._max_workers != max_workers:
-                # 根据任务类型自动优化线程数
-                base_workers = cpu_count() or 4
-                if max_workers is None:
-                    max_workers = base_workers * 4  # 默认IO密集型配置
-                cls._instance = ThreadPoolExecutor(max_workers=max_workers)
-            return cls._instance
-
-    @classmethod
-    def shutdown(cls):
-        """安全关闭线程池"""
-        if cls._instance:
-            cls._instance.shutdown(wait=True)
-            cls._instance = None
-
 
 thread_print = thread_safe(print)
 
@@ -288,20 +257,4 @@ if __name__ == "__main__":
     # ThreadSafe(c)("ThreadSafe C")
     # ThreadSafe(print)("ThreadSafe print")
 
-    from concurrent.futures import as_completed
-    def tpoolmana_test():
-        def process_data(data):
-            # 数据处理逻辑
-            print(f"Processing data: {data}")
-            return f"transformed_{data}"
-
-        # 获取线程池实例
-        with ThreadPoolManager.get_pool() as executor:
-            futures = [executor.submit(process_data, d) for d in range(10)]
-            results = [f.result() for f in as_completed(futures)]
-            print(results)  # 输出处理后的结果列表
-
-        # 安全关闭线程池
-        ThreadPoolManager.shutdown()
     
-    # tpoolmana_test()

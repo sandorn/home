@@ -1,15 +1,15 @@
 # !/usr/bin/env python
-"""
+'''
 ==============================================================
 Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2025-01-21 14:03:45
+LastEditTime : 2025-05-08 12:21:41
 FilePath     : /CODE/xjLib/xt_thread/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
-"""
+'''
 
 from .decorator import (
     ThreadSafe,
@@ -21,7 +21,12 @@ from .decorator import (
     thread_safe,
 )
 from .futures import EnhancedThreadPool, FnInPool, ThreadPool
-from .Process import CustomProcess, Do_CustomProcess
+from .process import CustomProcess, Do_CustomProcess
+from .production import (
+    DynamicThreadPool,
+    ProductionSystem,
+    ThreadPoolManager,
+)
 from .qThread import CustomQThread, SingletonQThread
 from .thread import (
     CustomThread,
@@ -29,8 +34,6 @@ from .thread import (
     SigThread,
     SigThreadQ,
     SingletonThread,
-    ThreadPoolWraps,
-    _create_singleton_thread_class,
     stop_thread,
 )
 
@@ -55,6 +58,8 @@ __all__ = (
     "ThreadPoolWraps",
     "stop_thread",
     "create_mixin_class",
-    "_create_singleton_thread_class",
     "EnhancedThreadPool",
+    "DynamicThreadPool",
+    "ProductionSystem",
+    "ThreadPoolManager",
 )
