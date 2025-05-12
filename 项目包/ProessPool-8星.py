@@ -5,12 +5,11 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2023-01-03 12:52:03
-LastEditTime : 2025-05-08 16:53:38
+LastEditTime : 2025-05-12 10:29:58
 FilePath     : /CODE/项目包/ProessPool-8星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
-
 
 import os
 
@@ -20,7 +19,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor as PExecutor
 from multiprocessing import Pool as ProcPool
 
-from xt_bqg import get_contents
+from xt_bqg import get_contents, get_download_url
 from xt_file import savefile
 from xt_thread import Do_CustomProcess
 from xt_time import fn_timer
@@ -73,20 +72,24 @@ def process_data(a, b, coefficient=1):
 
 if __name__ == "__main__":
     url = "https://www.bigee.cc/book/6909/"
-    # bookname, urls, _ = get_download_url(url)
-    # cmpro(bookname, urls[0:10])  # |<perf_counter: s>
+    bookname, urls, _ = get_download_url(url)
+    cmpro(bookname, urls[0:10])  # |<perf_counter: s>
+
     # MPpool(bookname, urls[0:10])  # |<perf_counter: 55.4s>
     # PPoolExecutor(bookname, urls)  # |<perf_counter: 76s>
-    list_a = [i for i in range(100)]
-    list_b = [i for i in range(100)]
+    def test():
+        list_a = [i for i in range(100)]
+        list_b = [i for i in range(100)]
 
-    # 正确调用方式
-    results = Do_CustomProcess(
-        process_data,  # 目标函数
-        list_a,  # 参数列表1
-        list_b,  # 参数列表2
-        coefficient=1,  # 函数参数
-    )
+        # 正确调用方式
+        results = Do_CustomProcess(
+            process_data,  # 目标函数
+            list_a,  # 参数列表1
+            list_b,  # 参数列表2
+            coefficient=1,  # 函数参数
+        )
 
-    print(f"处理完成，共得到 {len(results)} 个结果")
-    print("示例结果：", results)
+        print(f"处理完成，共得到 {len(results)} 个结果")
+        print("示例结果：", results)
+
+    # test()
