@@ -11,7 +11,6 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-import sys
 from multiprocessing import Manager, Process, Semaphore, get_context
 
 
@@ -63,9 +62,9 @@ class CustomProcess(Process):
 
 def Do_CustomProcess(func, *args, **kwargs):
     # Windows特殊处理
-    if sys.platform == "win32":
-        import __main__
-        __main__.__dict__[func.__name__] = func
+    # if sys.platform == "win32":
+    #     import __main__
+    #     __main__.__dict__[func.__name__] = func
 
     max_workers = kwargs.pop("max_workers", 12) 
 
