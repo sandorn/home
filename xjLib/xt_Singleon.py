@@ -133,9 +133,10 @@ def singleton_decorator_factory(cls) -> Type:
 
     @wraps(cls)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if cls not in _instances:
+        reinit = kwargs.pop("reinit", False)
+        if cls not in _instances or reinit:
             with _lock:
-                if cls not in _instances:
+                if cls not in _instances or reinit:
                     _instances[cls] = cls(*args, **kwargs)
         return _instances[cls]
 

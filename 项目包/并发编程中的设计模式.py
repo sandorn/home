@@ -10,10 +10,9 @@ FilePath     : /CODE/项目包/并发编程中的设计模式.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+
 # ? 生产者-消费者模式
-# 生产者-消费者模式是一种经典的并发编程模式，用于解决生产者和消费者之间的协作问题。
-# 在生产者-消费者模式中，生产者负责生成数据并将其放入共享的缓冲区中，而消费者则负责从缓冲区中取出数据进行处理。
-# 这种模式可以有效地解耦生产者和消费者，提高系统的可扩展性和性能。
+
 import asyncio
 import uuid
 from dataclasses import dataclass, field
@@ -24,11 +23,13 @@ from typing import Any, Callable, Dict, Set
 @dataclass
 class WorkEvent:
     """工作事件数据类"""
+
     event_type: str
     payload: Any
     source_id: str = ""
     worker_id: str = ""
     correlation_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
 
 class EventDrivenWorker:
     def __init__(self, worker_id: str):

@@ -20,7 +20,7 @@ global isInterrupted := false  ; 中断标志变量
             MsgBox 点击失败：%e%
             Break
         }
-        Sleep 30
+        ; Sleep 30
         remaining := totalClicks - A_Index  ; 计算剩余次数
         Progress, % A_Index, 正在点击（剩余次数：%remaining%）
     }
