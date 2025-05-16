@@ -5,11 +5,12 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2024-06-28 17:32:08
-LastEditTime : 2024-08-26 17:22:37
+LastEditTime : 2025-05-16 11:15:30
 FilePath     : /CODE/xjLib/xt_pyqt/utils.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+
 
 import sys
 from functools import wraps
@@ -29,7 +30,7 @@ def event_loop(func):
             # 忽略用户键鼠输入
             QApplication.processEvents(
                 QEventLoop.ExcludeUserInputEvents,
-                # QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents,
+                QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents,
             )
 
             return func(*args, **kwargs)
