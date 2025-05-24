@@ -2,7 +2,7 @@ from time import sleep
 
 from bdtime import vk
 
-from pydamo.regsvr import RegDM
+from .regsvr import RegDM
 
 
 class DM:
