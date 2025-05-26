@@ -13,12 +13,6 @@ Github       : https://github.com/sandorn/home
 
 from typing import Any
 
-# 生成器的类型提示： Generator[yield_type, send_type, return_type]
-# from typing import List, Dict, Tuple, Set,Union,Any,Sequence
-# from typing import Type,TypeVar,Generic,Callable,Iterable,Iterator,Mapping,Pattern
-# from typing import Generator,ClassVar,Annotated,Optional
-
-
 class ItemGetMixin:
     """下标调用(索引操作)[key]"""
 
@@ -27,7 +21,6 @@ class ItemGetMixin:
             print(f"ItemGetMixin: {key}")
         # return getattr(self, key, None)
         return self.__dict__.get(key, None)
-
 
 class ItemSetMixin:
     """下标调用（索引操作）[key]"""
