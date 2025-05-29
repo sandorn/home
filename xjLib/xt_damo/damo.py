@@ -15,6 +15,8 @@ from time import sleep
 
 from apiproxy import ApiProxy
 from coreengine import CoreEngine
+from key import Key
+from mouse import Mouse
 from regsvr import RegDM
 
 _Reg_code = "jv965720b239b8396b1b7df8b768c919e86e10f"
@@ -123,8 +125,6 @@ class DM:
 
 
 if __name__ == "__main__":
-    from key import Key
-    from mouse import Mouse
 
     dm = DM()
     print(dm.ver())

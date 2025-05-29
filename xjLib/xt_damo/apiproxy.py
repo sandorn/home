@@ -24,7 +24,6 @@ class _timed_loop:
     def __exit__(self, *args):
         pass
 
-
 class ApiProxy:
     def __init__(self, dmobject: Any) -> None:
         """高级功能封装
