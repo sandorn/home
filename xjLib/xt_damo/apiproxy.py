@@ -43,20 +43,22 @@ class ApiProxy:
 
     def 绑定窗口(
         self,
-        局部窗口句柄,
-        显示参数="gdi",
-        鼠标参数="windows3",
-        键盘参数="windows",
-        公共参数="dx.public.fake.window.min|dx.public.hack.speed",
-        绑定模式=101,
+        hwnd,
+        display=["normal", "gdi", "gdi2", "dx", "dx2"][1],
+        mouse=["normal", "windows", "windows2", "windows3", "dx", "dx2"][3],
+        keypad=["normal", "windows", "dx"][1],
+        pulic="dx.public.fake.window.min|dx.public.hack.speed",
+        mode=[0, 1, 2, 3, 4, 5, 6, 7, 101, 103][8],
     ):
+        ret = self.dm.BindWindowEx(hwnd, display, mouse, keypad, pulic, mode)
+
         _state = True
-        ret = self.dm.BindWindowEx(
-            局部窗口句柄, 显示参数, 鼠标参数, 键盘参数, 公共参数, 绑定模式
-        )
         if ret != 1:
             print("窗口绑定失败!错误代码:" + self.dm.GetLastError())
             _state = False
+        else:
+            _state = True
+            print("窗口绑定成功!")
 
         return _state
 

@@ -10,6 +10,7 @@ FilePath     : /CODE/xjLib/xt_damo/CoreEngine.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+
 from typing import Any
 
 
@@ -36,8 +37,15 @@ class CoreEngine:
     def ver(self):
         return self.dm.ver()
 
-    def GetDir(self, type):
-        return self.dm.GetDir(type)
+    def GetDir(self, types: int = 0):
+        """
+        0 : 获取当前路径
+        1 : 获取系统路径(system32路径)
+        2 : 获取windows路径(windows所在路径)
+        3 : 获取临时目录路径(temp)
+        4 : 获取当前进程(exe)所在的路径
+        """
+        return self.dm.GetDir(types)
 
     def GetBasePath(self):
         return self.dm.GetBasePath()
@@ -100,9 +108,9 @@ class CoreEngine:
         self,
         hwnd,
         display=["normal", "gdi", "gdi2", "dx", "dx2"][1],
-        mouse=["normal", "windows", "windows2", "windows3", "dx", "dx2"][1],
+        mouse=["normal", "windows", "windows2", "windows3", "dx", "dx2"][3],
         keypad=["normal", "windows", "dx"][1],
-        mode=[0, 1, 2, 3, 4, 5, 6, 7, 101, 103][0],
+        mode=[0, 1, 2, 3, 4, 5, 6, 7, 101, 103][8],
     ):
         return self.dm.BindWindow(hwnd, display, mouse, keypad, mode)
 
@@ -166,10 +174,6 @@ class CoreEngine:
     def EnumWindowSuper(self, spec1, flag1, type1, spec2, flag2, type2, sort):
         return self.dm.EnumWindowSuper(spec1, flag1, type1, spec2, flag2, type2, sort)
 
-    # endregion
-
-    # key_mouse
-    # region key_mouse
     def GetCursorPos(self, x=0, y=0):
         return self.dm.GetCursorPos(x, y)
 
@@ -194,16 +198,6 @@ class CoreEngine:
         # if(vk_code.__class__.)
         return self.dm.WaitKey(vk_code, time_out)
 
-    # def WaitKey(vk_code,time_out = 0):
-    #     # vk_code = 'a'
-    #     # vk_code.__class__.__name__ == 'str'
-    #     # vk_code.upper()
-    #     # kk
-    #     # if(vk_code.__class__.)
-    #
-    #     return print(vk_code, time_out)
-    # WaitKey('a')
-
     def KeyDown(self, vk_code):
         return self.dm.KeyDown(vk_code)
 
@@ -225,29 +219,19 @@ class CoreEngine:
     def KeyUpChar(self, key_str):
         return self.dm.KeyUpChar(key_str)
 
-    def LeftClick(
-        self,
-    ):
+    def LeftClick(self):
         return self.dm.LeftClick()
 
-    def LeftDoubleClick(
-        self,
-    ):
+    def LeftDoubleClick(self):
         return self.dm.LeftDoubleClick()
 
-    def LeftDown(
-        self,
-    ):
+    def LeftDown(self):
         return self.dm.LeftDown()
 
-    def LeftUp(
-        self,
-    ):
+    def LeftUp(self):
         return self.dm.LeftUp()
 
-    def MiddleClick(
-        self,
-    ):
+    def MiddleClick(self):
         return self.dm.MiddleClick()
 
     def MoveR(self, rx, ry):
@@ -259,24 +243,16 @@ class CoreEngine:
     def MoveToEx(self, x, y, w, h):
         return self.dm.MoveToEx(x, y, w, h)
 
-    def RightClick(
-        self,
-    ):
+    def RightClick(self):
         return self.dm.RightClick()
 
-    def RightDown(
-        self,
-    ):
+    def RightDown(self):
         return self.dm.RightDown()
 
-    def RightUp(
-        self,
-    ):
+    def RightUp(self):
         return self.dm.RightUp()
 
-    def WheelDown(
-        self,
-    ):
+    def WheelDown(self):
         return self.dm.WheelDown()
 
     def WheelUp(self):

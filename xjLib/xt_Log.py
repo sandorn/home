@@ -57,7 +57,7 @@ class LogCls(SingletonMixin):
     def __init__(self, level=10, logname=__name__, pyfile=None):
         pyfile = pyfile or "XtLog"
         self.level = level
-        self.filename = f'{pyfile}--{datetime.now().strftime('%Y%m%d')}.log'
+        self.filename = f"{pyfile}--{datetime.now().strftime('%Y%m%d')}.log"
         # 定义的logging配置字典
         self.conf_dic = {
             "version": 1,
