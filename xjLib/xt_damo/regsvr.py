@@ -1,38 +1,18 @@
 import ctypes
 import os
-from random import randint
 
 from bdtime import tt
 from win32com.client import Dispatch
 
 
-def run_in_bat(cmd, echo=0):
-    f_id = str(tt.now())[-6:] + '_' + str(randint(0, 10)) + str(randint(0, 10))  # 随机id避免混淆
-    bat_name = 'cmd' + f_id + '.bat'
-
-    cmd_head = 'chcp 65001\n'
-    if echo == 0:
-        cmd_head = '@echo off\n' + cmd_head
-
-    bat_text = cmd_head + cmd
-    with open(bat_name, 'w') as f:
-        f.write(bat_text)
-
-    os.system(bat_name)
-    os.remove(bat_name)
-
-    return 1
-
-
-def success_regsvr(desc='--- 调用dm.dll失败! ---', T=0.5):
+def _Dispatch_Dm_object():
     try:
-        dm = Dispatch('dm.dmsoft')  # 调用大漠插件
-        print('调用dm.dll成功!')
+        dm = Dispatch("dm.dmsoft")  # 调用大漠插件
+        print("调用大漠对象dm.dmsoft成功!")
         return dm
-    except Exception:
-        print(desc)
-        # tt.tqdm_sleep(desc, T)
-        return 0
+    except Exception as e:
+        print(f"--- 调用大漠对象dm.dmsoft失败 --- 错误: {e}")
+        return False
 
 
 def get_regsvr_cmd():
@@ -57,72 +37,75 @@ class RegDM():
             path_dll = dirpath
         else:
             path_dll = os.path.join(dirpath, 'dm.dll')
-        print('dm.dll注册路径:', path_dll)
-        cmd_dll_0 = 'regsvr32 \"' + path_dll + '\" /s'
+
+        cmd_dll_0 = f'regsvr32 /s "{path_dll}"'
 
         self.dirpath_0 = cwd_0
         self.dirpath = dirpath
         self.path_dll = path_dll
         self.cmd_dll_0 = cmd_dll_0
-        # print(self.cmd_dll_0)
-
-        self.dm = 0
-        pass
+        self.dm = False
 
     def reg(self):
-        dm = success_regsvr()
-        if not dm:
-            is_admin = ctypes.windll.shell32.IsUserAnAdmin()
-            if is_admin:
-                print('--------- self.reg_dm() -------------')
-                self.reg_dm()
-                dm = success_regsvr()
+        self.dm = _Dispatch_Dm_object()
+
+        if self.dm is not False:
+            print("大漠插件已注册！")
+            print(f"大漠对象已创建: {self.dm}")
+        else:
+            print("大漠插件未注册，尝试注册...")
+            if ctypes.windll.shell32.IsUserAnAdmin():
+                os.system(self.cmd_dll_0)
+                print(f"已将 {self.path_dll} 注册到系统...")
+                self.dm = _Dispatch_Dm_object()
             else:
-                print('--------- self.reg_as_admin() -------------')
-                dm = self.reg_as_admin()
-                dm = success_regsvr()  # 调用大漠插件
-        self.dm = dm
-        return dm
+                ctypes.windll.shell32.ShellExecuteW(
+                    None, "runas", "cmd.exe", "/C %s" % self.cmd_dll_0, None, 1
+                )
+                tt.sleep(3)
+                print(f"已将 {self.path_dll} 注册到系统 by runas...")
+                self.dm = _Dispatch_Dm_object()  # 调用大漠插件
+
+        return self.dm
 
     def unreg_dm(self):
-        # os.system(self.cmd_dll_0 + ' /u')
+        # 构造 regsvr32 命令
         cmd = f'regsvr32 /u /s "{self.path_dll}"'
-        run_in_bat(cmd)
-        print('已移除dm.dll')
 
-    def reg_dm(self):
-        os.system(self.cmd_dll_0)
-
-    def reg_as_admin(self):
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", "cmd.exe", "/C %s" % self.cmd_dll_0, None, 1)
-        tt.sleep(3)
-        dm = success_regsvr()  # 调用大漠插件
-        return dm
+        # 检查是否以管理员权限运行
+        if ctypes.windll.shell32.IsUserAnAdmin():
+            os.system(cmd)
+            print(f"已取消注册 {self.path_dll}")
+        else:
+            # 如果不是管理员权限，尝试以管理员权限重新运行
+            ctypes.windll.shell32.ShellExecuteW(
+                None, "runas", "cmd.exe", f"/C {cmd}", None, 1
+            )
+            print(f"以管理员权限取消注册 {self.path_dll}")
+            self.dm = False  # 清除大漠对象引用
 
     @property
     def is_reg(self):
-        ret = success_regsvr()
+        ret = _Dispatch_Dm_object()
         if (ret):
-            return 1
+            return True
         else:
-            return 0
-        1
+            return False
 
     def __repr__(self):
-        ret = 'dm.dll注册状态: ' + str(self.dm)
+        ret = f"dm.dll注册状态:{self.is_reg} ,大漠对象:{self.dm} ,注册路径:{self.path_dll}"
         return ret
 
 
 if __name__ == '__main__':
-    reg_dm = RegDM()
+    # import platform
 
-    reg_dm.unreg_dm()
+    # print(platform.architecture())
+    Dm = RegDM()
 
-    reg_dm.reg_as_admin()
+    Dm.reg()
 
-    success_regsvr()
-
-    reg_dm.reg()
-
-    print(reg_dm.dm)
-    print(1)
+    print(11111111111111111, Dm)
+    Dm.unreg_dm()
+    print(22222222222222222, Dm)
+    print("结束")
