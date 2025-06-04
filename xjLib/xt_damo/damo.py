@@ -210,21 +210,26 @@ class DM:
 
         _ret = self.dm.Reg(_Reg_code, _Ver_info)
         if _ret != 1:
-            raise (f"授权失败,错误代码：{_ret} | 授权问题： errs[_ret]")
+            raise RuntimeError(f"授权失败,错误代码：{_ret} | 授权问题： errs[_ret]")
 
         if not all([self.dm, self.CoreEngine, self.ApiProxy]):
             raise RuntimeError("模块初始化失败")
 
         print("版本：", self.ver(), "，ID：", self.GetID())
 
+    def __del__(self):
+        """对象销毁时自动调用反注册"""
+        self.unreg_dm()
+
     def unreg_dm(self):
-        self.RegDM.unreg_dm()
-        self.dm = False
-        self.CoreEngine = False
-        self.ApiProxy = False
-        self.Key = False
-        self.Mouse = False
-        self.RegDM = False
+        if hasattr(self, "dm") and self.dm:
+            self.RegDM.unreg_dm()
+            self.dm = None
+            self.CoreEngine = None
+            self.ApiProxy = None
+            self.Key = None
+            self.Mouse = None
+            self.RegDM = None
 
     def __repr__(self):
         ret = f"版本： {self.ver()} ID：{self.GetID()}"
@@ -254,14 +259,13 @@ class DM:
         except AttributeError:
             return None
 
-
 if __name__ == "__main__":
 
     dm = DM()
     print(dm.ver())
     ms = Mouse(dm)
     print(111111111, ms.position)
-    x, y = (1300, 800)
+    x, y = (1000, 800)
     ms.move_to(x, y)
     print(222222222, ms.position)
     ms.click_right(x, y, 2)
@@ -274,4 +278,5 @@ if __name__ == "__main__":
     kk.down_up("A", 1)  # 测试用，1秒后按下a键
     dm.down_up("B")  # 按下a键
     sleep(1)
-    dm.unreg_dm()  # 取消注册大漠插件
+
+    # dm.unreg_dm()

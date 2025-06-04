@@ -289,6 +289,12 @@ class TimerWrapt:
         )
         return result
 
+class Timer:
+    def __enter__(self):
+        self.start = perf_counter()
+
+    def __exit__(self, *args):
+        print(f"Timer 耗时: {perf_counter() - self.start:.4f}秒")
 
 def get_time():
     return TimeUtil().datetime_to_str(format_str=TimeFormatEnum.DataTimeFull.value)
@@ -327,3 +333,8 @@ if __name__ == "__main__":
         print("test_timer Function executed")
 
     test_timer()
+
+    with Timer():
+        time.sleep(0.01)
+        print("with Timer")
+        print(get_timestamp("2020-06-15 13:28:27"))

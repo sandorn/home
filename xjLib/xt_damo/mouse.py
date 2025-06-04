@@ -5,11 +5,12 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-05-28 13:54:55
-LastEditTime : 2025-05-28 13:54:55
+LastEditTime : 2025-05-30 15:57:04
 FilePath     : /CODE/xjLib/xt_damo/mouse.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+
 from time import sleep
 from typing import Any
 
