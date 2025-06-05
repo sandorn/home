@@ -46,7 +46,9 @@ class RegDM():
         self.cmd_dll_0 = cmd_dll_0
         self.dm = False
 
-    def reg(self):
+        self.run()
+
+    def run(self):
         self.dm = _Dispatch_Dm_object()
 
         if self.dm is not False:
@@ -102,8 +104,6 @@ if __name__ == '__main__':
 
     # print(platform.architecture())
     Dm = RegDM()
-
-    Dm.reg()
 
     print(11111111111111111, Dm)
     Dm.unreg_dm()

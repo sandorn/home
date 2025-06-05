@@ -24,43 +24,48 @@ class _timed_loop:
     def __exit__(self, *args):
         pass
 
+
 class ApiProxy:
     def __init__(self, dmobject: Any) -> None:
         """高级功能封装
         Args:
-            dmobject: 大漠插件实例
+            dmobject: 大漠插件实例 (必须)
+        Raises:
+            ValueError: 如果dmobject为None
         """
         if not dmobject:
-            raise ValueError("dmobject cannot be None")
+            raise ValueError("dmobject参数不能为空")
         self.dm = dmobject
-
-    # 新增辅助方法
-    def _timeout_expired(self, start, timeout):
-        return timeout > 0 and (time() * 1000 - start) >= timeout
-
-    def _valid_coordinates(self, x, y):
-        return x > 0 and y > 0
+        self._last_error = ""  # 新增错误记录属性
 
     def 绑定窗口(
         self,
-        hwnd,
-        display=["normal", "gdi", "gdi2", "dx", "dx2"][1],
-        mouse=["normal", "windows", "windows2", "windows3", "dx", "dx2"][3],
-        keypad=["normal", "windows", "dx"][1],
-        pulic="dx.public.fake.window.min|dx.public.hack.speed",
-        mode=[0, 1, 2, 3, 4, 5, 6, 7, 101, 103][8],
-    ):
+        hwnd: int,
+        display: str = ["normal", "gdi", "gdi2", "dx", "dx2"][1],
+        mouse: str = ["normal", "windows", "windows2", "windows3", "dx", "dx2"][3],
+        keypad: str = ["normal", "windows", "dx"][1],
+        pulic: str = "dx.public.fake.window.min|dx.public.hack.speed",
+        mode: int = [0, 1, 2, 3, 4, 5, 6, 7, 101, 103][8],
+    ) -> bool:
+        """绑定窗口
+        Args:
+            hwnd: 窗口句柄
+            display: 显示模式 (default: "gdi")
+            mouse: 鼠标模式 (default: "windows3")
+            keypad: 键盘模式 (default: "windows")
+            public: 公共参数 (default: dx.public.fake.window.min|dx.public.hack.speed)
+            mode: 绑定模式 (default: 101)
+        Returns:
+            bool: 绑定是否成功
+        """
         ret = self.dm.BindWindowEx(hwnd, display, mouse, keypad, pulic, mode)
-
-        _state = True
         if ret != 1:
-            print("窗口绑定失败!错误代码:" + self.dm.GetLastError())
-            _state = False
-        else:
-            _state = True
-            print("窗口绑定成功!")
+            self._last_error = self.dm.GetLastError()
+            print(f"窗口绑定失败! 错误代码: {self._last_error}")
+            return False
 
-        return _state
+        print("窗口绑定成功!")
+        return True
 
     def 解绑窗口(self):
         ret = self.dm.UnBindWindow()
@@ -74,9 +79,11 @@ class ApiProxy:
         """解析坐标结果，增加容错处理"""
         parts = (ret or "").split("|")
         try:
-            return int(parts[1]), int(parts[2]) if len(parts) >= 3 and parts[
-                1
-            ].isdigit() and parts[2].isdigit() else (0, 0)
+            return int(parts[1]), (
+                int(parts[2])
+                if len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit()
+                else (0, 0)
+            )
         except (ValueError, IndexError):
             return (0, 0)
 
@@ -90,34 +97,34 @@ class ApiProxy:
         target,
         timeout=0,
         click=False,
-        center=False,
+        autoResetPos=False,
         disappear=False,
         confidence=0.9,
     ):
-        """通用查找执行方法（参数命名优化）"""
+        """通用查找执行方法（使用_timed_loop优化）"""
         state = False
-        delay = random.randint(50, 400) / 1000
-        start = time() * 1000
+        x, y = 0, 0
 
-        while not self._timeout_expired(start, timeout):
-            # 统一查找逻辑
-            x, y = self._parse_result(find_func(x1, y1, x2, y2, target))
+        with self._timed_loop(timeout) as loop:
+            for _ in loop:
+                x, y = self._parse_result(find_func(x1, y1, x2, y2, target))
 
-            # 结果处理
-            if self._valid_coordinates(x, y):
-                if click:
-                    self.dm.鼠标移动单击(x, y, center)
-                state = True
-                if not disappear:
+                if x > 0 and y > 0:
+                    if click:
+                        self.dm.safe_click(x, y, autoResetPos)
+                    state = True
+                    if not disappear:
+                        break
+                elif disappear:
                     break
-            elif disappear:
-                break
 
-            sleep(delay)
+                sleep(random.randint(50, 400) / 1000)
 
         return state, x, y
 
-    def 找字单击至消失(self, x1, y1, x2, y2, text, color, timeout=0, center=False):
+    def 找字单击至消失(
+        self, x1, y1, x2, y2, text, color, timeout=0, autoResetPos=False
+    ):
         """优化参数命名和lambda表达式"""
         return self._find_and_act(
             x1,
@@ -128,11 +135,11 @@ class ApiProxy:
             text,
             timeout,
             click=True,
-            center=center,
+            autoResetPos=autoResetPos,
             disappear=True,
         )
 
-    def 找字单击(self, x1, y1, x2, y2, text, color, timeout=0, center=False):
+    def 找字单击(self, x1, y1, x2, y2, text, color, timeout=0, autoResetPos=False):
         return self._find_and_act(
             x1,
             y1,
@@ -142,7 +149,7 @@ class ApiProxy:
             text,
             timeout,
             click=True,
-            center=center,
+            autoResetPos=autoResetPos,
         )
 
     def 找字返回坐标(self, x1, y1, x2, y2, text, color, timeout=0):
@@ -152,7 +159,7 @@ class ApiProxy:
                 x, y = self._parse_result(
                     self.dm.FindStrE(x1, y1, x2, y2, text, color, 0.9)
                 )
-                if self._valid_coordinates(x, y):
+                if x > 0 and y > 0:
                     state = True
                     break
         return state, x, y
@@ -163,7 +170,7 @@ class ApiProxy:
         )
 
     def 找图单击至消失(
-        self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, center=False
+        self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, autoResetPos=False
     ):
         """优化参数命名和lambda表达式"""
         return self._find_and_act(
@@ -177,11 +184,13 @@ class ApiProxy:
             name,
             timeout,
             click=True,
-            center=center,
+            autoResetPos=autoResetPos,
             disappear=True,
         )
 
-    def 找图单击(self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, center=False):
+    def 找图单击(
+        self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, autoResetPos=False
+    ):
         return self._find_and_act(
             x1,
             y1,
@@ -193,7 +202,7 @@ class ApiProxy:
             name,
             timeout,
             click=True,
-            center=center,
+            autoResetPos=autoResetPos,
         )
 
     def 找图返回坐标(self, x1, y1, x2, y2, name, timeout=0, scan_mode=0):
@@ -224,20 +233,6 @@ class ApiProxy:
             timeout,
         )
 
-    def 鼠标移动单击(self, x, y, autoResetPosition=False):
-        """带随机延迟的鼠标点击操作"""
-        sleep_mis = random.randint(50, 200)
-        self.dm.MoveTo(x, y)
-        self.dm.LeftClick()
-        sleep(sleep_mis / 1000)
-        if autoResetPosition:
-            self.dm.MoveTo(x + random.randint(50, 300), y + random.randint(50, 300))
-
-    def sendkey(self, vk_code, delays=20):
-        self.dm.KeyDown(vk_code)
-        sleep(delays / 1000)
-        self.dm.KeyUp(vk_code)
-
     def 简易识字(self, x1, y1, x2, y2, color, confidence=0.9, timeout=0):
         """优化后的OCR识别方法"""
 
@@ -257,25 +252,25 @@ class ApiProxy:
         return False
 
     def 圆形渐开找鼠标(
-        self, 
-        起点X,          # 螺旋轨迹的起始X坐标（像素）
-        起点Y,          # 螺旋轨迹的起始Y坐标（像素）
-        特征码,         # 目标光标的特征码（由dm.GetCursorShape返回值确定）
-        radius=1,       # 初始螺旋半径（像素单位，控制轨迹与起点的初始距离）
-        step=1,         # 半径增长步长（每20度增加的像素值，控制螺旋展开速度）
-        圈数=6          # 最大螺旋圈数（控制轨迹覆盖范围，防止无限循环）
+        self,
+        起点X,  # 螺旋轨迹的起始X坐标（像素）
+        起点Y,  # 螺旋轨迹的起始Y坐标（像素）
+        特征码,  # 目标光标的特征码（由dm.GetCursorShape返回值确定）
+        radius=1,  # 初始螺旋半径（像素单位，控制轨迹与起点的初始距离）
+        step=1,  # 半径增长步长（每20度增加的像素值，控制螺旋展开速度）
+        圈数=6,  # 最大螺旋圈数（控制轨迹覆盖范围，防止无限循环）
     ):
         """
         通过渐开螺旋轨迹移动鼠标，查找指定特征码的光标并执行点击
-        
+
         轨迹特点：以[起点X,起点Y]为中心，初始半径为radius，
                 每20度（即每2次内层循环）半径增加step，形成向外扩展的螺旋轨迹
-        
+
         Returns:
             bool: 找到目标光标并点击返回True，否则遍历完所有圈数后返回False
         """
         # 1度对应的弧度值（用于角度转弧度计算）
-        radian_per_degree = math.radians(1)  
+        radian_per_degree = math.radians(1)
 
         # 外层循环控制螺旋圈数
         for _ in range(圈数):
@@ -283,26 +278,26 @@ class ApiProxy:
             for angle in range(0, 360, 10):
                 # 将角度转换为弧度（数学函数需要弧度制输入）
                 current_radian = angle * radian_per_degree
-                
+
                 # 计算当前角度对应的螺旋坐标（极坐标转笛卡尔坐标）
                 x = 起点X + radius * math.cos(current_radian)
                 y = 起点Y + radius * math.sin(current_radian)
-                
+
                 # 移动鼠标到计算出的坐标位置
                 self.dm.MoveTo(x, y)
-                
+
                 # 检查当前光标是否符合目标特征码
                 if self.dm.GetCursorShape() == 特征码:
                     self.dm.LeftClick()  # 找到目标后执行左键点击
-                    return True          # 立即返回成功状态
-                
+                    return True  # 立即返回成功状态
+
                 # 每20度（即每2次内层循环）增加半径，形成渐开效果
                 if angle % 20 == 0:
                     radius += step
-                
+
                 # 控制鼠标移动节奏（1ms延迟防止过快移动）
                 sleep(0.001)
-        
+
         # 遍历完所有圈数未找到目标，返回失败
         return False
 

@@ -5,12 +5,11 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-05-28 13:53:45
-LastEditTime : 2025-05-28 15:24:01
+LastEditTime : 2025-06-05 14:01:02
 FilePath     : /CODE/xjLib/xt_damo/key.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
-
 
 from time import sleep
 from typing import Any, Union
@@ -19,20 +18,33 @@ from bdtime import vk
 
 
 class Key:
+
     def __init__(self, dmobject: Any, key: Union[str, int] = "k") -> None:
-        """键盘操作控制器
-        Args:
-            dmobject: 大漠插件实例
-            key: 默认绑定键（支持字符或键码）
+        """
+        键盘操作控制器初始化方法
+
+        参数:
+            dmobject: 大漠插件实例，用于调用底层键盘操作API
+            key: 默认绑定的按键，支持字符串或整数形式(默认值:"k")
+
+        功能说明:
+            1. 参数校验: 确保dmobject不为空
+            2. 初始化实例属性:
+            - self.dm: 存储大漠插件实例
+            - self.chr: 存储按键的字符形式(大写)
+            - self.ord: 存储按键的ASCII码(通过conv_ord方法转换)
         """
         if not dmobject:
             raise ValueError("dmobject cannot be None")
         self.dm = dmobject
 
+        # 处理按键字符形式
         if key.__class__.__name__ == "str":
-            self.chr = key.upper()
+            self.chr = key.upper()  # 统一转为大写
         else:
-            self.chr = "None"
+            self.chr = "None"  # 非字符串类型默认值
+
+        # 转换按键为ASCII码
         self.ord = self.conv_ord(key)
 
     def get_ord(self, key):
@@ -65,7 +77,7 @@ class Key:
                 key = str(key)
                 key = ord(key)
         return key
-        
+
     def conv_chr(self, key):
         key = chr(key)
         return key
@@ -105,4 +117,3 @@ class Key:
             self.up(key)
         except Exception as e:
             print(f"按键操作失败: {e}")
-

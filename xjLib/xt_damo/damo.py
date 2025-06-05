@@ -41,6 +41,7 @@ mouse_methods = (
     "move_to",
     "click_left",
     "click_right",
+    "safe_click",
 )
 
 apiproxy_methods = (
@@ -55,8 +56,6 @@ apiproxy_methods = (
     "找图单击",
     "找图返回坐标",
     "简易找图",
-    "鼠标移动单击",
-    "sendkey",
     "简易识字",
     "圆形渐开找鼠标",
     "散点渐开找鼠标",
@@ -180,7 +179,6 @@ coreengine_methods = (
     "Beep",
 )
 
-# ... existing code ...
 errs = {
     -1: "无法连接网络",
     -2: "进程没有以管理员方式运行，win7 win8 vista 2008 建议关闭uac)",
@@ -198,15 +196,15 @@ errs = {
     -9: "版本附加信息里包含了非法字母.",
 }
 
+
 class DM:
     def __init__(self, dm_dirpath=None):
-        reg_dm = RegDM(dm_dirpath)
-        self.dm = reg_dm.reg()
-        self.CoreEngine = CoreEngine(self.dm)
-        self.ApiProxy = ApiProxy(self.dm)
+        self.RegDM = RegDM(dm_dirpath)
+        self.dm = self.RegDM.dm
         self.Key = Key(self.dm)
         self.Mouse = Mouse(self.dm)
-        self.RegDM = reg_dm
+        self.ApiProxy = ApiProxy(self.dm)
+        self.CoreEngine = CoreEngine(self.dm)
 
         _ret = self.dm.Reg(_Reg_code, _Ver_info)
         if _ret != 1:
@@ -259,24 +257,22 @@ class DM:
         except AttributeError:
             return None
 
+
 if __name__ == "__main__":
 
     dm = DM()
     print(dm.ver())
-    ms = Mouse(dm)
-    print(111111111, ms.position)
-    x, y = (1000, 800)
-    ms.move_to(x, y)
-    print(222222222, ms.position)
-    ms.click_right(x, y, 2)
+    dm.position = (1000, 800)
+    print(111111111, dm.position)
+    x, y = dm.position
+    dm.move_to(x, y)
+    dm.safe_click(x + 100, y + 100)
+    print(222222222, dm.position)
+    dm.safe_click(x, y)
     sleep(1)
     dm.LeftClick()
-    print(333333333, ms.position)
+    print(333333333)
     sleep(1)
     # 键盘操作
-    kk = Key(dm)
-    kk.down_up("A", 1)  # 测试用，1秒后按下a键
-    dm.down_up("B")  # 按下a键
-    sleep(1)
-
-    # dm.unreg_dm()
+    dm.down_up("A", 1)  # 测试用，1秒后按下a键
+    dm.down_up("B")
