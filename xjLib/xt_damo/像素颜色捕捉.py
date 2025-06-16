@@ -5,28 +5,18 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-05-30 11:35:10
-LastEditTime : 2025-05-30 16:01:07
+LastEditTime : 2025-06-06 10:22:25
 FilePath     : /CODE/xjLib/xt_damo/像素颜色捕捉.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
 
-from bdtime import Time, vk
+from bdtime import tt, vk
 
 from damo import DM
-from key import Key
-from mouse import Mouse
 
 dm = DM()
-# dm.reg(your_register_code)
-# dm.unreg_dm()
-
-ms = Mouse(dm)
-kk = Key(dm)
-tt = Time()
-
-dm.Beep()  # 蜂鸣器
 
 
 def conv_to_rgb(color):
@@ -45,7 +35,7 @@ while tt.during(10):  # 10s内捕捉鼠标当前位置的颜色
 
     # tt.stop_alt('s')  # 按下`alt + s`则停止进程
 
-    x, y = ms.position
+    x, y = dm.position
     color = dm.GetColor(x, y)
 
     print(f"{tt.now(1)},\t {x}:{y},\t color:{color}, \t 鼠标位置颜色RGB值:{conv_to_rgb(color)}")

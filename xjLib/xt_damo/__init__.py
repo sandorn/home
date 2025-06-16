@@ -14,7 +14,7 @@ https://github.com/bode135/pydamo
 
 __name__ = "pydamo"
 
-from .damo import DM, Key, Mouse, Time, run_in_bat, tt, vk
-from .enum_wind import get_class_winds
+from .damo import DM
+from .enum_wind import get_windows_by_criteria
 
-__all__ =  (Time, vk, tt, DM, Key, Mouse, run_in_bat, get_class_winds)
+__all__ = (DM, get_windows_by_criteria)
