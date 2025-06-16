@@ -17,9 +17,67 @@ from xt_ahttp import ahttpGet
 from xt_requests import get
 from xt_response import ACResponse, htmlResponse
 from xt_str import Re_Sub, Str_Clean, Str_Replace
+from xt_unicode import AdvancedTextCleaner
 
 
 def clean_Content(in_str):
+    """
+    清理文本内容，移除HTML标签、网站信息和多余空白
+
+    参数:
+        in_str: 输入文本或文本列表
+
+    返回:
+        清理后的文本字符串
+    """
+    if isinstance(in_str, list):
+        in_str = "\n".join(in_str)
+
+    # 使用xt_unicode中的AdvancedTextCleaner进行基础清理
+    cleaner = AdvancedTextCleaner()
+    cleaned = cleaner.clean_and_normalize(in_str)
+
+    sub_rules = [
+        (r"<[^>]+>", " "),  # 移除HTML标签
+        (r"关注公众号：书友大本营  关注即送现金、点币！", ""),
+        (r"『点此报错』", ""),
+        (r"『加入书签』", ""),
+        (r"笔趣阁手机版阅读网址:", ""),
+        (r"笔趣阁手机版：", ""),
+        (r"笔趣阁手机版阅读网址：", ""),
+        (r"请收藏本站[:：]", ""),  # 移除收藏提示
+        (r"请记住本书首发域名[:：]", ""),  # 移除收藏提示
+        (r"百度搜索“笔趣看小说网”手机阅读[:：]", ""),  # 移除收藏提示
+        (r"[;]?\[笔趣看[\s\xa0]*\]", ""),
+        (r"笔趣看", ""),
+        (r"https?://\S+", ""),  # 移除URL
+        (r"https?://[\w\.-]+", ""),  # 移除URL
+        ("\u3000", "  "),
+        ("\xa0", " "),
+        ("\u0009", " "),
+        ("\u000b", " "),
+        ("\u000c", " "),
+        ("\u0020", " "),
+        ("\u00a0", " "),
+        ("\uffff", " "),
+        ("\u000a", " "),
+        ("\u000d", " "),
+        ("\u2028", " "),
+        ("\u2029", " "),
+        ("\r", "\n"),
+        ("    ", "\n    "),
+        ("\r\n", "\n"),
+        ("\n\n", "\n"),
+    ]
+    cleaned = Re_Sub(cleaned, sub_rules)
+
+    # 移除多余空白但保留换行
+    cleaned = "\n".join(line.strip() for line in cleaned.split("\n"))
+
+    return cleaned.strip()
+
+
+def clean_Content0(in_str):
     """清洗内容"""
     clean_list = [
         "', '",
@@ -57,9 +115,11 @@ def clean_Content(in_str):
     # (r"<\s*script[^>]*>[^<]*<\s*/\s*script\s*>", ''),
     # (r"</?a.*?>", ''),
     sub_list = [
+        (r"<[^>]+>", " "),
         (r"\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)", ""),
         (r"\[.*?\]|http.*?\s*\(.*?\)|\s*www.*?\s*\..*?\s*\..*?\s*\..*?", ""),
     ]
+
     repl_list = [
         ("\u3000", "  "),
         ("\xa0", " "),
@@ -69,10 +129,10 @@ def clean_Content(in_str):
         ("\u0020", " "),
         ("\u00a0", " "),
         ("\uffff", " "),
-        ("\u000a", "\n"),
-        ("\u000d", "\n"),
-        ("\u2028", "\n"),
-        ("\u2029", "\n"),
+        ("\u000a", " "),
+        ("\u000d", " "),
+        ("\u2028", " "),
+        ("\u2029", " "),
         ("\r", "\n"),
         ("    ", "\n    "),
         ("\r\n", "\n"),
@@ -176,8 +236,34 @@ ahttp_get_contents = partial(get_contents, fn=ahttpGet)
 
 
 if __name__ == "__main__":
-    url = "https://www.bigee.cc/book/6909/"
-    bookname, urls, titles = get_download_url(url)
+    # url = "https://www.bigee.cc/book/6909/"
+    # bookname, urls, titles = get_download_url(url)
     # print(bookname, urls, titles)
-    res = get_contents(0, urls[0])
-    print(res)
+    # res = get_contents(0, urls[0])
+    # print(res)
+    def test_clean_content():
+        """测试clean_Content函数"""
+        test_cases = [
+            ("正常文本", "Hello World"),
+            (
+                "带HTML标签",
+                "<p>Hello<br/>World</p>",
+            ),
+            ("带特殊字符", "Hello\u3000World\xa0!\u2029"),
+            (
+                "带网站信息",
+                "Hello 百度搜索“笔趣看小说网”手机阅读:   请收藏本站：https://www.bigee.com World  \n 请收藏本站：",
+            ),
+            ("多行文本", ["Line1", "Line2\t", "Line3  "]),
+        ]
+
+        print("=== 开始测试 clean_Content ===")
+        for name, input_text in test_cases:
+            result = clean_Content(input_text)
+            print(f"{name}: ")
+            print(f"  输入: {repr(input_text)}")
+            print(f"  输出: {repr(result)}")
+
+        print("=== 测试完成 ===")
+
+    test_clean_content()

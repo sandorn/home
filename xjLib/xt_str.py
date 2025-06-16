@@ -342,27 +342,48 @@ def class_add_dict(in_obj):
 
 def format_html_str(replacement):
     """
-    格式化html, 去掉多余的字符，类，script等。
-    :param replacement: 要格式化的HTML字符串
-    :return: 格式化后的HTML字符串
-    """
-    trim_list = [
-        (r"\n", ""),
-        (r"\t", ""),
-        (r"\r", ""),
-        (r"  ", ""),
-        (r"\u2018", "'"),
-        (r"\u2019", "'"),
-        (r"\ufeff", ""),
-        (r"\u2022", ":"),
-        (r"<([a-z][a-z0-9]*)\ [^>]*>", r"<\g<1>>"),
-        (r"<\s*script[^>]*>[^<]*<\s*/\s*script\s*>", ""),
-        (r"</?a.*?>", ""),
-    ]
+    格式化HTML字符串，移除多余字符、类和script标签等
+    增加输入验证和错误处理
 
-    return reduce(
-        lambda str_tmp, item: re.sub(item[0], item[1], str_tmp), trim_list, replacement
-    )
+    :param replacement: 要格式化的HTML字符串
+    :return: 格式化后的字符串，如果输入无效则返回空字符串
+    """
+    if not replacement or not isinstance(replacement, str):
+        return ""
+
+    try:
+        # 更新正则表达式规则
+        patterns = [
+            (re.compile(r"\s+"), " "),  # 合并多个空白字符为一个空格
+            (re.compile(r"[\u2018\u2019]"), "'"),  # 统一引号
+            (re.compile(r"\ufeff"), ""),  # 移除BOM
+            (re.compile(r"\u2022"), ":"),  # 替换特殊符号为空格
+            (re.compile(r"<([a-z][a-z0-9]*)\ [^>]*>"), r"<\g<1>>"),  # 移除标签属性
+            (
+                re.compile(r"<\s*script[^>]*>.*?<\s*/\s*script\s*>", re.DOTALL),
+                "",
+            ),  # 移除script
+            (
+                re.compile(r"<a[^>]*>.*?</a>", re.DOTALL),
+                "",
+            ),  # 完全移除a标签及其内容
+            (
+                re.compile(
+                    r"<(div|span|p|br|img)[^>]*>.*?</?(div|span|p|br|img)[^>]*>",
+                    re.DOTALL,
+                ),
+                "",
+            ),  # 移除常见标签
+        ]
+
+        result = replacement
+        for pattern, repl in patterns:
+            result = pattern.sub(repl, result)
+
+        return result.strip()
+    except Exception as e:
+        print(f"格式化HTML字符串时出错: {e}")
+        return ""
 
 
 if __name__ == "__main__":
@@ -406,6 +427,30 @@ if __name__ == "__main__":
     嘻嘻地先合掌诵声佛号，然后从袖子里取出两份香积钱契，口称功德。李善德伸手接过，只觉得两张麻纸重逾千斤，两撇胡须抖了一抖。他只是一个从九品下的小官，想要拿下这座宅子，除罄尽自家多年的积蓄之外，少不得要借贷。京中除两市的柜坊之外，要数几座大伽蓝的放贷最为便捷，谓之“香积钱”​。当然，佛法不可沾染铜臭，所以这香积钱的本金唤作“功德”​，利息唤作“福报”​。李善德拿过这两张借契，从头到尾细细读了一遍，当真是功德深厚，福报连绵。他对典座道：​“大师，契上明言这功德一共两百贯，月生福报四分，两年还讫，本利结算该是三百九十二贯，怎么写成了四百三十八贯？​”这一连串数字报出来，典座为之一怔。李善德悠悠道：​“咱们大唐杂律里有规定，凡有借贷，只取本金为计，不得回利为本——大师精通佛法，这计算方式怕是有差池吧？​”典座支吾起来，讪讪说许是小沙弥抄错了本子。见典座脸色尴尬，李善德得意地捋了一下胡子。他可是开元十五年明算科出身，这点数字上的小花招，根本瞒不住他。不过他很快又失落地叹了口气，朝廷向来以文取士，算学及第全无升迁之望，一辈子只在九品晃荡，他只能在这种事上自豪一下。典座掏出纸笔，就地改好，李善德查验无误后，在香积钱契上落了指印。
     """
 
-    print(res := str_split_limited_list(strr), len(res))
-    print(res := str2list(strr), len(res))
-    print(random_char(20))
+    # print(res := str_split_limited_list(strr), len(res))
+    # print(res := str2list(strr), len(res))
+    # print(random_char(20))
+    import unittest
+
+    class TestRandomChar(unittest.TestCase):
+        def test_remove_whitespace(self):
+            """测试移除多余空白字符"""
+            html = "New\n\t\r  Sea"
+            self.assertEqual(format_html_str(html), "New Sea")
+
+        def test_remove_script_tags(self):
+            """测试移除script标签"""
+            html = "<script>alert(1)</script>Hello"
+            self.assertEqual(format_html_str(html), "Hello")
+
+        def test_remove_a_tags(self):
+            """测试移除a标签"""
+            html = "<a href='#'>Link</a>Text"
+            self.assertEqual(format_html_str(html), "Text")
+
+        def test_special_chars(self):
+            """测试特殊字符替换"""
+            html = "‘Hello’\u2022World\ufeff"
+            self.assertEqual(format_html_str(html), "'Hello':World")
+
+    unittest.main()

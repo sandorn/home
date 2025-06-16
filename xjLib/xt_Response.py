@@ -13,10 +13,12 @@ Github       : https://github.com/sandorn/home
 """
 
 from typing import Sequence
+from unicodedata import category
 
 from chardet import detect
 from html2text import HTML2Text
 from pyquery import PyQuery
+from xt_unicode import AdvancedTextCleaner, TextNormalizer, UnicodeCharacterAnalyzer
 
 DEFAULT_ENCODING = "utf-8"
 
@@ -165,11 +167,57 @@ class htmlResponse:
         h.ignore_links = True
         if self.raw:
             return h.handle(self.raw.text)
+    @property
+    def clean_text(self) -> str:
+        """
+        返回经过Unicode规范化和清理的文本
+        1. 移除控制字符等不需要的Unicode类别
+        2. 规范化空白字符
+        3. 保留原始编码处理
+        """
+        cleaner = AdvancedTextCleaner()
+        raw_text = self.text
+        return cleaner.clean_and_normalize(raw_text)
 
+    def analyze_text(self) -> dict:
+        """
+        分析响应文本中的Unicode字符分布
+        返回: {
+            'length': 总字符数,
+            'categories': 各Unicode类别统计,
+            'non_ascii_chars': 非ASCII字符列表
+        }
+        """
+        analyzer = UnicodeCharacterAnalyzer()
+        text = self.text
+
+        # 统计字符类别
+        category_counts, _ = analyzer.categorize_text(text)
+
+        # 找出非ASCII字符
+        non_ascii = [
+            (char, analyzer.category_descriptions.get(category(char), ""))
+            for char in text if ord(char) > 127
+        ]
+
+        return {
+            'length': len(text),
+            'categories': category_counts,
+            'non_ascii_chars': non_ascii
+        }
+
+    def normalize_text(self, form: str = "NFKC") -> str:
+        """
+        对响应文本进行Unicode规范化
+        参数:
+            form: NFC|NFD|NFKC|NFKD
+        返回: 规范化后的文本
+        """
+        normalizer = TextNormalizer()
+        return normalizer.normalize_text(self.text, form)
 
 class ACResponse(htmlResponse):
     """封装aiohttp网页抓取结果,标准化"""
-
     ...
 
 
@@ -194,11 +242,29 @@ if __name__ == "__main__":
         print(
             "blank".ljust(10),
             ":",
-            res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+            res.xpath(
+                ["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
         )
         print("dom".ljust(10), ":", res.dom.xpath(elestr), res.dom.url)
         print("query".ljust(10), ":", res.query("title").text())
-        print("element".ljust(10), ":", res.element.xpath(elestr), res.element.base)
+        print("element".ljust(10), ":", res.element.xpath(elestr),
+              res.element.base)
         print("html".ljust(10), ":", res.html.xpath(elestr), res.html.base_url)
 
-    main()
+    # main()
+
+    def test_unicode_features():
+        res = htmlResponse(content="  Héllo   Wörld!  \t\n  ")
+        res = get(urls[1])
+        print(f"原始文本: '{res.text}'")
+        print(f"清理后文本: '{res.clean_text}'")
+
+        # 测试中文和非ASCII字符
+        chinese_res = htmlResponse(content="你好，世界！123 αβγ")
+        analysis = chinese_res.analyze_text()
+        print(f"\n字符分析:\n{analysis}")
+
+        # 测试规范化
+        print(f"\nNFKC规范化: {chinese_res.normalize_text('NFKC')}")
+
+    test_unicode_features()
