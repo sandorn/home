@@ -106,7 +106,7 @@ class AdvancedTextCleaner:
         self.unwanted_categories = ["Cc", "Cf", "Cs", "Co", "Cn"]  # 控制字符等
 
     def clean_and_normalize(
-        self, text, normalize_form="NFKC", remove_accents=True, keep_only_ascii=True
+        self, text, normalize_form="NFKC", remove_accents=True, keep_only_ascii=False
     ):
         """全面的文本清理和规范化"""
 
