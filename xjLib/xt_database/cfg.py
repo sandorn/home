@@ -10,7 +10,6 @@ FilePath     : /CODE/xjLib/xt_database/cfg.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
-
 from xt_enum import BaseEnum
 
 
@@ -26,7 +25,6 @@ class DB_CFG(BaseEnum):
             "charset": "utf8mb4",
         },
     )
-
     TXbx = (
         {
             "type": "mysql",
