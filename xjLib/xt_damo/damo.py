@@ -217,9 +217,9 @@ class DM:
 
     def __del__(self):
         """对象销毁时自动调用反注册"""
-        self.unreg_dm()
+        self.unreg()
 
-    def unreg_dm(self):
+    def unreg(self):
         if hasattr(self, "dm") and self.dm:
             self.RegDM.unreg_dm()
             self.dm = None
@@ -234,7 +234,7 @@ class DM:
         return ret
 
     def __getattr__(self, key: str):
-        if key in ("__repr__", "unreg_dm"):
+        if key in ("__repr__", "unreg"):
             return self.__dict__[key]
 
         # 使用字典映射替代多个if-elif
