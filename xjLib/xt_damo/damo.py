@@ -256,6 +256,10 @@ class DM:
             return getattr(self.dm, key)
         except AttributeError:
             return None
+def conv_to_rgb(color):
+    RGB_str = [color[:2], color[2:-2], color[-2:]]
+    RGB = [int(i, 16) for i in RGB_str]
+    return RGB
 
 
 if __name__ == "__main__":
@@ -274,5 +278,26 @@ if __name__ == "__main__":
     print(333333333)
     sleep(1)
     # 键盘操作
-    dm.down_up("A", 1)  # 测试用，1秒后按下a键
-    dm.down_up("B")
+    # dm.down_up("A", 1)  # 测试用，1秒后按下a键
+    # dm.down_up("B")
+
+    xy_ls = [[10, 0], [10, 0], [10, 0], [-10, 0], [-10, 0], [-10, 0]]
+    x_ls = []
+
+    for i in range(20):
+        xy_i = i % len(xy_ls)
+        xy_v = xy_ls[xy_i]
+        dm.move_r(*xy_v)
+
+        x_i = dm.position[0]
+        x_ls.append(x_i)
+        delta_x = 0 if len(x_ls) < 2 else x_ls[-1] - x_ls[-2]
+        print(
+            f"--- {i} --- Mouse position: {x_i}, target_x: {xy_v}, delta_x: {delta_x}"
+        )
+
+        sleep(0.1)
+        x, y = dm.position
+        color = dm.GetColor(x, y)
+
+        print(color, "鼠标位置颜色RGB值:", conv_to_rgb(color))

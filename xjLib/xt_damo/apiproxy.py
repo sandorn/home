@@ -3,6 +3,8 @@ import random
 from time import sleep, time
 from typing import Any
 
+from bdtime import tt
+
 
 class _timed_loop:
     """超时循环上下文管理器"""
@@ -105,8 +107,7 @@ class ApiProxy:
         state = False
         x, y = 0, 0
 
-        with self._timed_loop(timeout) as loop:
-            for _ in loop:
+        while tt.during(timeout):
                 x, y = self._parse_result(find_func(x1, y1, x2, y2, target))
 
                 if x > 0 and y > 0:
@@ -115,6 +116,7 @@ class ApiProxy:
                     state = True
                     if not disappear:
                         break
+
                 elif disappear:
                     break
 
@@ -154,14 +156,13 @@ class ApiProxy:
 
     def 找字返回坐标(self, x1, y1, x2, y2, text, color, timeout=0):
         state, (x, y) = False, (0, 0)
-        with self._timed_loop(timeout) as loop:
-            for _ in loop:
-                x, y = self._parse_result(
-                    self.dm.FindStrE(x1, y1, x2, y2, text, color, 0.9)
-                )
-                if x > 0 and y > 0:
-                    state = True
-                    break
+        while tt.during(timeout):
+            x, y = self._parse_result(
+                self.dm.FindStrE(x1, y1, x2, y2, text, color, 0.9)
+            )
+            if x > 0 and y > 0:
+                state = True
+                break
         return state, x, y
 
     def 简易找字(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=0):
@@ -241,8 +242,7 @@ class ApiProxy:
             return result if result else None
 
         if timeout > 0:
-            with self._timed_loop(timeout) as loop:
-                for _ in loop:
+            while tt.during(timeout):
                     if text := ocr_operation():
                         return text
                     sleep(random.uniform(0.05, 0.4))
