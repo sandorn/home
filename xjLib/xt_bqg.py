@@ -16,8 +16,7 @@ from functools import partial
 from xt_ahttp import ahttpGet
 from xt_requests import get
 from xt_response import ACResponse, htmlResponse
-from xt_str import Re_Sub, Str_Clean, Str_Replace
-from xt_unicode import AdvancedTextCleaner
+from xt_str import format_html_string, re_sub, str_clean
 
 
 def clean_Content(in_str):
@@ -33,124 +32,24 @@ def clean_Content(in_str):
     if isinstance(in_str, list):
         in_str = "\n".join(in_str)
 
-    # 使用xt_unicode中的AdvancedTextCleaner进行基础清理
-    cleaner = AdvancedTextCleaner()
-    cleaned = cleaner.clean_and_normalize(in_str)
-    print(111111111111111111111, cleaned)
-    sub_rules = [
-        (r"<[^>]+>", " "),  # 移除HTML标签
+    # 使用xt_str中的format_html_string进行HTML基础清理
+    cleaned = format_html_string(in_str)
+
+    # 应用业务特定清理规则
+    business_rules = [
         (
             r"(关注公众号：书友大本营  关注即送现金、点币！|『点此报错』|『加入书签』|笔趣阁手机版阅读网址|笔趣阁手机版|请收藏本站|请记住本书首发域名|百度搜索“笔趣看小说网”手机阅读|请收藏本站|笔趣看)[:：][^\s]*",
             "",
-        ),  # 合并网站信息清理规则并移除冒号后内容
-        # (r"[;]?\[笔趣看[\s\xa0]*\]", ""),
-        (r"", ""),
-        (r"https?://[^\s]+", ""),  # 改进URL匹配规则
-        (r"\s+", " "),  # 合并连续空格
-        (r"^\s+", ""),  # 移除开头的空格
-        (r"\s+$", ""),  # 移除结尾的空格
-        (r"\s+\S*[:：]\S*\s+", " "),  # 移除中间包含冒号的片段
-        ("\u3000", "  "),
-        ("\xa0", " "),
-        ("\u0009", " "),
-        ("\u000b", " "),
-        ("\u000c", " "),
-        ("\u0020", " "),
-        ("\u00a0", " "),
-        ("\uffff", " "),
-        ("\u000a", " "),
-        ("\u000d", " "),
-        ("\u2028", " "),
-        ("\u2029", " "),
-        ("\r", "\n"),
-        ("    ", "\n    "),
-        ("\r\n", "\n"),
-        ("\n\n", "\n"),
+        ),  # 移除网站推广信息
+        (r"https?://[^\s]+", ""),  # 移除URL链接
+        (r"\s+\S*[:：]\S*\s+", " "),  # 移除中间包含冒号的特殊片段
     ]
-    cleaned = Re_Sub(cleaned, sub_rules)
+    cleaned = re_sub(cleaned, business_rules)
 
-    # 移除多余空白但保留换行
-    cleaned = "\n".join(line.strip() for line in cleaned.split("\n"))
-
-    return cleaned.strip()
-
-
-def clean_Content0(in_str):
-    """清洗内容"""
-    clean_list = [
-        "', '",
-        "&nbsp;",
-        ";[笔趣看  www.bigee.com]",
-        "https://www.bigee.com。",
-        "https://wap.bigee.com",
-        "https://www.bigee.com",
-        "https://m.bigee.com",
-        "https://n.bigee.com",
-        "https://www.bigee.cc。",
-        "https://www.bigee.cc",
-        "https://m.bigee.cc。",
-        "https://m.bigee.cc",
-        "请收藏本站：",
-        "百度搜索“笔趣看小说网”手机阅读:",
-        "百度搜索“笔趣看小说网”手机阅读：",
-        "请记住本书首发域名:",
-        "请记住本书首发域名：",
-        "笔趣阁手机版阅读网址:",
-        "笔趣阁手机版：",
-        "笔趣阁手机版阅读网址：",
-        "关注公众号：书友大本营  关注即送现金、点币！",
-        "『点此报错』",
-        "『加入书签』",
-        ";[笔趣看  ]",
-        "[笔趣看 ]",
-        "[笔趣看\xa0\xa0]",
-        "<br />",
-        "\t",
-    ]
-    # clean_list += Invisible_Chars # 不可见字符
-    # 格式化html string, 去掉多余的字符，类，script等。
-    # (r"<([a-z][a-z0-9]*) [^>]*>", r'<\g<1>>'),
-    # (r"<\s*script[^>]*>[^<]*<\s*/\s*script\s*>", ''),
-    # (r"</?a.*?>", ''),
-    sub_list = [
-        (r"<[^>]+>", " "),
-        (r"\(https:///[0-9]{0,4}_[0-9]{0,12}/[0-9]{0,16}.html\)", ""),
-        (r"\[.*?\]|http.*?\s*\(.*?\)|\s*www.*?\s*\..*?\s*\..*?\s*\..*?", ""),
-    ]
-
-    repl_list = [
-        ("\u3000", "  "),
-        ("\xa0", " "),
-        ("\u0009", " "),
-        ("\u000b", " "),
-        ("\u000c", " "),
-        ("\u0020", " "),
-        ("\u00a0", " "),
-        ("\uffff", " "),
-        ("\u000a", " "),
-        ("\u000d", " "),
-        ("\u2028", " "),
-        ("\u2029", " "),
-        ("\r", "\n"),
-        ("    ", "\n    "),
-        ("\r\n", "\n"),
-        ("\n\n", "\n"),
-    ]
-
-    # 如果输入是列表或元组，则将其连接为一个字符串
-    if isinstance(in_str, (list, tuple)):
-        in_str = "\n".join([item.strip("\r\n\u3000\xa0  ") for item in in_str])
-    # 剥离字符串两端的空白字符和换行符
-    in_str = in_str.strip("\r\n ")
-
-    # 使用Str_Clean函数清理字符串
-    in_str = Str_Clean(in_str, clean_list)
-    # 使用Re_Sub函数替换子字符串
-    in_str = Re_Sub(in_str, sub_list)  # type: ignore
-    # 使用Str_Replace函数替换字符
-    in_str = Str_Replace(in_str, repl_list)
-
-    return in_str
+    # 使用str_clean进行最终清理
+    # Define strings to be removed
+    trims = []
+    return str_clean(cleaned, trims)
 
 
 def handle_resp(resp):
@@ -160,7 +59,7 @@ def handle_resp(resp):
     try:
         title = resp.query("h1").text()
         content = resp.query("#chaptercontent").text()
-        title = "".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
+        title = "".join(str_clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
         content = clean_Content(content).strip()
         return [resp.index, title, content]
     except Exception as e:
@@ -224,7 +123,7 @@ def get_contents(*args, fn=get):
     # _xpath = ['//h1/text()', '//*[@id="chaptercontent"]/text()']
     # title, content = resp.xpath(_xpath)
 
-    title = "".join(Str_Clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
+    title = "".join(str_clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
     content = clean_Content(content).strip()
 
     return [index, title, content]
