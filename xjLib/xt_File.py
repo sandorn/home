@@ -16,23 +16,35 @@ import winreg
 
 
 class FileSize:
+    __slots__ = ("_bytes",)  # 优化内存使用
+
     def __init__(self, filePath):
-        self.bytes = os.path.getsize(filePath)
+        self._bytes = os.path.getsize(filePath)
 
     @property
-    def mb(self):
-        return self.bytes / (1024**2)
+    def bytes(self):
+        return self._bytes
 
     @property
     def kb(self):
-        return self.bytes / 1024
+        return self._bytes / 1024
+
+    @property
+    def mb(self):
+        return self._bytes / (1024**2)
+
+    @property
+    def gb(self):
+        return self._bytes / (1024**3)
 
     def __str__(self):
-        if self.mb >= 1.00:
+        if self._bytes >= 1024**3:
+            return f"{self.gb:.2f} GB"
+        if self._bytes >= 1024**2:
             return f"{self.mb:.2f} MB"
-        elif self.kb >= 1.00:
+        if self._bytes >= 1024:
             return f"{self.kb:.2f} KB"
-        return f"{self.bytes} Bytes"
+        return f"{self._bytes} Bytes"
 
 
 class qsstools:
