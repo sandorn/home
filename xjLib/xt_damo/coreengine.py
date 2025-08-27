@@ -15,27 +15,27 @@ from typing import Any
 
 
 class CoreEngine:
-    def __init__(self, dmobject: Any) -> None:
+    def __init__(self, dm_instance: Any) -> None:
         """核心功能封装
         Args:
-            dmobject: 大漠插件实例
+            dm_instance: 大漠插件实例
         """
-        if not dmobject:
+        if not dm_instance:
             raise ValueError("dmobject cannot be None")
-        self.dm = dmobject
+        self.dm_instance = dm_instance
 
     def __repr__(self):
         ret = f"版本： {self.ver()} ID：{self.GetID()}"
         return ret
 
     def GetDmCount(self):
-        return self.dm.GetDmCount()
+        return self.dm_instance.GetDmCount()
 
     def GetID(self):
-        return self.dm.GetID()
+        return self.dm_instance.GetID()
 
     def ver(self):
-        return self.dm.ver()
+        return self.dm_instance.ver()
 
     def GetDir(self, types: int = 0):
         """
@@ -45,22 +45,22 @@ class CoreEngine:
         3 : 获取临时目录路径(temp)
         4 : 获取当前进程(exe)所在的路径
         """
-        return self.dm.GetDir(types)
+        return self.dm_instance.GetDir(types)
 
     def GetBasePath(self):
-        return self.dm.GetBasePath()
+        return self.dm_instance.GetBasePath()
 
     def GetPath(self):
-        return self.dm.GetPath()
+        return self.dm_instance.GetPath()
 
     def SetDisplayInput(self, mode):
-        return self.dm.SetDisplayInput(mode)
+        return self.dm_instance.SetDisplayInput(mode)
 
     def SetShowErrorMsg(self, show):
-        return self.dm.SetShowErrorMsg(show)
+        return self.dm_instance.SetShowErrorMsg(show)
 
     def Capture(self, x1, y1, x2, y2, file):
-        return self.dm.Capture(x1, y1, x2, y2, file)
+        return self.dm_instance.Capture(x1, y1, x2, y2, file)
 
     def FindPic(
         self,
@@ -75,34 +75,34 @@ class CoreEngine:
         # intX=0,
         # intY=0,
     ):
-        return self.dm.FindPic(
+        return self.dm_instance.FindPic(
             x1, y1, x2, y2, pic_name, delta_color=delta_color, sim=sim, dir=dir
         )
 
     def FindColor(self, x1, y1, x2, y2, color, sim, dir, intX, intY):
         # _, x0, y0 = dm.FindColor(0, 0, 1200, 800, color = "757575", sim = 1.0, dir = 1,  intX = 0, intY = 0)
-        return self.dm.FindColor(x1, y1, x2, y2, color, sim, dir, intX, intY)
+        return self.dm_instance.FindColor(x1, y1, x2, y2, color, sim, dir, intX, intY)
 
     def LoadPic(self, pic_name):
-        return self.dm.LoadPic(pic_name)
+        return self.dm_instance.LoadPic(pic_name)
 
     def FreePic(self, pic_name):
-        return self.dm.FreePic(pic_name)
+        return self.dm_instance.FreePic(pic_name)
 
     def GetColor(self, x, y):
-        return self.dm.GetColor(x, y)
+        return self.dm_instance.GetColor(x, y)
 
     def GetPicSize(self, pic_name):
-        return self.dm.GetPicSize(pic_name)
+        return self.dm_instance.GetPicSize(pic_name)
 
     def GetColorBGR(self, x, y):
-        return self.dm.GetColorBGR(x, y)
+        return self.dm_instance.GetColorBGR(x, y)
 
     def BGR2RGB(self, bgr_color):
-        return self.dm.BGR2RGB(bgr_color)
+        return self.dm_instance.BGR2RGB(bgr_color)
 
     def CmpColor(self, x, y, color, sim):
-        return self.dm.CmpColor(x, y, color, sim)
+        return self.dm_instance.CmpColor(x, y, color, sim)
 
     def BindWindow(
         self,
@@ -112,83 +112,89 @@ class CoreEngine:
         keypad=["normal", "windows", "dx"][1],
         mode=[0, 1, 2, 3, 4, 5, 6, 7, 101, 103][8],
     ):
-        return self.dm.BindWindow(hwnd, display, mouse, keypad, mode)
+        return self.dm_instance.BindWindow(hwnd, display, mouse, keypad, mode)
 
     def UnBindWindow(self):
-        return self.dm.UnBindWindow()
+        return self.dm_instance.UnBindWindow()
 
     def IsBind(self, hwnd):
-        return self.dm.IsBind(hwnd)
+        return self.dm_instance.IsBind(hwnd)
 
     def MoveWindow(self, hwnd, x, y):
-        return self.dm.MoveWindow(hwnd, x, y)
+        return self.dm_instance.MoveWindow(hwnd, x, y)
 
     def FindWindow(self, class_name="", title_name=""):
-        return self.dm.FindWindow(class_name, title_name)
+        return self.dm_instance.FindWindow(class_name, title_name)
 
     def ClientToScreen(self, hwnd, x, y):
-        return self.dm.ClientToScreen(hwnd, x, y)
+        return self.dm_instance.ClientToScreen(hwnd, x, y)
 
     def ScreenToClient(self, hwnd, x, y):
-        return self.dm.ScreenToClient(hwnd, x, y)
+        return self.dm_instance.ScreenToClient(hwnd, x, y)
 
     def FindWindowByProcess(self, process_name, class_name, title_name):
-        return self.dm.FindWindowByProcess(process_name, class_name, title_name)
+        return self.dm_instance.FindWindowByProcess(
+            process_name, class_name, title_name
+        )
 
     def FindWindowByProcessId(self, process_id, class_, title):
-        return self.dm.FindWindowByProcessId(process_id, class_, title)
+        return self.dm_instance.FindWindowByProcessId(process_id, class_, title)
 
     def GetClientRect(self, hwnd, x1, y1, x2, y2):
-        return self.dm.GetClientRect(hwnd, x1, y1, x2, y2)
+        return self.dm_instance.GetClientRect(hwnd, x1, y1, x2, y2)
 
     def GetClientSize(self, hwnd, width, height):
-        return self.dm.GetClientSize(hwnd, width, height)
+        return self.dm_instance.GetClientSize(hwnd, width, height)
 
     def GetWindowRect(self, hwnd, x1, y1, x2, y2):
-        return self.dm.GetWindowRect(hwnd, x1, y1, x2, y2)
+        return self.dm_instance.GetWindowRect(hwnd, x1, y1, x2, y2)
 
     def GetWindow(self, hwnd, flag):
-        return self.dm.GetWindow(hwnd, flag)
+        return self.dm_instance.GetWindow(hwnd, flag)
 
     def GetWindowProcessPath(self, hwnd):
-        return self.dm.GetWindowProcessPath(hwnd)
+        return self.dm_instance.GetWindowProcessPath(hwnd)
 
     def SetWindowSize(self, hwnd, width, height):
-        return self.dm.SetWindowSize(hwnd, width, height)
+        return self.dm_instance.SetWindowSize(hwnd, width, height)
 
     def SetWindowState(self, hwnd, flag):
-        return self.dm.SetWindowState(hwnd, flag)
+        return self.dm_instance.SetWindowState(hwnd, flag)
 
     def SetWindowText(self, hwnd, title):
-        return self.dm.SetWindowText(hwnd, title)
+        return self.dm_instance.SetWindowText(hwnd, title)
 
     def SetWindowTransparent(self, hwnd, trans):
-        return self.dm.SetWindowTransparent(hwnd, trans)
+        return self.dm_instance.SetWindowTransparent(hwnd, trans)
 
     def EnumWindow(self, parent, title, class_name, filter):
-        return self.dm.EnumWindow(parent, title, class_name, filter)
+        return self.dm_instance.EnumWindow(parent, title, class_name, filter)
 
     def EnumWindowByProcess(self, process_name, title, class_name, filter):
-        return self.dm.EnumWindowByProcess(process_name, title, class_name, filter)
+        return self.dm_instance.EnumWindowByProcess(
+            process_name, title, class_name, filter
+        )
 
     def EnumWindowSuper(self, spec1, flag1, type1, spec2, flag2, type2, sort):
-        return self.dm.EnumWindowSuper(spec1, flag1, type1, spec2, flag2, type2, sort)
+        return self.dm_instance.EnumWindowSuper(
+            spec1, flag1, type1, spec2, flag2, type2, sort
+        )
 
     def GetCursorPos(self, x=0, y=0):
-        return self.dm.GetCursorPos(x, y)
+        return self.dm_instance.GetCursorPos(x, y)
 
     def GetKeyState(self, vk_code):
-        return self.dm.GetKeyState(vk_code)
+        return self.dm_instance.GetKeyState(vk_code)
 
     def SetKeypadDelay(
         self, type=["normal", "windows", "dx"][-1], delay=[0.03, 0.01, 0.05][-1]
     ):
-        return self.dm.SetKeypadDelay(type, delay)
+        return self.dm_instance.SetKeypadDelay(type, delay)
 
     def SetMouseDelay(
         self, type=["normal", "windows", "dx"][-1], delay=[0.03, 0.01, 0.04][-1]
     ):
-        return self.dm.SetMouseDelay(type, delay)
+        return self.dm_instance.SetMouseDelay(type, delay)
 
     def WaitKey(self, vk_code, time_out=0):
         # vk_code = 'a'
@@ -196,211 +202,213 @@ class CoreEngine:
         # vk_code.upper()
         # kk
         # if(vk_code.__class__.)
-        return self.dm.WaitKey(vk_code, time_out)
+        return self.dm_instance.WaitKey(vk_code, time_out)
 
     def KeyDown(self, vk_code):
-        return self.dm.KeyDown(vk_code)
+        return self.dm_instance.KeyDown(vk_code)
 
     def KeyDownChar(self, key_str):
-        return self.dm.KeyDownChar(key_str)
+        return self.dm_instance.KeyDownChar(key_str)
 
     def KeyPress(self, vk_code):
-        return self.dm.KeyPress(vk_code)
+        return self.dm_instance.KeyPress(vk_code)
 
     def KeyPressChar(self, key_str):
-        return self.dm.KeyPressChar(key_str)
+        return self.dm_instance.KeyPressChar(key_str)
 
     def KeyPressStr(self, key_str, delay):
-        return self.dm.KeyPressStr(key_str, delay)
+        return self.dm_instance.KeyPressStr(key_str, delay)
 
     def KeyUp(self, vk_code):
-        return self.dm.KeyUp(vk_code)
+        return self.dm_instance.KeyUp(vk_code)
 
     def KeyUpChar(self, key_str):
-        return self.dm.KeyUpChar(key_str)
+        return self.dm_instance.KeyUpChar(key_str)
 
     def LeftClick(self):
-        return self.dm.LeftClick()
+        return self.dm_instance.LeftClick()
 
     def LeftDoubleClick(self):
-        return self.dm.LeftDoubleClick()
+        return self.dm_instance.LeftDoubleClick()
 
     def LeftDown(self):
-        return self.dm.LeftDown()
+        return self.dm_instance.LeftDown()
 
     def LeftUp(self):
-        return self.dm.LeftUp()
+        return self.dm_instance.LeftUp()
 
     def MiddleClick(self):
-        return self.dm.MiddleClick()
+        return self.dm_instance.MiddleClick()
 
     def MoveR(self, rx, ry):
-        return self.dm.MoveR(rx, ry)
+        return self.dm_instance.MoveR(rx, ry)
 
     def MoveTo(self, x, y):
-        return self.dm.MoveTo(x, y)
+        return self.dm_instance.MoveTo(x, y)
 
     def MoveToEx(self, x, y, w, h):
-        return self.dm.MoveToEx(x, y, w, h)
+        return self.dm_instance.MoveToEx(x, y, w, h)
 
     def RightClick(self):
-        return self.dm.RightClick()
+        return self.dm_instance.RightClick()
 
     def RightDown(self):
-        return self.dm.RightDown()
+        return self.dm_instance.RightDown()
 
     def RightUp(self):
-        return self.dm.RightUp()
+        return self.dm_instance.RightUp()
 
     def WheelDown(self):
-        return self.dm.WheelDown()
+        return self.dm_instance.WheelDown()
 
     def WheelUp(self):
-        return self.dm.WheelUp()
+        return self.dm_instance.WheelUp()
 
     def FindData(self, hwnd, addr_range, data):
-        return self.dm.FindData(hwnd, addr_range, data)
+        return self.dm_instance.FindData(hwnd, addr_range, data)
 
     def FindDataEx(self, hwnd, addr_range, data, step, multi_thread, mode):
-        return self.dm.FindDataEx(hwnd, addr_range, data, step, multi_thread, mode)
+        return self.dm_instance.FindDataEx(
+            hwnd, addr_range, data, step, multi_thread, mode
+        )
 
     def DoubleToData(self, value):
-        return self.dm.DoubleToData(value)
+        return self.dm_instance.DoubleToData(value)
 
     def FloatToData(self, value):
-        return self.dm.FloatToData(value)
+        return self.dm_instance.FloatToData(value)
 
     def GetModuleBaseAddr(self, hwnd, module):
-        return self.dm.GetModuleBaseAddr(hwnd, module)
+        return self.dm_instance.GetModuleBaseAddr(hwnd, module)
 
     def IntToData(self, value, type):
-        return self.dm.IntToData(value, type)
+        return self.dm_instance.IntToData(value, type)
 
     def ReadData(self, hwnd, addr, len):
-        return self.dm.ReadData(hwnd, addr, len)
+        return self.dm_instance.ReadData(hwnd, addr, len)
 
     def ReadDouble(self, hwnd, addr):
-        return self.dm.ReadDouble(hwnd, addr)
+        return self.dm_instance.ReadDouble(hwnd, addr)
 
     def ReadFloat(self, hwnd, addr):
-        return self.dm.ReadFloat(hwnd, addr)
+        return self.dm_instance.ReadFloat(hwnd, addr)
 
     def ReadInt(self, hwnd, addr, type):
-        return self.dm.ReadInt(hwnd, addr, type)
+        return self.dm_instance.ReadInt(hwnd, addr, type)
 
     def ReadString(self, hwnd, addr, type, len):
-        return self.dm.ReadString(hwnd, addr, type, len)
+        return self.dm_instance.ReadString(hwnd, addr, type, len)
 
     def StringToData(self, value, type):
-        return self.dm.StringToData(value, type)
+        return self.dm_instance.StringToData(value, type)
 
     def WriteData(self, hwnd, addr, data):
-        return self.dm.WriteData(hwnd, addr, data)
+        return self.dm_instance.WriteData(hwnd, addr, data)
 
     def WriteDouble(self, hwnd, addr, v):
-        return self.dm.WriteDouble(hwnd, addr, v)
+        return self.dm_instance.WriteDouble(hwnd, addr, v)
 
     def WriteFloat(self, hwnd, addr, v):
-        return self.dm.WriteFloat(hwnd, addr, v)
+        return self.dm_instance.WriteFloat(hwnd, addr, v)
 
     def WriteInt(self, hwnd, addr, type, v):
-        return self.dm.WriteInt(hwnd, addr, type, v)
+        return self.dm_instance.WriteInt(hwnd, addr, type, v)
 
     def WriteString(self, hwnd, addr, type, v):
-        return self.dm.WriteString(hwnd, addr, type, v)
+        return self.dm_instance.WriteString(hwnd, addr, type, v)
 
     def CopyFile(self, src_file, dst_file, over):
-        return self.dm.CopyFile(src_file, dst_file, over)
+        return self.dm_instance.CopyFile(src_file, dst_file, over)
 
     def CreateFolder(self, folder):
-        return self.dm.CreateFolder(folder)
+        return self.dm_instance.CreateFolder(folder)
 
     def DecodeFile(self, file, pwd):
-        return self.dm.DecodeFile(file, pwd)
+        return self.dm_instance.DecodeFile(file, pwd)
 
     def DeleteFile(self, file):
-        return self.dm.DeleteFile(file)
+        return self.dm_instance.DeleteFile(file)
 
     def DeleteFolder(self, folder):
-        return self.dm.DeleteFolder(folder)
+        return self.dm_instance.DeleteFolder(folder)
 
     def DeleteIni(self, section, key, file):
-        return self.dm.DeleteIni(section, key, file)
+        return self.dm_instance.DeleteIni(section, key, file)
 
     def DeleteIniPwd(self, section, key, file, pwd):
-        return self.dm.DeleteIniPwd(section, key, file, pwd)
+        return self.dm_instance.DeleteIniPwd(section, key, file, pwd)
 
     def DownloadFile(self, url, save_file, timeout):
-        return self.dm.DownloadFile(url, save_file, timeout)
+        return self.dm_instance.DownloadFile(url, save_file, timeout)
 
     def EncodeFile(self, file, pwd):
-        return self.dm.EncodeFile(file, pwd)
+        return self.dm_instance.EncodeFile(file, pwd)
 
     def GetFileLength(self, file):
-        return self.dm.GetFileLength(file)
+        return self.dm_instance.GetFileLength(file)
 
     def IsFileExist(self, file):
-        return self.dm.IsFileExist(file)
+        return self.dm_instance.IsFileExist(file)
 
     def MoveFile(self, src_file, dst_file):
-        return self.dm.MoveFile(src_file, dst_file)
+        return self.dm_instance.MoveFile(src_file, dst_file)
 
     def ReadFile(self, file):
-        return self.dm.ReadFile(file)
+        return self.dm_instance.ReadFile(file)
 
     def ReadIni(self, section, key, file):
-        return self.dm.ReadIni(section, key, file)
+        return self.dm_instance.ReadIni(section, key, file)
 
     def ReadIniPwd(self, section, key, file, pwd):
-        return self.dm.ReadIniPwd(section, key, file, pwd)
+        return self.dm_instance.ReadIniPwd(section, key, file, pwd)
 
     def SelectDirectory(self):
-        return self.dm.SelectDirectory()
+        return self.dm_instance.SelectDirectory()
 
     def SelectFile(self):
-        return self.dm.SelectFile()
+        return self.dm_instance.SelectFile()
 
     def WriteFile(self, file, content):
-        return self.dm.WriteFile(file, content)
+        return self.dm_instance.WriteFile(file, content)
 
     def WriteIni(self, section, key, value, file):
-        return self.dm.WriteIni(section, key, value, file)
+        return self.dm_instance.WriteIni(section, key, value, file)
 
     def WriteIniPwd(self, section, key, value, file, pwd):
-        return self.dm.WriteIniPwd(section, key, value, file, pwd)
+        return self.dm_instance.WriteIniPwd(section, key, value, file, pwd)
 
     def GetNetTime(self):
-        return self.dm.GetNetTime()
+        return self.dm_instance.GetNetTime()
 
     def GetOsType(self):
-        return self.dm.GetOsType()
+        return self.dm_instance.GetOsType()
 
     def GetScreenHeight(self):
-        return self.dm.GetScreenHeight()
+        return self.dm_instance.GetScreenHeight()
 
     def GetScreenWidth(self):
-        return self.dm.GetScreenWidth()
+        return self.dm_instance.GetScreenWidth()
 
     def GetTime(self):
-        return self.dm.GetTime()
+        return self.dm_instance.GetTime()
 
     def Is64Bit(self):
-        return self.dm.Is64Bit()
+        return self.dm_instance.Is64Bit()
 
     def RunApp(self, app_path, mode):
-        return self.dm.RunApp(app_path, mode)
+        return self.dm_instance.RunApp(app_path, mode)
 
     def Play(self, media_file):
-        return self.dm.Play(media_file)
+        return self.dm_instance.Play(media_file)
 
     def Stop(self, id):
-        return self.dm.Stop(id)
+        return self.dm_instance.Stop(id)
 
     def Delay(self, mis):
-        return self.dm.Delay(mis)
+        return self.dm_instance.Delay(mis)
 
     def ExitOs(self, type):
-        return self.dm.ExitOs(type)
+        return self.dm_instance.ExitOs(type)
 
     def Beep(self, duration=1000, f=800):
-        return self.dm.Beep(f, duration)
+        return self.dm_instance.Beep(f, duration)

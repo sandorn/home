@@ -1,15 +1,15 @@
 # !/usr/bin/env python
 """
-#==============================================================
-#Descripttion : 函数超时、函数默认值装饰、动态创建函数、重试装饰器2种、获取对象帮助
-#Develop      : VSCode
-#Author       : Even.Sand
-#Contact      : sandorn@163.com
-#Date         : 2020-06-03 18:42:56
-#FilePath     : /xjLib/xt_Tools.py
-#LastEditTime : 2020-07-30 12:43:08
-#Github       : https://github.com/sandorn/home
-#==============================================================
+==============================================================
+Description  : 头部注释
+Develop      : VSCode
+Author       : sandorn sandorn@live.cn
+Date         : 2025-03-03 10:03:22
+LastEditTime : 2025-08-22 10:16:33
+FilePath     : /CODE/xjLib/xt_catch.py
+Github       : https://github.com/sandorn/home
+==============================================================
+
 拒绝重复造轮子!python实用工具类及函数大推荐! - 知乎
 https://zhuanlan.zhihu.com/p/31644562
 https://github.com/ShichaoMa
@@ -18,10 +18,14 @@ https://github.com/ShichaoMa
 import time
 import traceback
 from functools import wraps
-from typing import Any, Callable, Optional, Type
+from types import TracebackType
+from typing import Any, Callable, Optional, Type, TypeVar
 
 from wrapt import decorator
 from xt_log import create_basemsg
+
+# 定义一个类型变量，表示任何可调用函数
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 def call_later(callback, *call_args, immediately=True, interval=1):
@@ -76,8 +80,13 @@ class ExceptContext:
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type: str, exc_val: str, exc_tb: str):
-        if isinstance(exc_val, self.exception):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> bool:
+        if exc_val and isinstance(exc_val, self.exception):
             self.has_error = True
             return_code = self.errback(self.func_name, exc_type, exc_val, exc_tb)
         else:
@@ -99,12 +108,18 @@ class ExceptContext:
         return wrapper
 
     @staticmethod
-    def default_res_errback(func_name: str, exc_type: str, exc_val: str, exc_tb: str):
+    def default_res_errback(
+        func_name: str,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> bool:
         print(f"ExceptContext Raise in Function[{func_name}]: {exc_val}, {exc_tb}")
         return True
 
     @staticmethod
-    def default_res_finalback(has_error: bool): ...
+    def default_res_finalback(has_error: bool) -> None:
+        pass
 
 
 def catch_wrapt(func):
@@ -129,7 +144,7 @@ def try_except_wraps(
     validate_fn=None,
     callback_fn=None,
     default_res=None,
-):
+) -> Callable[[F], F]:
     """
     函数执行出现异常时自动重试的简单装饰器
     :param f: function 执行的函数。

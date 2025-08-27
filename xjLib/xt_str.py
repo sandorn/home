@@ -23,6 +23,7 @@ from functools import reduce
 from typing import (
     Any,
     Callable,
+    Dict,
     Iterable,
     List,
     Literal,
@@ -189,15 +190,15 @@ def decrypt_str(
 
     try:
         # 解码并提取IV
-        encrypted_data = base64.b64decode(encrypted_data)
-        iv = encrypted_data[:16]  # 提取前16字节作为IV
+        decoded_data = base64.b64decode(encrypted_data)
+        iv = decoded_data[:16]  # 提取前16字节作为IV
         cipher = Cipher(
             algorithms.AES(key.encode()), modes.CBC(iv), backend=default_backend()
         )
         decryptor = cipher.decryptor()
 
         # 解密并去除填充
-        decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()
+        decrypted_data = decryptor.update(decoded_data) + decryptor.finalize()
         unpadder = padding.PKCS7(128).unpadder()
         data = unpadder.update(decrypted_data) + unpadder.finalize()
 
@@ -227,7 +228,10 @@ def duplicate(
     """
     seen: dict[Any, Any] = {}
     result: List[Any] = []
-    items = reversed(iterable) if reverse else iterable
+
+    # 转换为列表以确保可以被reversed
+    iterable_list = list(iterable)
+    items = reversed(iterable_list) if reverse else iterable_list
 
     for item in items:
         keep_val = keep(item)
@@ -277,7 +281,9 @@ def remove_all_blank(
     if not isinstance(value, str):
         raise TypeError(f"输入必须是字符串类型，当前输入类型为: {type(value)}")
 
-    custom_invisible = custom_invisible or r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+"
+    custom_invisible = custom_invisible or re.compile(
+        r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+"
+    )
     value = re.sub(custom_invisible, "", value)
 
     whitespace_set = set(string.whitespace)
@@ -472,9 +478,9 @@ def re_compile(replacement: str, replace_rules: Sequence[Tuple[str, str]]) -> st
 
     # 验证规则格式并提取模式
     patterns = []
-    replacements = {}
+    replacements: Dict[str, str] = {}
     for idx, rule in enumerate(replace_rules):
-        if not isinstance(rule, Tuple) or len(rule) != 2:
+        if not isinstance(rule, tuple) or len(rule) != 2:
             raise TypeError(f"规则[{idx}]必须是包含两个元素的元组")
 
         pattern_str, repl_str = rule
@@ -494,7 +500,7 @@ def re_compile(replacement: str, replace_rules: Sequence[Tuple[str, str]]) -> st
     # 执行替换
     def replace_match(match: re.Match) -> str:
         matched_str = match.group()
-        return replacements.get(matched_str, matched_str)
+        return str(replacements.get(matched_str, matched_str))  # 明确转换为str类型
 
     return combined_pattern.sub(replace_match, replacement)
 
@@ -579,7 +585,7 @@ def str2list(intext, maxlen=300):
         "。",
         str_replace(
             intext,
-            [["\r", "。"], ["\n", "。"], [" ", ""], ["\u200b", ""], ["。。", "。"]],
+            [("\r", "。"), ("\n", "。"), (" ", ""), ("\u200b", ""), ("。。", "。")],
         ),
     )
     sentence_list = [f"{item}。" for item in sentence_list if item]
@@ -712,6 +718,17 @@ def format_html_string(html_content: str) -> str:
         print("处理失败", error_msg)
         raise RuntimeError(error_msg) from e
 
+def obj_to_str(obj):
+    """将对象转换为字符串, 递归处理,无用暂存"""
+    if isinstance(obj, (list, tuple, set)):
+        return ", ".join(map(obj_to_str, obj))
+    elif isinstance(obj, dict):
+        return ", ".join(f"{k}: {obj_to_str(v)}" for k, v in obj.items())
+    elif isinstance(obj, str):
+        return re.sub(r"<([^<>]+)>", r"\<\1\>", obj)
+    else:
+        return str(obj)
+
 
 if __name__ == "__main__":
 
@@ -741,7 +758,7 @@ if __name__ == "__main__":
         print(re_compile(replacement, trims_list))
 
     # test_Re_Compile()
-    # str2 = "Powe, on；the 2333, 。哈哈 ！！\U0001f914看看可以吗？一行代码就可以了！^_^"
+    # str2 = "Powe, on；the 2333, 。哈哈 ！！\x08\x0e\U0001f914看看可以吗？一行代码就可以了！^_^"
     # print(remove_all_blank(str2, keep_blank=False))
     # print(remove_all_blank(str2, keep_blank=True))
 
@@ -763,9 +780,9 @@ if __name__ == "__main__":
     # print(res := str_split_limited_list(strr), "\n", len(res))
     # print(res := str2list(strr), len(res))
     # print(random_char(20))
-    import unittest
+    from unittest import TestCase, main
 
-    class TestRandomChar(unittest.TestCase):
+    class TestRandomChar(TestCase):
         def test_remove_whitespace(self):
             """测试移除多余空白字符"""
             html = "New\n\t\r  Sea"
@@ -786,4 +803,4 @@ if __name__ == "__main__":
             html = "‘Hello’\u2022World\ufeff"
             self.assertEqual(format_html_string(html), "'Hello':World")
 
-    unittest.main()
+    main()

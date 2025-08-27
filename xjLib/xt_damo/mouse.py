@@ -17,7 +17,7 @@ from typing import Any, Tuple
 
 
 class Mouse:
-    def __init__(self, dmobject: Any) -> None:
+    def __init__(self, dm_instance: Any) -> None:
         """
         鼠标操作控制器初始化
 
@@ -27,9 +27,9 @@ class Mouse:
         异常:
             ValueError: 当dmobject为None时抛出
         """
-        if not dmobject:
+        if not dm_instance:
             raise ValueError("dmobject cannot be None")
-        self.dm = dmobject
+        self.dm_instance = dm_instance
 
     @property
     def position(self):
@@ -39,7 +39,7 @@ class Mouse:
         返回:
             tuple: (x, y)坐标元组
         """
-        ret = self.dm.GetCursorPos(x=0, y=0)[1:]
+        ret = self.dm_instance.GetCursorPos(x=0, y=0)[1:]
         return ret
 
     @position.setter
@@ -72,7 +72,7 @@ class Mouse:
             delay: 延迟时间(毫秒)
             type: 延迟类型(默认"dx")
         """
-        return self.dm.SetMouseDelay(type, delay)
+        return self.dm_instance.SetMouseDelay(type, delay)
 
     def move_r(self, x, y):
         """
@@ -82,7 +82,7 @@ class Mouse:
             x: x轴偏移量
             y: y轴偏移量
         """
-        return self.dm.MoveR(x, y)
+        return self.dm_instance.MoveR(x, y)
 
     def move_to(self, x, y):
         """
@@ -92,7 +92,7 @@ class Mouse:
             x: 目标x坐标
             y: 目标y坐标
         """
-        return self.dm.MoveTo(x, y)
+        return self.dm_instance.MoveTo(x, y)
 
     def click_left(self, x, y, t=0.5):
         """
@@ -103,10 +103,10 @@ class Mouse:
             y: 点击位置y坐标
             t: 按键按下持续时间(秒，默认0.5)
         """
-        self.dm.MoveTo(x, y)
-        self.dm.LeftDown()
+        self.dm_instance.MoveTo(x, y)
+        self.dm_instance.LeftDown()
         sleep(t)
-        self.dm.LeftUp()
+        self.dm_instance.LeftUp()
         return 1
 
     def click_right(self, x, y, t=0.5):
@@ -118,10 +118,10 @@ class Mouse:
             y: 点击位置y坐标
             t: 按键按下持续时间(秒，默认0.5)
         """
-        self.dm.MoveTo(x, y)
-        self.dm.RightDown()
+        self.dm_instance.MoveTo(x, y)
+        self.dm_instance.RightDown()
         sleep(t)
-        self.dm.RightUp()
+        self.dm_instance.RightUp()
 
     def safe_click(self, x: int, y: int, autoResetPos: bool = False) -> None:
         """安全的鼠标点击操作
@@ -132,11 +132,11 @@ class Mouse:
         """
         try:
             x0, y0 = self.position
-            self.dm.MoveTo(x, y)
-            self.dm.LeftClick()
+            self.dm_instance.MoveTo(x, y)
+            self.dm_instance.LeftClick()
             sleep(random.randint(50, 400) / 1000)
             if autoResetPos:
-                self.dm.MoveTo(
+                self.dm_instance.MoveTo(
                     x0 + random.randint(50, 300), y0 + random.randint(50, 300)
                 )
         except Exception as e:

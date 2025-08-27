@@ -5,10 +5,9 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-05-21 16:26:08
-LastEditTime : 2025-05-28 10:33:29
+LastEditTime : 2025-08-26 16:43:36
 FilePath     : /CODE/xjLib/xt_damo/__init__.py
 Github       : https://github.com/sandorn/home
-https://github.com/bode135/pydamo
 ==============================================================
 """
 

@@ -5,7 +5,7 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-10-07 10:40:07
+LastEditTime : 2025-08-22 10:16:14
 FilePath     : /CODE/xjLib/xt_ahttp.py
 Github       : https://github.com/sandorn/home
 ==============================================================
@@ -24,6 +24,7 @@ from xt_retry import retry_log_wrapper
 
 
 class MyPolicy(asyncio.DefaultEventLoopPolicy):
+
     def new_event_loop(self):
         selector = selectors.SelectSelector()
         return asyncio.SelectorEventLoop(selector)
@@ -51,6 +52,12 @@ class AsyncTask:
 
     def __init__(self, index=None):
         self.index = index or id(self)
+        self.url: str = ""  # Explicitly define url attribute
+        self.args: tuple = ()
+        self.cookies: dict = {}
+        self.callback = None
+        self.kwargs: dict = {}
+        self.method: str = ""  # 保存请求方法
 
     def __getitem__(self, method):
         if method.lower() in REQUEST_METHODS:
@@ -74,7 +81,7 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
-    @log_decor
+    @log_decor  # # type: ignore
     async def start(self):
         """执行单任务"""
 
@@ -135,7 +142,6 @@ async def _multi_fetch(method, urls, *args, **kwargs):
         getattr(AsyncTask(index), method)(url, *args, **kwargs)
         for index, url in enumerate(urls, start=1)
     ]
-
     """异步,相同session"""
     async with ClientSession(connector=TCPConnector()) as clent:
         return await asyncio.gather(

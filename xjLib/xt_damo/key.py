@@ -18,13 +18,12 @@ from bdtime import vk
 
 
 class Key:
-
-    def __init__(self, dmobject: Any, key: Union[str, int] = "k") -> None:
+    def __init__(self, dm_instance: Any, key: Union[str, int] = "k") -> None:
         """
         键盘操作控制器初始化方法
 
         参数:
-            dmobject: 大漠插件实例，用于调用底层键盘操作API
+            dm_instance: 大漠插件实例，用于调用底层键盘操作API
             key: 默认绑定的按键，支持字符串或整数形式(默认值:"k")
 
         功能说明:
@@ -34,13 +33,15 @@ class Key:
             - self.chr: 存储按键的字符形式(大写)
             - self.ord: 存储按键的ASCII码(通过conv_ord方法转换)
         """
-        if not dmobject:
+        if not dm_instance:
             raise ValueError("dmobject cannot be None")
-        self.dm = dmobject
+        self.dm_instance = dm_instance
 
         # 处理按键字符形式
-        if key.__class__.__name__ == "str":
+        if isinstance(key, str):
             self.chr = key.upper()  # 统一转为大写
+        elif isinstance(key, int):
+            self.chr = str(key).upper()
         else:
             self.chr = "None"  # 非字符串类型默认值
 
@@ -92,22 +93,22 @@ class Key:
 
     def state(self, key=vk.Constant):
         key = self.conv(key)
-        return self.dm.GetKeyState(key)
+        return self.dm_instance.GetKeyState(key)
 
     def press(self, key0=vk.Constant):
         key = self.conv_ord(key0)
 
-        return self.dm.KeyPress(key)
+        return self.dm_instance.KeyPress(key)
 
     def down(self, key0=vk.Constant):
         key = self.conv_ord(key0)
 
-        return self.dm.KeyDown(key)
+        return self.dm_instance.KeyDown(key)
 
     def up(self, key0=vk.Constant):
         key = self.conv_ord(key0)
 
-        return self.dm.KeyUp(key)
+        return self.dm_instance.KeyUp(key)
 
     def down_up(self, key0=vk.Constant, t=vk.Time):
         try:

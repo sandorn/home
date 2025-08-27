@@ -28,16 +28,16 @@ class _timed_loop:
 
 
 class ApiProxy:
-    def __init__(self, dmobject: Any) -> None:
+    def __init__(self, dm_instance: Any) -> None:
         """高级功能封装
         Args:
-            dmobject: 大漠插件实例 (必须)
+            dm_instance: 大漠插件实例 (必须)
         Raises:
             ValueError: 如果dmobject为None
         """
-        if not dmobject:
+        if not dm_instance:
             raise ValueError("dmobject参数不能为空")
-        self.dm = dmobject
+        self.dm_instance = dm_instance
         self._last_error = ""  # 新增错误记录属性
 
     def 绑定窗口(
@@ -60,9 +60,9 @@ class ApiProxy:
         Returns:
             bool: 绑定是否成功
         """
-        ret = self.dm.BindWindowEx(hwnd, display, mouse, keypad, pulic, mode)
+        ret = self.dm_instance.BindWindowEx(hwnd, display, mouse, keypad, pulic, mode)
         if ret != 1:
-            self._last_error = self.dm.GetLastError()
+            self._last_error = self.dm_instance.GetLastError()
             print(f"窗口绑定失败! 错误代码: {self._last_error}")
             return False
 
@@ -70,22 +70,24 @@ class ApiProxy:
         return True
 
     def 解绑窗口(self):
-        ret = self.dm.UnBindWindow()
+        ret = self.dm_instance.UnBindWindow()
         return ret == 1
 
     # 示例：获取窗口标题
     def 获取窗口标题(self, 窗口句柄):
-        return self.dm.GetWindowTitle(窗口句柄)
+        return self.dm_instance.GetWindowTitle(窗口句柄)
 
-    def _parse_result(self, ret):
-        """解析坐标结果，增加容错处理"""
+    def _parse_result(self, ret: str):
+        """解析坐标结果，增加容错处理，始终返回(x, y)格式的坐标二元组"""
         parts = (ret or "").split("|")
         try:
-            return int(parts[1]), (
-                int(parts[2])
-                if len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit()
-                else (0, 0)
-            )
+            if len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit():
+                return (int(parts[1]), int(parts[2]))
+            elif len(parts) >= 2 and parts[1].isdigit():
+                # 如果只有一个有效数字，返回(x, 0)的形式
+                return (int(parts[1]), 0)
+            else:
+                return (0, 0)
         except (ValueError, IndexError):
             return (0, 0)
 
@@ -105,14 +107,15 @@ class ApiProxy:
     ):
         """通用查找执行方法（使用_timed_loop优化）"""
         state = False
-        x, y = 0, 0
+        x: int = 0
+        y: int = 0
 
         while tt.during(timeout):
                 x, y = self._parse_result(find_func(x1, y1, x2, y2, target))
 
                 if x > 0 and y > 0:
                     if click:
-                        self.dm.safe_click(x, y, autoResetPos)
+                        self.dm_instance.safe_click(x, y, autoResetPos)
                     state = True
                     if not disappear:
                         break
@@ -133,7 +136,9 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, t: self.dm.FindStrE(x1, y1, x2, y2, t, color, 0.9),
+            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(
+                x1, y1, x2, y2, t, color, 0.9
+            ),
             text,
             timeout,
             click=True,
@@ -147,7 +152,9 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, t: self.dm.FindStrE(x1, y1, x2, y2, t, color, 0.9),
+            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(
+                x1, y1, x2, y2, t, color, 0.9
+            ),
             text,
             timeout,
             click=True,
@@ -158,7 +165,7 @@ class ApiProxy:
         state, (x, y) = False, (0, 0)
         while tt.during(timeout):
             x, y = self._parse_result(
-                self.dm.FindStrE(x1, y1, x2, y2, text, color, 0.9)
+                self.dm_instance.FindStrE(x1, y1, x2, y2, text, color, 0.9)
             )
             if x > 0 and y > 0:
                 state = True
@@ -167,7 +174,13 @@ class ApiProxy:
 
     def 简易找字(self, x_1, y_1, x_2, y_2, 字名, 颜色值, t=0):
         return self._find_and_act(
-            x_1, y_1, x_2, y_2, lambda *args: self.dm.FindStrE(*args, 0.9), 字名, t
+            x_1,
+            y_1,
+            x_2,
+            y_2,
+            lambda *args: self.dm_instance.FindStrE(*args, 0.9),
+            字名,
+            t,
         )
 
     def 找图单击至消失(
@@ -179,7 +192,7 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm.FindPicE(
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
                 x1, y1, x2, y2, n, "000000", 0.9, scan_mode
             ),
             name,
@@ -197,7 +210,7 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm.FindPicE(
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
                 x1, y1, x2, y2, n, "000000", 0.9, scan_mode
             ),
             name,
@@ -213,7 +226,7 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm.FindPicE(
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
                 x1, y1, x2, y2, n, "000000", 0.9, scan_mode
             ),
             name,
@@ -227,7 +240,7 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm.FindPicE(
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
                 x1, y1, x2, y2, n, "000000", 0.9, scan_mode
             ),
             name,
@@ -238,7 +251,7 @@ class ApiProxy:
         """优化后的OCR识别方法"""
 
         def ocr_operation():
-            result = self.dm.Ocr(x1, y1, x2, y2, color, confidence)
+            result = self.dm_instance.Ocr(x1, y1, x2, y2, color, confidence)
             return result if result else None
 
         if timeout > 0:
@@ -284,11 +297,11 @@ class ApiProxy:
                 y = 起点Y + radius * math.sin(current_radian)
 
                 # 移动鼠标到计算出的坐标位置
-                self.dm.MoveTo(x, y)
+                self.dm_instance.MoveTo(x, y)
 
                 # 检查当前光标是否符合目标特征码
-                if self.dm.GetCursorShape() == 特征码:
-                    self.dm.LeftClick()  # 找到目标后执行左键点击
+                if self.dm_instance.GetCursorShape() == 特征码:
+                    self.dm_instance.LeftClick()  # 找到目标后执行左键点击
                     return True  # 立即返回成功状态
 
                 # 每20度（即每2次内层循环）增加半径，形成渐开效果
@@ -307,10 +320,10 @@ class ApiProxy:
         for _ in range(圈数判定):
             xzb = 起点坐标X + math.cos(radius) + radius * math.sin(radius)
             yzb = 起点坐标Y + math.sin(radius) - radius * math.cos(radius)
-            self.dm.MoveTo(xzb, yzb)
-            mouse_tz = self.dm.GetCursorShape()
+            self.dm_instance.MoveTo(xzb, yzb)
+            mouse_tz = self.dm_instance.GetCursorShape()
             if mouse_tz == 鼠标特征码:
-                self.dm.LeftClick()
+                self.dm_instance.LeftClick()
                 return True
             radius += radius步长
             sleep(0.001)
@@ -332,11 +345,11 @@ class ApiProxy:
             for angle in range(0, 360, 10):
                 xzb = 起点坐标X + 宽度radius * math.cos(angle * seed)
                 yzb = 起点坐标Y + 高度radius * math.sin(angle * seed)
-                self.dm.MoveTo(xzb, yzb)
+                self.dm_instance.MoveTo(xzb, yzb)
                 sleep(0.001)
-                mouse_tz = self.dm.GetCursorShape()
+                mouse_tz = self.dm_instance.GetCursorShape()
                 if mouse_tz == 鼠标特征码:
-                    self.dm.LeftClick()
+                    self.dm_instance.LeftClick()
                     return True
                 if angle % 20 == 0:
                     宽度radius += radius步长
@@ -352,32 +365,32 @@ class ApiProxy:
         for _ in range(圈数判定):
             for _ in range(m):
                 xzb += 步长
-                self.dm.MoveTo(xzb, yzb)
-                mouse_tz = self.dm.GetCursorShape()
+                self.dm_instance.MoveTo(xzb, yzb)
+                mouse_tz = self.dm_instance.GetCursorShape()
                 if mouse_tz == 鼠标特征码:
-                    self.dm.LeftClick()
+                    self.dm_instance.LeftClick()
                     return True
             for _ in range(m + 6):
                 yzb -= 步长
-                self.dm.MoveTo(xzb, yzb)
-                mouse_tz = self.dm.GetCursorShape()
+                self.dm_instance.MoveTo(xzb, yzb)
+                mouse_tz = self.dm_instance.GetCursorShape()
                 if mouse_tz == 鼠标特征码:
-                    self.dm.LeftClick()
+                    self.dm_instance.LeftClick()
                     return True
             m += 1
             for _ in range(m):
                 xzb -= 步长
-                self.dm.MoveTo(xzb, yzb)
-                mouse_tz = self.dm.GetCursorShape()
+                self.dm_instance.MoveTo(xzb, yzb)
+                mouse_tz = self.dm_instance.GetCursorShape()
                 if mouse_tz == 鼠标特征码:
-                    self.dm.LeftClick()
+                    self.dm_instance.LeftClick()
                     return True
             for _ in range(m + 6):
                 yzb += 步长
-                self.dm.MoveTo(xzb, yzb)
-                mouse_tz = self.dm.GetCursorShape()
+                self.dm_instance.MoveTo(xzb, yzb)
+                mouse_tz = self.dm_instance.GetCursorShape()
                 if mouse_tz == 鼠标特征码:
-                    self.dm.LeftClick()
+                    self.dm_instance.LeftClick()
                     return True
             m += 1
             sleep(0.001)

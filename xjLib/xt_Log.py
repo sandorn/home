@@ -11,42 +11,25 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+import functools
 import logging
 import re
 from datetime import datetime
 from logging.config import dictConfig
 from time import perf_counter
-from typing import Any
+from typing import Any, Callable
 
-from wrapt import decorator
 from xt_singleon import SingletonMixin
 
 standard_format = "[%(asctime)s][%(threadName)s:%(thread)d]\t%(message)s"
 simple_format = "[%(asctime)s]\t%(message)s"
 
-LevelDict = {
-    50: "critical",
-    40: "error",
-    30: "warning",
-    20: "info",
-    10: "debug",
-    0: "notset",
-}
+LevelDict = {50: "critical",40: "error",30: "warning",20: "info",10: "debug",0: "notset"}
 
 
-def obj_to_str(obj):
-    """将对象转换为字符串, 递归处理,无用暂存"""
-    if isinstance(obj, (list, tuple, set)):
-        return ", ".join(map(obj_to_str, obj))
-    elif isinstance(obj, dict):
-        return ", ".join(f"{k}: {obj_to_str(v)}" for k, v in obj.items())
-    elif isinstance(obj, str):
-        return re.sub(r"<([^<>]+)>", r"\<\1\>", obj)
-    else:
-        return str(obj)
 
 
-def create_basemsg(func):
+def create_basemsg(func: Callable) -> str:
     code = getattr(func, "__code__")
     _filename = code.co_filename
     _f_lineno = code.co_firstlineno
@@ -118,68 +101,75 @@ class Log_Catch_Wrapt(LogCls):
 
     def __init__(self, level=10, logname=__name__, pyfile=None):
         super().__init__(level=level, logname=logname, pyfile=pyfile)
+        self.blm: str = ""  # 基础日志消息
 
-    @decorator
-    def __call__(self, wrapped, instance, args, kwargs):
-        self.blm = create_basemsg(wrapped)
-        self.print(f"{self.blm } | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
+    def __call__(self, func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            self.blm = create_basemsg(func)
+            self.print(f"{self.blm } | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
+            duration = perf_counter()
+            try:
+                result = func(*args, **kwargs)
+                used_time = perf_counter() - duration
+                self.print(
+                    f"{self.blm } | <Result:{result!r}> | <Time-Consuming:{used_time:.4f}s>"
+                )
+                return result
+            except Exception as err:
+                used_time = perf_counter() - duration
+                self.print(
+                    err_str :=
+                    f"{self.blm} | Log_Catch_Wrapt Exception | <Raise:{err!r}> | <Time-Consuming:{used_time:.4f}s>"
+                )
+                return err_str
+        return wrapper
+
+
+def log_catch_decor(func):
+    """日志及异常装饰器，打印并记录函数的入参、出参、耗时、异常信息"""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        logger = LogCls()
+        blm = create_basemsg(func)
+        logger(f"{blm} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
+
         duration = perf_counter()
         try:
-            result = wrapped(*args, **kwargs)
+            result = func(*args, **kwargs)
             used_time = perf_counter() - duration
-            self.print(
-                f"{self.blm } | <Result:{result!r}> | <Time-Consuming:{used_time:.4f}s>"
-            )
+            logger(f"{blm} | <Result:{result!r}> | <Time-Consuming:{used_time:.4f}s>")
             return result
         except Exception as err:
             used_time = perf_counter() - duration
-            self.print(
+            logger(
                 err_str
-                := f"{self.blm} | Log_Catch_Wrapt Exception | <Raise:{err!r}> | <Time-Consuming:{used_time:.4f}s>"
+                := f"{blm} | log_catch_decor Exception | <Raise:{err!r}> | <Time-Consuming:{used_time:.4f}s>"
             )
             return err_str
+    return wrapper
 
 
-@decorator
-def log_catch_decor(wrapped, instance, args, kwargs):
-    """日志及异常装饰器，打印并记录函数的入参、出参、耗时、异常信息"""
-    logger = LogCls()
-    blm = create_basemsg(wrapped)
-    logger(f"{blm} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
+def log_decor(func):
+    """日志装饰器，打印并记录函数的入参、出参、耗时"""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        logger = LogCls()
+        blm = create_basemsg(func)
+        logger(f"{blm} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
 
-    duration = perf_counter()
-    try:
-        result = wrapped(*args, **kwargs)
+        duration = perf_counter()
+        result = func(*args, **kwargs)
         used_time = perf_counter() - duration
         logger(f"{blm} | <Result:{result!r}> | <Time-Consuming:{used_time:.4f}s>")
         return result
-    except Exception as err:
-        used_time = perf_counter() - duration
-        logger(
-            err_str
-            := f"{blm} | log_catch_decor Exception | <Raise:{err!r}> | <Time-Consuming:{used_time:.4f}s>"
-        )
-        return err_str
-
-
-@decorator
-def log_decor(wrapped, instance, args, kwargs):
-    """日志装饰器，打印并记录函数的入参、出参、耗时"""
-
-    logger = LogCls()
-    blm = create_basemsg(wrapped)
-    logger(f"{blm} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
-
-    duration = perf_counter()
-    result = wrapped(*args, **kwargs)
-    used_time = perf_counter() - duration
-    logger(f"{blm} | <Result:{result!r}> | <Time-Consuming:{used_time:.4f}s>")
-    return result
+    return wrapper
 
 
 if __name__ == "__main__":
 
-    @log_catch_decor  # log_decor
+    #@log_decor
+    @log_catch_decor  
     def test1(*args):
         return 9 / 0
 

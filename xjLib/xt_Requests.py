@@ -13,24 +13,15 @@ requests 简化调用
 """
 
 from functools import partial
+from typing import Any, Callable, Union
 
 import requests
 from xt_head import TIMEOUT, TRETRY, Head
 from xt_log import log_decor
 from xt_response import htmlResponse
-from xt_retry import RetryLogWrapper  # retry_log_by_tenacity
+from xt_retry import retry_log_by_tenacity
 
-request_methods = (
-    "get",
-    "post",
-    "head",
-    "options",
-    "put",
-    "delete",
-    "trace",
-    "connect",
-    "patch",
-)
+request_methods = ("get","post","head","options","put","delete","trace","connect","patch")
 
 
 @TRETRY  # from xt_catch import try_except_wraps
@@ -49,19 +40,19 @@ def _retry_request_0(method, url, **kwargs):
         return htmlResponse(None, err_str.encode(), id(url))
 
 
-@RetryLogWrapper  # retry_log_by_tenacity()
-def _retry_request(method, url, *args, **kwargs):
+@retry_log_by_tenacity()   #RetryLogWrapper  # retry_log_by_tenacity()
+def _retry_request(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResponse:
     """利用 RetryLogWrapper 实现重试"""
-    callback = kwargs.pop("callback", None)
+    _ = kwargs.pop("callback", None)
     index = kwargs.pop("index", None)
     response = requests.request(method, url, *args, **kwargs)
     response.raise_for_status()
     result = htmlResponse(response=response, index=index)
 
-    return callback(result) if callable(callback) else result
+    return result
 
 
-def single_parse(method, url, *args, **kwargs):
+def single_parse(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResponse:
     if method.lower() not in request_methods:
         return htmlResponse(
             None, f"Method:{method} not in {request_methods}".encode(), id(url)
@@ -73,24 +64,21 @@ def single_parse(method, url, *args, **kwargs):
     return _retry_request(method.lower(), url, *args, **kwargs)
 
 
-get = partial(single_parse, "get")
-post = partial(single_parse, "post")
+get: Callable[..., Union[htmlResponse, str]] = partial(single_parse, "get")
+post: Callable[..., Union[htmlResponse, str]] = partial(single_parse, "post")
 
 
 class SessionClient:
     """封装session,保存cookies,利用TRETRY三方库实现重试"""
 
-    __slots__ = [
-        "session",
-        "method",
-        "url",
-        "args",
-        "kwargs",
-        "callback",
-    ]
+    __slots__ = ("session", "method", "url", "args", "kwargs", "callback")
 
     def __init__(self):
         self.session = requests.session()
+        self.method: str = ""
+        self.args: tuple = ()
+        self.kwargs: dict = {}
+        self.url: str = ""
 
     def __enter__(self):
         return self
@@ -119,7 +107,7 @@ class SessionClient:
 
         self.update_headers(kwargs.pop("headers", Head().randua))
         self.update_cookies(kwargs.pop("cookies", {}))
-        self.callback = kwargs.pop("callback", None)
+        _ = kwargs.pop("callback", None)
         kwargs.setdefault("timeout", TIMEOUT)
         self.kwargs = kwargs
         return self._retry_request()
@@ -133,7 +121,7 @@ class SessionClient:
             )
             self.update_cookies(response.cookies)
             result = htmlResponse(response, None, id(self.url))
-            return self.callback(result) if callable(self.callback) else result
+            return result
         except requests.exceptions.RequestException as err:
             print(err_str := f"SessionClient:{self} | URL:{self.url} | Err:{err!r}")
             return htmlResponse(None, err_str.encode(), id(self.url))
@@ -161,17 +149,22 @@ if __name__ == "__main__":
         # print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
         # print(3333333333333333333, get(urls[4]))
         print(4444444444444444444, res := get(urls[0], index=66))
-        print("xpath-1".ljust(10), ":", res.xpath(elestr))
-        print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
-        print(
-            "blank".ljust(10),
-            ":",
-            res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
-        )
-        print("dom".ljust(10), ":", res.dom.xpath(elestr), res.dom.url)
-        print("query".ljust(10), ":", res.query("title").text())
-        print("element".ljust(10), ":", res.element.xpath(elestr), res.element.base)
-        print("html".ljust(10), ":", res.html.xpath(elestr), res.html.base_url)
+        
+        # 进行类型检查，确保res是htmlResponse类型
+        if isinstance(res, htmlResponse):
+            print("xpath-1".ljust(10), ":", res.xpath(elestr))
+            print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
+            print(
+                "blank".ljust(10),
+                ":",
+                res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+            )
+            print("dom".ljust(10), ":", res.dom.xpath(elestr), res.dom.url)
+            print("query".ljust(10), ":", res.query("title").text())
+            print("element".ljust(10), ":", res.element.xpath(elestr), res.element.base)
+            print("html".ljust(10), ":", res.html.xpath(elestr), res.html.base_url)
+        else:
+            print("Error: Invalid response type received -", type(res))
 
     main()
 

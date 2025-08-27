@@ -15,37 +15,45 @@ https://www.cnblogs.com/haoabcd2010/p/10615364.html
 
 import asyncio
 import functools
+import os
 import selectors
+from asyncio import Future
 from asyncio.coroutines import iscoroutinefunction
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 
 from aiohttp import ClientSession
-from wrapt import decorator
 from xt_response import ACResponse
 
-
-class MyPolicy(asyncio.DefaultEventLoopPolicy):
-    def new_event_loop(self):
-        selector = selectors.SelectSelector()
-        return asyncio.SelectorEventLoop(selector)
+# 根据操作系统选择合适的事件循环策略
+if os.name == 'nt':  # Windows系统
+    class MyPolicy(asyncio.DefaultEventLoopPolicy):
+        def new_event_loop(self):
+            return asyncio.ProactorEventLoop()
+else:  # 非Windows系统
+    class MyPolicy(asyncio.DefaultEventLoopPolicy):
+        def new_event_loop(self):
+            selector = selectors.SelectSelector()
+            return asyncio.SelectorEventLoop(selector)
 
 
 asyncio.set_event_loop_policy(MyPolicy())
 
 
-@decorator
-def future_decorator(func, instance, args, kwargs):
+def future_decorator(func):
     """future装饰器"""
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> Future:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
-    future = asyncio.Future()
-    result = func(*args, **kwargs)
-    future.set_result(result)
+        future = asyncio.Future()
+        result = func(*args, **kwargs)
+        future.set_result(result)
 
-    loop.close()  # 关闭事件循环
-    return future
+        loop.close()  # 关闭事件循环
+        return future
+    return wrapper
 
 
 def coroutine_decorator(func):
@@ -61,8 +69,8 @@ def coroutine_decorator(func):
 def async_inexecutor_decorator(func):
     """异步运行装饰器,装饰普通函数或async函数,运行并返回结果"""
 
-    @decorator
-    def wrapper(func, instance, args, kwargs):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
         async def main(*args, **kwargs):
             if iscoroutinefunction(func):
                 result = await func(*args, **kwargs)
@@ -73,7 +81,7 @@ def async_inexecutor_decorator(func):
 
         return asyncio.run(main(*args, **kwargs))
 
-    return wrapper(func)
+    return wrapper
 
 
 def async_run_decorator(func):
@@ -138,13 +146,13 @@ if __name__ == "__main__":
     def get_html(url):
         return get(url)
 
-    # print(44444444444444, res := get_html("https://www.baidu.com"))
+    print(44444444444444, res := get_html("https://www.baidu.com"))
 
     @async_run_decorator
     def get_a_html(url):
         return get(url)
 
-    # print(5555555555555, res := get_a_html("https://www.baidu.com"))
+    print(5555555555555, res := get_a_html("https://www.baidu.com"))
 
     @async_run_decorator
     async def get_message(url):
@@ -152,19 +160,19 @@ if __name__ == "__main__":
             content = await response.content.read()
             return ACResponse(response, content, 0)
 
-    # print(6666666666666, res := get_message("https://httpbin.org/get"))
+    print(6666666666666, res := get_message("https://httpbin.org/get"))
 
-    @coroutine_decorator
+    # @coroutine_decorator
     def normal_function():
         return "Hello, I'm a normal function!"
 
     # 使用await调用被装饰后的普通函数
     async def main():
-        result = await normal_function()
-        # result = await coroutine_decorator(normal_function)()
+        # result = await normal_function()
+        result = await coroutine_decorator(normal_function)()
         print(777777777777777, result)
 
-    # asyncio.run(main())
+    asyncio.run(main())
 
     # 使用future_decorator装饰器
     @future_decorator
@@ -172,11 +180,12 @@ if __name__ == "__main__":
         return a + b
 
     # 调用被装饰的函数
-    # result_future = add(3, 5)
+    print(88888888888888, result_future := add(3, 5))
+
 
     # 获取异步Future对象的结果
     async def get_result(in_future):
         result = await in_future
         print("Result:", result)
 
-    # asyncio.run(get_result(add(3, 5)))
+    asyncio.run(get_result(add(3, 5)))

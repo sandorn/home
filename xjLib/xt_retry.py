@@ -15,17 +15,41 @@ import asyncio
 from functools import partial, wraps
 from time import perf_counter, sleep
 
-from wrapt import ObjectProxy, decorator
+from tenacity import retry, stop_after_attempt, wait_random
+from wrapt import ObjectProxy
 from xt_log import LogCls, create_basemsg, log_decor
 
 
 def retry_wraper(wrapped=None, max_retry=3, delay=0.1):
     """重试装饰器，有无括号都可以"""
+    # 处理有括号的情况，如 @retry_wraper(max_retry=5)
     if wrapped is None:
-        return partial(retry_wraper, max_retry=max_retry, delay=delay)
 
-    @decorator
-    def wrapper(wrapped, instance, args, kwargs):
+        def decorator(func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                for retries in range(max_retry):
+                    try:
+                        return func(*args, **kwargs)
+                    except Exception as err:
+                        print(
+                            f"| retry_wraper {retries + 1}/{max_retry} times | <Error:{err!r}>"
+                        )
+                        if retries + 1 >= max_retry:
+                            print(
+                                f"| retry_wraper Exception | MaxRetryError | <Error:{err!r}>"
+                            )
+                            # raise  # 抛出异常以便外部捕获
+                            return err
+                        sleep(delay)
+
+            return wrapper
+
+        return decorator
+
+    # 处理无括号的情况，如 @retry_wraper
+    @wraps(wrapped)
+    def wrapper(*args, **kwargs):
         for retries in range(max_retry):
             try:
                 return wrapped(*args, **kwargs)
@@ -39,7 +63,7 @@ def retry_wraper(wrapped=None, max_retry=3, delay=0.1):
                     return err
                 sleep(delay)
 
-    return wrapper(wrapped)
+    return wrapper
 
 
 def retry_wrapper(wrapped=None, max_retry=3, delay=0.1):
@@ -149,9 +173,11 @@ class RetryLogWrapper(ObjectProxy):
         self.interval = interval
         self.logger = LogCls()
         self.base_log_msg = create_basemsg(wrapped)
+        self.retries: int = 0
+        self.used_time: float = 0
+        self.err: Exception
 
     def __call__(self, *args, **kwargs):
-        self.retries = 0
         self.logger(f"{self.base_log_msg} | <Args:{args!r}> | <Kwargs:{kwargs!r}>")
         duration = perf_counter()
         while self.retries < self.max_retry:
@@ -180,30 +206,49 @@ class RetryLogWrapper(ObjectProxy):
 
 def retry_log_by_tenacity(wrapped=None, max_retry=3):
     """tenacity.retry重试装饰器,处理异常,记录日志,有无括号都可以"""
+    # 处理有括号的情况，如 @retry_log_by_tenacity(max_retry=5)
     if wrapped is None:
-        return partial(retry_log_by_tenacity, max_retry=max_retry)
 
-    @decorator
-    def wrapper(wrapped, instance, args, kwargs):
-        from tenacity import retry, stop_after_attempt, wait_random
+        def decorator(func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                @retry(
+                    reraise=True, stop=stop_after_attempt(max_retry), wait=wait_random()
+                )
+                def retry_function():
+                    return log_decor(func)(*args, **kwargs)  # type: ignore
 
+                return _execute_with_logging(retry_function, func, args, kwargs)
+
+            return wrapper
+
+        return decorator
+
+    # 处理无括号的情况，如 @retry_log_by_tenacity
+    @wraps(wrapped)
+    def wrapper(*args, **kwargs):
         @retry(reraise=True, stop=stop_after_attempt(max_retry), wait=wait_random())
         def retry_function():
             return log_decor(wrapped)(*args, **kwargs)  # type: ignore
 
-        duration = perf_counter()
-        try:
-            return retry_function()
-        except Exception as err:
-            used_time = perf_counter() - duration
-            logger = LogCls()
-            logger(
-                err_str
-                := f"{create_basemsg(wrapped)} | retry_log_by_tenacity Exception | MaxRetryError | <Raise:{err!r}> | <Time-Consuming:{used_time:.4f}s>"
-            )
-            return err_str
+        return _execute_with_logging(retry_function, wrapped, args, kwargs)
 
-    return wrapper(wrapped)
+    return wrapper
+
+
+def _execute_with_logging(retry_func, original_func, args, kwargs):
+    """执行带日志记录的重试函数"""
+    duration = perf_counter()
+    try:
+        return retry_func()
+    except Exception as err:
+        used_time = perf_counter() - duration
+        logger = LogCls()
+        logger(
+            err_str
+            := f"{create_basemsg(original_func)} | retry_log_by_tenacity Exception | MaxRetryError | <Raise:{err!r}> | <Time-Consuming:{used_time:.4f}s>"
+        )
+        return err_str
 
 
 if __name__ == "__main__":
@@ -218,13 +263,13 @@ if __name__ == "__main__":
     def test2(*args):
         raise ValueError("raise by test2_func")
 
-    @retry_log_by_tenacity()
+    @retry_log_by_tenacity
     def get_html(*args):
         raise ValueError("raise by get_html")
-        import requests
+        # import requests
 
-        return requests.get("https://www.google.com")
+        # return requests.get("https://www.google.com")
 
-    print(test())
+    # print(test())
     # print(test2())
-    # print(get_html())
+    print(get_html())

@@ -13,6 +13,7 @@ Github       : https://github.com/sandorn/home
 
 import asyncio
 import selectors
+from typing import Callable, List, Optional
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, TRETRY, Head
@@ -30,16 +31,44 @@ asyncio.set_event_loop_policy(MyPolicy())
 
 
 class AioHttpClient:
+    """异步HTTP客户端，基于aiohttp实现，支持重试、超时和并发请求"""
+
     def __init__(self):
-        self._loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self._loop)
-        self._session = self._loop.run_until_complete(self.create_session())
+        self.method: str = ""  # 保存请求方法
+        # 获取或创建事件循环
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+        self._session: Optional[ClientSession] = None
+        try:
+            self._session = self._loop.run_until_complete(self.create_session())
+        except Exception as e:
+            print(f"Failed to create session: {e}")
+            self._session = None
 
-    async def create_session(self):
-        return ClientSession(connector=TCPConnector(ssl=False))
+    async def __aenter__(self):
+        """异步上下文管理器入口"""
+        self._session = await self.create_session()
+        return self
 
-    async def close_session(self):
-        if hasattr(self, "_session") and self._session is not None:
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """异步上下文管理器退出，确保会话关闭"""
+        if self._session:
+            await self._session.close()
+            self._session = None
+
+    async def create_session(self) -> ClientSession:
+        """创建并返回一个配置好的ClientSession"""
+        return ClientSession(
+            connector=TCPConnector(ssl=False),
+            timeout=ClientTimeout(total=TIMEOUT),
+        )
+
+    async def close_session(self) -> None:
+        """异步关闭会话"""
+        if self._session is not None:
             await self._session.close()
             self._session = None
 
@@ -50,34 +79,55 @@ class AioHttpClient:
         """关闭会话"""
         self._loop.run_until_complete(self.close_session())
 
+    def close(self) -> None:
+        """同步关闭方法"""
+        if self._session and not self._session.closed:
+            try:
+                self._loop.run_until_complete(self._session.close())
+            except RuntimeError:
+                # 如果事件循环已关闭，创建新的循环执行关闭
+                _loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(_loop)
+                _loop.run_until_complete(self._session.close())
+                _loop.close()
+            finally:
+                self._session = None
+
     def __del__(self):
-        """关闭会话"""
-        self._loop.run_until_complete(self.close_session())
+        """析构函数，确保资源释放"""
+        self.close()
 
-    def __getitem__(self, method):
+    def __getitem__(self, method: str) -> Callable:
         self.method = method.lower()  # 保存请求方法
-        return self._make_parse  # 调用方法
-        # return lambda *args, **kwargs: self._make_parse(*args, **kwargs)
+        return self._make_parse
 
-    def __getattr__(self, method):
+    def __getattr__(self, method: str) -> Callable:
         return self.__getitem__(method)
 
-    def _make_parse(self, url, **kwargs):
+    def _make_parse(self, url: str, **kwargs) -> ACResponse:
         index = kwargs.pop("index", id(url))
-        return self._loop.run_until_complete(
-            self._retry_request(url, index=index, **kwargs)
-        )
+        try:
+            return self._loop.run_until_complete(
+                self._retry_request(url, index=index, **kwargs)
+            )
+        except Exception as e:
+            print(f"Request failed: {e}")
+            return ACResponse(None, str(e).encode(), index)
 
     @log_catch_decor  # type:ignore
-    async def _retry_request(self, url, index=None, **kwargs):
+    async def _retry_request(
+        self, url: str, index: Optional[int] = None, **kwargs
+    ) -> ACResponse:
         kwargs.setdefault("headers", Head().randua)
         kwargs.setdefault("timeout", ClientTimeout(TIMEOUT))
-        callback = kwargs.pop("callback", None)
         index = index or id(url)
+        _ = kwargs.pop("callback", None)
 
         @TRETRY
-        async def _single_fetch():
-            async with self._session.request(  # type:ignore
+        async def _single_fetch() -> tuple:
+            if self._session is None:
+                self._session = await self.create_session()
+            async with self._session.request(
                 self.method, url, raise_for_status=True, **kwargs
             ) as response:
                 content = await response.content.read()
@@ -86,12 +136,13 @@ class AioHttpClient:
         try:
             response, content = await _single_fetch()
             result = ACResponse(response, content, index)
-            return callback(result) if callable(callback) else result
+            return result
         except Exception as err:
-            print(err_str := f"AioHttpClient:{self} | URL:{url} | RetryErr:{err!r}")
+            err_str = f"AioHttpClient:{self} | URL:{url} | RetryErr:{err!r}"
+            print(err_str)
             return ACResponse(None, err_str.encode(), index)
 
-    async def _multi_fetch(self, method, urls_list, **kwargs):
+    async def _multi_fetch(self, method: str, urls_list: List[str], **kwargs):
         self.method = method
         task_list = [
             self._retry_request(url, index=index, **kwargs)
@@ -99,12 +150,12 @@ class AioHttpClient:
         ]
         return await asyncio.gather(*task_list, return_exceptions=True)
 
-    def getall(self, urls_list, **kwargs):
+    def getall(self, urls_list: List[str], **kwargs):
         return self._loop.run_until_complete(
             self._multi_fetch("get", urls_list, **kwargs)
         )
 
-    def postall(self, urls_list, **kwargs):
+    def postall(self, urls_list: List[str], **kwargs):
         return self._loop.run_until_complete(
             self._multi_fetch("post", urls_list, **kwargs)
         )
