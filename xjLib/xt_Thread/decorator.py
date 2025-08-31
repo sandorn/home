@@ -14,14 +14,50 @@ https://mp.weixin.qq.com/s/4nkQITVniE9FhESDMt34Ow  # wrapt库
 
 from __future__ import annotations
 
+import asyncio
 import builtins
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Executor, ThreadPoolExecutor
+from functools import partial, wraps
 from threading import Lock, Thread
 from typing import Any, Callable
 
 import wrapt
 from PyQt6.QtCore import QThread
 
+
+def run_on_executor(executor: Executor = None, background: bool = False):
+    """
+    异步装饰器
+    - 支持同步函数使用 executor 加速
+    - 异步函数和同步函数都可以使用 `await` 语法等待返回结果
+    - 异步函数和同步函数都支持后台任务，无需等待
+    Args:
+        executor: 函数执行器, 装饰同步函数的时候使用
+        background: 是否后台执行，默认False
+
+    Returns:
+    """
+
+    def _run_on_executor(func):
+        @wraps(func)
+        async def async_wrapper(*args, **kwargs):
+            if background:
+                return asyncio.create_task(func(*args, **kwargs))
+            else:
+                return await func(*args, **kwargs)
+
+        @wraps(func)
+        def sync_wrapper(*args, **kwargs):
+            loop = asyncio.get_event_loop()
+            task_func = partial(func, *args, **kwargs)    # 支持关键字参数
+            return loop.run_in_executor(executor, task_func)
+
+        # 异步函数判断
+        wrapper_func = async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+        return wrapper_func
+
+    return _run_on_executor
+    
 
 class ThreadSafe(wrapt.ObjectProxy):
     """线程安全装饰器（支持实例方法和静态方法）

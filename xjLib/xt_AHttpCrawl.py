@@ -63,7 +63,8 @@ def coroutine_decorator(func):
     async def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
 
-    return func if iscoroutinefunction(func) else wrapper
+    # return func if iscoroutinefunction(func) else wrapper
+    return wrapper
 
 
 def async_inexecutor_decorator(func):
@@ -169,7 +170,7 @@ if __name__ == "__main__":
     # 使用await调用被装饰后的普通函数
     async def main():
         # result = await normal_function()
-        result = await coroutine_decorator(normal_function)()
+        result = await coroutine_decorator(normal_function)() 
         print(777777777777777, result)
 
     asyncio.run(main())

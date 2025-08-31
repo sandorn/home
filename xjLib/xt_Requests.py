@@ -16,35 +16,18 @@ from functools import partial
 from typing import Any, Callable, Union
 
 import requests
-from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_decor
+from xt_decorators.log import log_decor
+from xt_decorators.retry import retry_wraps
+from xt_head import TIMEOUT, Head
 from xt_response import htmlResponse
-from xt_retry import retry_log_by_tenacity
 
 request_methods = ("get","post","head","options","put","delete","trace","connect","patch")
 
-
-@TRETRY  # from xt_catch import try_except_wraps
-def _retry_request_0(method, url, **kwargs):
-    """无用暂存，利用 TRETRY 库实现重试"""
-    callback = kwargs.pop("callback", None)
-    index = kwargs.pop("index", None)
-    try:
-        response = requests.request(method, url, **kwargs)
-        response.raise_for_status()  # 如果响应状态码不是200，则抛出HTTPError
-        result = htmlResponse(response=response, index=index)
-        return callback(result) if callable(callback) else result
-    except Exception as err:
-        print(err_str := f"Request_tretry:{method} | URL:{url} | Err:{err!r}")
-        raise ValueError(err_str)
-        return htmlResponse(None, err_str.encode(), id(url))
-
-
-@retry_log_by_tenacity()   #RetryLogWrapper  # retry_log_by_tenacity()
+@retry_wraps()
 def _retry_request(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResponse:
     """利用 RetryLogWrapper 实现重试"""
     _ = kwargs.pop("callback", None)
-    index = kwargs.pop("index", None)
+    index = kwargs.pop("index", id(url))
     response = requests.request(method, url, *args, **kwargs)
     response.raise_for_status()
     result = htmlResponse(response=response, index=index)
@@ -94,7 +77,7 @@ class SessionClient:
     def __getattr__(self, method):
         return self.__getitem__(method)
 
-    @log_decor
+    @log_decor()
     def create_task(self, *args, **kwargs):
         self.url = args[0]
         if self.method not in request_methods:
@@ -110,10 +93,10 @@ class SessionClient:
         _ = kwargs.pop("callback", None)
         kwargs.setdefault("timeout", TIMEOUT)
         self.kwargs = kwargs
-        return self._retry_request()
+        return self._get_resp()
 
-    @TRETRY
-    def _retry_request(self):
+    @retry_wraps()
+    def _get_resp(self):
         """利用 TRETRY 库实现重试"""
         try:
             response = self.session.request(
@@ -144,7 +127,7 @@ if __name__ == "__main__":
     elestr = "//title/text()"
 
     def main():
-        # print(111111111111111111111, SessionClient().get(urls[3]))
+        print(111111111111111111111, SessionClient().get(urls[1]))
 
         # print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
         # print(3333333333333333333, get(urls[4]))
@@ -168,11 +151,11 @@ if __name__ == "__main__":
 
     main()
 
-    @TRETRY
+    @retry_wraps()
     def my_func():
         return get("https://www.google.com")
 
-    # print(my_func())
+    print(my_func())
 
     """
     ###############################################################

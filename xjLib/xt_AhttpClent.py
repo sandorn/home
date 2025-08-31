@@ -114,7 +114,7 @@ class AioHttpClient:
             print(f"Request failed: {e}")
             return ACResponse(None, str(e).encode(), index)
 
-    @log_catch_decor  # type:ignore
+    @log_catch_decor
     async def _retry_request(
         self, url: str, index: Optional[int] = None, **kwargs
     ) -> ACResponse:
@@ -148,7 +148,7 @@ class AioHttpClient:
             self._retry_request(url, index=index, **kwargs)
             for index, url in enumerate(urls_list, start=1)
         ]
-        return await asyncio.gather(*task_list, return_exceptions=True)
+        return await asyncio.gather(*task_list, return_exceptions=True) 
 
     def getall(self, urls_list: List[str], **kwargs):
         return self._loop.run_until_complete(
