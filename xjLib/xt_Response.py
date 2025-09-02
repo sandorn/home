@@ -46,8 +46,8 @@ class htmlResponse:
 
     def __repr__(self):
         if self.raw is None:
-            return f"<htmlResponse [999] | {self.content} | ID:[{self.index}]>"
-        return f"<htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]>"
+            return f"htmlResponse [999] | ID:[{self.index}] | content:[{self.content}]"
+        return f"htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]"
 
     def __str__(self):
         return self.__repr__()

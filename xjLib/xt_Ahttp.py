@@ -18,9 +18,8 @@ from functools import partial
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_decor
 from xt_response import ACResponse
-from xt_retry import retry_log_wrapper
+from xt_wraps import log_wraps, retry_wraps, timer_wraps
 
 
 class MyPolicy(asyncio.DefaultEventLoopPolicy):
@@ -81,7 +80,7 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
-    @log_decor  # # type: ignore
+    @log_wraps
     async def start(self):
         """执行单任务"""
 
@@ -110,7 +109,9 @@ class AsyncTask:
             print(err_str := f"Async_fetch:{self} | RetryErr:{err!r}")
             return ACResponse(None, err_str.encode(), self.index)
 
-    @retry_log_wrapper()
+    @retry_wraps
+    @timer_wraps
+    @log_wraps
     async def run(self, clent):
         """执行多任务,使用同一session"""
         async with clent.request(
@@ -168,7 +169,7 @@ if __name__ == "__main__":
     elestr = "//title/text()"
 
     def main():
-        print(111111111111111111111, ahttpGetAll([urls[0], urls[1]] * 3))
+        print(111111111111111111111, ahttpGetAll([urls[0], urls[1]]))
         # print(222222222222222222222, ahttpPost(urls[2], data=b"data"))
         # print(333333333333333333333, res := ahttpGet(urls[0]))
         # print("xpath-1".ljust(10), ":", res.xpath(elestr))

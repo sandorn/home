@@ -17,8 +17,8 @@ from typing import Callable, List, Optional
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, TRETRY, Head
-from xt_log import log_catch_decor
 from xt_response import ACResponse
+from xt_wraps import catch_log
 
 
 class MyPolicy(asyncio.DefaultEventLoopPolicy):
@@ -114,7 +114,7 @@ class AioHttpClient:
             print(f"Request failed: {e}")
             return ACResponse(None, str(e).encode(), index)
 
-    @log_catch_decor
+    @catch_log
     async def _retry_request(
         self, url: str, index: Optional[int] = None, **kwargs
     ) -> ACResponse:

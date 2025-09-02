@@ -1,200 +1,210 @@
-# !/usr/bin/env python
-"""
-==============================================================
-Description  : 头部注释
-Develop      : VSCode
-Author       : sandorn sandorn@live.cn
-Date         : 2024-09-16 09:24:31
-LastEditTime : 2025-08-29 09:18:49
-FilePath     : /CODE/xjLib/xt_decorators/retry.py
-Github       : https://github.com/sandorn/home
-==============================================================
-"""
-
 import asyncio
-import random
-import time
+from functools import wraps
 from typing import Any, Callable, Tuple, Type
 
 from tenacity import (
-    AsyncRetrying,
     RetryCallState,
     retry,
-    retry_always,
-    retry_if_not_exception_type,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_random,
 )
-from xt_wraps import LogCls, create_basemsg, decorate_sync_async, func_sync_async
+from xt_wraps.log import create_basemsg, mylog
 
-mylog = LogCls().logger
 
-class RetryRaise:
-    # 不重试异常
-    NO_RETRY_EXCEPT = (ValueError, ZeroDivisionError)
-    _basemsg :str= ""
+class RetryHandler:
+    # 只重试异常
+    RETRY_EXCEPT = (
+        # 网络连接异常
+        TimeoutError,  # 超时错误
+        ConnectionError,  # 连接错误
+        ConnectionRefusedError,  # 连接被拒绝
+        ConnectionResetError,  # 连接被重置
+        ConnectionAbortedError,  # 连接被中止
+        # 操作系统级I/O异常
+        OSError,  # 操作系统错误（包括许多网络错误）
+        # HTTP相关异常
+        # HTTPError,  # HTTP错误（如404、500等）
+        # TooManyRedirects,  # 重定向过多
+        # # SSL/TLS相关异常
+        # SSLError,  # SSL错误
+        # SSLZeroReturnError,  # SSL连接被关闭
+        # SSLWantReadError,  # SSL需要读取更多数据
+        # SSLWantWriteError,  # SSL需要写入更多数据
+        # SSLSyscallError,  # SSL系统调用错误
+        # SSLEOFError,  # SSL EOF错误
+        # # DNS相关异常
+        # gaierror,  # 地址信息错误（DNS解析失败）
+        # # 代理相关异常
+        # ProxyError,  # 代理错误
+        # # 请求库特定异常（如requests）
+        # requests.exceptions.Timeout,
+        # requests.exceptions.ConnectionError,
+        # requests.exceptions.HTTPError,
+        # requests.exceptions.ChunkedEncodingError,
+        # requests.exceptions.ContentDecodingError,
+        # # 异步HTTP客户端异常（如aiohttp）
+        # aiohttp.ClientError,
+        # aiohttp.ClientConnectionError,
+        # aiohttp.ClientResponseError,
+        # aiohttp.ClientPayloadError,
+        # aiohttp.ServerTimeoutError,
+        # aiohttp.ServerDisconnectedError,
+        # # 其他可能的重试异常
+        # BrokenPipeError,  # 管道破裂错误
+        # TemporaryFailure,  # 临时故障（SMTP相关）
+    )
+
+    _basemsg: str = ""
+    _default_return: Any = None
 
     @classmethod
-    def _raise(cls, retry_state: RetryCallState) -> str:
+    def configure(cls, basemsg: str, default_return: Any) -> None:
+        """配置RetryHandler"""
+        cls._basemsg = basemsg
+        cls._default_return = default_return
+
+    @classmethod
+    def err_back(cls, retry_state: RetryCallState) -> Any:
+        """错误回调，返回默认值"""
         ex = retry_state.outcome.exception()
-        mylog.error(f"{cls._basemsg} | RetryRaise | 共 {retry_state.attempt_number} 次尝试失败，最后错误是: {retry_state.outcome.exception() if ex else '无'}")
-
+        if ex:
+            mylog.error(
+                f"{cls._basemsg} | RetryHandler | 共 {retry_state.attempt_number} 次失败，最后错误: {ex}"
+            )
+        else:
+            mylog.error(f"{cls._basemsg} | RetryHandler | 其他异常: {ex}")
+        return cls._default_return
 
     @classmethod
-    def _before_sleep(cls, retry_state: RetryCallState, *args, **kwargs) -> None:
-        mylog.error(
-            f"{cls._basemsg} | RetryRaise | 第 {retry_state.attempt_number} 次尝试失败, 捕获到异常: {retry_state.outcome.exception()}"
-        )
+    def before_back(cls, retry_state: RetryCallState) -> None:
+        """重试前回调"""
+        ex = retry_state.outcome.exception()
+        if ex:
+            mylog.error(
+                f"{cls._basemsg} | RetryRaise | 第 {retry_state.attempt_number} 次失败, 异常: {ex}"
+            )
+
+    @classmethod
+    def should_retry(cls, exception: Exception) -> bool:
+        """判断是否应该重试异常"""
+        return any(isinstance(exception, exc_type) for exc_type in cls.RETRY_EXCEPT)
 
 
 def retry_wraps(
+    fn: Callable[..., Any] = None,
     max_attempts: int = 3,
     min_wait: float = 0,
     max_wait: float = 1,
-    is_not_retry_exceptions: bool = True,
-    not_retry_exceptions: Tuple[Type[Exception], ...] = RetryRaise.NO_RETRY_EXCEPT,
-    is_before_sleep: bool = True,
-    before_sleep: Callable[[Any], None] | None = RetryRaise._before_sleep,
+    retry_exceptions: Tuple[Type[Exception], ...] = RetryHandler.RETRY_EXCEPT,
+    is_before_callback: bool = True,
     is_error_callback: bool = True,
-    retry_error_callback: Callable[[Any], Any] | None = RetryRaise._raise,
+    silent_on_no_retry: bool = True,
+    default_return: Any = None,
 ) -> Callable:
     """
-    重试装饰器 - 同时支持同步和异步函数的重试逻辑
-    使用decorate_sync_async处理函数的同步/异步执行
+    重试装饰器 - 基于tenacity，支持同步和异步函数
 
     Args:
         max_attempts: 最大尝试次数
         min_wait: 最小等待时间(秒)
         max_wait: 最大等待时间(秒)
-        is_not_retry_exceptions: 是否不重试指定异常
-        not_retry_exceptions: 不重试的异常类型元组
-        is_before_sleep: 是否在每次重试前调用before_sleep
-        before_sleep: 每次重试前调用的函数
-        is_error_callback: 是否在重试失败时调用retry_error_callback
-        retry_error_callback: 重试失败时调用的函数
+        retry_exceptions: 需要重试的异常类型元组
+        is_before_callback: 是否在重试前调用回调
+        is_error_callback: 是否在错误时调用回调
+        silent_on_no_retry: 是否静默处理非重试异常（不抛出错误）
+        default_return: 静默处理时的默认返回值
     """
-    @decorate_sync_async
-    def wrapper(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-        # 确定重试条件
-        retry_condition = (
-            retry_if_not_exception_type(not_retry_exceptions)
-            if is_not_retry_exceptions
-            else retry_always
+
+    def decorator(func: Callable[..., Any]) -> Callable:
+        # 设置基础消息和默认返回值
+        basemsg = create_basemsg(func)
+        RetryHandler.configure(basemsg, default_return)
+
+        # 更新重试异常列表
+        RetryHandler.RETRY_EXCEPT = retry_exceptions
+
+        # 创建重试条件 - 只重试指定类型的异常
+        retry_condition = retry_if_exception_type(retry_exceptions)
+
+        # 配置tenacity的retry装饰器
+        retry_decorator = retry(
+            reraise=True,  # 保持为True，让异常传播到我们的包装器
+            stop=stop_after_attempt(max_attempts),
+            wait=wait_random(min=min_wait, max=max_wait),
+            retry=retry_condition,
+            before_sleep=RetryHandler.before_back if is_before_callback else None,
+            retry_error_callback=RetryHandler.err_back if is_error_callback else None,
         )
-        RetryRaise._basemsg = create_basemsg(func)
 
-        # 检查函数是否是异步的
-        is_async = asyncio.iscoroutinefunction(func)
+        # 同步函数包装器
+        @wraps(func)
+        def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
+            try:
+                # 使用retry_decorator包装函数调用
+                # #raise：重试错误会重试足够次数，不重试错误只运行1次
+                return retry_decorator(func)(*args, **kwargs)
+            except Exception as e:
+                if RetryHandler.should_retry(e):  # 检查是否重试异常
+                    return default_return  # 重试异常在所有重试失败后返回默认值
+                elif silent_on_no_retry:  # 检查是否静默处理非重试异常
+                    return default_return  # 非重试异常返回默认值
+                else:
+                    raise  # 否则重新抛出异常
 
-        if is_async:
-            # 对于异步函数，使用异步重试
-            async def async_retry_func():
-                async for attempt in AsyncRetrying(
-                    reraise=True,
-                    stop=stop_after_attempt(max_attempts),
-                    wait=wait_random(min=min_wait, max=max_wait),
-                    retry=retry_condition,
-                    before_sleep=before_sleep if is_before_sleep else None,
-                    retry_error_callback=retry_error_callback
-                    if is_error_callback
-                    else None,
-                ):
-                    with attempt:
-                        return await func(*args, **kwargs)
+        # 异步函数包装器
+        @wraps(func)
+        async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
+            try:
+                # 使用retry_decorator包装函数调用
+                return await retry_decorator(func)(*args, **kwargs)
+            except Exception as e:
+                if RetryHandler.should_retry(e):  # 检查是否重试异常
+                    return default_return  # 重试异常在所有重试失败后返回默认值
+                elif silent_on_no_retry:  # 检查是否静默处理非重试异常
+                    return default_return  # 非重试异常返回默认值
+                else:
+                    raise  # 否则重新抛出异常
 
-            return async_retry_func()
+        # 根据函数类型返回相应的包装器
+        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
 
-        else:
-            # 对于同步函数，使用同步重试
-            @retry(
-                reraise=True,
-                stop=stop_after_attempt(max_attempts),
-                wait=wait_random(min=min_wait, max=max_wait),
-                retry=retry_condition,
-                before_sleep=before_sleep if is_before_sleep else None,
-                retry_error_callback=retry_error_callback
-                if is_error_callback
-                else None,
-            )
-            def sync_retry_func():
-                return func(*args, **kwargs)
+    return decorator(fn) if fn else decorator
 
-            return sync_retry_func()
-
-    return wrapper
-
-
-def retry_deco(
-    func: Callable[..., Any] | None = None,
-    max_attempts=3,
-    base_delay=1,
-    max_delay=60,
-    allowed_exceptions=(Exception,),
-    retry_condition=None,
-):
-    """增强版重试装饰器，支持同步和异步函数的重试逻辑"""
-
-    def decorator(func):
-        # 创建一个内部函数来处理同步和异步执行
-        @func_sync_async
-        def retry_decorator(*args: Any, **kwargs: Any) -> Any:
-            result = func(*args, **kwargs)
-            # 自定义条件检查
-            if retry_condition and not retry_condition(result):
-                return result
-            return result
-
-        # 创建一个外部包装器来处理重试逻辑
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            retries = 0
-            while retries < max_attempts:
-                try:
-                    return retry_decorator(*args, **kwargs)
-                except allowed_exceptions:
-                    retries += 1
-                    if retries == max_attempts:
-                        raise
-                    # 指数退避+随机抖动
-                    sleep_time = min(base_delay * (2 ** (retries - 1)), max_delay)
-                    sleep_time *= 0.5 + random.random()  # 添加150%以内的随机因子
-                    time.sleep(sleep_time)
-                except Exception:
-                    # 非预期异常立即抛出
-                    raise
-            return None
-
-        # 保留原函数的元数据
-        wrapper.__name__ = func.__name__
-        wrapper.__doc__ = func.__doc__
-        wrapper.__module__ = func.__module__
-        return wrapper
-
-    return decorator(func) if func else decorator
 
 if __name__ == "__main__":
+    # 测试同步函数 - 不重试异常，应返回默认值
+    @retry_wraps(default_return="999")
+    def test_sync_no_retry():
+        raise ValueError("raise by test_func")
+        # return "同步函数成功"
 
-    @retry_deco
-    def test(*args):
-        raise RuntimeError("raise by test_func")
-        # raise ValueError("raise by test_func")
-        return "同步函数成功"
+    print("11111111|同步函数测试(不重试):", test_sync_no_retry())  # 输出 999
 
-    print(1111111,test())
+    # 测试同步函数 - 重试异常，重试结束后应返回默认值
+    @retry_wraps(default_return="888", max_attempts=3)
+    def test_sync_retry():
+        raise TimeoutError("超时错误")
+        # return "同步函数成功"
 
-    # 同步函数示例
-    @retry_deco()
-    def sync_function():
-        raise Exception("同步随机失败")
-        return "同步函数成功"
-    
-    print(222222, sync_function())
+    print("22222222|同步函数测试(重试):", test_sync_retry())  # 输出 888
 
-    # 异步函数示例
-    @retry_deco()
-    async def async_function():
-        raise Exception("异步随机失败")
-        return "异步函数成功"
+    # 测试异步函数 - 不重试异常，应返回默认值
+    @retry_wraps(default_return="777")
+    async def test_async_no_retry():
+        raise ValueError("异步随机失败")
+        # return "异步函数成功"
 
     import asyncio
 
-    print(3333333, asyncio.run(async_function()))
+    print(
+        "33333333|异步函数测试(不重试):", asyncio.run(test_async_no_retry())
+    )  # 输出 777
+
+    # 测试异步函数 - 重试异常，重试结束后应返回默认值
+    @retry_wraps(default_return="666", max_attempts=3)
+    async def test_async_retry():
+        raise TimeoutError("异步超时错误")
+        # return "异步函数成功"
+
+    print("44444444|异步函数测试(重试):", asyncio.run(test_async_retry()))  # 输出 666

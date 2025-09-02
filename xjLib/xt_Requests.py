@@ -16,10 +16,9 @@ from functools import partial
 from typing import Any, Callable, Union
 
 import requests
-from xt_decorators.log import log_decor
-from xt_decorators.retry import retry_wraps
 from xt_head import TIMEOUT, Head
 from xt_response import htmlResponse
+from xt_wraps import log_wraps, retry_wraps
 
 request_methods = ("get","post","head","options","put","delete","trace","connect","patch")
 
@@ -77,7 +76,7 @@ class SessionClient:
     def __getattr__(self, method):
         return self.__getitem__(method)
 
-    @log_decor()
+    @log_wraps()
     def create_task(self, *args, **kwargs):
         self.url = args[0]
         if self.method not in request_methods:
