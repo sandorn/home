@@ -98,5 +98,73 @@ async def main():
     except ValueError as e:
         print(f"捕获到异常: {e}")
 
+
+def all_wraps():
+    import asyncio
+
+    from xt_wraps import log_wraps, retry_wraps, timer_wraps
+
+    @timer_wraps
+    @log_wraps
+    def test_function(*args):
+        total = 0
+        for i in range(1000000):
+            total += i
+        return total
+        # raise ValueError("值太小")
+
+    @timer_wraps
+    @log_wraps
+    @retry_wraps(default_return=-999)
+    async def async_test_function(x, y):
+        """一个可能失败的操作"""
+        await asyncio.sleep(0.1)  # 模拟异步处理时间
+        return x / y
+
+    @log_wraps
+    @timer_wraps
+    @retry_wraps(default_return=-1)
+    async def async_test_function2(*args):
+        """一个可能失败的操作"""
+        await asyncio.sleep(0.1)  # 模拟异步处理时间
+        raise Exception(f"值太小:{args}")
+
+    async def main():
+        result = test_function()
+        print(f"1. 测试同步函数结果: {result}")
+        res2 = await async_test_function(10, 2)
+        print(f"2. 测试异步函数结果: {res2}")
+        res3 = await async_test_function(10, 0)
+        print(f"3. 测试异步函数结果: {res3}")
+        res4 = await async_test_function2(10, 0)
+        print(f"4. 测试异步函数结果: {res4}")
+
+    asyncio.run(main())
+
+
 if __name__ == "__main__":
+    # asyncio.run(main())
+
+    all_wraps()
+
+    @timer_wraps
+    def test_function(*args):
+        total = 0
+        for i in range(1000000):
+            total += i
+        return total
+
+    @timer_wraps
+    async def async_test_function():
+        """测试异步函数的计时装饰器"""
+        await asyncio.sleep(0.1)  # 模拟异步处理时间
+        # raise ValueError("异步函数执行失败")
+        return "异步函数执行完成"
+
+    async def main():
+        result = test_function()
+        print(f"1. 测试同步函数结果: {result}")
+        result = await async_test_function()
+        print(f"2. 测试异步函数结果: {result}")
+
     asyncio.run(main())

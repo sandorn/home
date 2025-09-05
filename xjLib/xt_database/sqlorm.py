@@ -18,7 +18,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from xt_database.cfg import connect_str
 from xt_database.sqlorm_meta import ErrorMetaClass, copy_db_model
-from xt_singleon import SingletonMetaCls
+from xt_wraps.singleon import SingletonMetaCls
 
 
 class SqlConnection(ErrorMetaClass, metaclass=SingletonMetaCls):

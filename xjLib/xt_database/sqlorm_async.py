@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from xt_database.cfg import connect_str
 from xt_database.sqlorm_meta import ErrorMetaClass, copy_db_model
 from xt_database.untilsql import make_insert_sql, make_update_sql
-from xt_singleon import SingletonMetaCls
+from xt_wraps.singleon import SingletonMetaCls
 
 
 class AioMySqlOrm(ErrorMetaClass, metaclass=SingletonMetaCls):

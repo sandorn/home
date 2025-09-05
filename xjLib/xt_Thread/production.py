@@ -17,7 +17,7 @@ import time
 from random import randint
 from typing import Any, Callable, Coroutine, List
 
-from xt_thread import thread_print
+from .thread import thread_print
 
 
 class Production:

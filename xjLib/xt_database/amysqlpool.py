@@ -19,7 +19,7 @@ from typing import Optional
 
 import aiomysql
 from xt_database.cfg import DB_CFG
-from xt_singleon import SingletonMixin
+from xt_wraps.singleon import SingletonMixin
 
 
 class AioSqlPool(SingletonMixin):

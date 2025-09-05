@@ -41,9 +41,30 @@ async def async_function_with_error(x: int, y: int) -> float:
     await asyncio.sleep(0.1)
     return x / y  # 当y=0时会抛出异常
 
+@log_wraps()
+def test_function(*args):
+    total = 0
+    for i in range(1000000):
+        total += i
+    return total
+
+
+@log_wraps()
+async def async_test_function(x, y):
+    await asyncio.sleep(0.1)  # 模拟异步处理时间
+    return x / y
+
+
 # 主测试函数
 async def main():
     print("====== 开始测试修复后的 log_wraps 装饰器 ======")
+    result = test_function()
+    print(f"1. 测试同步函数结果: {result}")
+    res2 = await async_test_function(10, 2)
+    print(f"2. 测试异步函数结果: {res2}")
+    result = await async_test_function(10, 0)
+    print(f"3. 测试异步函数结果: {result}")
+
     print("\n1. 测试同步函数:")
     try:
         # 测试正常同步函数

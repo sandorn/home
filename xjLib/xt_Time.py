@@ -20,7 +20,7 @@ from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
 from wrapt import decorator
 from xt_enum import StrEnum
-from xt_singleon import SingletonMetaCls
+from xt_wraps.singleon import SingletonMetaCls
 
 
 class TimeFormatEnum(StrEnum):

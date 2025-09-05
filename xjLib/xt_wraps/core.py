@@ -15,6 +15,9 @@ import asyncio
 from functools import wraps
 from typing import Any, Callable, Optional, TypeVar, cast
 
+from .exception import handle_exception
+from .log import create_basemsg
+
 T = TypeVar("T", bound=Callable[..., Any])
 
 
@@ -72,27 +75,33 @@ def decorate_sync_async(
         # 定义异步包装函数
         @wraps(func)
         async def async_wrapped(*args: Any, **kwargs: Any) -> Any:
-            # 如果装饰器函数接受func作为第一个参数
-            if decorator_func.__code__.co_argcount > 0:
-                return await decorator_func(func, *args, **kwargs)
-            else:
-                # 直接调用装饰后的函数
-                decorated_func = decorator_func(**decorator_kwargs)
-                if asyncio.iscoroutinefunction(decorated_func):
-                    return await decorated_func(*args, **kwargs)
+            try:
+                # 如果装饰器函数接受func作为第一个参数
+                if decorator_func.__code__.co_argcount > 0:
+                    return await decorator_func(func, *args, **kwargs)
                 else:
-                    return decorated_func(*args, **kwargs)
+                    # 直接调用装饰后的函数
+                    decorated_func = decorator_func(**decorator_kwargs)
+                    if asyncio.iscoroutinefunction(decorated_func):
+                        return await decorated_func(*args, **kwargs)
+                    else:
+                        return decorated_func(*args, **kwargs)
+            except Exception as err:
+                return handle_exception(err, create_basemsg(func))
 
         # 定义同步包装函数
         @wraps(func)
         def sync_wrapped(*args: Any, **kwargs: Any) -> Any:
-            # 如果装饰器函数接受func作为第一个参数
-            if decorator_func.__code__.co_argcount > 0:
-                return decorator_func(func, *args, **kwargs)
-            else:
-                # 直接调用装饰后的函数
-                decorated_func = decorator_func(**decorator_kwargs)
-                return decorated_func(*args, **kwargs)
+            try:
+                # 如果装饰器函数接受func作为第一个参数
+                if decorator_func.__code__.co_argcount > 0:
+                    return decorator_func(func, *args, **kwargs)
+                else:
+                    # 直接调用装饰后的函数
+                    decorated_func = decorator_func(**decorator_kwargs)
+                    return decorated_func(*args, **kwargs)
+            except Exception as err:
+                return handle_exception(err, create_basemsg(func))
 
         # 检查函数是否是异步的
         return (

@@ -5,8 +5,8 @@ Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-18 09:27:13
-FilePath     : /CODE/xjLib/xt_Thread/decorator.py
+LastEditTime : 2025-09-05 12:24:43
+FilePath     : /CODE/xjLib/xt_thread/decorator.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 https://mp.weixin.qq.com/s/4nkQITVniE9FhESDMt34Ow  # wrapt库
@@ -14,55 +14,14 @@ https://mp.weixin.qq.com/s/4nkQITVniE9FhESDMt34Ow  # wrapt库
 
 from __future__ import annotations
 
-import builtins
 from concurrent.futures import ThreadPoolExecutor
-from threading import Lock, Thread
+from threading import Thread
 from typing import Any, Callable
 
 import wrapt
 from PyQt6.QtCore import QThread
 
-
-class ThreadSafe(wrapt.ObjectProxy):
-    """线程安全装饰器（支持实例方法和静态方法）
-
-    :param wrapped: 被装饰的可调用对象
-    :example:
-        @ThreadSafe
-        def critical_func():
-            ...
-    """
-
-    def __init__(self, wrapped: Callable[..., Any]) -> None:
-        super().__init__(wrapped)
-
-    def __call__(self, *args, **kwargs):
-        if self.__wrapped__.__module__ == builtins.__name__:  # 判断内置函数
-            with Lock(): 
-                return self.__wrapped__(*args, **kwargs)
-        else:
-            if not hasattr(self, "__lock__"):
-                self.__lock__ = Lock()
-            with self.__lock__:
-                return self.__wrapped__(*args, **kwargs)  # 普通函数和类方法
-
-
-def thread_safe(func):
-    """线程安全化，装饰函数和类方法"""
-    if func.__module__ == builtins.__name__:  # 判断内置函数
-
-        def wrapper(*args, **kwargs):
-            with Lock():
-                return func(*args, **kwargs)
-    else:
-
-        def wrapper(*args, **kwargs):
-            if not hasattr(func, "__lock__"):
-                func.__lock__ = Lock()
-            with func.__lock__:
-                return func(*args, **kwargs)  # 普通函数和类方法
-
-    return wrapper
+from .thread import thread_print, thread_safe
 
 
 @wrapt.decorator
@@ -216,7 +175,6 @@ def create_mixin_class(name, cls, meta, **kwargs):
     return type(name, (cls, meta), kwargs)
 
 
-thread_print = thread_safe(print)
 
 if __name__ == "__main__":
 

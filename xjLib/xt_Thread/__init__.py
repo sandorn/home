@@ -11,14 +11,12 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+
 from .decorator import (
-    ThreadSafe,
     create_mixin_class,
     parallelize_decorator,
     qthread_decorator,
     thread_decorator,
-    thread_print,
-    thread_safe,
 )
 from .futures import EnhancedThreadPool, FnInPool, ThreadPool
 from .pool import (
@@ -29,15 +27,20 @@ from .process import CustomProcess, Do_CustomProcess
 from .production import (
     Production,
 )
-from .qThread import CustomQThread, SingletonQThread
 from .thread import (
-    CustomThread,
-    SigThread,
-    stop_thread,
+    SafeThread,
+    SingletonThread,
+    ThreadBase,
+    ThreadManager,
+    ThreadSafe,
+    ThreadSafeWraps,
+    thread_print,
+    thread_safe,
 )
 
 __all__ = (
     ThreadSafe,
+    ThreadSafeWraps,
     create_mixin_class,
     parallelize_decorator,
     qthread_decorator,
@@ -52,9 +55,8 @@ __all__ = (
     CustomProcess,
     Do_CustomProcess,
     Production,
-    CustomQThread,
-    SingletonQThread,
-    CustomThread,
-    SigThread,
-    stop_thread,
+    ThreadBase,
+    ThreadManager,
+    SingletonThread,
+    SafeThread,
 )

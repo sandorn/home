@@ -21,7 +21,49 @@ from threading import Lock
 from typing import Any, Callable
 
 import psutil
-from xt_thread import thread_print
+
+from .thread import thread_print
+
+
+class ThreadPool:
+    """简单的线程池实现"""
+
+    def __init__(self, max_workers: int = 10, name_prefix: str = "ThreadPool"):
+        self.max_workers = max_workers
+        self.name_prefix = name_prefix
+        self._queue = []
+        self._active_threads = 0
+        self._lock = threading.RLock()
+        self._condition = threading.Condition(self._lock)
+
+    def submit(self, target: Callable, *args, **kwargs) -> threading.Thread:
+        """提交任务到线程池"""
+        with self._condition:
+            # 等待有空闲线程
+            while self._active_threads >= self.max_workers:
+                self._condition.wait()
+
+            # 创建线程并启动
+            thread = threading.Thread(target, *args, **kwargs)
+            thread.name = f"{self.name_prefix}-{thread.name}"
+
+            # 监控线程完成
+            original_run = thread.run
+
+            def monitored_run():
+                with self._condition:
+                    self._active_threads += 1
+                try:
+                    original_run()
+                finally:
+                    with self._condition:
+                        self._active_threads -= 1
+                        self._condition.notify()
+
+            thread.run = monitored_run
+            thread.start()
+            return thread
+
 
 
 class DynamicThreadPool:
@@ -176,7 +218,7 @@ if __name__ == "__main__":
             sleep_time = random.uniform(0.1, 1.0)  # 随机等待一段时间
             thread_print(f"任务 {task_id} 开始，预计耗时 {sleep_time:.2f} 秒")
             time.sleep(sleep_time)
-            thread_print(f"任务 {task_id} 完成")
+            thread_print(f"任务 {task_id} => \t 完成") 
 
         # 创建动态线程池实例
         thread_pool = DynamicThreadPool(min_workers=2, max_workers=5, queue_size=10)
@@ -205,7 +247,6 @@ if __name__ == "__main__":
             futures = [executor.submit(process_data, d) for d in range(10)]
             results = [f.result() for f in as_completed(futures)]
             print(results)  # 输出处理后的结果列表
-
         # 安全关闭线程池
         ThreadPoolManager.shutdown()
 

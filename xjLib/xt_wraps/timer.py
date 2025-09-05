@@ -16,7 +16,8 @@ from functools import wraps
 from time import perf_counter
 from typing import Any, Callable
 
-from xt_wraps.log import create_basemsg, mylog
+from .exception import handle_exception
+from .log import create_basemsg, mylog
 
 
 def timer_wraps(fn: Callable = None):
@@ -28,6 +29,8 @@ def timer_wraps(fn: Callable = None):
             start_time = perf_counter()
             try:
                 return func(*args, **kwargs)
+            except Exception as err:
+                return handle_exception(err, _basemsg, re_raise=True)
             finally:
                 mylog.debug(
                     f"{_basemsg} | Timer-Consuming <{perf_counter() - start_time:.4f} s>"
@@ -38,6 +41,8 @@ def timer_wraps(fn: Callable = None):
             start_time = perf_counter()
             try:
                 return await func(*args, **kwargs)
+            except Exception as err:
+                return handle_exception(err, _basemsg, re_raise=True)
             finally:
                 mylog.debug(
                     f"{_basemsg} | Timer-Consuming <{perf_counter() - start_time:.4f} s>"
@@ -50,28 +55,3 @@ def timer_wraps(fn: Callable = None):
 
 
 timer = timer_wraps
-
-
-if __name__ == "__main__":
-
-    @timer_wraps
-    def test_function(*args):
-        total = 0
-        for i in range(1000000):
-            total += i
-        return total
-
-    @timer_wraps
-    async def async_test_function():
-        """测试异步函数的计时装饰器"""
-        await asyncio.sleep(0.1)  # 模拟异步处理时间
-        # raise ValueError("异步函数执行失败")
-        return "异步函数执行完成"
-
-    async def main():
-        result = test_function()
-        print(f"1. 测试同步函数结果: {result}")
-        result = await async_test_function()
-        print(f"2. 测试异步函数结果: {result}")
-
-    asyncio.run(main())
