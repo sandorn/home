@@ -1,13 +1,27 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  : 头部注释
+Description  : 单例模式工具模块 - 提供多种线程安全的单例实现方式
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2025-09-05 17:22:07
+LastEditTime : 2025-09-06 12:00:00
 FilePath     : /CODE/xjLib/xt_wraps/singleton.py
 Github       : https://github.com/sandorn/home
+
+本模块提供以下核心功能：
+- SingletonMeta：线程安全的单例元类实现
+- SingletonMixin：线程安全的单例混入类实现
+- SingletonWraps：增强型单例类装饰器实现
+- singleton：基于SingletonWraps的简单单例装饰器函数
+
+主要特性：
+- 线程安全：通过双重检查锁机制确保在多线程环境下的安全性
+- 内存优化：使用弱引用避免内存泄漏
+- 实例管理：支持重置、检查和获取实例的功能
+- 异常处理：提供完善的错误捕获和处理机制
+- 类型支持：完整的类型注解支持
+- 自动垃圾回收：通过弱引用实现实例的自动清理
 ==============================================================
 """
 from threading import RLock
@@ -18,19 +32,50 @@ T = TypeVar("T")
 
 
 class SingletonMeta(type):
-    """
-    线程安全的单例元类实现（优化版）
+    """线程安全的单例元类实现
 
-    Features:
-    - 双重检查锁确保线程安全
-    - 支持重新初始化实例属性
-    - 自动垃圾回收（通过弱引用实现）
-    - 提供实例管理和重置功能
+    核心功能：
+    - 通过元类方式实现单例模式
+    - 双重检查锁机制确保线程安全
+    - 支持实例重置和状态检查
+    - 使用弱引用字典避免内存泄漏
+    - 完善的异常处理机制
 
-    Usage:
-    class MyClass(metaclass=SingletonMeta):
-        def __init__(self, config):
-            self.config = config
+    方法说明：
+    - __call__: 获取单例实例，带异常处理
+    - reset_instance: 重置单例实例
+    - has_instance: 检查是否存在单例实例
+    - get_instance: 获取当前单例实例（不创建新实例）
+
+    类属性：
+    - _instances: 弱引用字典，存储类与实例的映射关系
+    - _instance_lock: 可重入锁，确保线程安全
+
+    使用示例：
+        # 基本用法
+        class DatabaseConnection(metaclass=SingletonMeta):
+            def __init__(self, connection_string):
+                print(f"初始化数据库连接: {connection_string}")
+                self.connection_string = connection_string
+                
+        # 创建实例
+        db1 = DatabaseConnection("mysql://localhost:3306/db1")
+        db2 = DatabaseConnection("mysql://localhost:3306/db2")
+        
+        # db1和db2是同一个实例
+        print(f"是同一个实例: {db1 is db2}")  # 输出: True
+        print(f"连接字符串: {db1.connection_string}")  # 输出: mysql://localhost:3306/db1
+        
+        # 实例管理
+        print(f"存在实例: {DatabaseConnection.has_instance()}")  # 输出: True
+        
+        # 重置实例
+        DatabaseConnection.reset_instance()
+        print(f"重置后存在实例: {DatabaseConnection.has_instance()}")  # 输出: False
+        
+        # 重置后创建新实例
+        db3 = DatabaseConnection("mysql://localhost:3306/db3")
+        print(f"新连接字符串: {db3.connection_string}")  # 输出: mysql://localhost:3306/db3
     """
 
     _instances = WeakValueDictionary()  # 使用弱引用字典来存储实例
@@ -72,19 +117,59 @@ class SingletonMeta(type):
 
 
 class SingletonMixin:
-    """线程安全的单例混入类（带内存优化）
-
-    Features:
-    - 使用弱引用避免内存泄漏
-    - 支持多继承场景
-    - 自动清理实例引用
+    """线程安全的单例混入类实现
+    
+    核心功能：
+    - 通过混入方式实现单例模式
+    - 支持与其他类的多重继承
     - 双重检查锁确保线程安全
-    - 异常处理和日志记录
-
-    Usage:
-    class MyCls(SingletonMixin):
-        def __init__(self, conn_str):
-            self.connection = create_connection(conn_str)
+    - 使用弱引用字典避免内存泄漏
+    - 提供完整的实例管理接口
+    
+    类方法：
+    - get_instance: 获取当前单例实例（不创建新实例）
+    - reset_instance: 重置单例实例
+    - has_instance: 检查是否存在单例实例
+    
+    类属性：
+    - _instances: 弱引用字典，存储类与实例的映射关系
+    - _instance_lock: 可重入锁，确保线程安全
+    
+    使用示例：
+        # 基本用法
+        class ConfigService(SingletonMixin):
+            def __init__(self, config_file=None):
+                print(f"加载配置文件: {config_file or '默认配置'}")
+                self.config = config_file or 'default_config'
+        
+        # 创建实例
+        config1 = ConfigService("app_config.json")
+        config2 = ConfigService("user_config.json")
+        
+        # config1和config2是同一个实例
+        print(f"是同一个实例: {config1 is config2}")  # 输出: True
+        print(f"配置文件: {config1.config}")  # 输出: app_config.json
+        
+        # 实例管理
+        print(f"存在实例: {ConfigService.has_instance()}")  # 输出: True
+        
+        # 重置实例
+        ConfigService.reset_instance()
+        
+        # 重置后创建新实例
+        config3 = ConfigService("new_config.json")
+        print(f"新配置文件: {config3.config}")  # 输出: new_config.json
+        
+        # 多重继承示例
+        class Loggable:
+            def log(self, message):
+                print(f"[LOG] {message}")
+        
+        class LoggedConfigService(ConfigService, Loggable):
+            pass
+        
+        logged_config = LoggedConfigService("logged_config.json")
+        logged_config.log(f"当前配置: {logged_config.config}")
     """
 
     _instance_lock = RLock()  # 使用可重入锁，避免递归调用问题
@@ -107,8 +192,7 @@ class SingletonMixin:
                 instance = super().__new__(cls)
                 # 存储实例引用
                 cls._instances[cls] = instance
-                # 初始化实例
-                instance.__init__(*args, **kwargs)
+                # 注意：不手动调用__init__，让Python正常流程处理初始化
                 return instance
             except Exception as e:
                 # 清理失败的实例
@@ -137,21 +221,59 @@ class SingletonMixin:
 
 
 class SingletonWraps(Generic[T]):
-    """
-    增强型单例类装饰器（线程安全+重新初始化支持）
+    """线程安全的单例装饰器类实现（增强版）
 
-    Features:
-    - 双重检查锁提升性能
-    - 支持通过 `reinit` 参数重新初始化实例
-    - 异常处理机制
-    - 类型注解
-    - 实例状态检查方法
+    核心功能：
+    - 作为装饰器类将普通类转换为单例类
+    - 支持泛型类型注解，提供完整的类型支持
+    - 双重检查锁确保线程安全
+    - 使用弱引用字典避免内存泄漏
+    - 支持实例重置、检查和获取功能
+    - 提供重新初始化实例的选项
 
-    Usage:
-    @SingletonWraps
-    class Database:
-        def __init__(self, conn_str):
-            self.conn = create_connection(conn_str)
+    方法说明：
+    - __call__: 获取/创建单例实例，支持reinit参数重新初始化
+    - reset_instance: 重置单例实例
+    - has_instance: 检查是否存在单例实例
+    - get_instance: 安全获取实例（处理弱引用，不创建新实例）
+
+    属性说明：
+    - _cls: 被装饰的原始类
+    - _instance_rlock: 可重入锁，确保线程安全
+    - _instances: 弱引用字典，存储类与实例的关联
+
+    使用示例：
+        # 基本用法
+        @SingletonWraps
+        class CacheManager:
+            def __init__(self, max_size=100):
+                print(f"初始化缓存管理器，最大大小: {max_size}")
+                self.cache = {}
+                self.max_size = max_size
+        
+        # 创建实例
+        cache1 = CacheManager(200)
+        cache2 = CacheManager(300)
+        
+        # cache1和cache2是同一个实例
+        print(f"是同一个实例: {cache1 is cache2}")  # 输出: True
+        print(f"缓存最大大小: {cache1.max_size}")  # 输出: 200
+        
+        # 实例管理
+        print(f"存在实例: {CacheManager.has_instance()}")  # 输出: True
+        print(f"获取实例: {CacheManager.get_instance()}")  # 输出: <CacheManager object at ...>
+        
+        # 重新初始化实例
+        cache3 = CacheManager(400, reinit=True)
+        print(f"重新初始化后最大大小: {cache3.max_size}")  # 输出: 400
+        
+        # 重置实例
+        CacheManager.reset_instance()
+        print(f"重置后存在实例: {CacheManager.has_instance()}")  # 输出: False
+        
+        # 重置后创建新实例
+        cache4 = CacheManager(500)
+        print(f"新实例最大大小: {cache4.max_size}")  # 输出: 500
     """
 
     def __init__(self, cls: Type[T]) -> None:
@@ -198,14 +320,42 @@ class SingletonWraps(Generic[T]):
         return self._instances.get(self._cls)
 
 def singleton(cls: Type[T]) -> T:
-    """简单的单例装饰器函数（基于SingletonWraps）
+    """简单的单例装饰器函数
 
-    这是一个语法糖，等同于 @SingletonWraps
+    这是SingletonWraps类的语法糖，提供更简洁的使用方式。
+    功能上等同于 @SingletonWraps 装饰器。
 
-    Example:
-    @singleton
-    class AppConfig:
-        def __init__(self):
-            self.settings = load_config()
+    参数说明：
+    - cls: 要转换为单例的目标类
+
+    返回值：
+    - 装饰后的类，确保全局只有一个实例
+
+    使用示例：
+        # 基本用法
+        @singleton
+        class AppConfig:
+            def __init__(self):
+                print("初始化应用配置")
+                self.settings = {"app_name": "MyApp", "version": "1.0"}
+        
+        # 创建实例
+        config1 = AppConfig()
+        config2 = AppConfig()
+        
+        # config1和config2是同一个实例
+        print(f"是同一个实例: {config1 is config2}")  # 输出: True
+        print(f"应用名称: {config1.settings['app_name']}")  # 输出: MyApp
+        
+        # 实例管理（通过装饰后的类访问）
+        print(f"存在实例: {AppConfig.has_instance()}")  # 输出: True
+        
+        # 重置实例
+        AppConfig.reset_instance()
+        print(f"重置后存在实例: {AppConfig.has_instance()}")  # 输出: False
+        
+        # 重置后创建新实例
+        config3 = AppConfig()
+        print(f"新实例: {config3}")
     """
     return SingletonWraps(cls)
