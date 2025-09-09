@@ -62,7 +62,7 @@ def test_function(*args):
     return total
 
 
-@log_wraps()
+@log_wraps
 async def async_test_function(x, y):
     """3.2 测试性能消耗较大的异步函数"""
     await asyncio.sleep(TEST_SLEEP_TIME)  # 模拟异步处理时间

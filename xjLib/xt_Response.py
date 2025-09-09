@@ -29,7 +29,7 @@ class htmlResponse:
     __slots__ = ("raw", "content", "index", "encoding")
 
     def __init__(self, response=None, content=None, index=None):
-        self.index: int = index or id(self)
+        self.index: int = index if index is not None else id(self)
         self.raw = response
         self.content: bytes = (
             content.encode(DEFAULT_ENCODING, "replace")

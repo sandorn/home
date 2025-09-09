@@ -107,7 +107,7 @@ def get_simplified_traceback(
 def handle_exception(
     err: Exception,
     context: str,
-    mylog: Any = None,
+    loger: Any = None,
     re_raise: bool = False,
     default_return: Any = None,
     simplify_traceback: bool = DEFAULT_SIMPLIFY_TRACEBACK,
@@ -121,7 +121,7 @@ def handle_exception(
     Args:
         err: 异常对象
         context: 异常上下文信息，通常包含函数名、文件名等标识信息
-        mylog: 日志记录器实例，如果为None则使用模块内的默认日志记录器
+        loger: 日志记录器实例，如果为None则使用模块内的默认日志记录器
         re_raise: 是否重新抛出异常，默认False（不抛出，返回默认值）
         default_return: 不抛出异常时的默认返回值，默认为None
         simplify_traceback: 是否简化堆栈信息，默认True（简化）
@@ -150,7 +150,7 @@ def handle_exception(
         ...     handle_exception(
         ...         e,
         ...         "critical_operation",
-        ...         mylog=logger,
+        ...         loger=logger,
         ...         re_raise=True,
         ...         simplify_traceback=True,
         ...         max_frames=3
@@ -160,9 +160,10 @@ def handle_exception(
     log_msg = f"{context} | {type(err).__name__} | {str(err)}"
 
     # 如果没有提供日志记录器，使用标准错误输出
-    if mylog is None:
-        from .log import mylog as logger
-        mylog = logger
+    if loger is None:
+        from .log import mylog
+
+        loger = mylog
 
     # 环境感知处理 - 开发环境显示更详细的堆栈信息
     if os.getenv("ENV", "dev").lower() == "dev":
@@ -174,13 +175,13 @@ def handle_exception(
                 include_library_frames=include_library_frames,
                 show_full_path=show_full_path,
             )
-            mylog.error(f"{log_msg} | Stack: {stack_info}")
+            loger.error(f"{log_msg} | Stack: {stack_info}")
         else:
             # 使用完整的堆栈信息
-            mylog.error(f"{log_msg} | Stack: {traceback.format_exc()}")
+            loger.error(f"{log_msg} | Stack: {traceback.format_exc()}")
     else:
         # 生产环境仅记录必要信息
-        mylog.error(log_msg)
+        loger.error(log_msg)
 
     # 根据需要重新抛出异常
     if re_raise:

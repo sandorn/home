@@ -1,107 +1,118 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  : 头部注释
+Description  : 线程管理工具模块 - 提供增强型线程基类、线程安全装饰器和线程管理器
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-07-29 11:40:57
+LastEditTime : 2025-09-06 14:00:00
 FilePath     : /CODE/xjLib/xt_thread/thread.py
 Github       : https://github.com/sandorn/home
+
+本模块提供以下核心功能：
+- ThreadBase：增强型线程基类，提供结果获取、安全停止和资源清理功能
+- SafeThread：安全线程类，提供异常捕获和重试机制
+- ThreadManager：线程管理器，用于管理所有线程实例
+- SingletonThread：单例线程类，确保同一目标函数只有一个线程实例
+- run_in_thread：将函数在单独线程中执行的装饰器
+
+主要特性：
+- 线程安全的函数调用机制
+- 完善的线程生命周期管理
+- 异常捕获和重试机制
+- 线程资源自动清理
+- 支持上下文管理器的线程使用方式
+- 单例模式确保线程唯一性
 ==============================================================
 """
 
-import builtins
 import threading
 import weakref
-from functools import wraps
-from threading import Event, Lock, Thread
-from time import sleep
-from typing import Any, Callable, Dict, List, Optional
+from threading import Event, Thread
+from typing import Any, Callable, Dict, List, Optional, TypeVar, cast
 
-from wrapt import ObjectProxy
-from xt_wraps import SingletonMixin
+from xt_wraps.singleton import SingletonMixin
 
+# 类型定义
+_T = TypeVar("_T")
+_R = TypeVar("_R")
 
-class ThreadSafeWraps(ObjectProxy):
-    """线程安全装饰器（支持实例方法和静态方法）
-
-    :param wrapped: 被装饰的可调用对象
-    :example:
-        @ThreadSafe
-        def critical_func():
-            ...
-    """
-
-    def __init__(self, wrapped: Callable[..., Any]) -> None:
-        super().__init__(wrapped)
-
-    def __call__(self, *args, **kwargs):
-        if self.__wrapped__.__module__ == builtins.__name__:  # 判断内置函数
-            with Lock():
-                return self.__wrapped__(*args, **kwargs)
-        else:
-            if not hasattr(self, "__lock__"):
-                self.__lock__ = Lock()
-            with self.__lock__:
-                return self.__wrapped__(*args, **kwargs)  # 普通函数和类方法
-            
-def thread_safe(func):
-    """线程安全化，装饰函数和类方法"""
-    if func.__module__ == builtins.__name__:  # 判断内置函数
-
-        def wrapper(*args, **kwargs):
-            with Lock():
-                return func(*args, **kwargs)
-    else:
-
-        def wrapper(*args, **kwargs):
-            if not hasattr(func, "__lock__"):
-                func.__lock__ = Lock()
-            with func.__lock__:
-                return func(*args, **kwargs)  # 普通函数和类方法
-
-    return wrapper
-
-thread_print = thread_safe(print)
-
-ThreadSafe = ThreadSafeWraps
 
 class ThreadBase(Thread):
     """
     增强型线程基类，提供结果获取、安全停止和资源清理功能
+
+    Args:
+        target: 线程执行的目标函数
+        *args: 传递给目标函数的位置参数
+        **kwargs: 传递给目标函数的关键字参数
     """
 
-    def __init__(self, target: Callable, *args, **kwargs):
+    def __init__(
+        self, target: Callable[..., _T], *args: Any, daemon: bool = True, **kwargs: Any
+    ):
+        # 提取回调函数
+        self.callback = kwargs.pop("callback", None)
         super().__init__(
-            target=target, name=target.__name__, args=args, kwargs=kwargs, daemon=True
+            target=target,
+            name=target.__name__,
+            args=args,
+            daemon=daemon,
+            kwargs=kwargs,
         )
-        self._is_running = True
+        self._is_running = False
         self._result = None
         self._exception = None
         self._stop_event = Event()
         self._thread_started = False
 
-    def __enter__(self):
-        """上下文管理器入口"""
+    def __enter__(self) -> "ThreadBase":
+        """上下文管理器入口 - 自动启动线程"""
         if not self._thread_started:
             self.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """上下文管理器出口"""
+        """上下文管理器出口 - 自动停止线程"""
         if self.is_running():
             self.stop()
         return False  # 不抑制异常
 
     def start(self) -> None:
-        """启动线程"""
+        """启动线程，确保线程只被启动一次"""
         if not self._thread_started:
             super().start()
+            self._is_running = True
             self._thread_started = True
 
+    def run(self) -> None:
+        """执行目标函数并处理结果和回调"""
+        self._is_running = True
+
+        try:
+            if not self._stop_event.is_set():
+                self._result = self._target(*self._args, **self._kwargs)
+                if callable(self.callback):
+                    self._result = cast(_T, self.callback(self._result))
+        except Exception as e:
+            print(f"线程执行异常: {e}")
+            self._exception = e
+            self._result = None
+        finally:
+            self._is_running = False
+
     def get_result(self, timeout: Optional[float] = None) -> Any:
-        """获取线程执行结果，等待线程完成"""
+        """获取线程执行结果，等待线程完成
+
+        Args:
+            timeout: 等待线程完成的最大时间（秒），None表示无限等待
+
+        Returns:
+            线程执行的结果，如果线程执行失败则返回None
+
+        Raises:
+            RuntimeError: 当线程未启动时抛出
+        """
         if not self._thread_started:
             raise RuntimeError(
                 "Cannot get result from a thread that hasn't been started"
@@ -111,11 +122,18 @@ class ThreadBase(Thread):
             self.join(timeout)
             return self._result
         except Exception as e:
-            thread_print(f"获取线程结果失败: {e}")
+            print(f"获取线程结果失败: {e}")
             return None
 
     def stop(self, timeout: Optional[float] = None) -> bool:
-        """安全停止线程"""
+        """安全停止线程
+
+        Args:
+            timeout: 等待线程停止的最大时间（秒），None表示无限等待
+
+        Returns:
+            bool: 线程是否成功停止
+        """
         if self._is_running:
             self._is_running = False
             self._stop_event.set()
@@ -123,30 +141,35 @@ class ThreadBase(Thread):
             if timeout is not None and self.is_alive():
                 self.join(timeout)
 
-            thread_print(f"线程 {self.name} 已停止")
+            print(f"线程 {self.name} 已停止")
             return True
         return False
 
     def is_running(self) -> bool:
-        """检查线程是否正在运行"""
-        return self._is_running and self.is_alive()
+        """检查线程是否正在运行
+        Returns:
+            bool: True if thread is running, False otherwise
 
-    def run(self) -> None:
-        """线程主执行方法"""
+        Note:
+            - is_alive(): 标准线程运行状态检查
+            - isRunning(): 自定义扩展方法（如果存在）
+        """
         try:
-            if not self._stop_event.is_set():
-                self._result = self._target(*self._args, **self._kwargs)
-        except Exception as e:
-            thread_print(f"线程 {self.name} 执行失败: {e}")
-            self._exception = e
-            self._result = None
-        finally:
-            self._is_running = False
+            # 检查自定义运行状态方法
+            custom_running = self.isRunning() if hasattr(self, "isRunning") else False
+            # 结合标准线程状态检查
+            return custom_running and self.is_alive()
+        except RuntimeError:
+            return False
 
     def __del__(self):
         """对象销毁时自动清理资源"""
-        if self.is_running():
-            self.stop(timeout=1.0)
+        try:
+            if self.is_running():
+                self.stop(timeout=1.0)
+        except Exception:
+            # 忽略析构函数中的所有异常
+            pass
 
 
 class SafeThread(ThreadBase):
@@ -155,41 +178,53 @@ class SafeThread(ThreadBase):
 
     适用于需要异常处理和重试的任务
 
-    Usage:
-        def risky_task():
-            # 可能失败的任务
-            if random.random() < 0.3:
-                raise ValueError("随机失败")
-            return "成功"
+    Args:
+        target: 线程执行的目标函数
+        *args: 传递给目标函数的位置参数
+        max_retries: 最大重试次数，默认为0（不重试）
+        **kwargs: 传递给目标函数的关键字参数
 
-        thread = SafeThread(risky_task, max_retries=3)
-        thread.start()
+    Example:
+        >>> def risky_task():
+        >>>     # 可能失败的任务
+        >>>     if random.random() < 0.3:
+        >>>         raise ValueError("随机失败")
+        >>>     return "成功"
+        >>>
+        >>> thread = SafeThread(risky_task, max_retries=3)
+        >>> thread.start()
     """
 
-    def __init__(self, target: Callable, *args, max_retries: int = 0, **kwargs):
-        super().__init__(target, *args, **kwargs)
+    def __init__(
+        self,
+        target: Callable,
+        *args,
+        max_retries: int = 0,
+        daemon: bool = True,
+        **kwargs: Any,
+    ):
+        super().__init__(target, *args, daemon=daemon, **kwargs)
         self.max_retries = max_retries
         self.retry_count = 0
 
     def run(self) -> None:
-        """重写run方法，添加重试机制"""
+        self._is_running = True
+
         while self.retry_count <= self.max_retries and not self._stop_event.is_set():
             try:
                 self._result = self._target(*self._args, **self._kwargs)
+                if callable(self.callback):
+                    self._result = cast(_T, self.callback(self._result))
                 break  # 成功执行，退出循环
             except Exception as e:
                 self.retry_count += 1
                 if self.retry_count > self.max_retries:
-                    thread_print(
-                        f"安全线程 {self.name} 执行失败，已达最大重试次数: {e}"
-                    )
+                    print(f"安全线程 {self.name} 执行失败，已达最大重试次数: {e}")
                     self._exception = e
                     break
                 else:
-                    thread_print(
-                        f"安全线程 {self.name} 第 {self.retry_count} 次重试: {e}"
-                    )
-                    sleep(1)  # 等待一段时间后重试
+                    print(f"安全线程 {self.name} 第 {self.retry_count} 次重试: {e}")
+                    self._stop_event.wait(1)  # 等待一段时间后重试
             finally:
                 self._is_running = False
 
@@ -197,17 +232,29 @@ class SafeThread(ThreadBase):
 class ThreadManager(SingletonMixin):
     """
     线程管理器，用于管理所有线程实例
-    """
 
-    _threads: Dict[int, weakref.ref] = {}
-    _lock = threading.RLock()
-    def __init__(self): 
+    采用单例模式，确保全局只有一个线程管理器实例
+    使用弱引用存储线程，避免内存泄漏
+    """
+    _threads: Dict[int, weakref.ref] = {}  
+    _lock = threading.RLock()  
+
+    def __init__(self):
         """初始化线程管理器"""
         super().__init__()
-        
+
     @classmethod
     def create_thread(cls, target: Callable, *args, **kwargs) -> ThreadBase:
-        """创建并启动线程，自动添加到管理器"""
+        """创建并启动线程，自动添加到管理器
+
+        Args:
+            target: 线程执行的目标函数
+            *args: 传递给目标函数的位置参数
+            **kwargs: 传递给目标函数的关键字参数
+
+        Returns:
+            ThreadBase: 创建的线程实例
+        """
         thread = ThreadBase(target, *args, **kwargs)
         with cls._lock:
             cls._threads[id(thread)] = weakref.ref(thread)
@@ -217,7 +264,16 @@ class ThreadManager(SingletonMixin):
 
     @classmethod
     def create_safe_thread(cls, target: Callable, *args, **kwargs) -> SafeThread:
-        """创建并启动安全线程，自动添加到管理器"""
+        """创建并启动安全线程，自动添加到管理器
+
+        Args:
+            target: 线程执行的目标函数
+            *args: 传递给目标函数的位置参数
+            **kwargs: 传递给目标函数的关键字参数，可包含max_retries
+
+        Returns:
+            SafeThread: 创建的安全线程实例
+        """
         thread = SafeThread(target, *args, **kwargs)
 
         with cls._lock:
@@ -228,13 +284,21 @@ class ThreadManager(SingletonMixin):
 
     @classmethod
     def add_thread(cls, thread: ThreadBase) -> None:
-        """将已存在的线程添加到管理器"""
+        """将已存在的线程添加到管理器
+
+        Args:
+            thread: 已创建的线程实例
+        """
         with cls._lock:
             cls._threads[id(thread)] = weakref.ref(thread)
 
     @classmethod
     def stop_all(cls, timeout: Optional[float] = None) -> None:
-        """停止所有管理的线程"""
+        """停止所有管理的线程
+
+        Args:
+            timeout: 等待线程停止的最大时间（秒），None表示无限等待
+        """
         with cls._lock:
             threads_to_stop = []
             for thread_id, thread_ref in list(cls._threads.items()):
@@ -250,9 +314,16 @@ class ThreadManager(SingletonMixin):
             cls._threads.clear()
 
     @classmethod
-    def wait_all_completed(cls, timeout: Optional[float] = None) -> Dict[int,Any]:
-        """等待所有线程完成并返回结果"""
-        _all_results = {}
+    def wait_all_completed(cls, timeout: Optional[float] = None) -> Dict[int, Any]:
+        """等待所有线程完成并返回结果
+
+        Args:
+            timeout: 等待线程完成的最大时间（秒），None表示无限等待
+
+        Returns:
+            Dict[int, Any]: 线程ID到执行结果的映射
+        """
+        _all_results = {} 
 
         with cls._lock:
             for thread_id, thread_ref in list(cls._threads.items()):
@@ -270,28 +341,46 @@ class ThreadManager(SingletonMixin):
 
     @classmethod
     def get_active_count(cls) -> int:
-        """获取当前活动的线程数量"""
+        """获取当前活动的线程数量
+
+        Returns:
+            int: 当前活动的线程数量
+        """
         with cls._lock:
-            # 清理已经结束的线程引用 
+            # 清理已经结束的线程引用
             active_count = 0
-            for thread_id, thread_ref in list(cls._threads.items()): 
+            for thread_id, thread_ref in list(cls._threads.items()):
                 thread = thread_ref()
-                if thread is not None and thread.is_alive(): 
+                if thread is not None and thread.is_alive():
                     active_count += 1
                 else:
                     del cls._threads[thread_id]
             return active_count
-        
+
     @classmethod
     def get_thread_by_id(cls, thread_id: int) -> Optional[ThreadBase]:
-        """根据ID获取线程实例"""
+        """根据ID获取线程实例
+
+        Args:
+            thread_id: 线程ID
+
+        Returns:
+            Optional[ThreadBase]: 对应的线程实例，如果不存在则返回None
+        """
         with cls._lock:
             thread_ref = cls._threads.get(thread_id)
             return thread_ref() if thread_ref else None
 
     @classmethod
     def get_thread_by_name(cls, name: str) -> List[ThreadBase]:
-        """根据名称获取线程实例列表"""
+        """根据名称获取线程实例列表
+
+        Args:
+            name: 线程名称
+
+        Returns:
+            List[ThreadBase]: 名称匹配的线程实例列表
+        """
         result = []
         with cls._lock:
             for thread_ref in cls._threads.values():
@@ -302,7 +391,12 @@ class ThreadManager(SingletonMixin):
 
     @classmethod
     def stop_thread(cls, thread_id: int, timeout: Optional[float] = None) -> bool:
-        """停止指定线程"""
+        """停止指定线程
+
+        Args:
+            thread_id: 线程ID
+            timeout: 等待线程停止的最大时间（秒），None表示无限等待
+        """
         thread = cls.get_thread_by_id(thread_id)
         if thread and thread.is_running():
             return thread.stop(timeout)
@@ -313,10 +407,15 @@ class SingletonThread(SingletonMixin, SafeThread):
     """
     单例线程类，确保同一目标函数只有一个线程实例
 
-    Features:
+    特性:
     - 单例模式保证唯一性
     - 自动线程管理
     - 安全停止机制
+
+    Args:
+        target: 线程执行的目标函数
+        *args: 传递给目标函数的位置参数
+        **kwargs: 传递给目标函数的关键字参数，可包含max_retries
     """
 
     def __init__(self, target: Callable, *args, **kwargs):
@@ -333,13 +432,11 @@ class SingletonThread(SingletonMixin, SafeThread):
         if not hasattr(self, "_stop_event"):
             self._stop_event = Event()
 
-    def start(self) -> None:
-        """启动线程，但只允许启动一次"""
-        if not self._thread_started:
-            super().start()
-
     def restart(self) -> None:
-        """重启单例线程"""
+        """重启单例线程
+
+        注意：这会创建一个新的线程实例，但由于单例模式，旧实例仍会被新实例替代
+        """
         if self._thread_started and not self.is_alive():
             # 创建新的线程实例
             target = self._target
@@ -355,18 +452,23 @@ class SingletonThread(SingletonMixin, SafeThread):
             self.start()
 
 
-class SingletonThread2:
+class ComposedSingletonThread:
     """
-    单例线程类，确保同一目标函数只有一个线程实例
+    组合式单例线程类，确保同一目标函数只有一个线程实例
 
-    使用组合而不是继承，避免多继承问题
+    使用组合而不是继承，避免多继承问题，提供更灵活的单例实现
+
+    Args:
+        target: 线程执行的目标函数
+        *args: 传递给目标函数的位置参数
+        **kwargs: 传递给目标函数的关键字参数，可包含max_retries
     """
 
     _instances = {}
     _lock = threading.RLock()
 
     def __new__(cls, target: Callable, *args, **kwargs):
-        # 使用目标函数作为单例键
+        # 使用目标函数ID、参数和关键字参数作为单例键
         key = (id(target), args, frozenset(kwargs.items()))
 
         with cls._lock:
@@ -378,7 +480,7 @@ class SingletonThread2:
             return cls._instances[key]
 
     def __init__(self, target: Callable, *args, **kwargs):
-        # 防止重复初始化
+        # 防止重复初始化（因为__new__可能返回已存在的实例）
         if not hasattr(self, "_initialized"):
             self._initialized = True
 
@@ -387,19 +489,40 @@ class SingletonThread2:
         self._thread.start()
 
     def get_result(self, timeout: Optional[float] = None) -> Any:
-        """获取线程执行结果"""
+        """获取线程执行结果
+
+        Args:
+            timeout: 等待线程完成的最大时间（秒），None表示无限等待
+
+        Returns:
+            线程执行的结果，如果线程执行失败则返回None
+        """
         return self._thread.get_result(timeout)
 
     def stop(self, timeout: Optional[float] = None) -> bool:
-        """停止线程"""
+        """停止线程
+
+        Args:
+            timeout: 等待线程停止的最大时间（秒），None表示无限等待
+
+        Returns:
+            bool: 线程是否成功停止
+        """
         return self._thread.stop(timeout)
 
     def is_running(self) -> bool:
-        """检查线程是否正在运行"""
+        """检查线程是否正在运行
+
+        Returns:
+            bool: 线程是否正在运行
+        """
         return self._thread.is_running()
 
     def restart(self) -> None:
-        """重启单例线程"""
+        """重启单例线程
+
+        当线程已结束时，创建并启动一个新的线程实例
+        """
         if self._thread._thread_started and not self._thread.is_alive():
             # 创建新的线程实例
             target = self._thread._target
@@ -427,107 +550,3 @@ class SingletonThread2:
         """清除所有单例实例"""
         with cls._lock:
             cls._instances.clear()
-
-# 便捷函数
-def run_in_thread(func: Callable) -> Callable:
-    """
-    装饰器，将函数在单独线程中执行
-
-    Usage:
-        @run_in_thread
-        def long_running_task(param):
-            # 长时间运行的任务
-            return result
-
-        # 调用方式不变，但会在线程中执行
-        result = long_running_task(param)
-    """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs) -> ThreadBase:
-        thread = ThreadManager.create_thread(func, *args, **kwargs)
-        return thread
-
-    return wrapper
-
-
-# 示例用法
-if __name__ == "__main__":
-    # 示例函数
-    def sample_task(seconds: int, task_id: int) -> str:
-        """示例任务函数，模拟耗时操作"""
-        thread_print(f"任务 {task_id} 开始，需要 {seconds} 秒")
-        sleep(seconds)
-        result = f"任务 {task_id} 完成"
-        thread_print(result)
-        return result
-
-    # 测试线程管理
-    thread_print("=== 测试线程管理 [DEBUG] ===")
-    # 创建多个线程
-    threads = []
-    for i in range(3):
-        thread = ThreadManager.create_thread(sample_task, 1, i)  # 减少等待时间
-        threads.append(thread)
-
-    thread_print(f"活动线程数: {ThreadManager.get_active_count()}")
-
-    # 等待所有线程完成
-    results = ThreadManager.wait_all_completed()
-    thread_print(f"所有线程完成，结果: {results}")
-
-    # 测试装饰器
-    thread_print("\n=== 测试线程装饰器 ===")
-
-    @run_in_thread
-    def decorated_task(x: int) -> int:
-        """被装饰的任务函数"""
-        thread_print(f"装饰器任务开始: {x}")
-        sleep(1)
-        result = x * 2
-        thread_print(f"装饰器任务完成: {result}")
-        return result
-
-    # 调用被装饰的函数
-    thread = decorated_task(5)
-    result = thread.get_result()
-    thread_print(f"装饰器任务结果: {result}")
-
-    # 测试单例线程
-    thread_print("\n=== 测试单例线程 ===")
-
-    def singleton_task():
-        """单例任务函数"""
-        thread_print("单例任务执行中")
-        sleep(1)
-        return "单例任务完成"
-
-    # 创建单例线程
-    thread1 = SingletonThread(singleton_task)
-    thread2 = SingletonThread(singleton_task)
-
-    thread_print(f"线程1和线程2是同一个实例: {thread1 is thread2}")
-
-    # 确保线程已启动
-    thread1.start()
-    thread2.start()
-
-    # 等待完成
-    result1 = thread1.get_result()
-    result2 = thread2.get_result()
-    thread_print(f"线程1结果: {result1}, 线程2结果: {result2}")
-    # 测试重启功能
-    thread_print("\n=== 测试重启功能 ===")
-    thread1.restart()
-    result3 = thread1.get_result()
-    thread_print(f"重启后结果: {result3}")
-    # 测试上下文管理器
-    thread_print("\n=== 测试上下文管理器 ===")
-
-    def context_task():
-        sleep(0.5)
-        return "上下文任务完成"
-
-    with ThreadBase(context_task) as thread:
-        result = thread.get_result()
-        thread_print(f"上下文管理器结果: {result}")

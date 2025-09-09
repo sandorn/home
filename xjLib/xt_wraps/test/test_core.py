@@ -5,6 +5,8 @@
 作者: sandorn sandorn@live.cn
 FilePath: d:/CODE/xjLib/xt_wraps/test/test_core.py
 LastEditTime: 2025-09-06 10:30:00
+
+https://mp.weixin.qq.com/s/4nkQITVniE9FhESDMt34Ow  # wrapt库
 """
 
 import asyncio

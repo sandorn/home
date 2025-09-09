@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
         # print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
         # print(3333333333333333333, get(urls[4]))
-        print(4444444444444444444, res := get(urls[0], index=66))
+        print(4444444444444444444, res := get(urls[0], index=0))
         
         # 进行类型检查，确保res是htmlResponse类型
         if isinstance(res, htmlResponse):

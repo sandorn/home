@@ -24,6 +24,7 @@ Github       : https://github.com/sandorn/home
 - 自动垃圾回收：通过弱引用实现实例的自动清理
 ==============================================================
 """
+
 from threading import RLock
 from typing import Any, Generic, Optional, Type, TypeVar
 from weakref import WeakKeyDictionary, WeakValueDictionary
@@ -57,22 +58,22 @@ class SingletonMeta(type):
             def __init__(self, connection_string):
                 print(f"初始化数据库连接: {connection_string}")
                 self.connection_string = connection_string
-                
+
         # 创建实例
         db1 = DatabaseConnection("mysql://localhost:3306/db1")
         db2 = DatabaseConnection("mysql://localhost:3306/db2")
-        
+
         # db1和db2是同一个实例
         print(f"是同一个实例: {db1 is db2}")  # 输出: True
         print(f"连接字符串: {db1.connection_string}")  # 输出: mysql://localhost:3306/db1
-        
+
         # 实例管理
         print(f"存在实例: {DatabaseConnection.has_instance()}")  # 输出: True
-        
+
         # 重置实例
         DatabaseConnection.reset_instance()
         print(f"重置后存在实例: {DatabaseConnection.has_instance()}")  # 输出: False
-        
+
         # 重置后创建新实例
         db3 = DatabaseConnection("mysql://localhost:3306/db3")
         print(f"新连接字符串: {db3.connection_string}")  # 输出: mysql://localhost:3306/db3
@@ -118,56 +119,56 @@ class SingletonMeta(type):
 
 class SingletonMixin:
     """线程安全的单例混入类实现
-    
+
     核心功能：
     - 通过混入方式实现单例模式
     - 支持与其他类的多重继承
     - 双重检查锁确保线程安全
     - 使用弱引用字典避免内存泄漏
     - 提供完整的实例管理接口
-    
+
     类方法：
     - get_instance: 获取当前单例实例（不创建新实例）
     - reset_instance: 重置单例实例
     - has_instance: 检查是否存在单例实例
-    
+
     类属性：
     - _instances: 弱引用字典，存储类与实例的映射关系
     - _instance_lock: 可重入锁，确保线程安全
-    
+
     使用示例：
         # 基本用法
         class ConfigService(SingletonMixin):
             def __init__(self, config_file=None):
                 print(f"加载配置文件: {config_file or '默认配置'}")
                 self.config = config_file or 'default_config'
-        
+
         # 创建实例
         config1 = ConfigService("app_config.json")
         config2 = ConfigService("user_config.json")
-        
+
         # config1和config2是同一个实例
         print(f"是同一个实例: {config1 is config2}")  # 输出: True
         print(f"配置文件: {config1.config}")  # 输出: app_config.json
-        
+
         # 实例管理
         print(f"存在实例: {ConfigService.has_instance()}")  # 输出: True
-        
+
         # 重置实例
         ConfigService.reset_instance()
-        
+
         # 重置后创建新实例
         config3 = ConfigService("new_config.json")
         print(f"新配置文件: {config3.config}")  # 输出: new_config.json
-        
+
         # 多重继承示例
         class Loggable:
             def log(self, message):
                 print(f"[LOG] {message}")
-        
+
         class LoggedConfigService(ConfigService, Loggable):
             pass
-        
+
         logged_config = LoggedConfigService("logged_config.json")
         logged_config.log(f"当前配置: {logged_config.config}")
     """
@@ -250,27 +251,27 @@ class SingletonWraps(Generic[T]):
                 print(f"初始化缓存管理器，最大大小: {max_size}")
                 self.cache = {}
                 self.max_size = max_size
-        
+
         # 创建实例
         cache1 = CacheManager(200)
         cache2 = CacheManager(300)
-        
+
         # cache1和cache2是同一个实例
         print(f"是同一个实例: {cache1 is cache2}")  # 输出: True
         print(f"缓存最大大小: {cache1.max_size}")  # 输出: 200
-        
+
         # 实例管理
         print(f"存在实例: {CacheManager.has_instance()}")  # 输出: True
         print(f"获取实例: {CacheManager.get_instance()}")  # 输出: <CacheManager object at ...>
-        
+
         # 重新初始化实例
         cache3 = CacheManager(400, reinit=True)
         print(f"重新初始化后最大大小: {cache3.max_size}")  # 输出: 400
-        
+
         # 重置实例
         CacheManager.reset_instance()
         print(f"重置后存在实例: {CacheManager.has_instance()}")  # 输出: False
-        
+
         # 重置后创建新实例
         cache4 = CacheManager(500)
         print(f"新实例最大大小: {cache4.max_size}")  # 输出: 500
@@ -319,6 +320,7 @@ class SingletonWraps(Generic[T]):
         """安全获取实例（处理弱引用,不创建新实例）"""
         return self._instances.get(self._cls)
 
+
 def singleton(cls: Type[T]) -> T:
     """简单的单例装饰器函数
 
@@ -338,22 +340,22 @@ def singleton(cls: Type[T]) -> T:
             def __init__(self):
                 print("初始化应用配置")
                 self.settings = {"app_name": "MyApp", "version": "1.0"}
-        
+
         # 创建实例
         config1 = AppConfig()
         config2 = AppConfig()
-        
+
         # config1和config2是同一个实例
         print(f"是同一个实例: {config1 is config2}")  # 输出: True
         print(f"应用名称: {config1.settings['app_name']}")  # 输出: MyApp
-        
+
         # 实例管理（通过装饰后的类访问）
         print(f"存在实例: {AppConfig.has_instance()}")  # 输出: True
-        
+
         # 重置实例
         AppConfig.reset_instance()
         print(f"重置后存在实例: {AppConfig.has_instance()}")  # 输出: False
-        
+
         # 重置后创建新实例
         config3 = AppConfig()
         print(f"新实例: {config3}")

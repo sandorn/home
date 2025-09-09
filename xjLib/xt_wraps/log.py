@@ -225,7 +225,7 @@ def log_wraps(
                 return handle_exception(
                     err=err,
                     context=_basemsg,
-                    mylog=mylog,
+                    loger=mylog,
                     re_raise=False,
                     default_return=None,
                 )
@@ -247,7 +247,7 @@ def log_wraps(
                 return handle_exception(
                     err=err,
                     context=_basemsg,
-                    mylog=mylog,
+                    loger=mylog,
                     re_raise=False,
                     default_return=None,
                 )

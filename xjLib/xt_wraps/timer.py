@@ -1,11 +1,11 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  : 函数执行计时器工具模块 - 提供同步和异步函数执行时间监控
+Description  : 计时工具模块 - 提供函数执行耗时自动记录功能
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-08-28 10:56:45
-LastEditTime : 2025-09-06 12:30:00
+LastEditTime : 2025-09-06 19:37:43
 FilePath     : /CODE/xjLib/xt_wraps/timer.py
 Github       : https://github.com/sandorn/home
 
@@ -48,10 +48,25 @@ def timer_wraps(fn: Callable = None):
     - 装饰后的函数，执行时会自动记录耗时
     
     示例用法：
-    # 支持两种装饰器调用方式
-    # 方式1: @timer_wraps
-    # 方式2: @timer_wraps()
-    # 可用于同步函数和异步函数
+        >>> # 方式1: 直接装饰同步函数
+        >>> @timer_wraps
+        >>> def calculate_sum(a, b):
+        >>>     # 执行一些计算
+        >>>     return a + b
+        >>> 
+        >>> # 方式2: 带括号装饰异步函数
+        >>> @timer_wraps()
+        >>> async def fetch_data(url):
+        >>>     # 模拟网络请求延迟
+        >>>     await asyncio.sleep(1)
+        >>>     return f"Data from {url}"
+        >>> 
+        >>> # 方式3: 与其他装饰器组合使用
+        >>> @log_wraps
+        >>> @timer_wraps
+        >>> def complex_operation(data):
+        >>>     # 执行复杂操作
+        >>>     return processed_data
     """
 
     def decorator(func: Callable) -> Callable:
@@ -64,7 +79,7 @@ def timer_wraps(fn: Callable = None):
                 return handle_exception(err, _basemsg, re_raise=True)
             finally:
                 mylog.debug(
-                    f"{_basemsg} | Timer-Consuming <{perf_counter() - start_time:.4f} s>"
+                    f"{_basemsg} | Timer-Consuming < {perf_counter() - start_time:.4f} s>"
                 )
 
         @wraps(func)
@@ -76,7 +91,7 @@ def timer_wraps(fn: Callable = None):
                 return handle_exception(err, _basemsg, re_raise=True)
             finally:
                 mylog.debug(
-                    f"{_basemsg} | Timer-Consuming <{perf_counter() - start_time:.4f} s>"
+                    f"{_basemsg} | Timer-Consuming < {perf_counter() - start_time:.4f} s>"
                 )
 
         _basemsg = create_basemsg(func)

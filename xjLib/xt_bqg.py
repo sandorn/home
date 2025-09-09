@@ -83,13 +83,6 @@ def 结果处理(resps):
 
 def get_download_url(url):
     resp = get(url)
-    # pyquery
-    # pr = resp.pyquery('.listmain dl dd:gt(11)').children() # 从第二个dt开始，获取后面所有的兄弟节点
-    # pr = res.pyquery('dt').eq(1).nextAll()  # 从第二个dt开始，获取后面所有的兄弟节点
-    # bookname = resp.pyquery('h2').text()
-    # urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
-    # titles = [i.text() for i in pr.items()]
-
     _xpath = (
         # '//meta[@property="og:novel:book_name"]/@content',
         "//h1/text()",
@@ -163,4 +156,9 @@ if __name__ == "__main__":
 
         print("=== 测试完成 ===")
 
-    test_clean_content()
+    # test_clean_content()
+
+    print(
+        33333333333333333333,
+        resp := get_download_url("https://www.bigee.cc/book/6909/"),
+    )
