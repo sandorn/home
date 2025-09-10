@@ -26,10 +26,8 @@ Github       : https://github.com/sandorn/home
 """
 
 import asyncio
-import threading
 from functools import wraps
 from typing import Any, Callable, Tuple, Type
-
 
 from tenacity import (
     RetryCallState,
@@ -41,6 +39,7 @@ from tenacity import (
 
 from .exception import handle_exception
 from .log import create_basemsg
+
 # 常量定义
 DEFAULT_RETRY_ATTEMPTS = 3  # 默认最大尝试次数
 DEFAULT_MIN_WAIT_TIME = 0.0  # 默认最小等待时间（秒）
@@ -98,24 +97,21 @@ class RetryHandler:
         # TemporaryFailure,  # 临时故障（SMTP相关）
     )
 
-    _basemsg: str = ""  # 基础日志消息
-    _default_return: Any = None  # 默认返回值
-    _lock = threading.RLock()  # 添加可重入锁以确保线程安全
+    def __init__(self):
+        self._basemsg = ""
+        self._default_return = None
 
-    @classmethod
-    def configure(cls, basemsg: str, default_return: Any) -> None:
+    def configure(self, basemsg: str, default_return: Any) -> None:
         """配置RetryHandler的基础消息和默认返回值
 
         Args:
             basemsg: 基础日志消息前缀
             default_return: 重试失败时的默认返回值
         """
-        with cls._lock:
-            cls._basemsg = basemsg
-            cls._default_return = default_return
+        self._basemsg = basemsg
+        self._default_return = default_return
 
-    @classmethod
-    def err_back(cls, retry_state: RetryCallState) -> Any:
+    def err_back(self, retry_state: RetryCallState) -> Any:
         """所有重试失败后的回调函数 - 记录错误日志并返回默认值
 
         Args:
@@ -125,30 +121,23 @@ class RetryHandler:
             配置的默认返回值
         """
         ex = retry_state.outcome.exception()
-        with cls._lock:
-            basemsg = cls._basemsg
-            default_return = cls._default_return
         handle_exception(
-            ex, basemsg + f" | 共 {retry_state.attempt_number} 次失败"
+            ex, self._basemsg + f" | 共 {retry_state.attempt_number} 次失败"
         )
-        return default_return
+        return self._default_return
 
-    @classmethod
-    def before_back(cls, retry_state: RetryCallState) -> None:
+    def before_back(self, retry_state: RetryCallState) -> None:
         """重试前的回调函数 - 记录即将进行的重试信息
 
         Args:
             retry_state: tenacity的重试状态对象
         """
         ex = retry_state.outcome.exception()
-        with cls._lock:
-            basemsg = cls._basemsg
         handle_exception(
-            ex, basemsg + f" | 第 {retry_state.attempt_number} 次失败"
+            ex, self._basemsg + f" | 第 {retry_state.attempt_number} 次失败"
         )
 
-    @classmethod
-    def should_retry(cls, exception: Exception) -> bool:
+    def should_retry(self, exception: Exception) -> bool:
         """判断给定异常是否应该触发重试
 
         Args:
@@ -157,9 +146,7 @@ class RetryHandler:
         Returns:
             bool: 如果异常属于可重试类型，返回True；否则返回False
         """
-        with cls._lock:
-            retry_except = cls.RETRY_EXCEPT
-        return any(isinstance(exception, exc_type) for exc_type in retry_except)
+        return any(isinstance(exception, exc_type) for exc_type in self.RETRY_EXCEPT)
 
 
 def retry_wraps(
@@ -230,9 +217,10 @@ def retry_wraps(
     """
 
     def decorator(func: Callable[..., Any]) -> Callable:
-        # 设置基础消息和默认返回值
+        #  创建RetryHandler实例,设置基础消息和默认返回
+        retry_handler = RetryHandler()
         _basemsg = create_basemsg(func)
-        RetryHandler.configure(_basemsg, default_return)
+        retry_handler.configure(_basemsg, default_return)
 
         # 创建重试条件 - 只重试指定类型的异常
         # 注意：不再直接修改类变量RETRY_EXCEPT，而是使用局部参数retry_exceptions
@@ -244,8 +232,8 @@ def retry_wraps(
             stop=stop_after_attempt(max_attempts),
             wait=wait_random(min=min_wait, max=max_wait),
             retry=retry_condition,
-            before_sleep=RetryHandler.before_back if is_before_callback else None,
-            retry_error_callback=RetryHandler.err_back if is_error_callback else None,
+            before_sleep=retry_handler.before_back if is_before_callback else None,
+            retry_error_callback=retry_handler.err_back if is_error_callback else None,
         )
 
         # 同步函数包装器

@@ -17,7 +17,7 @@ import selectors
 from functools import partial
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-from xt_head import TIMEOUT, TRETRY, Head
+from xt_head import TIMEOUT, Head
 from xt_response import ACResponse
 from xt_wraps import log_wraps, retry_wraps, timer_wraps
 
@@ -50,8 +50,8 @@ class AsyncTask:
     """aiohttp异步任务原型"""
 
     def __init__(self, index=None):
-        self.index = index or id(self)
-        self.url: str = ""  # Explicitly define url attribute
+        self.index = index if index is not None else id(self)
+        self.url: str = ""  
         self.args: tuple = ()
         self.cookies: dict = {}
         self.callback = None
@@ -63,6 +63,8 @@ class AsyncTask:
             self.method = method.lower()  # 保存请求方法
             return self._make_parse  # 调用方法
             # return lambda *args, **kwargs: self._make_parse(*args, **kwargs)
+        else:
+            raise ValueError(f"Unknown method: {method}")
 
     def __getattr__(self, method):
         return self.__getitem__(method)
@@ -80,29 +82,19 @@ class AsyncTask:
         self.kwargs = kwargs
         return self
 
+    @retry_wraps
+    async def _fetch(self):
+        async with (ClientSession(cookies=self.cookies, connector=TCPConnector()) as session,
+            session.request(self.method,self.url,raise_for_status=True,*self.args,**self.kwargs,) as response,
+        ):
+            content = await response.content.read()
+            return response, content
+
     @log_wraps
     async def start(self):
         """执行单任务"""
-
-        @TRETRY
-        async def _fetch():
-            async with (
-                ClientSession(
-                    cookies=self.cookies, connector=TCPConnector()
-                ) as session,
-                session.request(
-                    self.method,
-                    self.url,
-                    raise_for_status=True,
-                    *self.args,
-                    **self.kwargs,
-                ) as response,
-            ):
-                content = await response.content.read()
-                return response, content
-
         try:
-            response, content = await _fetch()
+            response, content = await self._fetch()
             _result = ACResponse(response, content, self.index)
             return self.callback(_result) if callable(self.callback) else _result
         except Exception as err:
@@ -169,9 +161,10 @@ if __name__ == "__main__":
     elestr = "//title/text()"
 
     def main():
-        print(111111111111111111111, ahttpGetAll([urls[0], urls[1]]))
-        # print(222222222222222222222, ahttpPost(urls[2], data=b"data"))
-        # print(333333333333333333333, res := ahttpGet(urls[0]))
+        # print(1111111111111111111, ahttpGetAll(urls))
+        print(111111111112222222222, ahttpGetAll([urls[0], urls[1]]))
+        print(222222222222222222222, ahttpPost(urls[2], data=b"data"))
+        # print(33333333333333333333, ahttpGet(urls[0]))
         # print("xpath-1".ljust(10), ":", res.xpath(elestr))
         # print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
         # print(

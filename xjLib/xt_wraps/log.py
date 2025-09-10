@@ -42,7 +42,6 @@ LOG_FILE_ROTATION_SIZE = "512 MB"  # 日志文件轮转大小
 LOG_FILE_RETENTION_DAYS = "180 days"  # 日志文件保留时间
 MAX_MODULE_PARTS = 3  # 模块路径最多向上追溯的层数
 
-
 standard_format = (
     "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | {message}"
 )
@@ -57,7 +56,7 @@ def create_basemsg(func: Callable) -> str:
     Returns:
         str: 格式化的日志基础信息，格式为"模块名.文件名#行号@函数名"
     """
-    # 获取原始函数（通过__wrapped__属性），处理可能的多层装饰器
+    # 获取原始函数（处理可能的多层装饰器）
     original_func = func
     while hasattr(original_func, "__wrapped__"):
         original_func = original_func.__wrapped__
@@ -69,12 +68,11 @@ def create_basemsg(func: Callable) -> str:
         line_number = code.co_firstlineno
         func_name = original_func.__name__
 
-        # 智能路径处理逻辑
+        # 处理文件路径
         module_name = _process_file_path(filename)
-
         return f"{module_name}#{line_number}@{func_name}"
     except Exception:
-        # 终极异常处理，确保函数不会失败
+        # 异常处理，确保函数不会失败
         func_name = getattr(original_func, "__name__", "unknown")
         return f"unknown#0@{func_name}"
 
@@ -88,7 +86,6 @@ def _process_file_path(file_path: str) -> str:
     Returns:
         str: 处理后的模块名
     """
-    # 规范化路径并处理可能的空值
     if not file_path:
         return "unknown_file"
 
@@ -96,19 +93,15 @@ def _process_file_path(file_path: str) -> str:
         # 规范化路径并分割
         normalized_path = os.path.normpath(file_path)
         file_parts = normalized_path.split(os.sep)
-
-        # 提取文件名（包含扩展名）
         filename = file_parts[-1] if file_parts else "unknown_file"
 
-        # 尝试智能识别项目结构中的关键目录
-        # 1. 查找项目根目录标识
+        # 查找项目结构中的关键目录
         root_indicators = ["xjLib", "tests", "test", "src", "app", "main"]
         module_parts = []
 
         # 从后向前搜索，找到第一个根目录标识或合适的父目录
         for i in range(len(file_parts) - 2, -1, -1):
             part = file_parts[i]
-            # 跳过隐藏目录和无效目录名
             if part.startswith(".") or not part:
                 continue
 
@@ -118,24 +111,18 @@ def _process_file_path(file_path: str) -> str:
             if part.lower() in (indicator.lower() for indicator in root_indicators):
                 break
 
-            # 最多向上追溯指定层数的目录，避免路径过长
+            # 最多向上追溯指定层数的目录
             if len(module_parts) >= MAX_MODULE_PARTS:
                 break
 
         # 构建模块名
         if module_parts:
-            # 添加模块路径部分和文件名
             return ".".join(module_parts + [filename])
         elif len(file_parts) >= 2:
-            # 回退到原始逻辑：父目录.文件名
-            parent_dir = file_parts[-2]
-            return f"{parent_dir}.{filename}"
+            return f"{file_parts[-2]}.{filename}"
         else:
-            # 如果路径部分不足，直接使用文件名
             return filename
-
     except Exception:
-        # 异常情况下回退到基本文件名（不带扩展名）作为最后手段
         return os.path.splitext(os.path.basename(file_path))[0]
 
 
