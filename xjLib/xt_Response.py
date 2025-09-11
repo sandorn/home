@@ -46,8 +46,10 @@ class htmlResponse:
 
     def __repr__(self):
         if self.raw is None:
-            return f"htmlResponse [999] | ID:[{self.index}] | content:[{self.content}]"
-        return f"htmlResponse [{self.status}] | ID:[{self.index}] | URL:[{self.url}]"
+            return (
+                f"htmlResponse | STATUS:999 | ID:{self.index} | content:{self.content}"
+            )
+        return f"htmlResponse | STATUS:{self.status} | ID:{self.index} | URL:{self.url}"
 
     def __str__(self):
         return self.__repr__()
@@ -167,6 +169,7 @@ class htmlResponse:
         h.ignore_links = True
         if self.raw:
             return h.handle(self.raw.text)
+
     @property
     def clean_text(self) -> str:
         """
@@ -197,13 +200,14 @@ class htmlResponse:
         # 找出非ASCII字符
         non_ascii = [
             (char, analyzer.category_descriptions.get(category(char), ""))
-            for char in text if ord(char) > 127
+            for char in text
+            if ord(char) > 127
         ]
 
         return {
-            'length': len(text),
-            'categories': category_counts,
-            'non_ascii_chars': non_ascii
+            "length": len(text),
+            "categories": category_counts,
+            "non_ascii_chars": non_ascii,
         }
 
     def normalize_text(self, form: str = "NFKC") -> str:
@@ -216,8 +220,10 @@ class htmlResponse:
         normalizer = TextNormalizer()
         return normalizer.normalize_text(self.text, form)
 
+
 class ACResponse(htmlResponse):
     """封装aiohttp网页抓取结果,标准化"""
+
     ...
 
 
@@ -242,13 +248,11 @@ if __name__ == "__main__":
         print(
             "blank".ljust(10),
             ":",
-            res.xpath(
-                ["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+            res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
         )
         print("dom".ljust(10), ":", res.dom.xpath(elestr), res.dom.url)
         print("query".ljust(10), ":", res.query("title").text())
-        print("element".ljust(10), ":", res.element.xpath(elestr),
-              res.element.base)
+        print("element".ljust(10), ":", res.element.xpath(elestr), res.element.base)
         print("html".ljust(10), ":", res.html.xpath(elestr), res.html.base_url)
 
     # main()

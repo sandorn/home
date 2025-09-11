@@ -9,76 +9,78 @@ LastEditTime : 2025-09-06 11:00:00
 FilePath     : /CODE/xjLib/xt_wraps/log.py
 Github       : https://github.com/sandorn/home
 
-本模块提供以下核心功能：
-- LogCls：单例模式的日志配置类，支持文件和控制台日志输出
-- create_basemsg：生成包含模块名、行号和函数名的日志基础信息
-- log_wraps：日志记录装饰器，同时支持同步和异步函数，提供参数和返回值日志
+本模块提供以下核心功能:
+- LogCls:单例模式的日志配置类,支持文件和控制台日志输出
+- create_basemsg:生成包含模块名、行号和函数名的日志基础信息
+- log_wraps:日志记录装饰器,同时支持同步和异步函数,提供参数和返回值日志
 
-主要特性：
-- 统一的日志格式，包含时间戳、日志级别和消息内容
-- 智能路径处理，提取有意义的模块名信息
+主要特性:
+- 统一的日志格式,包含时间戳、日志级别和消息内容
+- 智能路径处理,提取有意义的模块名信息
 - 日志文件自动轮转和保留策略
 - 开发环境和生产环境差异化日志输出
-- 异常捕获和处理机制，确保程序稳定性
+- 异常捕获和处理机制,确保程序稳定性
 ==============================================================
 """
 
+from __future__ import annotations
+
 import asyncio
-import os
-import sys
+from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable
+import os
+import sys
+from typing import Any
 
 from loguru import logger
 
 from .exception import handle_exception
 from .singleton import SingletonMixin
 
+
 # 常量定义 - 日志配置参数
-IS_DEV = os.getenv("ENV", "dev").lower() == "dev"
-DEFAULT_LOG_LEVEL = 10  # 默认日志级别（DEBUG）
-LOG_FILE_ROTATION_SIZE = "512 MB"  # 日志文件轮转大小
-LOG_FILE_RETENTION_DAYS = "180 days"  # 日志文件保留时间
+IS_DEV = os.getenv('ENV', 'dev').lower() == 'dev'
+DEFAULT_LOG_LEVEL = 10  # 默认日志级别(DEBUG)
+LOG_FILE_ROTATION_SIZE = '512 MB'  # 日志文件轮转大小
+LOG_FILE_RETENTION_DAYS = '180 days'  # 日志文件保留时间
 MAX_MODULE_PARTS = 3  # 模块路径最多向上追溯的层数
 
-standard_format = (
-    "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | {message}"
-)
+standard_format = '<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | {message}'
 
 
 def create_basemsg(func: Callable) -> str:
-    """生成日志基础信息，包括模块名、行号和函数名。
+    """生成日志基础信息,包括模块名、行号和函数名。
 
     Args:
         func: 要记录的函数对象
 
     Returns:
-        str: 格式化的日志基础信息，格式为"模块名.文件名#行号@函数名"
+        str: 格式化的日志基础信息,格式为"模块名.文件名#行号@函数名"
     """
-    # 获取原始函数（处理可能的多层装饰器）
+    # 获取原始函数(处理可能的多层装饰器)
     original_func = func
-    while hasattr(original_func, "__wrapped__"):
+    while hasattr(original_func, '__wrapped__'):
         original_func = original_func.__wrapped__
 
     try:
         # 获取代码对象和相关信息
-        code = getattr(original_func, "__code__")
+        code = original_func.__code__
         filename = code.co_filename
         line_number = code.co_firstlineno
         func_name = original_func.__name__
 
         # 处理文件路径
         module_name = _process_file_path(filename)
-        return f"{module_name}#{line_number}@{func_name}"
+        return f'{module_name}#{line_number}@{func_name}'
     except Exception:
-        # 异常处理，确保函数不会失败
-        func_name = getattr(original_func, "__name__", "unknown")
-        return f"unknown#0@{func_name}"
+        # 异常处理,确保函数不会失败
+        func_name = getattr(original_func, '__name__', 'unknown')
+        return f'unknown#0@{func_name}'
 
 
 def _process_file_path(file_path: str) -> str:
-    """处理文件路径，提取有意义的模块名部分。
+    """处理文件路径,提取有意义的模块名部分。
 
     Args:
         file_path: 文件的完整路径
@@ -87,27 +89,27 @@ def _process_file_path(file_path: str) -> str:
         str: 处理后的模块名
     """
     if not file_path:
-        return "unknown_file"
+        return 'unknown_file'
 
     try:
         # 规范化路径并分割
         normalized_path = os.path.normpath(file_path)
         file_parts = normalized_path.split(os.sep)
-        filename = file_parts[-1] if file_parts else "unknown_file"
+        filename = file_parts[-1] if file_parts else 'unknown_file'
 
         # 查找项目结构中的关键目录
-        root_indicators = ["xjLib", "tests", "test", "src", "app", "main"]
+        root_indicators = ['xjLib', 'tests', 'test', 'src', 'app', 'main']
         module_parts = []
 
-        # 从后向前搜索，找到第一个根目录标识或合适的父目录
+        # 从后向前搜索,找到第一个根目录标识或合适的父目录
         for i in range(len(file_parts) - 2, -1, -1):
             part = file_parts[i]
-            if part.startswith(".") or not part:
+            if part.startswith('.') or not part:
                 continue
 
             module_parts.insert(0, part)
 
-            # 如果找到根目录标识，停止搜索
+            # 如果找到根目录标识,停止搜索
             if part.lower() in (indicator.lower() for indicator in root_indicators):
                 break
 
@@ -117,9 +119,9 @@ def _process_file_path(file_path: str) -> str:
 
         # 构建模块名
         if module_parts:
-            return ".".join(module_parts + [filename])
+            return '.'.join([*module_parts, filename])
         elif len(file_parts) >= 2:
-            return f"{file_parts[-2]}.{filename}"
+            return f'{file_parts[-2]}.{filename}'
         else:
             return filename
     except Exception:
@@ -131,23 +133,25 @@ class LogCls(SingletonMixin):
 
     def __init__(self, level=DEFAULT_LOG_LEVEL, logger=logger):
         self.log = logger
-        # 移除默认配置
         self.log.remove()
 
-        # 文件日志（始终记录）
-        log_file = f"XtLog-{datetime.now().strftime('%Y%m%d')}.log"
+        # 文件日志(始终记录)
+        log_file = f'XtLog-{datetime.now().strftime("%Y%m%d")}.log'
         self.log.add(
             log_file,
             rotation=LOG_FILE_ROTATION_SIZE,
             retention=LOG_FILE_RETENTION_DAYS,
             level=level,
-            encoding="utf-8",
+            encoding='utf-8',
             format=standard_format,
         )
 
-        # 控制台日志（仅开发环境）
+        # 控制台日志(仅开发环境)
         if IS_DEV:
             self.log.add(sys.stderr, level=level, format=standard_format)
+
+    def __call__(self, *args, **kwargs) -> Any:
+        return [self.log.debug(arg, **kwargs) for arg in list(args)]
 
 
 # 全局日志实例
@@ -155,22 +159,22 @@ mylog = LogCls().log
 
 
 def log_wraps(
-    func: Callable = None,
+    func: Callable | None = None,
     log_level: int = DEFAULT_LOG_LEVEL,
     log_args: bool = True,
     log_result: bool = True,
 ):
     """
-    日志记录装饰器 - 同时支持同步和异步函数，提供参数、返回值记录和异常处理
+    日志记录装饰器 - 同时支持同步和异步函数,提供参数、返回值记录和异常处理
 
     Args:
-        func: 被装饰的函数，可选（支持直接装饰和带参数装饰两种方式）
-        log_level: 日志级别，默认10(DEBUG)
-        log_args: 是否记录函数参数，默认True
-        log_result: 是否记录函数返回结果，默认True
+        func: 被装饰的函数,可选(支持直接装饰和带参数装饰两种方式)
+        log_level: 日志级别,默认10(DEBUG)
+        log_args: 是否记录函数参数,默认True
+        log_result: 是否记录函数返回结果,默认True
 
     Returns:
-        装饰后的函数，保持原函数签名和功能
+        装饰后的函数,保持原函数签名和功能
 
     Example:
         >>> # 1. 直接装饰同步函数
@@ -187,31 +191,31 @@ def log_wraps(
         >>> # 3. 完整参数设置
         >>> @log_wraps(log_level=20, log_args=True, log_result=True)
         >>> def complex_operation(param1, param2=None):
-        >>>     # 函数实现
+        >>> # 函数实现
         >>>     return result
     """
 
     def decorator(func: Callable) -> Callable:
-        # 生成基础日志信息，避免在每次函数调用时重新计算
-        _basemsg = create_basemsg(func)
+        # 生成基础日志信息,避免在每次函数调用时重新计算
+        basemsg = create_basemsg(func)
 
         @wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
             """同步函数包装器 - 处理同步函数的日志记录和异常捕获"""
             if log_args:
-                mylog.debug(f"{_basemsg} | Args: {args} | Kwargs: {kwargs}")
+                mylog.debug(f'{basemsg} | Args: {args} | Kwargs: {kwargs}')
             try:
                 result = func(*args, **kwargs)
                 if log_result:
-                    mylog.success(f"{_basemsg} | result: < {result} >")
+                    mylog.success(f'{basemsg} | result: < {result} >')
                 else:
-                    mylog.success(f"{_basemsg} | successfully")
+                    mylog.success(f'{basemsg} | successfully')
                 return result
             except Exception as err:
                 # 使用统一的异常处理模块
                 return handle_exception(
                     err=err,
-                    context=_basemsg,
+                    context=basemsg,
                     loger=mylog,
                     re_raise=False,
                     default_return=None,
@@ -221,19 +225,19 @@ def log_wraps(
         async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
             """异步函数包装器 - 处理异步函数的日志记录和异常捕获"""
             if log_args:
-                mylog.debug(f"{_basemsg} | Args: {args} | Kwargs: {kwargs}")
+                mylog.debug(f'{basemsg} | Args: {args} | Kwargs: {kwargs}')
             try:
                 result = await func(*args, **kwargs)
                 if log_result:
-                    mylog.success(f"{_basemsg} | result: < {result} >")
+                    mylog.success(f'{basemsg} | result: < {result} >')
                 else:
-                    mylog.success(f"{_basemsg} | successfully")
+                    mylog.success(f'{basemsg} | successfully')
                 return result
             except Exception as err:
                 # 使用统一的异常处理模块
                 return handle_exception(
                     err=err,
-                    context=_basemsg,
+                    context=basemsg,
                     loger=mylog,
                     re_raise=False,
                     default_return=None,
@@ -242,5 +246,5 @@ def log_wraps(
         # 根据函数类型返回对应的包装函数
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
 
-    # 支持两种调用方式：@log_wraps 或 @log_wraps()
+    # 支持两种调用方式:@log_wraps 或 @log_wraps()
     return decorator(func) if func else decorator

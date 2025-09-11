@@ -20,10 +20,12 @@ Github       : https://github.com/sandorn/home
 - 提供友好的错误反馈和日志记录
 ==============================================================
 """
+from __future__ import annotations
 
 import os
 import traceback
-from typing import Any, List
+from typing import Any
+
 
 # 常量定义 - 异常处理配置参数
 DEFAULT_MAX_FRAMES = 5  # 默认最大显示堆栈帧数
@@ -62,29 +64,19 @@ def get_simplified_traceback(
     tb = traceback.extract_tb(exc.__traceback__)
 
     # 处理堆栈帧
-    simplified_frames: List[str] = []
+    simplified_frames: list[str] = []
     frame_count = 0
 
     for frame in reversed(tb):  # 从最新的帧开始处理
         filename = frame.filename
+        excluded_paths = ('site-packages', 'dist-packages', 'python/lib', 'python3/lib')
 
-        # 过滤掉库文件的堆栈帧（如果不需要）
-        if not include_library_frames:
-            # 常见的库路径判断
-            if any(
-                path in filename.lower()
-                for path in [
-                    "site-packages",
-                    "dist-packages",
-                    "python\\lib",
-                    "python3\\lib",
-                ]
-            ):
-                continue
+        if not include_library_frames and any(p in filename.lower() for p in excluded_paths):
+            continue
 
         # 限制显示的帧数
         if frame_count >= max_frames:
-            simplified_frames.append("...")
+            simplified_frames.append('...')
             break
 
         # 格式化文件名
@@ -92,7 +84,7 @@ def get_simplified_traceback(
             filename = os.path.basename(filename)
 
         # 格式化行号和函数名
-        frame_str = f"{filename}:{frame.lineno} in {frame.name}"
+        frame_str = f'{filename}:{frame.lineno} in {frame.name}'
         simplified_frames.append(frame_str)
         frame_count += 1
 
@@ -100,7 +92,7 @@ def get_simplified_traceback(
     simplified_frames.reverse()
 
     # 构建最终的堆栈信息
-    stack_info = " | ".join(simplified_frames)
+    stack_info = ' | '.join(simplified_frames)
     return stack_info
 
 
@@ -157,7 +149,7 @@ def handle_exception(
         ...     )
     """
     # 统一的日志格式
-    log_msg = f"{context} | {type(err).__name__} | {str(err)}"
+    log_msg = f'{context} | {type(err).__name__} | {err!s}'
 
     # 如果没有提供日志记录器，使用标准错误输出
     if loger is None:
@@ -166,8 +158,8 @@ def handle_exception(
         loger = mylog
 
     # 环境感知处理 - 开发环境显示更详细的堆栈信息
-    if os.getenv("ENV", "dev").lower() == "dev":
-        if simplify_traceback and hasattr(err, "__traceback__"):
+    if os.getenv('ENV', 'dev').lower() == 'dev':
+        if simplify_traceback and hasattr(err, '__traceback__'):
             # 使用精简的堆栈信息
             stack_info = get_simplified_traceback(
                 err,
@@ -175,17 +167,17 @@ def handle_exception(
                 include_library_frames=include_library_frames,
                 show_full_path=show_full_path,
             )
-            loger.error(f"{log_msg} | Stack: {stack_info}")
+            loger.error(f'{log_msg} | Stack: {stack_info}')
         else:
             # 使用完整的堆栈信息
-            loger.error(f"{log_msg} | Stack: {traceback.format_exc()}")
+            loger.error(f'{log_msg} | Stack: {traceback.format_exc()}')
     else:
         # 生产环境仅记录必要信息
         loger.error(log_msg)
 
     # 根据需要重新抛出异常
     if re_raise:
-        error_message = f"{context} | {type(err).__name__} | {str(err)}"
+        error_message = f'{context} | {type(err).__name__} | {err!s}'
         raise type(err)(error_message) from err
     else:
         return default_return

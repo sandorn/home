@@ -5,13 +5,14 @@ Description  : 计时工具模块 - 提供函数执行耗时自动记录功能
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-08-28 10:56:45
-LastEditTime : 2025-09-06 19:37:43
+LastEditTime : 2025-09-11 14:30:00
 FilePath     : /CODE/xjLib/xt_wraps/timer.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能：
 - timer_wraps：自动记录函数执行耗时的装饰器
 - timer：timer_wraps的简写别名
+- timeit：支持同步和异步函数的计时装饰器
 
 主要特性：
 - 同时支持同步和异步函数，自动识别函数类型
@@ -23,16 +24,23 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from __future__ import annotations
+
 import asyncio
+from collections.abc import Callable
 from functools import wraps
 from time import perf_counter
-from typing import Any, Callable
+from typing import Any, TypeVar
 
 from .exception import handle_exception
 from .log import create_basemsg, mylog
 
 
-def timer_wraps(fn: Callable = None):
+R = TypeVar('R')
+T = TypeVar('T', bound=Callable[..., Any])
+
+
+def timer_wraps(fn: Callable | None = None):
     """自动记录函数执行耗时的装饰器
 
     核心功能：
@@ -46,57 +54,53 @@ def timer_wraps(fn: Callable = None):
 
     返回值：
     - 装饰后的函数，执行时会自动记录耗时
-    
+
     示例用法：
         >>> # 方式1: 直接装饰同步函数
         >>> @timer_wraps
         >>> def calculate_sum(a, b):
-        >>>     # 执行一些计算
+        >>> # 执行一些计算
         >>>     return a + b
-        >>> 
         >>> # 方式2: 带括号装饰异步函数
         >>> @timer_wraps()
         >>> async def fetch_data(url):
-        >>>     # 模拟网络请求延迟
+        >>> # 模拟网络请求延迟
         >>>     await asyncio.sleep(1)
         >>>     return f"Data from {url}"
-        >>> 
         >>> # 方式3: 与其他装饰器组合使用
         >>> @log_wraps
         >>> @timer_wraps
         >>> def complex_operation(data):
-        >>>     # 执行复杂操作
+        >>> # 执行复杂操作
         >>>     return processed_data
     """
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
+            basemsg = create_basemsg(func)
             start_time = perf_counter()
             try:
                 return func(*args, **kwargs)
             except Exception as err:
-                return handle_exception(err, _basemsg, re_raise=True)
+                return handle_exception(err, basemsg, re_raise=True)
             finally:
-                mylog.debug(
-                    f"{_basemsg} | Timer-Consuming < {perf_counter() - start_time:.4f} s>"
-                )
+                mylog.debug(f'{basemsg} | 执行耗时：{perf_counter() - start_time:.4f} 秒')
 
         @wraps(func)
         async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
+            basemsg = create_basemsg(func)
             start_time = perf_counter()
             try:
                 return await func(*args, **kwargs)
             except Exception as err:
-                return handle_exception(err, _basemsg, re_raise=True)
+                return handle_exception(err, basemsg, re_raise=True)
             finally:
-                mylog.debug(
-                    f"{_basemsg} | Timer-Consuming < {perf_counter() - start_time:.4f} s>"
-                )
+                mylog.debug(f'{basemsg} | 执行耗时：{perf_counter() - start_time:.4f} 秒')
 
-        _basemsg = create_basemsg(func)
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
 
     return decorator(fn) if fn else decorator
+
 
 timer = timer_wraps

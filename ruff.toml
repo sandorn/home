@@ -1,0 +1,114 @@
+# ruff.toml (针对 Ruff 0.12.12 优化)
+
+#========================
+#🧩核心配置
+#========================
+line-length = 200  # 增加行长度至200字符，允许更长的单行
+target-version = "py312"
+indent-width = 4
+cache-dir = "~/.cache/"
+# 针对 Ruff 0.12.x 的新配置选项
+preview = true  # 启用预览功能，可能包含更好的单行格式化
+
+#========================
+#📁文件排除规则
+#========================
+exclude = [
+    ".venv", "__pycache__", "build", "dist",
+    "migrations", "node_modules", "tests/fixtures",
+    "**/generated/*.py"  # 生成代码
+]
+extend-exclude = ["old_code/**"]
+
+#========================
+#⚙️规则配置(lint)
+#========================
+[lint]
+extend-select = [
+    "B",    # bugbear - 非常重要，捕获潜在错误
+    "SIM",  # simplify - 推荐，简化代码
+    "RUF",  # ruff - 推荐，其自定义规则非常高效
+    "UP",   # pyupgrade - 推荐，保持代码现代性
+    "I",    # isort - 推荐，管理导入顺序
+    # 以下为扩展插件
+    "C90",  # mccabe - 推荐，控制复杂度
+    "N",    # pep8-naming - 推荐，命名规范
+    "A",    # flake8-annotations - 推荐，类型注解
+    "S",    # bandit - 安全相关，重要
+    "T",    # flake8-print - 打印语句检查
+    "Q",    # flake8-quotes - 字符串引号风格
+    "YTT",  # flake8-yapf - yapf格式化检查
+    "F",    # pyflakes - 基础错误检查
+    "E",    # pycodestyle - 基础风格检查
+]
+ignore = [
+    "E501",  # 行超长 - 由于已增加 line-length，可忽略
+    "B006",  # 可变默认值
+    "RUF001",  # 模糊Unicode字符错误
+    "RUF002",  # 模糊Unicode字符文档字符串错误
+    "RUF003",  # 模糊
+    # "A003",  # 忽略 '类属性覆盖内置函数' 的警告（有时是合理的）
+    # "C901",  # 忽略特定函数的 '过于复杂' 警告（有时复杂是必要的）
+    # "C408",  # 不必要的集合调用
+    # "F401" ,  # 未使用导入
+]
+fixable = ["ALL"]  # 默认值是"ALL"
+unfixable = []  # 不可自动修复的错误
+
+#========================
+#🧪每文件特殊规则
+#========================
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]  # 初始化文件忽略未使用导入
+"test/**" = ["S101"]      # 忽略断言警告: assert
+"tests/**" = ["S101"]     # 同上
+"legacy/**" = ["ALL"]     # 完全忽略旧代码目录
+
+#========================
+#📦导入处理配置
+#========================
+[lint.isort]
+known-first-party = ["myapp"]
+known-third-party = ["requests", "numpy", "pandas"]
+required-imports = ["from __future__ import annotations"]
+lines-after-imports = 2
+force-sort-within-sections = true
+combine-as-imports = true
+order-by-type = true
+
+#========================
+#🔤代码风格配置
+#========================
+[lint.flake8-quotes]
+inline-quotes = "single"    # 内联字符串使用单引号
+multiline-quotes = "single" # 多行字符串使用单引号
+docstring-quotes = "double" # 文档字符串使用双引号，遵循 PEP 257:cite[2]:cite[3]
+avoid-escape = true         # 允许转义字符
+
+[lint.pydocstyle]
+convention = "google"  # Google风格文档字符串
+
+#========================
+#🧰其他检查规则
+#========================
+[lint.flake8-bugbear]
+extend-immutable-calls = ["myapp.utils.freeze"]
+
+[lint.flake8-comprehensions]
+allow-dict-calls-with-keyword-arguments = true
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "all"  # 禁止相对导入
+
+#========================
+#✨格式化配置(format) - 优化重点
+#========================
+[format]
+quote-style = "single"         # 格式化器也使用单引号（注意文档字符串可能例外）
+indent-style = "space"         # 使用空格缩进
+# skip-magic-trailing-comma = true  # 魔术尾逗号，保持单行
+line-ending = "auto"           # 自动行尾符
+docstring-code-format = true   # 格式化文档字符串中的代码
+docstring-code-line-length = 200  # 文档字符串内代码行长度与整体一致
+
+#更多配置可以参考Ruff官方文档：https://docs.astral.sh/ruff/

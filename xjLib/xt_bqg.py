@@ -11,17 +11,19 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from __future__ import annotations
+
 from functools import partial
 
-from xt_ahttp import ahttpGet
+from xt_ahttp import ahttp_get
 from xt_requests import get
 from xt_response import ACResponse, htmlResponse
 from xt_str import format_html_string, re_sub, str_clean
 
 
-def clean_Content(in_str):
+def clean_content(in_str):
     """
-    清理文本内容，移除HTML标签、网站信息和多余空白
+    清理文本内容,移除HTML标签、网站信息和多余空白
 
     参数:
         in_str: 输入文本或文本列表
@@ -30,7 +32,7 @@ def clean_Content(in_str):
         清理后的文本字符串
     """
     if isinstance(in_str, list):
-        in_str = "\n".join(in_str)
+        in_str = '\n'.join(in_str)
 
     # 使用xt_str中的format_html_string进行HTML基础清理
     cleaned = format_html_string(in_str)
@@ -38,11 +40,11 @@ def clean_Content(in_str):
     # 应用业务特定清理规则
     business_rules = [
         (
-            r"(关注公众号：书友大本营  关注即送现金、点币！|『点此报错』|『加入书签』|笔趣阁手机版阅读网址|笔趣阁手机版|请收藏本站|请记住本书首发域名|百度搜索“笔趣看小说网”手机阅读|请收藏本站|笔趣看)[:：][^\s]*",
-            "",
+            r'(关注公众号：书友大本营  关注即送现金、点币！|『点此报错』|『加入书签』|笔趣阁手机版阅读网址|笔趣阁手机版|请收藏本站|请记住本书首发域名|百度搜索“笔趣看小说网”手机阅读|请收藏本站|笔趣看)[:：][^\s]*',
+            '',
         ),  # 移除网站推广信息
-        (r"https?://[^\s]+", ""),  # 移除URL链接
-        (r"\s+\S*[:：]\S*\s+", " "),  # 移除中间包含冒号的特殊片段
+        (r'https?://[^\s]+', ''),  # 移除URL链接
+        (r'\s+\S*[:：]\S*\s+', ' '),  # 移除中间包含冒号的特殊片段
     ]
     cleaned = re_sub(cleaned, business_rules)
 
@@ -52,21 +54,21 @@ def clean_Content(in_str):
     return str_clean(cleaned, trims)
 
 
-def handle_resp(resp):
+def resp_handle(resp):
     if not isinstance(resp, (ACResponse, htmlResponse)):
-        return [0, resp, ""]
+        return [0, resp, '']
 
     try:
-        title = resp.query("h1").text()
-        content = resp.query("#chaptercontent").text()
-        title = "".join(str_clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
-        content = clean_Content(content).strip()
+        title = resp.query('h1').text()
+        content = resp.query('#chaptercontent').text()
+        title = ''.join(str_clean(''.join(title), ['\u3000', '\xa0', '\u00a0']))
+        content = clean_content(content).strip()
         return [resp.index, title, content]
     except Exception as e:
-        print(f"出现错误{e!r}")
+        mylog(f'出现错误{e!r}')
 
 
-def 结果处理(resps):
+def resps_handle(resps):
     """传入的是爬虫数据包的集合"""
     texts = []
 
@@ -74,7 +76,7 @@ def 结果处理(resps):
         if not isinstance(resp, (ACResponse, htmlResponse)):
             continue
         else:
-            texts.append(handle_resp(resp))
+            texts.append(resp_handle(resp))
 
     texts.sort(key=lambda x: x[0])
     # texts = sorted(texts, key=lambda x: x[0])
@@ -83,21 +85,21 @@ def 结果处理(resps):
 
 def get_download_url(url):
     resp = get(url)
-    _xpath = (
+    xpath_list = (
         # '//meta[@property="og:novel:book_name"]/@content',
-        "//h1/text()",
+        '//h1/text()',
         "//dl/span/preceding-sibling::dd[not(@class='more pc_none')]/a/@href",
-        "//dl/span/dd/a/@href",
+        '//dl/span/dd/a/@href',
         "//dl/span/preceding-sibling::dd[not(@class='more pc_none')]/a/text()",
-        "//dl/span/dd/a/text()",
+        '//dl/span/dd/a/text()',
         # '//dt[1]/following-sibling::dd/a/@href',
         # '//dt[1]/following-sibling::dd/a/text()',
         # '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href',
     )
-    bookname, temp_urls, temp_urls2, titles, titles2 = resp.xpath(_xpath)
+    bookname, temp_urls, temp_urls2, titles, titles2 = resp.xpath(xpath_list)
     titles += titles2
     temp_urls += temp_urls2
-    bookname = "".join(bookname)
+    bookname = ''.join(bookname)
     # urls = ["/".join(url.split("/")[:-3]) + item for item in temp_urls]  # 章节链接
     urls = [f"{url}{''.join(item.split('/')[-1:])}" for item in temp_urls]  # 章节链接
     return bookname, urls, titles
@@ -108,57 +110,61 @@ def get_contents(*args, fn=get):
     resp = fn(url, *args[2:])
 
     if not isinstance(resp, (ACResponse, htmlResponse)):
-        return [0, resp, ""]
+        return [0, resp, '']
 
     # pyquery
-    title = resp.query("h1").text()
-    content = resp.query("#chaptercontent").text()
+    title = resp.query('h1').text()
+    content = resp.query('#chaptercontent').text()
     # _xpath = ['//h1/text()', '//*[@id="chaptercontent"]/text()']
     # title, content = resp.xpath(_xpath)
 
-    title = "".join(str_clean("".join(title), ["\u3000", "\xa0", "\u00a0"]))
-    content = clean_Content(content).strip()
+    title = ''.join(str_clean(''.join(title), ['\u3000', '\xa0', '\u00a0']))
+    content = clean_content(content).strip()
 
     return [index, title, content]
 
 
-ahttp_get_contents = partial(get_contents, fn=ahttpGet)
+ahttp_get_contents = partial(get_contents, fn=ahttp_get)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    from xt_wraps import LogCls
+
+    mylog = LogCls()
+
     # url = "https://www.bigee.cc/book/6909/"
     # bookname, urls, titles = get_download_url(url)
-    # print(bookname, urls, titles)
+    # mylog(bookname, urls, titles)
     # res = get_contents(0, urls[0])
-    # print(res)
+    # mylog(res)
     def test_clean_content():
         """测试clean_Content函数"""
         test_cases = [
-            ("正常文本", "Hello World"),
+            ('正常文本', 'Hello World'),
             (
-                "带HTML标签",
-                "<p>Hello<br/>World</p>",
+                '带HTML标签',
+                '<p>Hello<br/>World</p>',
             ),
-            ("带特殊字符", "Hello\u3000World\xa0!\u2029"),
+            ('带特殊字符', 'Hello\u3000World\xa0!\u2029'),
             (
-                "带网站信息",
-                "Hello 百度搜索“笔趣看小说网”手机阅读:   请收藏本站：https://www.bigee.com World  \n 请收藏本站：",
+                '带网站信息',
+                'Hello 百度搜索“笔趣看小说网”手机阅读:   请收藏本站：https://www.bigee.com World  \n 请收藏本站：',
             ),
-            ("多行文本", ["Line1", "Line2\t", "Line3  "]),
+            ('多行文本', ['Line1', 'Line2\t', 'Line3  ']),
         ]
 
-        print("=== 开始测试 clean_Content ===")
+        mylog('=== 开始测试 clean_Content ===')
         for name, input_text in test_cases:
-            result = clean_Content(input_text)
-            print(f"{name}: ")
-            print(f"  输入: {repr(input_text)}")
-            print(f"  输出: {repr(result)}")
+            result = clean_content(input_text)
+            mylog(f'{name}: ')
+            mylog(f'  输入: {input_text!r}')
+            mylog(f'  输出: {result!r}')
 
-        print("=== 测试完成 ===")
+        mylog('=== 测试完成 ===')
 
     # test_clean_content()
 
-    print(
+    mylog(
         33333333333333333333,
-        resp := get_download_url("https://www.bigee.cc/book/6909/"),
+        resp := get_download_url('https://www.bigee.cc/book/6909/'),
     )

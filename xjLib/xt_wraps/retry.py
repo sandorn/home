@@ -24,10 +24,12 @@ Github       : https://github.com/sandorn/home
 - 统一的异常日志记录
 ==============================================================
 """
+from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Tuple, Type
+from typing import Any
 
 from tenacity import (
     RetryCallState,
@@ -39,6 +41,7 @@ from tenacity import (
 
 from .exception import handle_exception
 from .log import create_basemsg
+
 
 # 常量定义
 DEFAULT_RETRY_ATTEMPTS = 3  # 默认最大尝试次数
@@ -98,7 +101,7 @@ class RetryHandler:
     )
 
     def __init__(self):
-        self._basemsg = ""
+        self._basemsg = ''
         self._default_return = None
 
     def configure(self, basemsg: str, default_return: Any) -> None:
@@ -121,9 +124,7 @@ class RetryHandler:
             配置的默认返回值
         """
         ex = retry_state.outcome.exception()
-        handle_exception(
-            ex, self._basemsg + f" | 共 {retry_state.attempt_number} 次失败"
-        )
+        handle_exception(ex, self._basemsg + f' | 共 {retry_state.attempt_number} 次失败')
         return self._default_return
 
     def before_back(self, retry_state: RetryCallState) -> None:
@@ -133,9 +134,7 @@ class RetryHandler:
             retry_state: tenacity的重试状态对象
         """
         ex = retry_state.outcome.exception()
-        handle_exception(
-            ex, self._basemsg + f" | 第 {retry_state.attempt_number} 次失败"
-        )
+        handle_exception(ex, self._basemsg + f' | 第 {retry_state.attempt_number} 次失败')
 
     def should_retry(self, exception: Exception) -> bool:
         """判断给定异常是否应该触发重试
@@ -154,7 +153,7 @@ def retry_wraps(
     max_attempts: int = DEFAULT_RETRY_ATTEMPTS,
     min_wait: float = DEFAULT_MIN_WAIT_TIME,
     max_wait: float = DEFAULT_MAX_WAIT_TIME,
-    retry_exceptions: Tuple[Type[Exception], ...] = RetryHandler.RETRY_EXCEPT,
+    retry_exceptions: tuple[type[Exception], ...] = RetryHandler.RETRY_EXCEPT,
     is_before_callback: bool = True,
     is_error_callback: bool = True,
     silent_on_no_retry: bool = True,
@@ -219,8 +218,8 @@ def retry_wraps(
     def decorator(func: Callable[..., Any]) -> Callable:
         #  创建RetryHandler实例,设置基础消息和默认返回
         retry_handler = RetryHandler()
-        _basemsg = create_basemsg(func)
-        retry_handler.configure(_basemsg, default_return)
+        basemsg = create_basemsg(func)
+        retry_handler.configure(basemsg, default_return)
 
         # 创建重试条件 - 只重试指定类型的异常
         # 注意：不再直接修改类变量RETRY_EXCEPT，而是使用局部参数retry_exceptions
@@ -252,7 +251,7 @@ def retry_wraps(
                     return default_return  # 非重试异常返回默认值
                 else:
                     # raise  # 否则重新抛出异常
-                    handle_exception(e, _basemsg, re_raise=True)
+                    handle_exception(e, basemsg, re_raise=True)
 
         # 异步函数包装器
         @wraps(func)
@@ -269,7 +268,7 @@ def retry_wraps(
                     return default_return  # 非重试异常返回默认值
                 else:
                     # raise  # 否则重新抛出异常
-                    handle_exception(e, _basemsg, re_raise=True)
+                    handle_exception(e, basemsg, re_raise=True)
 
         # 根据函数类型返回相应的包装器
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
