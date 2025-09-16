@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-08-28 11:06:38
 LastEditTime : 2025-09-06 10:00:00
-FilePath     : /CODE/xjLib/xt_wraps/core.py
+FilePath     : /CODE/xjlib/xt_wraps/core.py
 Github       : https://github.com/sandorn/home
 
 本模块提供了两个核心装饰器工厂函数，用于创建同时支持同步和异步函数的装饰器：
@@ -29,7 +29,6 @@ from typing import Any, TypeVar, cast
 
 from .exception import handle_exception
 from .log import create_basemsg
-
 
 T = TypeVar('T', bound=Callable[..., Any])
 
@@ -75,6 +74,7 @@ def decorate_sas(decorator_func: Callable) -> Callable:
 
 
 def create_async_wrapper[T](decorator_func: Callable, func: T, decorator_kwargs: dict) -> Callable:
+    # T 是被装饰函数的类型参数
     """创建异步包装函数"""
 
     @wraps(func)
@@ -83,24 +83,23 @@ def create_async_wrapper[T](decorator_func: Callable, func: T, decorator_kwargs:
             # 判断装饰器函数的调用方式
             if decorator_func.__code__.co_argcount > 0:
                 return await decorator_func(func, *args, **kwargs)
-            else:
-                # 直接调用装饰后的函数
-                decorated_func = decorator_func(**decorator_kwargs)
-                if asyncio.iscoroutinefunction(decorated_func):
-                    return await decorated_func(*args, **kwargs)
-                else:
-                    # 对于同步装饰后的函数，使用run_in_executor确保不阻塞事件循环
-                    loop = asyncio.get_event_loop()
-                    return await loop.run_in_executor(None, lambda: decorated_func(*args, **kwargs))
+            # 直接调用装饰后的函数
+            decorated_func = decorator_func(**decorator_kwargs)
+            if asyncio.iscoroutinefunction(decorated_func):
+                return await decorated_func(*args, **kwargs)
+            # 对于同步装饰后的函数，使用run_in_executor确保不阻塞事件循环
+            loop = asyncio.get_event_loop()
+            return await loop.run_in_executor(None, lambda: decorated_func(*args, **kwargs))
         except Exception as err:
             # 异常处理并返回None，保持与同步行为一致
-            handle_exception(err, create_basemsg(func))
+            handle_exception(create_basemsg(func), err)
             return None
 
     return async_wrapped
 
 
 def create_sync_wrapper[T](decorator_func: Callable, func: T, decorator_kwargs: dict) -> Callable:
+    # T 是被装饰函数的类型参数
     """创建同步包装函数"""
 
     @wraps(func)
@@ -108,12 +107,11 @@ def create_sync_wrapper[T](decorator_func: Callable, func: T, decorator_kwargs: 
         try:
             if decorator_func.__code__.co_argcount > 0:
                 return decorator_func(func, *args, **kwargs)
-            else:
-                decorated_func = decorator_func(**decorator_kwargs)
-                return decorated_func(*args, **kwargs)
+            decorated_func = decorator_func(**decorator_kwargs)
+            return decorated_func(*args, **kwargs)
         except Exception as err:
             # 异常处理并返回None
-            handle_exception(err, create_basemsg(func))
+            handle_exception(create_basemsg(func), err)
             return None
 
     return sync_wrapped

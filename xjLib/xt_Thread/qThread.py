@@ -27,9 +27,13 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from __future__ import annotations
+
+import contextlib
 import time
 import weakref
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union, cast
+from collections.abc import Callable
+from typing import Any, ClassVar, TypeVar, cast
 
 from PyQt6.QtCore import (
     QMutex,
@@ -41,7 +45,7 @@ from PyQt6.QtCore import (
 from xt_wraps.singleton import SingletonMixin
 
 # 类型定义
-T = TypeVar("T")
+T = TypeVar('T')
 
 
 class QtThreadBase(QThread):
@@ -67,7 +71,7 @@ class QtThreadBase(QThread):
             *args: 传递给目标函数的位置参数
             **kwargs: 传递给目标函数的关键字参数
         """
-        self.callback = kwargs.pop("callback", None)
+        self.callback = kwargs.pop('callback', None)
         super().__init__()
         # 设置线程名称
         self.setObjectName(target.__name__)
@@ -126,7 +130,7 @@ class QtThreadBase(QThread):
         finally:
             self._is_running = False
 
-    def get_result(self, timeout: Optional[float] = None) -> Any:
+    def get_result(self, timeout: float | None = None) -> Any:
         """
         获取线程执行结果，等待线程完成
 
@@ -148,7 +152,7 @@ class QtThreadBase(QThread):
 
         return self._result if success else None
 
-    def stop(self, timeout: Optional[float] = None) -> bool:
+    def stop(self, timeout: float | None = None) -> bool:
         """
         安全停止线程
 
@@ -168,33 +172,27 @@ class QtThreadBase(QThread):
             if timeout is not None:
                 wait_time = int(timeout * 1000)  # 转换为毫秒
                 return self.wait(wait_time)
-            else:
-                return self.wait()
+            return self.wait()
 
         return True
 
     def is_running(self) -> bool:
         """检查线程是否正在运行"""
         try:
-            return self._is_running or (
-                self.isRunning() if hasattr(self, "isRunning") else False
-            )
+            return self._is_running or (self.isRunning() if hasattr(self, 'isRunning') else False)
         except RuntimeError:
             # 处理Qt对象已被销毁的情况
             return False
 
-    def get_exception(self) -> Optional[Exception]:
+    def get_exception(self) -> Exception | None:
         """获取线程执行过程中的异常"""
         return self._exception
 
     def __del__(self):
         """对象销毁时自动清理资源"""
-        try:
-            if self.is_running():
+        if hasattr(self, 'is_running') and hasattr(self, 'stop') and self.is_running():
+            with contextlib.suppress(Exception):
                 self.stop(timeout=1.0)
-        except Exception:
-            # 忽略析构函数中的所有异常
-            pass
 
 
 class QtSafeThread(QtThreadBase):
@@ -212,7 +210,7 @@ class QtSafeThread(QtThreadBase):
 
     Example:
         >>> def risky_task():
-        >>>     # 可能失败的任务
+        >>> # 可能失败的任务
         >>>     if random.random() < 0.3:
         >>>         raise ValueError("随机失败")
         >>>     return "成功"
@@ -263,8 +261,7 @@ class QtSafeThread(QtThreadBase):
                         self._exception = e
                         self.error_signal.emit(e)
                         break
-                    else:
-                        time.sleep(self.retry_delay)
+                    time.sleep(self.retry_delay)
         finally:
             self._is_running = False
 
@@ -280,7 +277,7 @@ class QtThreadManager(SingletonMixin):
     - 线程安全
     """
 
-    _threads: Dict[int, weakref.ref] = {}
+    _threads: ClassVar[dict[int, weakref.ref]] = {}
     _mutex = QMutex()
 
     def __init__(self):
@@ -300,13 +297,13 @@ class QtThreadManager(SingletonMixin):
         Returns:
             创建的线程实例
         """
-        _thread = QtThreadBase(target, *args, **kwargs)
+        tmp_thread = QtThreadBase(target, *args, **kwargs)
 
         with QMutexLocker(cls._mutex):
-            cls._threads[id(_thread)] = weakref.ref(_thread)
+            cls._threads[id(tmp_thread)] = weakref.ref(tmp_thread)
 
-        _thread.start()
-        return _thread
+        tmp_thread.start()
+        return tmp_thread
 
     @classmethod
     def create_safe_thread(cls, target: Callable, *args, **kwargs) -> QtSafeThread:
@@ -330,7 +327,7 @@ class QtThreadManager(SingletonMixin):
         return thread
 
     @classmethod
-    def add_thread(cls, thread: Union[QtThreadBase, QtSafeThread]) -> None:
+    def add_thread(cls, thread: QtThreadBase | QtSafeThread) -> None:
         """
         将已存在的线程添加到管理器
 
@@ -341,7 +338,7 @@ class QtThreadManager(SingletonMixin):
             cls._threads[id(thread)] = weakref.ref(thread)
 
     @classmethod
-    def stop_all(cls, timeout: Optional[float] = None) -> None:
+    def stop_all(cls, timeout: float | None = None) -> None:
         """
         停止所有管理的线程
 
@@ -367,7 +364,7 @@ class QtThreadManager(SingletonMixin):
             cls._threads.clear()
 
     @classmethod
-    def wait_all_completed(cls, timeout: Optional[float] = None) -> Dict[int, Any]:
+    def wait_all_completed(cls, timeout: float | None = None) -> dict[int, Any]:
         """
         等待所有线程完成并返回结果
 
@@ -378,7 +375,7 @@ class QtThreadManager(SingletonMixin):
             所有线程的结果字典，键为线程ID，值为结果
         """
         # 创建一个字典来存储所有线程的结果
-        _results = {}
+        tmp_results = {}
 
         # 获取当前时间，用于计算超时
         start_time = time.time()
@@ -403,13 +400,13 @@ class QtThreadManager(SingletonMixin):
 
             # 直接从线程实例获取结果
             thread_id = id(thread)
-            _results[thread_id] = thread._result
+            tmp_results[thread_id] = thread._result
 
         # 清空并返回结果
         with QMutexLocker(cls._mutex):
             cls._threads.clear()
 
-        return _results
+        return tmp_results
 
     @classmethod
     def get_active_count(cls) -> int:
@@ -431,7 +428,7 @@ class QtThreadManager(SingletonMixin):
             return count
 
     @classmethod
-    def get_thread_by_id(cls, thread_id: int) -> Optional[QtThreadBase]:
+    def get_thread_by_id(cls, thread_id: int) -> QtThreadBase | None:
         """
         根据ID获取线程实例
 
@@ -446,7 +443,7 @@ class QtThreadManager(SingletonMixin):
             return thread_ref() if thread_ref else None
 
     @classmethod
-    def get_thread_by_name(cls, name: str) -> List[QtThreadBase]:
+    def get_thread_by_name(cls, name: str) -> list[QtThreadBase]:
         """
         根据名称获取线程实例列表
 
@@ -465,7 +462,7 @@ class QtThreadManager(SingletonMixin):
         return result
 
     @classmethod
-    def stop_thread(cls, thread_id: int, timeout: Optional[float] = None) -> bool:
+    def stop_thread(cls, thread_id: int, timeout: float | None = None) -> bool:
         """
         停止指定线程
 
@@ -501,12 +498,12 @@ class SingletonQtThread(SingletonMixin, QtSafeThread):
 
     Example:
         >>> def singleton_task(param):
-        >>>     # 单例任务函数
+        >>> # 单例任务函数
         >>>     time.sleep(1)
         >>>     return f"结果: {param}"
         >>>
-        >>> thread1 = SingletonQtThread(singleton_task, "参数1")
-        >>> thread2 = SingletonQtThread(singleton_task, "参数2")
+        >>> thread1 = SingletonQtThread(singleton_task, '参数1')
+        >>> thread2 = SingletonQtThread(singleton_task, '参数2')
         >>> print(thread1 is thread2)  # 输出: True
         >>> result = thread1.get_result()
     """
@@ -524,11 +521,11 @@ class SingletonQtThread(SingletonMixin, QtSafeThread):
         super().__init__(target, *args, **kwargs)
 
         # 确保所有必要的属性都已初始化
-        if not hasattr(self, "_is_running"):
+        if not hasattr(self, '_is_running'):
             self._is_running = False
-        if not hasattr(self, "_stop_requested"):
+        if not hasattr(self, '_stop_requested'):
             self._stop_requested = False
-        if not hasattr(self, "_result"):
+        if not hasattr(self, '_result'):
             self._result = None
 
         # 只在新实例创建时自动启动
@@ -573,17 +570,17 @@ class ComposedSingletonQtThread(SingletonMixin):
 
     Example:
         >>> def singleton_task(param):
-        >>>     # 单例任务函数
+        >>> # 单例任务函数
         >>>     time.sleep(1)
         >>>     return f"结果: {param}"
         >>>
-        >>> thread1 = ComposedSingletonQtThread(singleton_task, "参数1")
-        >>> thread2 = ComposedSingletonQtThread(singleton_task, "参数2")
+        >>> thread1 = ComposedSingletonQtThread(singleton_task, '参数1')
+        >>> thread2 = ComposedSingletonQtThread(singleton_task, '参数2')
         >>> print(thread1 is thread2)  # 输出: True
         >>> result = thread1.get_result()
     """
 
-    _instances: Dict[Callable, Any] = {}
+    _instances: ClassVar[dict[Callable, Any]] = {}
     _mutex = QMutex()
 
     def __new__(cls, target: Callable, *args, **kwargs):
@@ -591,9 +588,7 @@ class ComposedSingletonQtThread(SingletonMixin):
         with QMutexLocker(cls._mutex):
             # 只使用target函数作为键，忽略args和kwargs
             if target not in cls._instances:
-                cls._instances[target] = super(ComposedSingletonQtThread, cls).__new__(
-                    cls
-                )
+                cls._instances[target] = super().__new__(cls)
                 # 初始化线程对象（仅在创建新实例时）
                 cls._instances[target]._initialize(target, *args, **kwargs)
         return cls._instances[target]
@@ -623,11 +618,11 @@ class ComposedSingletonQtThread(SingletonMixin):
         if not self._thread.isRunning() and not self._thread._is_running:
             self._thread.start()
 
-    def get_result(self, timeout: Optional[float] = None) -> Any:
+    def get_result(self, timeout: float | None = None) -> Any:
         """获取线程执行结果"""
         return self._thread.get_result(timeout)
 
-    def stop(self, timeout: Optional[float] = None) -> bool:
+    def stop(self, timeout: float | None = None) -> bool:
         """停止内部线程"""
         return self._thread.stop(timeout)
 
@@ -635,9 +630,7 @@ class ComposedSingletonQtThread(SingletonMixin):
         """重启单例线程"""
         self.stop()
         # 创建新的线程实例
-        self._thread = QtSafeThread(
-            self._target, *self._thread._args, **self._thread._kwargs
-        )
+        self._thread = QtSafeThread(self._target, *self._thread._args, **self._thread._kwargs)
         self._thread.finished_signal.connect(self._on_thread_finished)
         self._thread.error_signal.connect(self._on_thread_error)
         self.start()
@@ -656,7 +649,6 @@ class ComposedSingletonQtThread(SingletonMixin):
         """清理所有单例实例，通常只在测试或特殊情况下使用"""
         with QMutexLocker(cls._mutex):
             for instance in cls._instances.values():
-                if hasattr(instance, "_thread"):
+                if hasattr(instance, '_thread'):
                     instance.stop()
             cls._instances.clear()
-

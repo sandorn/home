@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-09-01 08:40:27
 LastEditTime : 2025-09-11 16:40:00
-FilePath     : /CODE/xjLib/xt_wraps/executor.py
+FilePath     : /CODE/xjlib/xt_wraps/executor.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能：
@@ -24,6 +24,7 @@ Github       : https://github.com/sandorn/home
 - 完整的类型提示支持
 ==============================================================
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -34,7 +35,6 @@ from typing import Any, TypeVar
 
 from .exception import handle_exception
 from .log import create_basemsg
-
 
 R = TypeVar('R')
 T = TypeVar('T', bound=Callable[..., Any])
@@ -52,7 +52,7 @@ def _create_exception_handler(base_msg: str):
 
     def exception_handler(fut):
         if fut.exception():
-            handle_exception(fut.exception(), base_msg)
+            handle_exception(base_msg, fut.exception())
 
     return exception_handler
 
@@ -100,12 +100,13 @@ class WrapperFactory:
         """创建异步后台执行包装器"""
 
         @wraps(func)
-        def async_background_wrapper(*args: Any, **kwargs: Any) -> asyncio.Task[R]:
+        def async_background_wrapper[R](*args: Any, **kwargs: Any) -> asyncio.Task[R]:
+            # R 是返回值类型参数，与外部保持一致
             async def task_wrapper():
                 try:
                     return await func(*args, **kwargs)
                 except Exception as err:
-                    handle_exception(err, base_msg, re_raise=True)
+                    handle_exception(base_msg, err, re_raise=True)
 
             return asyncio.create_task(task_wrapper())
 
@@ -120,7 +121,7 @@ class WrapperFactory:
             try:
                 return await func(*args, **kwargs)
             except Exception as err:
-                return handle_exception(err, base_msg, re_raise=True)
+                return handle_exception(base_msg, err, re_raise=True)
 
         return async_wrapper
 
@@ -149,7 +150,7 @@ class WrapperFactory:
             try:
                 return await loop.run_in_executor(executor, task_func)
             except Exception as err:
-                return handle_exception(err, base_msg, re_raise=True)
+                return handle_exception(base_msg, err, re_raise=True)
 
         return sync_wrapper
 
@@ -214,19 +215,29 @@ class ExecutorDecorators:
             - 当background=True时：返回Future/Task对象，可后续await获取结果
         """
 
-        def decorator(func: Callable[..., R]) -> Callable[..., Any]:
+        def decorator[R](func: Callable[..., R]) -> Callable[..., Any]:
+            # R 是原函数返回值类型参数
             used_executor = executor or _default_executor
             base_msg = create_basemsg(func)
 
-            # 根据函数类型和执行模式选择合适的包装器
-            if asyncio.iscoroutinefunction(func):
-                if background:
+            match (asyncio.iscoroutinefunction(func), background):
+                case (True, True):
                     return WrapperFactory.create_async_background_wrapper(func, base_msg)
-                return WrapperFactory.create_async_wrapper(func, base_msg)
-            else:
-                if background:
+                case (True, False):
+                    return WrapperFactory.create_async_wrapper(func, base_msg)
+                case (False, True):
                     return WrapperFactory.create_sync_background_wrapper(func, base_msg, used_executor)
-                return WrapperFactory.create_sync_wrapper(func, base_msg, used_executor)
+                case _:
+                    return WrapperFactory.create_sync_wrapper(func, base_msg, used_executor)
+            # # 根据函数类型和执行模式选择合适的包装器
+            # if asyncio.iscoroutinefunction(func):
+            #     if background:
+            #         return WrapperFactory.create_async_background_wrapper(func, base_msg)
+            #     return WrapperFactory.create_async_wrapper(func, base_msg)
+
+            # if background:
+            #     return WrapperFactory.create_sync_background_wrapper(func, base_msg, used_executor)
+            # return WrapperFactory.create_sync_wrapper(func, base_msg, used_executor)
 
         # 处理装饰器调用方式
         return decorator(fn) if fn else decorator
@@ -248,7 +259,8 @@ class ExecutorDecorators:
             同步函数，可以直接调用而不需要await
         """
 
-        def decorator(func: Callable[..., R]) -> Callable[..., R]:
+        def decorator[R](func: Callable[..., R]) -> Callable[..., R]:
+            # R 是原函数返回值类型参数
             base_msg = create_basemsg(func)
 
             @wraps(func)
@@ -262,12 +274,12 @@ class ExecutorDecorators:
                         # 否则直接运行协程
                         return result.run_until_complete(func(*args, **kwargs))
                     except Exception as err:
-                        return handle_exception(err, base_msg)
+                        return handle_exception(base_msg, err)
                 else:
                     try:
                         return func(*args, **kwargs)
                     except Exception as err:
-                        return handle_exception(err, base_msg)
+                        return handle_exception(base_msg, err)
 
             return sync_wrapper
 
@@ -296,11 +308,13 @@ class ExecutorDecorators:
             装饰后的函数，返回asyncio.Future对象，可通过await获取结果
         """
 
-        def decorator(func: Callable[..., R]) -> Callable[..., asyncio.Future[R]]:
+        def decorator[R](func: Callable[..., R]) -> Callable[..., asyncio.Future[R]]:
+            # R 是原函数返回值类型参数
             base_msg = create_basemsg(func)
 
             @wraps(func)
-            def wrapper(*args: Any, **kwargs: Any) -> asyncio.Future[R]:
+            def wrapper[R](*args: Any, **kwargs: Any) -> asyncio.Future[R]:
+                # R 是原函数返回值类型参数
                 try:
                     loop = asyncio.get_event_loop()
                     used_executor = executor or _default_executor
@@ -369,8 +383,8 @@ async def future_wraps_result[T](future: asyncio.Future[T]) -> T:
         # 如果超时，取消任务并抛出异常
         if not future.done():
             future.cancel()
-        return handle_exception(timerr, create_basemsg(_dummy_func_for_log), re_raise=True)
+        return handle_exception(create_basemsg(_dummy_func_for_log), timerr, re_raise=True)
     except asyncio.CancelledError as cancerr:
-        return handle_exception(cancerr, create_basemsg(_dummy_func_for_log), re_raise=True)
+        return handle_exception(create_basemsg(_dummy_func_for_log), cancerr, re_raise=True)
     except Exception as err:
-        return handle_exception(err, create_basemsg(_dummy_func_for_log), re_raise=True)
+        return handle_exception(create_basemsg(_dummy_func_for_log), err, re_raise=True)

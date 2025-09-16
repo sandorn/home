@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
 LastEditTime : 2025-09-06 12:00:00
-FilePath     : /CODE/xjLib/xt_wraps/singleton.py
+FilePath     : /CODE/xjlib/xt_wraps/singleton.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能：
@@ -30,7 +30,6 @@ from __future__ import annotations
 from threading import RLock
 from typing import Any, TypeVar, cast
 from weakref import WeakKeyDictionary, WeakValueDictionary
-
 
 T = TypeVar('T')
 S = TypeVar('S')  # 用于SingletonWraps的泛型参数

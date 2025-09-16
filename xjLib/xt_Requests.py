@@ -12,55 +12,57 @@ Github       : https://github.com/sandorn/home
 requests 简化调用
 """
 
+from __future__ import annotations
+
 from functools import partial
-from typing import Any, Callable, Union
+from typing import Any
 
 import requests
 from xt_head import TIMEOUT, Head
 from xt_response import htmlResponse
 from xt_wraps import log_wraps, retry_wraps
 
-request_methods = ("get","post","head","options","put","delete","trace","connect","patch")
+request_methods = ('get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch')
 
-@retry_wraps()
+
+@retry_wraps
 def _retry_request(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResponse:
-    """利用 RetryLogWrapper 实现重试"""
-    _ = kwargs.pop("callback", None)
-    index = kwargs.pop("index", id(url))
-    response = requests.request(method, url, *args, **kwargs)
+    """利用 retry_wraps 实现重试"""
+    _ = kwargs.pop('callback', None)
+    index = kwargs.pop('index', id(url))
+    timeout = kwargs.pop('timeout', TIMEOUT)
+    response = requests.request(method, url, *args, timeout=timeout, **kwargs)
     response.raise_for_status()
-    result = htmlResponse(response=response, index=index)
 
-    return result
+    return htmlResponse(response, response.content, index)
 
 
 def single_parse(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResponse:
     if method.lower() not in request_methods:
-        return htmlResponse(
-            None, f"Method:{method} not in {request_methods}".encode(), id(url)
-        )
-    kwargs.setdefault("headers", Head().randua)  # @headers
-    kwargs.setdefault("timeout", TIMEOUT)  # @timeout
-    kwargs.setdefault("cookies", {})  # @cookies
+        return htmlResponse(None, f'Method:{method} not in {request_methods}'.encode(), id(url))
+    kwargs.setdefault('headers', Head().randua)  # @headers
+    kwargs.setdefault('timeout', TIMEOUT)  # @timeout
+    kwargs.setdefault('cookies', {})  # @cookies
 
     return _retry_request(method.lower(), url, *args, **kwargs)
 
 
-get: Callable[..., Union[htmlResponse, str]] = partial(single_parse, "get")
-post: Callable[..., Union[htmlResponse, str]] = partial(single_parse, "post")
+get = partial(single_parse, 'get')
+post = partial(single_parse, 'post')
 
 
 class SessionClient:
     """封装session,保存cookies,利用TRETRY三方库实现重试"""
 
-    __slots__ = ("session", "method", "url", "args", "kwargs", "callback")
+    __slots__ = ('args', 'callback', 'kwargs', 'method', 'session', 'url')
 
     def __init__(self):
         self.session = requests.session()
-        self.method: str = ""
+        self.session.default_timeout = TIMEOUT
+        self.method: str = ''
         self.args: tuple = ()
         self.kwargs: dict = {}
-        self.url: str = ""
+        self.url: str = ''
 
     def __enter__(self):
         return self
@@ -76,37 +78,29 @@ class SessionClient:
     def __getattr__(self, method):
         return self.__getitem__(method)
 
-    @log_wraps()
+    @log_wraps
     def create_task(self, *args, **kwargs):
         self.url = args[0]
         if self.method not in request_methods:
             return htmlResponse(
                 None,
-                f"Method:{self.method} not in {request_methods}".encode(),
+                f'Method:{self.method} not in {request_methods}'.encode(),
                 id(self.url),
             )
         self.args = args[1:]
 
-        self.update_headers(kwargs.pop("headers", Head().randua))
-        self.update_cookies(kwargs.pop("cookies", {}))
-        _ = kwargs.pop("callback", None)
-        kwargs.setdefault("timeout", TIMEOUT)
+        self.update_headers(kwargs.pop('headers', Head().randua))
+        self.update_cookies(kwargs.pop('cookies', {}))
+        _ = kwargs.pop('callback', None)
+        kwargs.setdefault('timeout', TIMEOUT)
         self.kwargs = kwargs
-        return self._get_resp()
+        return self._fetch()
 
-    @retry_wraps()
-    def _get_resp(self):
-        """利用 TRETRY 库实现重试"""
-        try:
-            response = self.session.request(
-                self.method, self.url, *self.args, **self.kwargs
-            )
-            self.update_cookies(response.cookies)
-            result = htmlResponse(response, None, id(self.url))
-            return result
-        except requests.exceptions.RequestException as err:
-            print(err_str := f"SessionClient:{self} | URL:{self.url} | Err:{err!r}")
-            return htmlResponse(None, err_str.encode(), id(self.url))
+    @retry_wraps
+    def _fetch(self):
+        response = self.session.request(self.method, self.url, *self.args, **self.kwargs)
+        self.update_cookies(response.cookies)
+        return htmlResponse(response, response.content, id(self.url))
 
     def update_cookies(self, cookie_dict):
         self.session.cookies.update(cookie_dict)
@@ -115,46 +109,46 @@ class SessionClient:
         self.session.headers.update(header_dict)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     urls = [
-        "https://www.163.com",
-        "https://httpbin.org/get",
-        "https://httpbin.org/post",
-        "https://httpbin.org/headers",
-        "https://www.google.com",
+        'https://www.163.com',
+        'https://www.126.com',
+        'https://httpbin.org/post',
+        'https://httpbin.org/headers',
+        'https://www.google.com',
     ]
-    elestr = "//title/text()"
+    elestr = '//title/text()'
 
     def main():
-        print(111111111111111111111, SessionClient().get(urls[1]))
+        print(111111111111111111111, SessionClient().get('https://www.google.com'))
 
         # print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
         # print(3333333333333333333, get(urls[4]))
         print(4444444444444444444, res := get(urls[0], index=0))
-        
+
         # 进行类型检查，确保res是htmlResponse类型
         if isinstance(res, htmlResponse):
-            print("xpath-1".ljust(10), ":", res.xpath(elestr))
-            print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
+            print('xpath-1'.ljust(10), ':', res.xpath(elestr))
+            print('xpath-2'.ljust(10), ':', res.xpath([elestr, elestr]))
             print(
-                "blank".ljust(10),
-                ":",
-                res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+                'blank'.ljust(10),
+                ':',
+                res.xpath(['', ' ', ' \t', ' \n', ' \r', ' \r\n', ' \n\r', ' \r\n\t']),
             )
-            print("dom".ljust(10), ":", res.dom.xpath(elestr), res.dom.url)
-            print("query".ljust(10), ":", res.query("title").text())
-            print("element".ljust(10), ":", res.element.xpath(elestr), res.element.base)
-            print("html".ljust(10), ":", res.html.xpath(elestr), res.html.base_url)
+            print('dom'.ljust(10), ':', res.dom.xpath(elestr), res.dom.url)
+            print('query'.ljust(10), ':', res.query('title').text())
+            print('element'.ljust(10), ':', res.element.xpath(elestr), res.element.base)
+            print('html'.ljust(10), ':', res.html.xpath(elestr), res.html.base_url)
         else:
-            print("Error: Invalid response type received -", type(res))
+            print('Error: Invalid response type received -', type(res))
 
     main()
 
     @retry_wraps()
     def my_func():
-        return get("https://www.google.com")
+        return get('https://www.google.com')
 
-    print(my_func())
+    # print(my_func())
 
     """
     ###############################################################

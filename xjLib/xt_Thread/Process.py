@@ -44,10 +44,12 @@ process.py 库可以用于爬虫，但更适合作为爬虫框架中的并发处
 总结： process.py 是一个优秀的并行处理库，可以作为爬虫开发中的并发组件，但需要结合其他库或自行实现爬虫特有的功能来构建完整的爬虫解决方案。
 ==============================================================
 """
+from __future__ import annotations
 
 import sys
+from collections.abc import Callable
 from multiprocessing import Manager, Process, Semaphore, get_context
-from typing import Any, Callable, Dict, List, TypeVar
+from typing import Any, ClassVar, TypeVar
 
 T = TypeVar('T')  # 输入参数类型
 R = TypeVar('R')  # 返回结果类型
@@ -81,13 +83,13 @@ class CustomProcess(Process):
         >>>     print(result_dict)  # 输出: {0: 2, 1: 4, 2: 6}
     """
     
-    _context = get_context("spawn")  # 显式使用spawn上下文，提高跨平台兼容性
-    all_processes: List['CustomProcess'] = []  # 跟踪所有创建的进程
+    _context = get_context('spawn')  # 显式使用spawn上下文，提高跨平台兼容性
+    all_processes: ClassVar[list[CustomProcess]] = []  # 跟踪所有创建的进程
 
     def __init__(
         self,
-        *args: List[List[Any]],
-        result_dict: Dict[int, Any],
+        *args: list[list[Any]],
+        result_dict: dict[int, Any],
         semaphore: Semaphore,
         func: Callable[..., Any],
         start_idx: int,
@@ -136,7 +138,7 @@ class CustomProcess(Process):
                     self.result_dict[idx] = result
                 except Exception as e:
                     # 异常处理，将错误信息存入结果字典
-                    self.result_dict[idx] = f"Error processing index {idx}: {str(e)}"
+                    self.result_dict[idx] = f'Error processing index {idx}: {e!s}'
 
     @classmethod
     def wait_completed(cls) -> None:
@@ -151,7 +153,7 @@ class CustomProcess(Process):
             process.join()  # 等待进程完成
 
 
-def run_custom_process(func: Callable[..., R], *args: List[T], **kwargs) -> List[R]:
+def run_custom_process[T, R](func: Callable[..., R], *args: list[T], **kwargs) -> list[R]:
     """
     高级并行处理函数，简化多进程任务分发和结果汇总
     
@@ -184,22 +186,22 @@ def run_custom_process(func: Callable[..., R], *args: List[T], **kwargs) -> List
         >>> print(results)  # 输出: [5, 7, 9]
     """
     # Windows平台特殊处理，确保函数可以在子进程中被正确序列化
-    if sys.platform == "win32":
+    if sys.platform == 'win32':
         import __main__
-        func_name = getattr(func, "__name__", str(id(func)))
+        func_name = getattr(func, '__name__', str(id(func)))
         __main__.__dict__[func_name] = func
 
     # 获取最大进程数，默认为12
-    max_workers = kwargs.pop("max_workers", 12) 
+    max_workers = kwargs.pop('max_workers', 12) 
 
     # 参数校验：确保所有参数列表长度一致
     if not args:
-        raise ValueError("至少需要提供一个参数列表")
+        raise ValueError('至少需要提供一个参数列表')
     
     base_length = len(args[0])
     for i, arg in enumerate(args[1:], 2):
         if len(arg) != base_length:
-            raise ValueError(f"第{i}个参数列表长度与第一个参数列表长度不一致")
+            raise ValueError(f'第{i}个参数列表长度与第一个参数列表长度不一致')
 
     with Manager() as manager:
         # 创建共享字典存储结果

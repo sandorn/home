@@ -11,146 +11,302 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from __future__ import annotations
+
 from typing import Any
 
+from xt_wraps import LogCls
+
+log = LogCls()
+
+
+def log_in_main(instr: str) -> None:
+    """仅在主模块运行时记录日志
+
+    Args:
+        instr: 要记录的日志信息
+    """
+    if __name__ == '__main__':
+        log(instr)
+
+
 class ItemGetMixin:
-    """下标调用(索引操作)[key]"""
+    """提供下标访问（[key]）获取属性值的功能
+
+    通过__getitem__方法，允许对象使用字典风格的下标访问方式获取属性值。
+    直接从实例的__dict__中获取值，如果键不存在则返回None。
+    """
 
     def __getitem__(self, key: str) -> Any:
-        if __name__ == "__main__":
-            print(f"ItemGetMixin: {key}")
-        # return getattr(self, key, None)
+        """获取指定键的值
+
+        Args:
+            key: 要获取的属性名
+
+        Returns:
+            属性值，如果不存在则返回None
+        """
+        log_in_main(f'ItemGetMixin: {key}')
+        # 注意：原代码中有通过getattr获取的注释，现在直接使用__dict__
         return self.__dict__.get(key, None)
 
+
 class ItemSetMixin:
-    """下标调用（索引操作）[key]"""
+    """提供下标访问（[key]）设置属性值的功能
+
+    通过__setitem__方法，允许对象使用字典风格的下标访问方式设置属性值。
+    直接在实例的__dict__中设置键值对。
+    """
 
     def __setitem__(self, key: str, value: Any) -> None:
-        if __name__ == "__main__":
-            print(f"ItemSetMixin: {key}, {value}")
+        """设置指定键的值
+
+        Args:
+            key: 要设置的属性名
+            value: 要设置的属性值
+        """
+        log_in_main(f'ItemSetMixin: {key}, {value}')
         self.__dict__[key] = value
 
 
 class ItemDelMixin:
-    """下标调用（索引操作）[key]"""
+    """提供下标访问（[key]）删除属性的功能
+
+    通过__delitem__方法，允许对象使用字典风格的下标访问方式删除属性。
+    直接从实例的__dict__中删除指定的键值对。
+    """
 
     def __delitem__(self, key: str) -> None:
-        if __name__ == "__main__":
-            print(f"ItemDelMixin: {key}")
+        """删除指定键的值
+
+        Args:
+            key: 要删除的属性名
+        """
+        log_in_main(f'ItemDelMixin: {key}')
         self.__dict__.pop(key)
 
 
-class ItemMixin(ItemGetMixin, ItemSetMixin, ItemDelMixin): ...
+class ItemMixin(ItemGetMixin, ItemSetMixin, ItemDelMixin):
+    """组合了所有下标访问（[key]）相关的功能
+
+    同时继承了ItemGetMixin、ItemSetMixin和ItemDelMixin，
+    提供完整的字典风格下标操作支持（获取、设置、删除）。
+    """
+
+    pass
 
 
 class ItemMixinS:
-    """下标调用（索引操作）[key] 的混合类"""
+    """使用内部字典实现下标访问（[key]）的混合类
 
-    def __init__(self):
+    与ItemMixin不同，该类使用内部的_data字典来存储所有键值对，
+    而不是直接操作实例的__dict__。同时提供了keys()、values()和items()方法，
+    更接近Python字典的接口。
+    """
+
+    def __init__(self) -> None:
+        """初始化内部数据字典"""
         # 初始化一个空字典来存储键值对
         self._data = {}
 
     def __setitem__(self, key: str, value: Any) -> None:
+        """设置指定键的值到内部字典
+
+        Args:
+            key: 要设置的键
+            value: 要设置的值
+        """
         self._data[key] = value
 
     def __getitem__(self, key: str) -> Any:
+        """从内部字典获取指定键的值
+
+        Args:
+            key: 要获取的键
+
+        Returns:
+            对应的值，如果键不存在则返回None
+        """
         return self._data.get(key)
 
     def __delitem__(self, key: str) -> None:
+        """从内部字典删除指定键
+
+        Args:
+            key: 要删除的键
+        """
         if key in self._data:
             del self._data[key]
 
-    def keys(self) -> list:
+    def keys(self) -> list[str]:
+        """返回所有键的列表
+
+        Returns:
+            包含所有键的列表
+        """
         return list(self._data.keys())
 
-    def values(self) -> list:
+    def values(self) -> list[Any]:
+        """返回所有值的列表
+
+        Returns:
+            包含所有值的列表
+        """
         return list(self._data.values())
 
-    def items(self) -> list:
+    def items(self) -> list[tuple[str, Any]]:
+        """返回所有键值对的列表
+
+        Returns:
+            包含所有键值对的列表，每个元素为(key, value)元组
+        """
         return list(self._data.items())
 
 
 class AttrGetMixin:
-    """原点调用(属性访问)cls.key"""
+    """提供属性访问（cls.key）的功能，当属性不存在时返回None
+
+    重写__getattr__方法，当常规属性访问失败时（即属性不存在），
+    不会抛出AttributeError异常，而是返回None。
+    """
 
     def __getattr__(self, key: str) -> Any:
-        if __name__ == "__main__":
-            print(f"AttrGetMixin: {key}")
-        # return getattr(self, key, None)
-        try:
-            return super().__getattribute__(key)
-        except AttributeError:
-            return None
+        """当属性不存在时返回None
+
+        Args:
+            key: 要获取的属性名
+
+        Returns:
+            属性值，如果不存在则返回None
+        """
+        log_in_main(f'AttrGetMixin: {key}')
+        return None
 
 
 class AttrSetMixin:
-    """原点调用（属性访问）cls.key"""
+    """提供属性设置（cls.key = value）的功能
+
+    重写__setattr__方法，在设置属性值时记录日志，然后调用父类的方法完成实际设置。
+    """
 
     def __setattr__(self, key: str, value: Any) -> None:
-        if __name__ == "__main__":
-            print(f"AttrSetMixin: {key}, {value}")
-        return super().__setattr__(key, value)  # 直接调用父类方法
+        """设置属性值并记录日志
+
+        Args:
+            key: 要设置的属性名
+            value: 要设置的属性值
+        """
+        log_in_main(f'AttrSetMixin: {key}, {value}')
+        super().__setattr__(key, value)  # 直接调用父类方法完成设置
 
 
 class AttrDelMixin:
-    """原点调用（属性访问）cls.key"""
+    """提供属性删除（del cls.key）的功能
+
+    重写__delattr__方法，在删除属性时记录日志，然后调用父类的方法完成实际删除。
+    """
 
     def __delattr__(self, key: str) -> None:
-        if __name__ == "__main__":
-            print(f"AttrDelMixin: {key}")
-        return super().__delattr__(key)  # 直接调用父类方法
+        """删除属性并记录日志
+
+        Args:
+            key: 要删除的属性名
+        """
+        log_in_main(f'AttrDelMixin: {key}')
+        super().__delattr__(key)  # 直接调用父类方法完成删除
 
 
-class AttrMixin(AttrGetMixin, AttrSetMixin, AttrDelMixin): ...
+class AttrMixin(AttrGetMixin, AttrSetMixin, AttrDelMixin):
+    """组合了所有属性访问（cls.key）相关的功能
+
+    同时继承了AttrGetMixin、AttrSetMixin和AttrDelMixin，
+    提供完整的属性操作支持（获取、设置、删除），其中属性不存在时返回None。
+    """
+
+    pass
+
+
+class GetSetDelMixin(ItemMixin, AttrMixin):
+    """组合了下标操作和属性访问功能的混合类
+
+    同时继承了ItemMixin和AttrMixin，提供完整的字典风格下标操作（[]）
+    和属性访问操作（.）的支持，包括获取、设置和删除。
+    """
+
+    pass
 
 
 class ReDictMixin:
-    """get_dict重新生成 __dict__ 类字典,主要用于readonly限制"""
+    """提供重新生成__dict__的功能
 
-    def get_dict0(self) -> dict[str, Any]:
-        """把对象转换成字典"""
-        if not hasattr(self, "__dict__") or len(self.__dict__) == 0:
-            self.__dict__ = {
-                key: getattr(self, key)
-                for key in dir(self)
-                if not key.startswith("__") and not callable(getattr(self, key))
-            }
+    主要用于只读限制场景，通过get_dict方法重新构建实例的__dict__。
+    提供了两个方法：get_dict_from_instance和get_dict_from_class，分别从实例和类层面收集属性。
+    """
+
+    def get_dict_from_instance(self) -> dict[str, Any]:
+        """从实例层面收集所有非魔术方法和非可调用属性到__dict__
+
+        Returns:
+            包含实例所有属性的字典
+        """
+        if not hasattr(self, '__dict__') or len(self.__dict__) == 0:
+            # 从实例的dir()中收集非魔术属性和非可调用属性
+            self.__dict__ = {key: getattr(self, key) for key in dir(self) if not key.startswith('__') and not callable(getattr(self, key))}
         return self.__dict__
 
-    def get_dict(self) -> dict[str, Any]:
-        """把对象转换成字典"""
-        if not hasattr(self, "__dict__") or not self.__dict__:
-            self.__dict__ = {
-                key: value
-                for key, value in self.__class__.__dict__.items()
-                if not key.startswith("__") and not callable(value)
-            }
-            print("ReDictMixin: get_dict")
+    def get_dict_from_class(self) -> dict[str, Any]:
+        """从类层面收集所有非魔术方法和非可调用属性到__dict__
+
+        Returns:
+            包含类所有属性的字典
+        """
+        log_in_main('ReDictMixin: get_dict')
+        if not hasattr(self, '__dict__') or not self.__dict__:
+            # 从类的__dict__中收集非魔术属性和非可调用属性
+            self.__dict__ = {key: value for key, value in self.__class__.__dict__.items() if not key.startswith('__') and not callable(value)}
+
         return self.__dict__
+
+    get_dict = get_dict_from_class
 
 
 class IterMixin:
-    """
-    # #迭代类,用于继承,不支持next
-    from collections import Iterable
-    isinstance(a, Iterable)
+    """提供迭代功能的混合类
+
+    使继承该类的对象可以直接用于for循环，迭代其__dict__中的所有键值对。
+    支持Python的Iterable接口。
     """
 
     def __iter__(self) -> Any:
-        if __name__ == "__main__":
-            print("IterMixin:")
+        """返回一个迭代器，用于迭代实例的所有属性
+
+        Yields:
+            包含(键, 值)的元组
+        """
+        log_in_main('IterMixin:')
+        # 迭代实例的__dict__中的所有键值对
         yield from self.__dict__.items()
-        # return iter(self.get_dict().items())
+        # 注意：原代码中有使用get_dict()的注释，但当前实现直接使用__dict__
 
 
 class ReprMixin(ReDictMixin):
-    """用于打印显示"""
+    """提供更好的字符串表示形式的混合类
+
+    继承自ReDictMixin，重写__repr__方法，使对象在打印或转换为字符串时，
+    以更易读的格式显示其所有属性。
+    """
 
     def __repr__(self) -> str:
-        if __name__ == "__main__":
-            print("ReprMixin:")
+        """返回对象的字符串表示，包含所有属性
+
+        Returns:
+            格式为"ClassName(attr1=value1, attr2=value2, ...)"的字符串
+        """
+        log_in_main('ReprMixin:')
+        # 使用__dict__，如果为空则调用get_dict()
         dic = self.__dict__ or self.get_dict()
-        return f"{self.__class__.__qualname__}({', '.join([f'{k}={v!r}' for k, v in dic.items()])})"
+        # 构建格式为"ClassName(attr1=value1, attr2=value2, ...)"的字符串
+        return f'{self.__class__.__qualname__}({", ".join([f"{k}={v!r}" for k, v in dic.items()])})'
 
 
 # 基类,支持下标,迭代,打印
@@ -158,239 +314,266 @@ class BaseCls(AttrMixin, ItemMixin, IterMixin, ReprMixin): ...
 
 
 class SetOnceDict:
-    """限制下标[key]赋值,key不存在时可赋值;对属性访问无用"""
+    """限制下标[key]赋值的字典类
 
-    __slots__ = ("_dict",)
+    该类实现了一种特殊的字典，其中键值对只能被设置一次（当键不存在或值为None时）。
+    主要特点是通过内部的_dict字典存储数据，且对属性访问（如obj.key）无效，只支持下标访问。
+    """
+
+    __slots__ = ('_dict',)  # 限制实例只能有_dict属性，优化内存使用
 
     def __init__(self):
-        if __name__ == "__main__":
-            print("SetOnceDict.__init__")
+        """初始化SetOnceDict实例
+
+        创建一个空的内部字典用于存储键值对。
+        """
+        log_in_main('SetOnceDict.__init__')
         self._dict: dict[Any, Any] = {}
 
     def __setitem__(self, key: str, value: Any) -> None:
-        if __name__ == "__main__":
-            print("SetOnceDict.__setitem__", key, value)
-        if key in self._dict.keys() and self._dict[key] is not None:
-            # raise ValueError(f"Key '{key}' already exists:{value}")
-            print(f"Key:'{key}' already exists: {value}")
-        self._dict[key] = value
+        """设置指定键的值，但仅当键不存在或当前值为None时允许设置
+
+        Args:
+            key: 要设置的键
+            value: 要设置的值
+
+        注意：如果键已存在且值不为None，则记录日志但不覆盖原有值。
+        """
+        log_in_main(f'SetOnceDict.__setitem__: {key}, {value}')
+        if key in self._dict and self._dict[key] is not None:
+            log_in_main(f"Key:'{key}' already exists: {value}")
+        else:
+            self._dict[key] = value
 
     def __getitem__(self, key: str) -> Any:
-        if __name__ == "__main__":
-            print("SetOnceDict.__getitem__", key)
+        """获取指定键的值
+
+        Args:
+            key: 要获取的键
+
+        Returns:
+            键对应的值
+
+        Raises:
+            KeyError: 如果键不存在
+        """
+        log_in_main(f'SetOnceDict.__getitem__: {key}')
         return self._dict[key]
 
-    def __repr__(self):
-        if __name__ == "__main__":
-            print("SetOnceDict.__repr__")
-        return repr(self._dict)
+    def __repr__(self) -> str:
+        """返回对象的字符串表示
 
-    # def __setitem__(self, key: str, value: Any) -> None:
-    #     if not hasattr(self, key):
-    #         return super().__setitem__(key, value)
-    #     raise ValueError(f"key:`{key}` is already set,cannot reset value to `{value}`!")
+        Returns:
+            内部字典的字符串表示
+        """
+        log_in_main('SetOnceDict.__repr__')
+        return repr(self._dict)
 
 
 class MixinClsMeta(type):
-    """
-    智能元类，根据类属性动态选择Mixin
+    """智能元类，根据类属性动态选择并应用相应的Mixin类
+
+    该元类通过检查类定义中的Mixin*属性，自动将对应的Mixin类添加到基类列表中。
+    支持的Mixin属性包括：MixinAttr、MixinItem、MixinIter、MixinRepr。
+
+    本实现结合了MethodClsMeta的优点，包括避免重复添加Mixin类，
+    同时优化了基类列表构建策略，避免MRO冲突问题。
+
+    示例用法:
+    ```python
     class BaseClsMeta(metaclass=MixinClsMeta):
-        MixinAttr = True
-        MixinItem = True
-        MixinIter = True
-        MixinRepr = True
+        MixinAttr = True  # 启用属性访问支持
+        MixinItem = True  # 启用下标操作支持
+        MixinIter = True  # 启用迭代支持
+        MixinRepr = True  # 启用友好的字符串表示支持
+    ```
     """
 
-    def __new__(
-        cls,
-        name: str,
-        bases: tuple[type, ...],
-        dct: dict[str, Any],
-        **kwds: dict[str, Any],
-    ) -> type:
-        bases_mixins = ()  # 用于存放要应用的Mixin类
-        bases_mixins += bases if bases else ()
-        bases_mixins += (ItemMixin,) if "MixinItem" in dct and dct["MixinItem"] else ()
-        bases_mixins += (AttrMixin,) if "MixinAttr" in dct and dct["MixinAttr"] else ()
-        bases_mixins += (IterMixin,) if "MixinIter" in dct and dct["MixinIter"] else ()
-        bases_mixins += (ReprMixin,) if "MixinRepr" in dct and dct["MixinRepr"] else ()
-        return type(name, bases_mixins, dct, **kwds)
+    def __new__(cls, name: str, bases: tuple[type, ...], dct: dict[str, Any], **kwds: dict[str, Any]) -> type:
+        """创建新的类对象，并根据类属性添加相应的Mixin类
+
+        Args:
+            cls: 元类自身
+            name: 要创建的类名
+            bases: 原始基类元组
+            dct: 类的属性字典
+            **kwds: 额外的关键字参数
+
+        Returns:
+            创建的新类
+        """
+        # 收集需要添加的Mixin类
+        mixin_classes = []
+        if dct.get('MixinItem'):
+            mixin_classes.append(ItemMixin)
+        if dct.get('MixinAttr'):
+            mixin_classes.append(AttrMixin)
+        if dct.get('MixinIter'):
+            mixin_classes.append(IterMixin)
+        if dct.get('MixinRepr'):
+            mixin_classes.append(ReprMixin)
+
+        # 创建新的基类列表，包含原始基类和所有Mixin类
+        # 确保Mixin类只添加一次，避免重复
+        new_bases = list(bases)
+        for mixin_cls in mixin_classes:
+            if mixin_cls not in new_bases:
+                new_bases.append(mixin_cls)
+
+        # 创建并返回新的类对象，注意不传递**kwds，因为Python的type.__new__不支持
+        # 但会保留这些参数，以便在自定义元类中使用
+        return super().__new__(cls, name, tuple(new_bases), dct)
 
 
-class MethodClsMeta(type):
+class MixinClsParent(metaclass=MixinClsMeta):
+    """可直接继承的Mixin功能基类
+
+    该类结合了MixinClsMeta元类，提供更简洁的使用方式。
+    通过设置类属性控制启用哪些Mixin功能，实现"混入继承"。
+
+    示例用法:
+    ```python
+    class MyClass(MixinClsParent):
+        MixinAttr = True  # 启用属性访问支持
+        MixinItem = True  # 启用下标操作支持
+    ```
+
+    这样MyClass就直接继承了MixinClsParent，并且根据设置的类属性自动获得相应的Mixin功能。
     """
-    智能元类，根据类属性动态选择Mixin,字典__dict__有冲突，
-    原因是mixin.__dict__包含了特殊的方法（如__get__, __set__, __delete__等），
-    这些方法不能直接应用到类实例上。
-    class BaseClsMeta(metaclass=MethodClsMeta):
-        MixinAttr = True
-        MixinItem = True
-        MixinIter = True
-        MixinRepr = True
 
-    """
-
-    def __new__(
-        cls,
-        name: str,
-        bases: tuple[type, ...],
-        dct: dict[str, Any],
-        **kwds: dict[str, Any],
-    ) -> type:
-        UpMethod_list = []
-        if "MixinAttr" in dct and dct["MixinAttr"]:
-            UpMethod_list.append(AttrMixin)
-        if "MixinIter" in dct and dct["MixinIter"]:
-            UpMethod_list.append(IterMixin)
-        if "MixinItem" in dct and dct["MixinItem"]:
-            UpMethod_list.append(ItemMixin)
-        if "MixinRepr" in dct and dct["MixinRepr"]:
-            UpMethod_list.append(ReprMixin)
-
-        for UpMethod in UpMethod_list:
-            dct.update(UpMethod.__dict__)  # 动态添加属性和方法
-        return super().__new__(cls, name, bases, dct)
+    pass
 
 
-def typeassert(**kwargs: dict[str, Any]) -> object:
-    """Descriptor for a type-checked attribute
-    #限制属性赋值的类型,因使用__dict__,与slots冲突"""
+if __name__ == '__main__':
 
-    class Typed:
-        def __init__(self, name: str, expected_type: Any) -> None:
-            self.name = name
-            self.expected_type = expected_type
+    class TestFullFunctionality:
+        """用于全面测试xt_class.py中所有类和函数的功能"""
 
-        def __get__(self, instance: object, cls: type) -> Any:
-            return self if instance is None else instance.__dict__[self.name]
+        @staticmethod
+        def test_all_mixins():
+            """测试所有Mixin类的功能"""
 
-        def __set__(self, instance: object, value: Any):
-            assert isinstance(value, self.expected_type)
-            # raise TypeError('Expected ' + str(self.expected_type))
-            instance.__dict__[self.name] = value
+            # 测试ItemMixin - 下标操作
+            class TestItem(ItemMixin):
+                def __init__(self):
+                    self._data = {}
+                    self.name = 'ItemTest'
 
-        def __delete__(self, instance: object) -> None:
-            del instance.__dict__[self.name]
+            print('\n=== 测试ItemMixin - 下标操作 ===')
+            item = TestItem()
+            item['key1'] = 'value1'  # __setitem__
+            print(f"item['key1'] = {item['key1']}")  # __getitem__
+            del item['key1']  # __delitem__
+            try:
+                print(item['key1'])
+            except KeyError as e:
+                print(f'预期的KeyError: {e}')
 
-    def decorate(cls: object) -> object:
-        for name, expected_type in kwargs.items():
-            setattr(cls, name, Typed(name, expected_type))
-        return cls
+            # 测试AttrMixin - 属性访问
+            class TestAttr(AttrMixin):
+                def __init__(self):
+                    self.attr1 = 'value1'
 
-    return decorate
+            print('\n=== 测试AttrMixin - 属性访问 ===')
+            attr = TestAttr()
+            attr.attr2 = 'value2'  # __setattr__
+            print(f'attr.attr1 = {attr.attr1}')  # 正常属性
+            print(f'attr.attr2 = {attr.attr2}')  # 设置的属性
+            print(f'attr.non_existent = {attr.non_existent}')  # 不存在的属性返回None
+            del attr.attr1  # __delattr__
+            print(f'删除后 attr.attr1 = {attr.attr1}')  # 删除后返回None
 
+            # 测试IterMixin - 迭代功能
+            class TestIter(IterMixin):
+                def __init__(self):
+                    self.attr1 = 'value1'
+                    self.attr2 = 'value2'
+                    self._private = 'private'
 
-def typed_property(name: str, expected_type: Any) -> property:
-    """class类property属性生成器,限制赋值类型"""
-    storage_name = f"_{name}"
+            print('\n=== 测试IterMixin - 迭代功能 ===')
+            iter_obj = TestIter()
+            print('迭代对象的所有属性:')
+            for key, value in iter_obj:
+                print(f'  {key}: {value}')
 
-    @property
-    def prop(self: object) -> Any:
-        return getattr(self, storage_name)
+            # 测试ReprMixin - 字符串表示
+            class TestRepr(ReprMixin):
+                def __init__(self):
+                    self.name = 'ReprTest'
+                    self.version = '1.0'
 
-    @prop.setter
-    def prop(self: object, value: Any) -> None:
-        if not isinstance(value, expected_type):
-            raise TypeError(f"{name} must be a {expected_type}")
-        setattr(self, storage_name, value)
+            print('\n=== 测试ReprMixin - 字符串表示 ===')
+            repr_obj = TestRepr()
+            print(f'对象的字符串表示: {repr_obj}')
 
-    return prop
+            # 测试ReDictMixin - 重新生成__dict__
+            class TestReDict(ReDictMixin):
+                static_attr = 'static_value'
 
+                def __init__(self):
+                    pass  # 故意不初始化__dict__
 
-def readonly(name: str) -> property:
-    """
-    class类property只读属性生成器,隐藏真实属性名:name,
-    #不在__dict__内,需要使用class_to_dict函数生成类__dict__
-    #可配合@dataclass(init=False)
-    # from dataclasses import asdict, dataclass
-    @dataclass(frozen=True) #frozen=True,不可修改
-    """
-    storage_name = name
+            print('\n=== 测试ReDictMixin - 重新生成__dict__ ===')
+            redict_obj = TestReDict()
+            print(f'通过get_dict获取类属性: {redict_obj.get_dict()}')
+            redict_obj.instance_attr = 'instance_value'
+            print(f'通过get_dict_from_instance获取实例属性: {redict_obj.get_dict_from_instance()}')
 
-    @property
-    def prop(self: object):
-        return getattr(self, storage_name)
+            # 测试SetOnceDict - 只能设置一次的字典
+            print('\n=== 测试SetOnceDict - 只能设置一次的字典 ===')
+            once_dict = SetOnceDict()
+            once_dict['key1'] = 'value1'
+            print(f"设置key1后: once_dict['key1'] = {once_dict['key1']}")
+            once_dict['key1'] = 'new_value'  # 尝试覆盖，应该被忽略
+            print(f"尝试覆盖后: once_dict['key1'] = {once_dict['key1']}")
+            once_dict['key2'] = None
+            print(f"设置key2为None后: once_dict['key2'] = {once_dict['key2']}")
+            once_dict['key2'] = 'value2'  # 覆盖None值是允许的
+            print(f"覆盖None值后: once_dict['key2'] = {once_dict['key2']}")
 
-    @prop.setter
-    def prop(self: object, value: Any):
-        """赋值:无操作,直接返回"""
-        return
+            # 测试MixinClsMeta - 动态Mixin元类
+            print('\n=== 测试MixinClsMeta - 动态Mixin元类 ===')
 
-    return prop
+            class TestMixinCls(metaclass=MixinClsMeta):
+                MixinAttr = True
+                MixinItem = True
+                MixinIter = True
+                MixinRepr = True
 
+                def __init__(self):
+                    self.name = 'MetaTest'
+                    self.version = '1.0'
 
-if __name__ == "__main__":
+            meta_obj = TestMixinCls()
+            meta_obj['key1'] = 'value1'  # 测试ItemMixin功能
+            print(f"meta_obj['key1'] = {meta_obj['key1']}")
+            print(f'meta_obj.non_existent = {meta_obj.non_existent}')  # 测试AttrMixin功能
+            print(f'迭代meta_obj: {list(meta_obj)}')  # 测试IterMixin功能
+            print(f'meta_obj的字符串表示: {meta_obj}')  # 测试ReprMixin功能
 
-    def 赋值一次的字典():
-        my_dict = SetOnceDict()
-        try:
-            my_dict["username"] = "sand"
-            my_dict["me"] = "orny"
-            my_dict["efvtgn"] = "sandorny"
-            my_dict.old = 49  # 会报错
-            my_dict["me"] = "lxj"  # 无效
+            # 测试MixinClsMeta - 动态方法元类
+            print('\n=== 测试MixinClsMeta - 动态方法元类 ===')
 
-        except Exception as err:
-            print("Exception:", err)
-        print(99999, my_dict, my_dict["me"])
+            class TestMethodCls(metaclass=MixinClsMeta):
+                MixinItem = True  # 启用下标操作支持
+                MixinAttr = True  # 启用属性访问支持
 
-    def 可迭代对象():
-        class Animal(IterMixin, ReprMixin):
-            def __init__(self):
-                self.name = "liuxinjun"
-                self.age = 12
-                self._i = 787
-                self.姓名 = "行云流水"
+                def __init__(self):
+                    self.name = 'MethodTest'
 
-        bb = Animal()
-        print(bb)
-        for k, v in bb:
-            print(k.ljust(16), ":", v)
+            method_obj = TestMethodCls()
+            method_obj['key1'] = 'value1'  # 测试ItemMixin功能
+            print(f"method_obj['key1'] = {method_obj['key1']}")
+            print(f'method_obj.non_existent = {method_obj.non_existent}')  # 测试AttrMixin功能
 
-    def itat():
-        class Anima(ItemMixin, AttrMixin):
-            def __init__(self):
-                self.name = "na98888me"
-                self.age = 12
-                self.pi = 787
-                self.姓名 = "行云流水"
+            print('\n=== 所有测试完成 ===')
 
-        a = Anima()
-        a["name"] = "张三李四"
-        print(a["names99"])
-        del a["姓名"]
-        print(a.name555s)
+        @staticmethod
+        def run_all_tests():
+            """运行所有测试"""
+            TestFullFunctionality.test_all_mixins()
 
-        b = Anima()
-        b.pi = 567
-        del b.name
-        print(a.__dict__, id(a))
-        print(b.__dict__, id(b))
-
-    def 动态元类():
-        class MyCls(metaclass=MixinClsMeta):
-            MixinAttr = True
-            MixinItem = True
-            MixinIter = True
-            MixinRepr = True
-
-            def __init__(self):
-                self.name = "liuxinjun"
-                self.age = 12
-                self._i = 787
-                self.网名 = "行云流水"
-
-            def ddd(self, value):
-                print("ddd")
-
-        bb = MyCls()
-        bb["网名"] = "象牙黑"
-        print(bb, "\n", bb.name, "\n", bb.网名, "\n", bb["name"], "\n", bb.get_dict())
-
-    # 赋值一次的字典()
-    # 可迭代对象()
-    # itat()
-    # 动态元类()
+    TestFullFunctionality.run_all_tests()
 """
 方法1:工厂函数
 def createClass(cls):

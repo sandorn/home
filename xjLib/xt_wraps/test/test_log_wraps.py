@@ -18,7 +18,6 @@ import time
 
 from xt_wraps.log import LogCls, log_wraps
 
-
 log = LogCls()
 
 # 常量定义
@@ -41,7 +40,7 @@ def sync_function_no_result(x: int, y: int) -> int:
     return x * y
 
 
-@log_wraps(log_level=TEST_DEBUG_LOG_LEVEL, log_args=True, log_result=True)
+@log_wraps
 def sync_function_with_error(x: int, y: int) -> float:
     """1.3 测试会抛出异常的同步函数"""
     time.sleep(TEST_SLEEP_TIME)
@@ -49,7 +48,7 @@ def sync_function_with_error(x: int, y: int) -> float:
 
 
 # 测试异步函数
-@log_wraps(log_level=TEST_DEBUG_LOG_LEVEL, log_args=True, log_result=True)
+@log_wraps
 async def async_function(x: int, y: int) -> int:
     """2.1 测试基本的异步函数"""
     await asyncio.sleep(TEST_SLEEP_TIME)  # 模拟异步耗时操作
@@ -82,7 +81,7 @@ async def async_test_function(x, y):
 # 主测试函数
 async def main():
     """主测试函数 - 按序号组织所有测试用例"""
-    log('====== 开始测试修复后的 log_wraps 装饰器 ======')
+    log.info('====== 开始测试修复后的 log_wraps 装饰器 ======')
 
     # 1. 基础性能测试
     log('\n1. 基础性能测试:')

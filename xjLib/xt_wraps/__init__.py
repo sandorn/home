@@ -1,12 +1,12 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  : 函数包装器工具集 - 提供常用的函数装饰器和包装器功能
+Description  : 头部注释
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-08-28 10:53:57
-LastEditTime : 2025-09-06 13:00:00
-FilePath     : /CODE/xjLib/xt_wraps/__init__.py
+LastEditTime : 2025-09-14 19:59:20
+FilePath     : /CODE/xjlib/xt_wraps/__init__.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能:
@@ -37,39 +37,33 @@ from .executor import (
     run_executor_wraps,
 )
 from .log import LogCls, create_basemsg, log_wraps, mylog
-from .retry import retry_wraps
+from .retry import TRETRY, retry_wraps
 from .singleton import SingletonMeta, SingletonMixin, SingletonWraps, singleton
 from .timer import timer, timer_wraps
-from .validate import validate_custom, validate_params, validate_ranges, validate_types
-
+from .validate import TypedProperty, ensure_initialized, readonly, typeassert, typed_property
 
 __all__ = [
-    # 基础工具
-    'decorate_sync_async',
-    'handle_exception',
-    # 日志相关
-    'log_wraps',
+    'TRETRY',
     'LogCls',
-    'mylog',
-    'create_basemsg',
-    # 计时相关
-    'timer',
-    'timer_wraps',
-    # 重试相关
-    'retry_wraps',
-    # 验证相关
-    'validate_params',
-    'validate_types',
-    'validate_ranges',
-    'validate_custom',
-    # 执行器相关
-    'executor_wraps',
-    'future_wraps',
-    'future_wraps_result',
-    'run_executor_wraps',
-    # 单例相关
     'SingletonMeta',
     'SingletonMixin',
     'SingletonWraps',
+    'TypedProperty',
+    'create_basemsg',
+    'decorate_sync_async',
+    'ensure_initialized',
+    'executor_wraps',
+    'future_wraps',
+    'future_wraps_result',
+    'handle_exception',
+    'log_wraps',
+    'mylog',
+    'readonly',
+    'retry_wraps',
+    'run_executor_wraps',
     'singleton',
+    'timer',
+    'timer_wraps',
+    'typeassert',
+    'typed_property',
 ]

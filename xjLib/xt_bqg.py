@@ -75,8 +75,7 @@ def resps_handle(resps):
     for resp in resps:
         if not isinstance(resp, (ACResponse, htmlResponse)):
             continue
-        else:
-            texts.append(resp_handle(resp))
+        texts.append(resp_handle(resp))
 
     texts.sort(key=lambda x: x[0])
     # texts = sorted(texts, key=lambda x: x[0])
@@ -101,7 +100,7 @@ def get_download_url(url):
     temp_urls += temp_urls2
     bookname = ''.join(bookname)
     # urls = ["/".join(url.split("/")[:-3]) + item for item in temp_urls]  # 章节链接
-    urls = [f"{url}{''.join(item.split('/')[-1:])}" for item in temp_urls]  # 章节链接
+    urls = [f'{url}{"".join(item.split("/")[-1:])}' for item in temp_urls]  # 章节链接
     return bookname, urls, titles
 
 

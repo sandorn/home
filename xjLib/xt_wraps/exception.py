@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-09-05 17:32:29
 LastEditTime : 2025-09-06 10:30:00
-FilePath     : /CODE/xjLib/xt_wraps/exception.py
+FilePath     : /CODE/xjlib/xt_wraps/exception.py
 Github       : https://github.com/sandorn/home
 
 本模块提供了两个核心功能：
@@ -20,12 +20,12 @@ Github       : https://github.com/sandorn/home
 - 提供友好的错误反馈和日志记录
 ==============================================================
 """
+
 from __future__ import annotations
 
 import os
 import traceback
 from typing import Any
-
 
 # 常量定义 - 异常处理配置参数
 DEFAULT_MAX_FRAMES = 5  # 默认最大显示堆栈帧数
@@ -54,7 +54,7 @@ def get_simplified_traceback(
 
     Example:
         >>> try:
-        ...     1/0
+        ...     1 / 0
         ... except ZeroDivisionError as e:
         ...     tb = get_simplified_traceback(e)
         ...     print(tb)
@@ -92,13 +92,12 @@ def get_simplified_traceback(
     simplified_frames.reverse()
 
     # 构建最终的堆栈信息
-    stack_info = ' | '.join(simplified_frames)
-    return stack_info
+    return ' | '.join(simplified_frames)
 
 
 def handle_exception(
-    err: Exception,
-    context: str,
+    basemsg: str,
+    errinfo: Exception,
     loger: Any = None,
     re_raise: bool = False,
     default_return: Any = None,
@@ -111,18 +110,18 @@ def handle_exception(
     统一的异常处理函数，提供完整的异常捕获、记录和处理机制
 
     Args:
-        err: 异常对象
-        context: 异常上下文信息，通常包含函数名、文件名等标识信息
+        basemsg: 异常上下文信息，通常包含函数名、文件名等标识信息
+        errinfo: 异常对象
         loger: 日志记录器实例，如果为None则使用模块内的默认日志记录器
         re_raise: 是否重新抛出异常，默认False（不抛出，返回默认值）
-        default_return: 不抛出异常时的默认返回值，默认为None
+        default_return: 不抛出异常时的默认返回值，default_return为None时返回：(None, 错误信息)
         simplify_traceback: 是否简化堆栈信息，默认True（简化）
         max_frames: 简化堆栈时显示的最大帧数，默认5帧
         include_library_frames: 是否包含库文件的堆栈帧，默认False（不包含）
         show_full_path: 是否显示完整文件路径，默认False（只显示文件名）
 
     Returns:
-        Any: 如果re_raise=False，返回default_return；否则重新抛出异常
+        Any: 如果re_raise=True，重新抛出异常；否则返回:default_return | (None, 错误信息)
 
     Example:
         >>> # 基本使用
@@ -130,7 +129,7 @@ def handle_exception(
         ...     result = 10 / 0
         ... except Exception as e:
         ...     # 记录异常但不中断程序
-        ...     result = handle_exception(e, "除法计算出错", re_raise=False, default_return=0)
+        ...     result = handle_exception(e, '除法计算出错', re_raise=False, default_return=0)
         >>> print(result)  # 输出: 0
 
         >>> # 带日志记录器和重新抛出异常
@@ -139,17 +138,10 @@ def handle_exception(
         >>> try:
         ...     10 / 0
         ... except Exception as e:
-        ...     handle_exception(
-        ...         e,
-        ...         "critical_operation",
-        ...         loger=logger,
-        ...         re_raise=True,
-        ...         simplify_traceback=True,
-        ...         max_frames=3
-        ...     )
+        ...     handle_exception(e, 'critical_operation', loger=logger, re_raise=True, simplify_traceback=True, max_frames=3)
     """
     # 统一的日志格式
-    log_msg = f'{context} | {type(err).__name__} | {err!s}'
+    error_message = f'Handle Exception: {basemsg} | {type(errinfo).__name__} | {errinfo!s}'
 
     # 如果没有提供日志记录器，使用标准错误输出
     if loger is None:
@@ -158,26 +150,19 @@ def handle_exception(
         loger = mylog
 
     # 环境感知处理 - 开发环境显示更详细的堆栈信息
+    stack_info: str = ''
+    if simplify_traceback and hasattr(errinfo, '__traceback__'):
+        stack_info = get_simplified_traceback(errinfo, max_frames=max_frames, include_library_frames=include_library_frames, show_full_path=show_full_path)
+    else:
+        stack_info = traceback.format_exc()  # 使用完整的堆栈信息
+
     if os.getenv('ENV', 'dev').lower() == 'dev':
-        if simplify_traceback and hasattr(err, '__traceback__'):
-            # 使用精简的堆栈信息
-            stack_info = get_simplified_traceback(
-                err,
-                max_frames=max_frames,
-                include_library_frames=include_library_frames,
-                show_full_path=show_full_path,
-            )
-            loger.error(f'{log_msg} | Stack: {stack_info}')
-        else:
-            # 使用完整的堆栈信息
-            loger.error(f'{log_msg} | Stack: {traceback.format_exc()}')
+        loger.error(f'{error_message} | Stack: {stack_info}')
     else:
         # 生产环境仅记录必要信息
-        loger.error(log_msg)
+        loger.error(error_message)
 
     # 根据需要重新抛出异常
     if re_raise:
-        error_message = f'{context} | {type(err).__name__} | {err!s}'
-        raise type(err)(error_message) from err
-    else:
-        return default_return
+        raise type(errinfo)(error_message) from errinfo
+    return error_message if default_return is None else default_return

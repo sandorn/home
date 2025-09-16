@@ -32,9 +32,10 @@ from __future__ import annotations
 
 import builtins
 import threading
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, TypeVar
+from typing import Any, ClassVar, TypeVar
 
 import wrapt
 
@@ -48,11 +49,11 @@ from .thread import (
 )
 
 # 类型定义
-T = TypeVar("T")  # 泛型类型变量，用于表示任意类型
-R = TypeVar("R")  # 泛型类型变量，用于表示返回值类型
+T = TypeVar('T')  # 泛型类型变量，用于表示任意类型
+R = TypeVar('R')  # 泛型类型变量，用于表示返回值类型
 
 
-def thread_safe(func: Callable[..., R]) -> Callable[..., R]:
+def thread_safe[R](func: Callable[..., R]) -> Callable[..., R]:
     """线程安全装饰器，确保函数在多线程环境中的安全调用
 
     为函数或方法添加线程安全保护，使用锁机制防止并发访问导致的问题。
@@ -67,11 +68,11 @@ def thread_safe(func: Callable[..., R]) -> Callable[..., R]:
     Example:
         >>> @thread_safe
         >>> def shared_resource_access():
-        >>>     # 访问共享资源的代码
+        >>> # 访问共享资源的代码
         >>>     pass
     """
     # 为非内置函数提前初始化锁，避免每次调用检查
-    if func.__module__ != builtins.__name__ and not hasattr(func, "__lock__"):
+    if func.__module__ != builtins.__name__ and not hasattr(func, '__lock__'):
         func.__lock__ = threading.Lock()
 
     @wraps(func)
@@ -90,7 +91,7 @@ thread_print = thread_safe(print)
 
 
 # 线程执行装饰器
-def run_in_thread(func: Callable[..., R]) -> Callable[..., ThreadBase]:
+def run_in_thread[R](func: Callable[..., R]) -> Callable[..., ThreadBase]:
     """简洁的线程装饰器，将函数在单独线程中执行
 
     将任何函数转换为在独立线程中执行的版本，保持函数签名不变但返回线程对象。
@@ -105,7 +106,7 @@ def run_in_thread(func: Callable[..., R]) -> Callable[..., ThreadBase]:
     Example:
         >>> @run_in_thread
         >>> def long_running_task(param):
-        >>>     # 长时间运行的任务
+        >>> # 长时间运行的任务
         >>>     return result
         >>>
         >>> # 调用方式不变，但会在线程中执行
@@ -115,8 +116,7 @@ def run_in_thread(func: Callable[..., R]) -> Callable[..., ThreadBase]:
 
     @wraps(func)
     def wrapper(*args, **kwargs) -> ThreadBase:
-        thread = ThreadManager.create_thread(func, *args, **kwargs)
-        return thread
+        return ThreadManager.create_thread(func, *args, **kwargs)
 
     return wrapper
 
@@ -139,7 +139,7 @@ def thread_wraps(fn=None, daemon=False, max_retries=0):
         >>> # 1. 直接装饰函数
         >>> @thread_wraps
         >>> def long_running_task(x):
-        >>>     # 耗时操作
+        >>> # 耗时操作
         >>>     return x * 2
         >>>
         >>> # 调用方式不变，但会在线程中执行
@@ -149,7 +149,7 @@ def thread_wraps(fn=None, daemon=False, max_retries=0):
         >>> # 2. 带参数装饰
         >>> @thread_wraps(daemon=True, max_retries=3)
         >>> def critical_task(x):
-        >>>     # 关键任务，需要重试
+        >>> # 关键任务，需要重试
         >>>     return x * 2
         >>>
         >>> # 调用方式不变
@@ -173,13 +173,12 @@ def thread_wraps(fn=None, daemon=False, max_retries=0):
                     )
                 else:
                     # 创建普通线程
-                    thread_instance = ThreadManager.create_thread(
-                        func, *args, daemon=daemon, **kwargs
-                    )
+                    thread_instance = ThreadManager.create_thread(func, *args, daemon=daemon, **kwargs)
                 return thread_instance
             except Exception as e:
-                thread_print(f"创建线程时发生错误: {e}")
+                thread_print(f'创建线程时发生错误: {e}')
                 raise
+
         return wrapper
 
     # 如果带参数调用装饰器，则返回装饰器函数
@@ -194,7 +193,7 @@ class ThreadWrapsManager:
     Example:
         >>> @ThreadWrapsManager
         >>> def process_data(x):
-        >>>     # 处理数据
+        >>> # 处理数据
         >>>     return x * 5
         >>>
         >>> # 创建并启动线程
@@ -206,8 +205,8 @@ class ThreadWrapsManager:
     """
 
     # 存储所有线程实例的字典
-    _thread_dict: Dict[int, ThreadBase] = {} 
-    _lock = threading.Lock() 
+    _thread_dict: ClassVar[dict] = {}  # ✅ 标注为类变量
+    _lock = threading.Lock()
 
     def __init__(self, func: Callable[..., T]):
         self.func = func
@@ -223,28 +222,28 @@ class ThreadWrapsManager:
             # thread_print(f"函数 `{self.func.__name__}` 由 ThreadWrapsManager 启动")
             return thread_instance
         except Exception as e:
-            thread_print(f"创建ThreadWrapsManager线程时发生错误: {e}")
+            thread_print(f'创建ThreadWrapsManager线程时发生错误: {e}')
             raise
 
     @classmethod
-    def getAllResult(cls) -> Dict[int, Optional[T]]:
+    def get_all_result(cls) -> dict[int, Any | None]:
         """获取所有由该装饰器创建的线程的结果
 
         Returns:
             字典，键为线程ID，值为线程执行结果
         """
-        results: Dict[int, Optional[T]] = {}  # 存储线程ID到结果的映射
+        results: dict[int, Any | None] = {}  # 存储线程ID到结果的映射
 
         with cls._lock:
             # 创建线程引用的副本，避免在迭代过程中修改字典
-            _threads_copy = list(cls._thread_dict.items())  # 使用下划线开头，表示内部变量
+            threads_copy = list(cls._thread_dict.items())  # 使用下划线开头，表示内部变量
 
-        for thread_id, thread in _threads_copy:
+        for thread_id, thread in threads_copy:
             try:
                 # 等待线程完成并获取结果
                 results[thread_id] = thread.get_result()
             except Exception as e:
-                thread_print(f"获取线程结果时发生错误: {e}")
+                thread_print(f'获取线程结果时发生错误: {e}')
                 results[thread_id] = None
 
         return results
@@ -254,11 +253,11 @@ class ThreadWrapsManager:
         """清除所有线程引用，释放资源"""
         with cls._lock:
             cls._thread_dict.clear()
-        thread_print("ThreadWrapsManager 已清除所有线程引用")
+        thread_print('ThreadWrapsManager 已清除所有线程引用')
 
 
 # PyQt6线程装饰器
-def run_in_qtthread(func: Callable[..., R]) -> Callable[..., QtThreadBase]:
+def run_in_qtthread[R](func: Callable[..., R]) -> Callable[..., QtThreadBase]:
     """Qt线程装饰器，将函数在QThread中异步执行
 
     将任何函数转换为在独立QThread中执行的版本，保持函数签名不变但返回线程对象。
@@ -273,12 +272,12 @@ def run_in_qtthread(func: Callable[..., R]) -> Callable[..., QtThreadBase]:
     Example:
         >>> @run_in_qtthread
         >>> def long_running_task(param):
-        >>>     # 长时间运行的任务
+        >>> # 长时间运行的任务
         >>>     time.sleep(2)
         >>>     return f"处理完成: {param}"
         >>>
         >>> # 调用方式不变，但会在QThread中执行
-        >>> thread = long_running_task("数据")
+        >>> thread = long_running_task('数据')
         >>> # 可选：等待结果
         >>> result = thread.get_result(timeout=5)
         >>> print(result)  # 输出: 处理完成: 数据
@@ -287,10 +286,9 @@ def run_in_qtthread(func: Callable[..., R]) -> Callable[..., QtThreadBase]:
     @wraps(func)
     def wrapper(*args, **kwargs) -> QtThreadBase:
         try:
-            thread = QtThreadManager.create_thread(func, *args, **kwargs)
-            return thread
+            return QtThreadManager.create_thread(func, *args, **kwargs)
         except Exception as e:
-            thread_print(f"创建QtThread时发生错误: {e}")
+            thread_print(f'创建QtThread时发生错误: {e}')
             raise
 
     return wrapper
@@ -310,11 +308,11 @@ def qthread_wraps(fn=None, daemon=False, max_retries=0):
     Example:
         >>> @qthread_wraps
         >>> def pyqt_task(data):
-        >>>     # PyQt相关的耗时操作
+        >>> # PyQt相关的耗时操作
         >>>     return processed_data
         >>>
         >>> # 调用方式不变，但会在QThread中执行
-        >>> qt_thread = pyqt_task("input_data")
+        >>> qt_thread = pyqt_task('input_data')
         >>> result = qt_thread.get_result()  # 获取执行结果
     """
 
@@ -326,22 +324,10 @@ def qthread_wraps(fn=None, daemon=False, max_retries=0):
                 # 检查是否需要安全线程（带重试机制）
                 if max_retries > 0:
                     # 创建安全线程（带重试机制）
-                    _qthread_instance = QtThreadManager.create_safe_thread(
-                        func,
-                        *args,
-                        max_retries=max_retries,
-                        retry_delay=kwargs.pop("retry_delay", 1.0),
-                        daemon=daemon,
-                        **kwargs,
-                    )
-                else:
-                    # 创建普通线程
-                    _qthread_instance = QtThreadManager.create_thread(
-                        func, *args, daemon=daemon, **kwargs
-                    )
-                return _qthread_instance
+                    return QtThreadManager.create_safe_thread(func, *args, max_retries=max_retries, retry_delay=kwargs.pop('retry_delay', 1.0), daemon=daemon, **kwargs)
+                return QtThreadManager.create_thread(func, *args, daemon=daemon, **kwargs)
             except Exception as e:
-                thread_print(f"创建线程时发生错误: {e}")
+                thread_print(f'创建线程时发生错误: {e}')
                 raise
 
         return _wrapper
@@ -369,7 +355,7 @@ def parallelize_wraps(func, instance, args, kwargs):
     Example:
         >>> @parallelize_wraps
         >>> def process_item(item):
-        >>>     # 处理单个数据项
+        >>> # 处理单个数据项
         >>>     return item * 2
         >>>
         >>> # 并行处理多个数据项
@@ -377,24 +363,24 @@ def parallelize_wraps(func, instance, args, kwargs):
         >>> # results 将是 [2, 4, 6, 8, 10]
     """
     try:
-        _max_workers = kwargs.pop("max_workers", None)  # 使用下划线开头，表示内部变量
-        with ThreadPoolExecutor(max_workers=_max_workers) as executor:
+        max_workers = kwargs.pop('max_workers', None)  # 使用下划线开头，表示内部变量
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             results = list(executor.map(func, *args, **kwargs))
-        thread_print(f"并行处理完成，共处理 {len(results)} 个项目")
+        thread_print(f'并行处理完成，共处理 {len(results)} 个项目')
         return results
     except Exception as e:
-        thread_print(f"并行处理时发生错误: {e}")
+        thread_print(f'并行处理时发生错误: {e}')
         raise
 
 
 # 公共API导出
 __all__ = [
-    "thread_safe",
-    "thread_print",
-    "run_in_thread",
-    "thread_wraps",
-    "ThreadWrapsManager",
-    "run_in_qtthread",
-    "qthread_wraps",
-    "parallelize_wraps",
+    'ThreadWrapsManager',
+    'parallelize_wraps',
+    'qthread_wraps',
+    'run_in_qtthread',
+    'run_in_thread',
+    'thread_print',
+    'thread_safe',
+    'thread_wraps',
 ]

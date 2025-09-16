@@ -6,10 +6,11 @@ Author       : sandorn sandorn@live.cn
 Date         : 2024-08-21 14:27:52
 ==============================================================
 """
+from __future__ import annotations
 
+from concurrent.futures import wait
 import time
 import unittest
-from concurrent.futures import wait
 
 from xt_thread.futures import (
     AsyncFunction,
@@ -249,12 +250,10 @@ class TestEnhancedThreadPool(unittest.TestCase):
         
         def worker(task_id):
             if task_id == 2:
-                raise ValueError("测试异常")
+                raise ValueError('测试异常')
             return task_id * 2
         
         with EnhancedThreadPool() as pool:
-            pool.set_exception_handler(exception_handler)
-            
             # 提交5个任务
             for i in range(5):
                 pool.submit_task(worker, i)
@@ -390,7 +389,7 @@ class TestAsyncFunction(unittest.TestCase):
         result_obj = AsyncFunction(worker, [1, 2, 3], [4, 5, 6])
         
         # 验证结果正确性
-        expected_results = [1+4, 2+5, 3+6]
+        expected_results = [1 + 4, 2 + 5, 3 + 6]
         self.assertEqual(sorted(result_obj.result), sorted(expected_results))
     
     def test_with_kwargs(self):
@@ -441,7 +440,7 @@ class TestFnInPool(TestAsyncFunction):
         result_obj = FnInPool(worker, [1, 2, 3], [4, 5, 6])
         
         # 验证结果正确性
-        expected_results = [1+4, 2+5, 3+6]
+        expected_results = [1 + 4, 2 + 5, 3 + 6]
         self.assertEqual(sorted(result_obj.result), sorted(expected_results))
     
     def test_with_kwargs(self):
@@ -456,5 +455,5 @@ class TestFnInPool(TestAsyncFunction):
         self.assertEqual(sorted(result_obj.result), sorted([3, 6, 9]))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

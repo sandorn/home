@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-08-28 10:56:45
 LastEditTime : 2025-09-11 14:30:00
-FilePath     : /CODE/xjLib/xt_wraps/timer.py
+FilePath     : /CODE/xjlib/xt_wraps/timer.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能：
@@ -30,14 +30,10 @@ import asyncio
 from collections.abc import Callable
 from functools import wraps
 from time import perf_counter
-from typing import Any, TypeVar
+from typing import Any
 
 from .exception import handle_exception
 from .log import create_basemsg, mylog
-
-
-R = TypeVar('R')
-T = TypeVar('T', bound=Callable[..., Any])
 
 
 def timer_wraps(fn: Callable | None = None):
@@ -83,7 +79,7 @@ def timer_wraps(fn: Callable | None = None):
             try:
                 return func(*args, **kwargs)
             except Exception as err:
-                return handle_exception(err, basemsg, re_raise=True)
+                return handle_exception(basemsg=basemsg, errinfo=err, re_raise=True)
             finally:
                 mylog.debug(f'{basemsg} | 执行耗时：{perf_counter() - start_time:.4f} 秒')
 
@@ -94,7 +90,7 @@ def timer_wraps(fn: Callable | None = None):
             try:
                 return await func(*args, **kwargs)
             except Exception as err:
-                return handle_exception(err, basemsg, re_raise=True)
+                return handle_exception(basemsg=basemsg, errinfo=err, re_raise=True)
             finally:
                 mylog.debug(f'{basemsg} | 执行耗时：{perf_counter() - start_time:.4f} 秒')
 

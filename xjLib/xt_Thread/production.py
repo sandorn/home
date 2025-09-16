@@ -22,12 +22,15 @@ Github       : https://github.com/sandorn/home
 - 适用于IO密集型和计算密集型任务的并行处理
 ==============================================================
 """
+from __future__ import annotations
+
 import asyncio
 import queue
 import threading
 import time
+from collections.abc import Callable, Coroutine
 from random import randint
-from typing import Any, Callable, Coroutine, List, Optional
+from typing import Any
 
 
 class Production:
@@ -62,10 +65,10 @@ class Production:
         self.queue = queue.Queue(maxsize=queue_size)
         self.res_queue = queue.Queue()
         self.running = threading.Event()
-        self.producers: List[threading.Thread] = []
-        self.consumers: List[threading.Thread] = []
+        self.producers: list[threading.Thread] = []
+        self.consumers: list[threading.Thread] = []
         self.tasks = 0
-        self.error_callback: Optional[Callable] = None
+        self.error_callback: Callable | None = None
 
     def add_producer(self, producer_fn: Callable[[], Any], name: str = None) -> None:
         """添加生产者线程
@@ -80,7 +83,7 @@ class Production:
         producer = threading.Thread(
             target=self._producer_wrapper,
             args=(producer_fn,),
-            name=name or f"Producer-{len(self.producers)}",
+            name=name or f'Producer-{len(self.producers)}',
             daemon=True,  # 设置为守护线程，避免阻止程序退出
         )
         self.producers.append(producer)
@@ -99,7 +102,7 @@ class Production:
         consumer = threading.Thread(
             target=self._consumer_wrapper,
             args=(consumer_fn,),
-            name=name or f"Consumer-{len(self.consumers)}",
+            name=name or f'Consumer-{len(self.consumers)}',
             daemon=True,  # 设置为守护线程，避免阻止程序退出
         )
         self.consumers.append(consumer)
@@ -121,7 +124,7 @@ class Production:
             except queue.Full:
                 continue  # 队列满时继续尝试
             except Exception as e:
-                print(f"生产者发生错误: {e}")
+                print(f'生产者发生错误: {e}')
                 break
 
     def _consumer_wrapper(self, consumer_fn: Callable[[Any], Any]) -> None:
@@ -143,7 +146,7 @@ class Production:
                     if self.error_callback:
                         self.error_callback(e, item)
                     else:
-                        print(f"消费失败: {e}")
+                        print(f'消费失败: {e}')
                 finally:
                     self.queue.task_done()  # 标记任务完成
             except queue.Empty:
@@ -160,7 +163,7 @@ class Production:
         """
         self.error_callback = callback
     
-    def shutdown(self) -> List[Any]:
+    def shutdown(self) -> list[Any]:
         """停止所有生产者和消费者，等待队列消费完毕
         
         Returns:
@@ -178,7 +181,7 @@ class Production:
         self.queue.join()  # 等待队列清空
         _res_list = list(self.res_queue.queue)
         self.res_queue.queue.clear()
-        print("生产系统已关闭")
+        print('生产系统已关闭')
         return _res_list
     
     def get_result(self) -> Any:
@@ -192,7 +195,7 @@ class Production:
         """
         return self.res_queue.get()
     
-    def get_result_list(self) -> List[Any]:
+    def get_result_list(self) -> list[Any]:
         """获取当前所有的处理结果列表
         
         Returns:
@@ -250,10 +253,10 @@ class AsyncProduction:
             queue_size: 异步任务队列的最大容量，默认为10
         """
         self.queue = asyncio.Queue(maxsize=queue_size)
-        self.producer_tasks: List[asyncio.Task] = []
-        self.consumer_tasks: List[asyncio.Task] = []
+        self.producer_tasks: list[asyncio.Task] = []
+        self.consumer_tasks: list[asyncio.Task] = []
         self.running = False
-        self.error_callback: Optional[Callable[[Exception, Any], Coroutine]] = None
+        self.error_callback: Callable[[Exception, Any], Coroutine] | None = None
 
     async def start(
         self,
@@ -319,7 +322,7 @@ class AsyncProduction:
             except asyncio.CancelledError:
                 break  # 任务被取消时退出循环
             except Exception as e:
-                print(f"生产者异常: {e}")
+                print(f'生产者异常: {e}')
                 break  # 发生其他异常时退出循环
 
     async def _consumer_loop(self, consumer_fn: Callable[[Any], Coroutine[Any, Any, Any]]) -> None:
@@ -340,15 +343,15 @@ class AsyncProduction:
                     if self.error_callback:
                         await self.error_callback(e, item)
                     else:
-                        print(f"消费者异常: {e}")
+                        print(f'消费者异常: {e}')
                 finally:
                     self.queue.task_done()  # 标记任务完成
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 continue  # 超时后继续循环，检查running状态
             except asyncio.CancelledError:
                 break  # 任务被取消时退出循环
             except Exception as e:
-                print(f"消费者循环异常: {e}")
+                print(f'消费者循环异常: {e}')
                 break  # 发生其他异常时退出循环
 
     async def shutdown(self) -> None:
@@ -374,9 +377,9 @@ class AsyncProduction:
         # 清空任务引用列表
         self.producer_tasks.clear()
         self.consumer_tasks.clear()
-        print("异步生产系统已完全停止")
+        print('异步生产系统已完全停止')
     
-    async def wait_until_done(self, timeout: Optional[float] = None) -> bool:
+    async def wait_until_done(self, timeout: float | None = None) -> bool:
         """等待直到队列为空
         
         Args:
@@ -394,38 +397,38 @@ class AsyncProduction:
         try:
             await asyncio.wait_for(self.queue.join(), timeout=timeout)
             return True
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return False
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     """测试代码 - 演示同步和异步生产消费系统的使用方法"""
     import asyncio
     import random
     
     def run_sync_test():
         """测试同步生产消费系统"""
-        print("\n=== 开始同步生产消费系统测试 ===")
+        print('\n=== 开始同步生产消费系统测试 ===')
         
         def producer_function():
             """生产者生成随机数"""
             time.sleep(random.uniform(0.1, 0.5))  # 模拟生产时间
             item = random.randint(1, 100)  # 生成随机数
-            print(f"生产者生成: {item}")
+            print(f'生产者生成: {item}')
             return item
         
         def consumer_function(item):
             """消费者处理生成的随机数"""
             time.sleep(random.uniform(0.1, 0.5))  # 模拟消费时间
-            print(f"消费者消费: {item}")
+            print(f'消费者消费: {item}')
             # 模拟偶尔的错误情况，测试错误处理
             if item % 7 == 0:
-                raise ValueError(f"测试错误: 数字{item}能被7整除")
+                raise ValueError(f'测试错误: 数字{item}能被7整除')
             return item * 2  # 返回处理结果
         
         def error_handler(e, item):
             """处理消费过程中的错误"""
-            print(f"处理{item}时发生错误: {e}")
+            print(f'处理{item}时发生错误: {e}')
         
         # 创建生产系统实例
         production_system = Production(queue_size=5)
@@ -439,50 +442,49 @@ if __name__ == "__main__":
             production_system.add_consumer(consumer_function)
         
         # 运行一段时间后停止
-        print(f"系统启动，当前任务数: {production_system.get_task_count()}")
+        print(f'系统启动，当前任务数: {production_system.get_task_count()}')
         time.sleep(2)  # 让生产和消费运行2秒
         
         # 检查任务状态
-        print(f"运行中，当前任务数: {production_system.get_task_count()}")
+        print(f'运行中，当前任务数: {production_system.get_task_count()}')
         current_results = production_system.get_result_list()
-        print(f"当前已完成的结果数: {len(current_results)}")
+        print(f'当前已完成的结果数: {len(current_results)}')
         if current_results:
-            print(f"当前已完成的部分结果: {current_results[:3]}")
+            print(f'当前已完成的部分结果: {current_results[:3]}')
         
         # 测试单独获取结果
         if not production_system.res_queue.empty():
             single_result = production_system.get_result()
-            print(f"单独获取的一个结果: {single_result}")
+            print(f'单独获取的一个结果: {single_result}')
         
         # 停止系统并获取结果
         results = production_system.shutdown()
-        print(f"测试完成，共处理了{len(results)}个任务")
-        print(f"前5个结果: {results[:5] if len(results)>=5 else results}")
+        print(f'测试完成，共处理了{len(results)}个任务')
+        print(f'前5个结果: {results[:5] if len(results) >= 5 else results}')
         
-    
     async def run_async_test():
         """测试异步生产消费系统"""
-        print("\n=== 开始异步生产消费系统测试 ===")
+        print('\n=== 开始异步生产消费系统测试 ===')
         
         async def mock_producer():
             """模拟生产者：生成随机数"""
             await asyncio.sleep(0.1)  # 模拟耗时操作
             item = randint(1, 100)
-            print(f"异步生产者生成: {item}")
+            print(f'异步生产者生成: {item}')
             return item
         
         async def mock_consumer(item):
             """模拟消费者：处理数据"""
             await asyncio.sleep(0.2)  # 模拟耗时操作
-            print(f"异步消费者处理: {item}")
+            print(f'异步消费者处理: {item}')
             # 模拟偶尔的错误情况，测试错误处理
             if item % 7 == 0:
-                raise ValueError(f"测试错误: 数字{item}能被7整除")
+                raise ValueError(f'测试错误: 数字{item}能被7整除')
             return item * 2
         
         async def error_handler(e, item):
             """处理异步消费过程中的错误"""
-            print(f"异步处理{item}时发生错误: {e}")
+            print(f'异步处理{item}时发生错误: {e}')
         
         # 创建异步生产系统
         system = AsyncProduction(queue_size=5)
@@ -496,26 +498,26 @@ if __name__ == "__main__":
             consumer_fn=mock_consumer
         )
         
-        print("异步系统启动成功")
+        print('异步系统启动成功')
         # 测试再次启动（应该不会有问题，因为有重复启动保护）
         await system.start(3, 4, mock_producer, mock_consumer)
-        print("验证重复启动保护正常工作")
+        print('验证重复启动保护正常工作')
         
         # 运行一段时间
         await asyncio.sleep(2)  # 运行2秒
         
         # 等待队列处理完成
-        print("等待所有任务处理完成...")
+        print('等待所有任务处理完成...')
         done = await system.wait_until_done(timeout=3)
         print(f"队列处理{'完成' if done else '超时'}")
         
         # 停止系统
         await system.shutdown()
-        print("异步测试完成")
+        print('异步测试完成')
         
         # 测试重复停止保护
         await system.shutdown()
-        print("验证重复停止保护正常工作")
+        print('验证重复停止保护正常工作')
     
     # 运行同步测试
     run_sync_test()
@@ -523,5 +525,5 @@ if __name__ == "__main__":
     # 运行异步测试
     asyncio.run(run_async_test())
     
-    print("\n=== 所有测试完成 ===")
+    print('\n=== 所有测试完成 ===')
 

@@ -24,6 +24,7 @@ extend-exclude = ["old_code/**"]
 #⚙️规则配置(lint)
 #========================
 [lint]
+# 确保不禁止单行简单语句的规则被启用
 extend-select = [
     "B",    # bugbear - 非常重要，捕获潜在错误
     "SIM",  # simplify - 推荐，简化代码
@@ -40,6 +41,7 @@ extend-select = [
     "YTT",  # flake8-yapf - yapf格式化检查
     "F",    # pyflakes - 基础错误检查
     "E",    # pycodestyle - 基础风格检查
+    "RET",  # flake8-return - 推荐，检查返回语句
 ]
 ignore = [
     "E501",  # 行超长 - 由于已增加 line-length，可忽略
@@ -71,19 +73,15 @@ unfixable = []  # 不可自动修复的错误
 known-first-party = ["myapp"]
 known-third-party = ["requests", "numpy", "pandas"]
 required-imports = ["from __future__ import annotations"]
-lines-after-imports = 2
-force-sort-within-sections = true
-combine-as-imports = true
-order-by-type = true
 
 #========================
 #🔤代码风格配置
 #========================
 [lint.flake8-quotes]
-inline-quotes = "single"    # 内联字符串使用单引号
-multiline-quotes = "single" # 多行字符串使用单引号
-docstring-quotes = "double" # 文档字符串使用双引号，遵循 PEP 257:cite[2]:cite[3]
-avoid-escape = true         # 允许转义字符
+inline-quotes = "single"    # 内联字符串强制单引号
+multiline-quotes = "double"  # 允许多行字符串用双引号 
+docstring-quotes = "double" # 文档字符串仍用双引号（PEP 257）
+avoid-escape = true          # 避免不必要的转义 
 
 [lint.pydocstyle]
 convention = "google"  # Google风格文档字符串
@@ -92,10 +90,10 @@ convention = "google"  # Google风格文档字符串
 #🧰其他检查规则
 #========================
 [lint.flake8-bugbear]
-extend-immutable-calls = ["myapp.utils.freeze"]
+extend-immutable-calls = ["myapp.utils.freeze"]  # 扩展不可变调用，允许冻结字典
 
 [lint.flake8-comprehensions]
-allow-dict-calls-with-keyword-arguments = true
+allow-dict-calls-with-keyword-arguments = true  # 允许字典调用时使用关键字参数
 
 [lint.flake8-tidy-imports]
 ban-relative-imports = "all"  # 禁止相对导入
@@ -104,11 +102,7 @@ ban-relative-imports = "all"  # 禁止相对导入
 #✨格式化配置(format) - 优化重点
 #========================
 [format]
-quote-style = "single"         # 格式化器也使用单引号（注意文档字符串可能例外）
-indent-style = "space"         # 使用空格缩进
-# skip-magic-trailing-comma = true  # 魔术尾逗号，保持单行
-line-ending = "auto"           # 自动行尾符
-docstring-code-format = true   # 格式化文档字符串中的代码
-docstring-code-line-length = 200  # 文档字符串内代码行长度与整体一致
+quote-style = "single"  # 确保格式化器也使用单引号
+docstring-code-format = true  # 允许格式化文档字符串内的代码
 
 #更多配置可以参考Ruff官方文档：https://docs.astral.sh/ruff/

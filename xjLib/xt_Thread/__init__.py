@@ -6,10 +6,10 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
 LastEditTime : 2025-09-07 10:00:00
-FilePath     : /CODE/xjLib/xt_thread/__init__.py
+FilePath     : /CODE/xjlib/xt_thread/__init__.py
 Github       : https://github.com/sandorn/home
 
-xjLib.xt_thread包提供了全面的并发编程工具，包括线程管理、进程管理、生产者-消费者模式以及PyQt线程支持。
+xt_thread包提供了全面的并发编程工具，包括线程管理、进程管理、生产者-消费者模式以及PyQt线程支持。
 
 核心功能模块:
 - 线程基础工具(thread.py): 提供线程安全装饰器、基础线程类、线程管理器等
@@ -29,6 +29,8 @@ xjLib.xt_thread包提供了全面的并发编程工具，包括线程管理、�
 """
 
 # 从线程池模块导入
+from __future__ import annotations
+
 from .futures import (
     AsyncFunction,
     BaseThreadPool,
@@ -82,38 +84,32 @@ from .wraps import (
 
 # 导出公共API，按功能模块分组排序
 __all__ = (
-    # 线程装饰器
-    "thread_safe",
-    "thread_print",
-    "run_in_thread",
-    "thread_wraps",
-    "ThreadWrapsManager",
-    "run_in_qtthread",
-    "qthread_wraps",
-    "parallelize_wraps",
-    # 线程基础工具
-    "ThreadBase",
-    "ThreadManager",
-    "SafeThread",
-    "SingletonThread",
-    "ComposedSingletonThread",
-    # 线程池
-    "BaseThreadPool",
-    "DynamicThreadPool",
-    "ThreadPoolManager",
-    "EnhancedThreadPool",
-    "TaskExecutor",
-    "AsyncFunction",
-    # 多进程
-    "CustomProcess",
-    "run_custom_process",
-    # 生产者-消费者模式
-    "Production",
-    "AsyncProduction",
-    # PyQt线程
-    "QtThreadBase",
-    "QtSafeThread",
-    "QtThreadManager",
-    "SingletonQtThread",
-    "ComposedSingletonQtThread",
+    'AsyncFunction',
+    'AsyncProduction',
+    'BaseThreadPool',
+    'ComposedSingletonQtThread',
+    'ComposedSingletonThread',
+    'CustomProcess',
+    'DynamicThreadPool',
+    'EnhancedThreadPool',
+    'Production',
+    'QtSafeThread',
+    'QtThreadBase',
+    'QtThreadManager',
+    'SafeThread',
+    'SingletonQtThread',
+    'SingletonThread',
+    'TaskExecutor',
+    'ThreadBase',
+    'ThreadManager',
+    'ThreadPoolManager',
+    'ThreadWrapsManager',
+    'parallelize_wraps',
+    'qthread_wraps',
+    'run_custom_process',
+    'run_in_qtthread',
+    'run_in_thread',
+    'thread_print',
+    'thread_safe',
+    'thread_wraps',
 )

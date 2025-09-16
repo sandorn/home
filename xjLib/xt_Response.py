@@ -12,7 +12,9 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
-from typing import Sequence
+from __future__ import annotations
+
+from collections.abc import Sequence
 from unicodedata import category
 
 from chardet import detect
@@ -20,36 +22,24 @@ from html2text import HTML2Text
 from pyquery import PyQuery
 from xt_unicode import AdvancedTextCleaner, TextNormalizer, UnicodeCharacterAnalyzer
 
-DEFAULT_ENCODING = "utf-8"
+DEFAULT_ENCODING = 'utf-8'
 
 
-class htmlResponse:
+class htmlResponse:  # noqa: N801
     """封装网页结果"""
 
-    __slots__ = ("raw", "content", "index", "encoding")
+    __slots__ = ('content', 'encoding', 'index', 'raw')
 
     def __init__(self, response=None, content=None, index=None):
         self.index: int = index if index is not None else id(self)
         self.raw = response
-        self.content: bytes = (
-            content.encode(DEFAULT_ENCODING, "replace")
-            if isinstance(content, str)
-            else (
-                content
-                if isinstance(content, bytes)
-                else (response.content if response else b"")
-            )
-        )
-        self.encoding = detect(self.content).get("encoding") or getattr(
-            response, "encoding", DEFAULT_ENCODING
-        )
+        self.content: bytes = content.encode(DEFAULT_ENCODING, 'replace') if isinstance(content, str) else (content if isinstance(content, bytes) else (response.content if response else b''))
+        self.encoding = detect(self.content).get('encoding') or getattr(response, 'encoding', DEFAULT_ENCODING)
 
     def __repr__(self):
         if self.raw is None:
-            return (
-                f"htmlResponse | STATUS:999 | ID:{self.index} | content:{self.content}"
-            )
-        return f"htmlResponse | STATUS:{self.status} | ID:{self.index} | URL:{self.url}"
+            return f'htmlResponse | STATUS:{self.status} | ID:{self.index} | content:{self.content}'
+        return f'htmlResponse | STATUS:{self.status} | ID:{self.index} | URL:{self.url}'
 
     def __str__(self):
         return self.__repr__()
@@ -63,52 +53,42 @@ class htmlResponse:
     @property
     def text(self):
         if isinstance(self.content, bytes):
-            return self.content.decode(self.encoding, "ignore")
-        elif isinstance(self.content, str):
-            return self.content.encode(self.encoding).decode(self.encoding, "ignore")
-        elif self.raw:
-            return (
-                self.raw.text.encode(self.encoding).decode(self.encoding, "ignore")
-                if not callable(self.raw.text)
-                else self.raw.text()
-                .encode(self.encoding)
-                .decode(self.encoding, "ignore")
-            )
-        else:
-            return ""
+            return self.content.decode(self.encoding, 'ignore')
+        if isinstance(self.content, str):
+            return self.content.encode(self.encoding).decode(self.encoding, 'ignore')
+        if self.raw:
+            return self.raw.text.encode(self.encoding).decode(self.encoding, 'ignore') if not callable(self.raw.text) else self.raw.text().encode(self.encoding).decode(self.encoding, 'ignore')
+        return ''
 
     @property
     def elapsed(self):
-        if self.raw and hasattr(self.raw, "elapsed"):
+        if self.raw and hasattr(self.raw, 'elapsed'):
             return self.raw.elapsed
-        else:
-            return None
+        return None
 
     @property
     def seconds(self):
-        return (
-            self.raw.elapsed.total_seconds()
-            if self.raw and hasattr(self.raw, "elapsed")
-            else 0
-        )
+        return self.raw.elapsed.total_seconds() if self.raw and hasattr(self.raw, 'elapsed') else 0
 
     @property
     def url(self):
-        return getattr(self.raw, "url", "")
+        return getattr(self.raw, 'url', '')
 
     @property
     def cookies(self):
-        if self.raw and hasattr(self.raw, "cookies"):
+        if self.raw and hasattr(self.raw, 'cookies'):
             return self.raw.cookies
+        return {}
 
     @property
     def headers(self):
-        if self.raw and hasattr(self.raw, "headers"):
+        if self.raw and hasattr(self.raw, 'headers'):
             return self.raw.headers
+        return {}
 
     @property
     def status(self):
-        return getattr(self.raw, "status", getattr(self.raw, "status_code", 999))
+        return getattr(self.raw, 'status', getattr(self.raw, 'status_code', 999))
 
     @property
     def html(self):
@@ -118,9 +98,7 @@ class htmlResponse:
         """
         from lxml import html
 
-        return html.fromstring(
-            self.content.decode(self.encoding), base_url=str(self.url)
-        )
+        return html.fromstring(self.content.decode(self.encoding), base_url=str(self.url))
 
     @property
     def element(self):
@@ -141,14 +119,13 @@ class htmlResponse:
         """
         from requests_html import HTML
 
-        html = HTML(html=self.content, url=str(self.url))
-        return html
+        return HTML(html=self.content, url=str(self.url))
 
     @property
     def query(self):
         return PyQuery(self.text)
 
-    def xpath(self, selectors: str | Sequence[str] = "") -> list:
+    def xpath(self, selectors: str | Sequence[str] = '') -> list:
         """
         在元素上执行XPath选择。
         参数selectors: XPath选择器,str | Sequence[str]。
@@ -156,11 +133,7 @@ class htmlResponse:
         """
         ele_list = [selectors] if isinstance(selectors, str) else list(selectors)
 
-        return [
-            self.dom.xpath(ele_item)
-            for ele_item in ele_list
-            if isinstance(ele_item, str) and ele_item.strip()
-        ]
+        return [self.dom.xpath(ele_item) for ele_item in ele_list if isinstance(ele_item, str) and ele_item.strip()]
 
     @property
     def ctext(self):
@@ -169,6 +142,7 @@ class htmlResponse:
         h.ignore_links = True
         if self.raw:
             return h.handle(self.raw.text)
+        return ''
 
     @property
     def clean_text(self) -> str:
@@ -198,19 +172,15 @@ class htmlResponse:
         category_counts, _ = analyzer.categorize_text(text)
 
         # 找出非ASCII字符
-        non_ascii = [
-            (char, analyzer.category_descriptions.get(category(char), ""))
-            for char in text
-            if ord(char) > 127
-        ]
+        non_ascii = [(char, analyzer.category_descriptions.get(category(char), '')) for char in text if ord(char) > 127]
 
         return {
-            "length": len(text),
-            "categories": category_counts,
-            "non_ascii_chars": non_ascii,
+            'length': len(text),
+            'categories': category_counts,
+            'non_ascii_chars': non_ascii,
         }
 
-    def normalize_text(self, form: str = "NFKC") -> str:
+    def normalize_text(self, form: str = 'NFKC') -> str:
         """
         对响应文本进行Unicode规范化
         参数:
@@ -227,48 +197,50 @@ class ACResponse(htmlResponse):
     ...
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     from xt_requests import get
+    from xt_wraps import LogCls
 
+    log = LogCls()
     urls = [
-        "https://www.163.com",
-        "https://httpbin.org/get",
-        "https://httpbin.org/post",
-        "https://httpbin.org/headers",
-        "https://www.google.com",
+        'https://www.163.com',
+        'https://httpbin.org/get',
+        'https://httpbin.org/post',
+        'https://httpbin.org/headers',
+        'https://www.google.com',
     ]
-    elestr = "//title/text()"
+    elestr = '//title/text()'
 
     def main():
-        print(111111111111111111111, get(urls[3]))
-        print(222222222222222222222, res := get(urls[0]))
-        # print(3333333333333333333, get(urls[4]))
-        print("xpath-1".ljust(10), ":", res.xpath(elestr))
-        print("xpath-2".ljust(10), ":", res.xpath([elestr, elestr]))
-        print(
-            "blank".ljust(10),
-            ":",
-            res.xpath(["", " ", " \t", " \n", " \r", " \r\n", " \n\r", " \r\n\t"]),
+        log(111111111111111111111, get(urls[3]))
+        log(222222222222222222222, res := get(urls[0]))
+        # log(3333333333333333333, get(urls[4]))
+        log('xpath-1'.ljust(10), ':', res.xpath(elestr))
+        log('xpath-2'.ljust(10), ':', res.xpath([elestr, elestr]))
+        log(
+            'blank'.ljust(10),
+            ':',
+            res.xpath(['', ' ', ' \t', ' \n', ' \r', ' \r\n', ' \n\r', ' \r\n\t']),
         )
-        print("dom".ljust(10), ":", res.dom.xpath(elestr), res.dom.url)
-        print("query".ljust(10), ":", res.query("title").text())
-        print("element".ljust(10), ":", res.element.xpath(elestr), res.element.base)
-        print("html".ljust(10), ":", res.html.xpath(elestr), res.html.base_url)
+        log('dom'.ljust(10), ':', res.dom.xpath(elestr), res.dom.url)
+        log('query'.ljust(10), ':', res.query('title').text())
+        log('element'.ljust(10), ':', res.element.xpath(elestr), res.element.base)
+        log('html'.ljust(10), ':', res.html.xpath(elestr), res.html.base_url)
 
-    # main()
+    main()
 
     def test_unicode_features():
-        res = htmlResponse(content="  Héllo   Wörld!  \t\n  ")
+        res = htmlResponse(content='  Héllo   Wörld!  \t\n  ')
         res = get(urls[1])
-        print(f"原始文本: '{res.text}'")
-        print(f"清理后文本: '{res.clean_text}'")
+        log(f"原始文本: '{res.text}'")
+        log(f"清理后文本: '{res.clean_text}'")
 
         # 测试中文和非ASCII字符
-        chinese_res = htmlResponse(content="你好，世界！123 αβγ")
+        chinese_res = htmlResponse(content='你好，世界！123 αβγ')
         analysis = chinese_res.analyze_text()
-        print(f"\n字符分析:\n{analysis}")
+        log(f'\n字符分析:\n{analysis}')
 
         # 测试规范化
-        print(f"\nNFKC规范化: {chinese_res.normalize_text('NFKC')}")
+        log(f'\nNFKC规范化: {chinese_res.normalize_text("NFKC")}')
 
-    test_unicode_features()
+    # test_unicode_features()

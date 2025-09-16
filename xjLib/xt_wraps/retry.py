@@ -5,7 +5,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-09-01 09:00:00
 LastEditTime : 2025-09-06 11:30:00
-FilePath     : /CODE/xjLib/xt_wraps/retry.py
+FilePath     : /CODE/xjlib/xt_wraps/retry.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能：
@@ -24,13 +24,20 @@ Github       : https://github.com/sandorn/home
 - 统一的异常日志记录
 ==============================================================
 """
+
 from __future__ import annotations
 
 import asyncio
+import smtplib
+import socket
+import ssl
 from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
+import aiohttp
+import requests
+import urllib3.exceptions
 from tenacity import (
     RetryCallState,
     retry,
@@ -42,11 +49,38 @@ from tenacity import (
 from .exception import handle_exception
 from .log import create_basemsg
 
+# 导入需要使用的异常类型
+gaierror = socket.gaierror  # DNS解析错误
+
+# SSL相关异常
+SSLError = ssl.SSLError
+SSLZeroReturnError = ssl.SSLZeroReturnError
+SSLWantReadError = ssl.SSLWantReadError
+SSLWantWriteError = ssl.SSLWantWriteError
+SSLSyscallError = ssl.SSLSyscallError
+SSLEOFError = ssl.SSLEOFError
+
+# HTTP相关异常
+HTTPError = requests.exceptions.HTTPError
+TooManyRedirects = requests.exceptions.TooManyRedirects
+ProxyError = urllib3.exceptions.ProxyError
+
+# 其他异常
+TemporaryFailure = smtplib.SMTPServerDisconnected
+
 
 # 常量定义
 DEFAULT_RETRY_ATTEMPTS = 3  # 默认最大尝试次数
 DEFAULT_MIN_WAIT_TIME = 0.0  # 默认最小等待时间（秒）
 DEFAULT_MAX_WAIT_TIME = 1.0  # 默认最大等待时间（秒）
+TIMEOUT = 30
+RETRY_TIME = 3
+
+TRETRY = retry(
+    reraise=True,  # 保留最后一次错误
+    stop=stop_after_attempt(RETRY_TIME),
+    wait=wait_random(),
+)
 
 
 class RetryHandler:
@@ -58,6 +92,7 @@ class RetryHandler:
     - 判断异常是否应该重试
     - 处理全局配置和状态管理
     """
+
     # 默认可重试异常类型
     RETRY_EXCEPT = (
         # 网络连接异常
@@ -69,35 +104,35 @@ class RetryHandler:
         # 操作系统级I/O异常
         OSError,  # 操作系统错误（包括许多网络错误）
         # HTTP相关异常（默认注释，可根据需要取消注释）
-        # HTTPError,  # HTTP错误（如404、500等）
-        # TooManyRedirects,  # 重定向过多
+        HTTPError,  # HTTP错误（如404、500等）
+        TooManyRedirects,  # 重定向过多
         # # SSL/TLS相关异常
-        # SSLError,  # SSL错误
-        # SSLZeroReturnError,  # SSL连接被关闭
-        # SSLWantReadError,  # SSL需要读取更多数据
-        # SSLWantWriteError,  # SSL需要写入更多数据
-        # SSLSyscallError,  # SSL系统调用错误
-        # SSLEOFError,  # SSL EOF错误
+        SSLError,  # SSL错误
+        SSLZeroReturnError,  # SSL连接被关闭
+        SSLWantReadError,  # SSL需要读取更多数据
+        SSLWantWriteError,  # SSL需要写入更多数据
+        SSLSyscallError,  # SSL系统调用错误
+        SSLEOFError,  # SSL EOF错误
         # # DNS相关异常
-        # gaierror,  # 地址信息错误（DNS解析失败）
+        gaierror,  # 地址信息错误（DNS解析失败）
         # # 代理相关异常
-        # ProxyError,  # 代理错误
+        ProxyError,  # 代理错误
         # # 请求库特定异常（如requests）
-        # requests.exceptions.Timeout,
-        # requests.exceptions.ConnectionError,
-        # requests.exceptions.HTTPError,
-        # requests.exceptions.ChunkedEncodingError,
-        # requests.exceptions.ContentDecodingError,
+        requests.exceptions.Timeout,
+        requests.exceptions.ConnectionError,
+        requests.exceptions.HTTPError,
+        requests.exceptions.ChunkedEncodingError,
+        requests.exceptions.ContentDecodingError,
         # # 异步HTTP客户端异常（如aiohttp）
-        # aiohttp.ClientError,
-        # aiohttp.ClientConnectionError,
-        # aiohttp.ClientResponseError,
-        # aiohttp.ClientPayloadError,
-        # aiohttp.ServerTimeoutError,
-        # aiohttp.ServerDisconnectedError,
+        aiohttp.ClientError,
+        aiohttp.ClientConnectionError,
+        aiohttp.ClientResponseError,
+        aiohttp.ClientPayloadError,
+        aiohttp.ServerTimeoutError,
+        aiohttp.ServerDisconnectedError,
         # # 其他可能的重试异常
-        # BrokenPipeError,  # 管道破裂错误
-        # TemporaryFailure,  # 临时故障（SMTP相关）
+        BrokenPipeError,  # 管道破裂错误
+        TemporaryFailure,  # 临时故障（SMTP相关）
     )
 
     def __init__(self):
@@ -123,39 +158,27 @@ class RetryHandler:
         Returns:
             配置的默认返回值
         """
-        ex = retry_state.outcome.exception()
-        handle_exception(ex, self._basemsg + f' | 共 {retry_state.attempt_number} 次失败')
-        return self._default_return
+        errinfo = retry_state.outcome.exception()
+        return handle_exception(basemsg=self._basemsg + f' | 共 {retry_state.attempt_number} 次失败', errinfo=errinfo, default_return=self._default_return)
 
-    def before_back(self, retry_state: RetryCallState) -> None:
+    def after(self, retry_state: RetryCallState) -> None:
         """重试前的回调函数 - 记录即将进行的重试信息
 
         Args:
             retry_state: tenacity的重试状态对象
         """
-        ex = retry_state.outcome.exception()
-        handle_exception(ex, self._basemsg + f' | 第 {retry_state.attempt_number} 次失败')
-
-    def should_retry(self, exception: Exception) -> bool:
-        """判断给定异常是否应该触发重试
-
-        Args:
-            exception: 捕获的异常对象
-
-        Returns:
-            bool: 如果异常属于可重试类型，返回True；否则返回False
-        """
-        return any(isinstance(exception, exc_type) for exc_type in self.RETRY_EXCEPT)
+        errinfo = retry_state.outcome.exception()
+        handle_exception(basemsg=self._basemsg + f' | 第 {retry_state.attempt_number} 次失败', errinfo=errinfo)
 
 
 def retry_wraps(
-    fn: Callable[..., Any] = None,
+    fn: Callable[..., Any] | None = None,
     max_attempts: int = DEFAULT_RETRY_ATTEMPTS,
     min_wait: float = DEFAULT_MIN_WAIT_TIME,
     max_wait: float = DEFAULT_MAX_WAIT_TIME,
     retry_exceptions: tuple[type[Exception], ...] = RetryHandler.RETRY_EXCEPT,
-    is_before_callback: bool = True,
-    is_error_callback: bool = True,
+    is_after: bool = True,
+    is_err_back: bool = True,
     silent_on_no_retry: bool = True,
     default_return: Any = None,
 ) -> Callable:
@@ -175,8 +198,8 @@ def retry_wraps(
         min_wait: 重试间隔的最小等待时间(秒)，默认为0.0秒
         max_wait: 重试间隔的最大等待时间(秒)，默认为1.0秒
         retry_exceptions: 需要重试的异常类型元组，默认为网络和I/O相关异常
-        is_before_callback: 是否在重试前调用回调函数，默认为True
-        is_error_callback: 是否在所有重试失败后调用回调函数，默认为True
+        is_after: 是否在重试前调用回调函数，默认为True
+        is_err_back: 是否在所有重试失败后调用回调函数，默认为True
         silent_on_no_retry: 遇到非重试异常时是否静默处理（不抛出错误），默认为True
         default_return: 重试失败或静默处理时的默认返回值，默认为None
 
@@ -222,7 +245,7 @@ def retry_wraps(
         retry_handler.configure(basemsg, default_return)
 
         # 创建重试条件 - 只重试指定类型的异常
-        # 注意：不再直接修改类变量RETRY_EXCEPT，而是使用局部参数retry_exceptions
+        # !不再直接修改类变量RETRY_EXCEPT，而是使用局部参数retry_exceptions
         retry_condition = retry_if_exception_type(retry_exceptions)
 
         # 配置tenacity的retry装饰器
@@ -231,8 +254,8 @@ def retry_wraps(
             stop=stop_after_attempt(max_attempts),
             wait=wait_random(min=min_wait, max=max_wait),
             retry=retry_condition,
-            before_sleep=retry_handler.before_back if is_before_callback else None,
-            retry_error_callback=retry_handler.err_back if is_error_callback else None,
+            before_sleep=retry_handler.after if is_after else None,
+            retry_error_callback=retry_handler.err_back if is_err_back else None,
         )
 
         # 同步函数包装器
@@ -242,16 +265,16 @@ def retry_wraps(
                 # 使用retry_decorator包装函数调用
                 # #raise：可重试错误会重试足够次数，不重试错误只运行1次
                 return retry_decorator(func)(*args, **kwargs)
-            except Exception as e:
+            except Exception as errinfo:
+                error_message = f'Retry Sync: {basemsg} | {type(errinfo).__name__} | {errinfo!s}'
                 # 不再使用RetryHandler.should_retry，而是直接检查当前装饰器配置的异常类型
-                is_retry_exception = any(isinstance(e, exc_type) for exc_type in retry_exceptions)
+                is_retry_exception = any(isinstance(errinfo, exc_type) for exc_type in retry_exceptions)
                 if is_retry_exception:  # 检查是否重试异常
-                    return default_return  # 重试异常在所有重试失败后返回默认值
-                elif silent_on_no_retry:  # 检查是否静默处理非重试异常
-                    return default_return  # 非重试异常返回默认值
-                else:
-                    # raise  # 否则重新抛出异常
-                    handle_exception(e, basemsg, re_raise=True)
+                    return error_message if default_return is None else default_return  # 重试异常在所有重试失败后返回默认值
+                if silent_on_no_retry:  # 检查是否静默处理非重试异常
+                    return error_message if default_return is None else default_return  # 非重试异常返回默认值
+                # raise  # 否则重新抛出异常
+                handle_exception(basemsg=basemsg, errinfo=errinfo, re_raise=True)
 
         # 异步函数包装器
         @wraps(func)
@@ -259,16 +282,16 @@ def retry_wraps(
             try:
                 # 使用retry_decorator包装函数调用
                 return await retry_decorator(func)(*args, **kwargs)
-            except Exception as e:
+            except Exception as errinfo:
+                error_message = f'Retry Async: {basemsg} | {type(errinfo).__name__} | {errinfo!s}'
                 # 不再使用RetryHandler.should_retry，而是直接检查当前装饰器配置的异常类型
-                is_retry_exception = any(isinstance(e, exc_type) for exc_type in retry_exceptions)
+                is_retry_exception = any(isinstance(errinfo, exc_type) for exc_type in retry_exceptions)
                 if is_retry_exception:  # 检查是否重试异常
-                    return default_return  # 重试异常在所有重试失败后返回默认值
-                elif silent_on_no_retry:  # 检查是否静默处理非重试异常
-                    return default_return  # 非重试异常返回默认值
-                else:
-                    # raise  # 否则重新抛出异常
-                    handle_exception(e, basemsg, re_raise=True)
+                    return error_message if default_return is None else default_return  # 重试异常在所有重试失败后返回默认值
+                if silent_on_no_retry:  # 检查是否静默处理非重试异常
+                    return error_message if default_return is None else default_return  # 非重试异常返回默认值
+                # raise  # 否则重新抛出异常
+                handle_exception(basemsg=basemsg, errinfo=errinfo, re_raise=True)
 
         # 根据函数类型返回相应的包装器
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper

@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
 LastEditTime : 2025-09-06 11:00:00
-FilePath     : /CODE/xjLib/xt_wraps/log.py
+FilePath     : /CODE/xjlib/xt_wraps/log.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能:
@@ -26,24 +26,22 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 import asyncio
+import os
+import sys
 from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
-import os
-import sys
 from typing import Any
 
 from loguru import logger
 
-from .exception import handle_exception
 from .singleton import SingletonMixin
-
 
 # 常量定义 - 日志配置参数
 IS_DEV = os.getenv('ENV', 'dev').lower() == 'dev'
 DEFAULT_LOG_LEVEL = 10  # 默认日志级别(DEBUG)
-LOG_FILE_ROTATION_SIZE = '512 MB'  # 日志文件轮转大小
-LOG_FILE_RETENTION_DAYS = '180 days'  # 日志文件保留时间
+LOG_FILE_ROTATION_SIZE = '98 MB'  # 日志文件轮转大小
+LOG_FILE_RETENTION_DAYS = '30 days'  # 日志文件保留时间
 MAX_MODULE_PARTS = 3  # 模块路径最多向上追溯的层数
 
 standard_format = '<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | {message}'
@@ -120,10 +118,9 @@ def _process_file_path(file_path: str) -> str:
         # 构建模块名
         if module_parts:
             return '.'.join([*module_parts, filename])
-        elif len(file_parts) >= 2:
+        if len(file_parts) >= 2:
             return f'{file_parts[-2]}.{filename}'
-        else:
-            return filename
+        return filename
     except Exception:
         return os.path.splitext(os.path.basename(file_path))[0]
 
@@ -136,7 +133,7 @@ class LogCls(SingletonMixin):
         self.log.remove()
 
         # 文件日志(始终记录)
-        log_file = f'XtLog-{datetime.now().strftime("%Y%m%d")}.log'
+        log_file = f'xt_{datetime.now().strftime("%Y%m%d")}.log'
         self.log.add(
             log_file,
             rotation=LOG_FILE_ROTATION_SIZE,
@@ -150,17 +147,23 @@ class LogCls(SingletonMixin):
         if IS_DEV:
             self.log.add(sys.stderr, level=level, format=standard_format)
 
-    def __call__(self, *args, **kwargs) -> Any:
+    def __call__(self, *args: Any, **kwargs: Any) -> list[None]:
+        """支持实例直接调用，用于快速记录多个调试日志信息"""
         return [self.log.debug(arg, **kwargs) for arg in list(args)]
+
+    def __getattr__(self, attr):
+        try:
+            return getattr(self.log, attr)
+        except Exception as err:
+            raise AttributeError(f"[{type(self).__name__}].[{attr}]: '{err}'") from err
 
 
 # 全局日志实例
-mylog = LogCls().log
+mylog = LogCls()
 
 
 def log_wraps(
     func: Callable | None = None,
-    log_level: int = DEFAULT_LOG_LEVEL,
     log_args: bool = True,
     log_result: bool = True,
 ):
@@ -170,8 +173,8 @@ def log_wraps(
     Args:
         func: 被装饰的函数,可选(支持直接装饰和带参数装饰两种方式)
         log_level: 日志级别,默认10(DEBUG)
-        log_args: 是否记录函数参数,默认True
-        log_result: 是否记录函数返回结果,默认True
+        log_args: 是否记录函数参数
+        log_result: 是否记录函数返回结果
 
     Returns:
         装饰后的函数,保持原函数签名和功能
@@ -207,19 +210,13 @@ def log_wraps(
             try:
                 result = func(*args, **kwargs)
                 if log_result:
-                    mylog.success(f'{basemsg} | result: < {result} >')
+                    mylog.success(f'{basemsg} | success | result: {type(result).__name__} = {result}')
                 else:
-                    mylog.success(f'{basemsg} | successfully')
+                    mylog.success(f'{basemsg} | success | result: {type(result).__name__}')
                 return result
             except Exception as err:
-                # 使用统一的异常处理模块
-                return handle_exception(
-                    err=err,
-                    context=basemsg,
-                    loger=mylog,
-                    re_raise=False,
-                    default_return=None,
-                )
+                mylog.error(f'{basemsg} | {type(err).__name__} | {err!s}')
+                # handle_exception(basemsg, err, loger=mylog)
 
         @wraps(func)
         async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -229,19 +226,12 @@ def log_wraps(
             try:
                 result = await func(*args, **kwargs)
                 if log_result:
-                    mylog.success(f'{basemsg} | result: < {result} >')
+                    mylog.success(f'{basemsg} | success | result: {type(result).__name__} = {result}')
                 else:
-                    mylog.success(f'{basemsg} | successfully')
+                    mylog.success(f'{basemsg} | success | result: {type(result).__name__}')
                 return result
             except Exception as err:
-                # 使用统一的异常处理模块
-                return handle_exception(
-                    err=err,
-                    context=basemsg,
-                    loger=mylog,
-                    re_raise=False,
-                    default_return=None,
-                )
+                mylog.error(f'{basemsg} | {type(err).__name__} | {err!s}')
 
         # 根据函数类型返回对应的包装函数
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper

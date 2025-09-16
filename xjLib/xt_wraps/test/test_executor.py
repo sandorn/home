@@ -10,12 +10,13 @@ FilePath     : /CODE/xjLib/xt_wraps/test/test_executor.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+
 from __future__ import annotations
 
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from xt_wraps.executor import (
     executor_wraps,
@@ -23,7 +24,6 @@ from xt_wraps.executor import (
     future_wraps_result,
     run_executor_wraps,
 )
-
 
 # 测试用常量
 TEST_SLEEP_SHORT = 0.1  # 短时间睡眠（用于快速测试）
@@ -35,13 +35,9 @@ TEST_SLEEP_LONG = 1.0  # 长时间睡眠（用于模拟实际网络延迟）
 @executor_wraps
 def sync_test_function():
     """1.1 测试同步函数的执行器装饰器"""
-    print(
-        f"同步函数在 {time.strftime('%H:%M:%S')} 开始执行 - 线程: {threading.current_thread().name}"
-    )
+    print(f'同步函数在 {time.strftime("%H:%M:%S")} 开始执行 - 线程: {threading.current_thread().name}')
     time.sleep(TEST_SLEEP_MEDIUM)  # 模拟耗时操作
-    print(
-        f"同步函数在 {time.strftime('%H:%M:%S')} 执行完成 - 线程: {threading.current_thread().name}"
-    )
+    print(f'同步函数在 {time.strftime("%H:%M:%S")} 执行完成 - 线程: {threading.current_thread().name}')
     return '同步函数执行结果'
 
 
@@ -56,13 +52,9 @@ def sync_test_with_params(a, b):
 @executor_wraps(background=True)
 def sync_background_function():
     """1.3 测试同步函数的后台执行"""
-    print(
-        f"后台同步函数在 {time.strftime('%H:%M:%S')} 开始执行 - 线程: {threading.current_thread().name}"
-    )
+    print(f'后台同步函数在 {time.strftime("%H:%M:%S")} 开始执行 - 线程: {threading.current_thread().name}')
     time.sleep(TEST_SLEEP_LONG)  # 模拟较长时间操作
-    print(
-        f"后台同步函数在 {time.strftime('%H:%M:%S')} 执行完成 - 线程: {threading.current_thread().name}"
-    )
+    print(f'后台同步函数在 {time.strftime("%H:%M:%S")} 执行完成 - 线程: {threading.current_thread().name}')
     return '后台同步函数执行结果'
 
 
@@ -73,13 +65,9 @@ custom_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix='CustomEx
 @executor_wraps(executor=custom_executor)
 def sync_custom_executor():
     """1.4 测试使用自定义执行器的同步函数"""
-    print(
-        f"自定义执行器函数在 {time.strftime('%H:%M:%S')} 开始执行 - 线程: {threading.current_thread().name}"
-    )
+    print(f'自定义执行器函数在 {time.strftime("%H:%M:%S")} 开始执行 - 线程: {threading.current_thread().name}')
     time.sleep(TEST_SLEEP_MEDIUM)
-    print(
-        f"自定义执行器函数在 {time.strftime('%H:%M:%S')} 执行完成 - 线程: {threading.current_thread().name}"
-    )
+    print(f'自定义执行器函数在 {time.strftime("%H:%M:%S")} 执行完成 - 线程: {threading.current_thread().name}')
     return '自定义执行器函数结果'
 
 
@@ -94,9 +82,9 @@ def sync_test_with_exception():
 @executor_wraps
 async def async_test_function():
     """1.6 测试异步函数的执行器装饰器"""
-    print(f"异步函数在 {time.strftime('%H:%M:%S')} 开始执行")
+    print(f'异步函数在 {time.strftime("%H:%M:%S")} 开始执行')
     await asyncio.sleep(TEST_SLEEP_MEDIUM)  # 模拟异步耗时操作
-    print(f"异步函数在 {time.strftime('%H:%M:%S')} 执行完成")
+    print(f'异步函数在 {time.strftime("%H:%M:%S")} 执行完成')
     return '异步函数执行结果'
 
 
@@ -111,9 +99,9 @@ async def async_test_with_params(a, b):
 @executor_wraps(background=True)
 async def async_background_function():
     """1.8 测试异步函数的后台执行"""
-    print(f"后台异步函数在 {time.strftime('%H:%M:%S')} 开始执行")
+    print(f'后台异步函数在 {time.strftime("%H:%M:%S")} 开始执行')
     await asyncio.sleep(TEST_SLEEP_LONG)  # 模拟较长时间操作
-    print(f"后台异步函数在 {time.strftime('%H:%M:%S')} 执行完成")
+    print(f'后台异步函数在 {time.strftime("%H:%M:%S")} 执行完成')
     return '后台异步函数执行结果'
 
 
@@ -337,17 +325,11 @@ async def run_all_tests():
     background_task = sync_background_function()
 
     # 等待所有任务完成
-    results = await asyncio.gather(
-        sync_task, async_task, background_task, return_exceptions=True
-    )
+    results = await asyncio.gather(sync_task, async_task, background_task, return_exceptions=True)
 
     print('混合执行结果:')
-    print(
-        f"同步任务结果: {results[0] if not isinstance(results[0], Exception) else f'异常: {results[0]}'}"
-    )
-    print(
-        f"异步任务结果: {results[1] if not isinstance(results[1], Exception) else f'异常: {results[1]}'}"
-    )
+    print(f'同步任务结果: {results[0] if not isinstance(results[0], Exception) else f"异常: {results[0]}"}')
+    print(f'异步任务结果: {results[1] if not isinstance(results[1], Exception) else f"异常: {results[1]}"}')
 
     # 特别处理后台任务结果 - 它可能仍然是Future对象
     if isinstance(results[2], asyncio.Future):
@@ -363,9 +345,7 @@ async def run_all_tests():
             print(f'后台任务仍在运行中: {results[2]}')
             # 注意：如果需要确保后台任务完成，应该在这里添加 await，但这会阻塞测试直到它完成
     else:
-        print(
-            f"后台任务结果: {results[2] if not isinstance(results[2], Exception) else f'异常: {results[2]}'}"
-        )
+        print(f'后台任务结果: {results[2] if not isinstance(results[2], Exception) else f"异常: {results[2]}"}')
 
     print('\n===== 所有测试完成! =====')
     # 关闭自定义执行器
