@@ -11,14 +11,16 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from __future__ import annotations
+
 from time import sleep
-from typing import Any, Union
+from typing import Any
 
 from bdtime import vk
 
 
 class Key:
-    def __init__(self, dm_instance: Any, key: Union[str, int] = "k") -> None:
+    def __init__(self, dm_instance: Any, key: str | int = 'k') -> None:
         """
         键盘操作控制器初始化方法
 
@@ -34,7 +36,7 @@ class Key:
             - self.ord: 存储按键的ASCII码(通过conv_ord方法转换)
         """
         if not dm_instance:
-            raise ValueError("dmobject cannot be None")
+            raise ValueError('dmobject cannot be None')
         self.dm_instance = dm_instance
 
         # 处理按键字符形式
@@ -43,7 +45,7 @@ class Key:
         elif isinstance(key, int):
             self.chr = str(key).upper()
         else:
-            self.chr = "None"  # 非字符串类型默认值
+            self.chr = 'None'  # 非字符串类型默认值
 
         # 转换按键为ASCII码
         self.ord = self.conv_ord(key)
@@ -68,28 +70,22 @@ class Key:
         """
         key = key0  # 暂存原始输入值
         # 处理字符串类型输入
-        if key.__class__.__name__ == "str":
+        if key.__class__.__name__ == 'str':
             # 转换为大写后获取ASCII码（兼容小写输入）
             key = ord(key.upper())
         # 处理整数类型输入（仅限0-9）
-        elif key.__class__.__name__ == "int":
-            if key >= 0 and key <= 9:
-                # 数字转字符串（如5→"5"）后获取ASCII码
-                key = str(key)
-                key = ord(key)
+        elif key.__class__.__name__ == 'int' and key >= 0 and key <= 9:
+            # 数字转字符串（如5→"5"）后获取ASCII码
+            key = str(key)
+            key = ord(key)
         return key
 
     def conv_chr(self, key):
-        key = chr(key)
-        return key
+        return chr(key)
 
     def conv(self, key0):
         key = key0
-        if key == vk.Constant:
-            key = self.ord
-        else:
-            key = self.conv_ord(key)
-        return key
+        return self.ord if key == vk.Constant else self.conv_ord(key)
 
     def state(self, key=vk.Constant):
         key = self.conv(key)
@@ -117,4 +113,4 @@ class Key:
             sleep(t)
             self.up(key)
         except Exception as e:
-            print(f"按键操作失败: {e}")
+            raise KeyError(f'按键操作失败: {e}') from e

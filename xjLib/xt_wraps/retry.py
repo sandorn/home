@@ -45,9 +45,8 @@ from tenacity import (
     stop_after_attempt,
     wait_random,
 )
-
-from .exception import handle_exception
-from .log import create_basemsg
+from xt_wraps.exception import handle_exception
+from xt_wraps.log import create_basemsg
 
 # 导入需要使用的异常类型
 gaierror = socket.gaierror  # DNS解析错误
@@ -67,7 +66,6 @@ ProxyError = urllib3.exceptions.ProxyError
 
 # 其他异常
 TemporaryFailure = smtplib.SMTPServerDisconnected
-
 
 # 常量定义
 DEFAULT_RETRY_ATTEMPTS = 3  # 默认最大尝试次数

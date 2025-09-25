@@ -10,10 +10,9 @@ FilePath     : /CODE/xjLib/xt_wraps/test/test_task_type.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
-
+from __future__ import annotations
 
 import asyncio
-import time
 
 from xt_wraps.executor import executor_wraps
 
@@ -22,22 +21,16 @@ from xt_wraps.executor import executor_wraps
 @executor_wraps(background=True)
 async def async_background_function():
     """测试异步函数的后台执行"""
-    print(f"后台异步函数在 {time.strftime('%H:%M:%S')} 开始执行")
     await asyncio.sleep(1)  # 模拟较长时间操作
-    print(f"后台异步函数在 {time.strftime('%H:%M:%S')} 执行完成")
-    return "后台异步函数执行结果"
+    return '后台异步函数执行结果'
+
 
 async def main():
-    print("测试异步函数后台执行的返回类型")
     task = async_background_function()
-    print(f"返回的对象类型: {type(task)}")
-    print(f"是否为Task对象: {isinstance(task, asyncio.Task)}")
-    print(f"是否为Future对象: {isinstance(task, asyncio.Future)}")
-    print(f"Task状态: {'pending' if task.done() is False else 'done'}")
     
     # 等待任务完成
-    result = await task
-    print(f"任务完成后的结果: {result}")
+    await task
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     asyncio.run(main())

@@ -16,20 +16,20 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-from .exception import handle_exception
+from xt_wraps.exception import handle_exception
 
 T = TypeVar('T', bound=Callable[..., Any])
 
 
 def ensure_initialized(var_name: str):
     """确保变量已初始化装饰器
-    
+
     Args:
         var_name: 需要检查是否初始化的变量名
-        
+
     Returns:
         装饰后的函数
-        
+
     Raises:
         RuntimeError: 当变量未初始化时抛出
     """

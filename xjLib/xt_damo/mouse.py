@@ -11,9 +11,11 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from __future__ import annotations
+
 import random
 from time import sleep
-from typing import Any, Tuple
+from typing import Any
 
 
 class Mouse:
@@ -28,7 +30,7 @@ class Mouse:
             ValueError: 当dmobject为None时抛出
         """
         if not dm_instance:
-            raise ValueError("dmobject cannot be None")
+            raise ValueError('dmobject cannot be None')
         self.dm_instance = dm_instance
 
     @property
@@ -39,11 +41,10 @@ class Mouse:
         返回:
             tuple: (x, y)坐标元组
         """
-        ret = self.dm_instance.GetCursorPos(x=0, y=0)[1:]
-        return ret
+        return self.dm_instance.GetCursorPos(x=0, y=0)[1:]
 
     @position.setter
-    def position(self, xy: Tuple[int, int]) -> None:
+    def position(self, xy: tuple[int, int]) -> None:
         """设置鼠标位置
 
         Args:
@@ -59,20 +60,20 @@ class Mouse:
         try:
             x, y = xy
             if not (isinstance(x, int) and isinstance(y, int)):
-                raise ValueError("坐标值必须为整数")
+                raise ValueError('坐标值必须为整数')
             self.move_to(x, y)
         except (TypeError, ValueError) as e:
-            raise ValueError("请输入格式为(x, y)的坐标元组") from e
+            raise ValueError('请输入格式为(x, y)的坐标元组') from e
 
-    def set_delay(self, delay, type="dx"):
+    def set_delay(self, delay, model='dx'):
         """
         设置鼠标操作延迟
 
         参数:
             delay: 延迟时间(毫秒)
-            type: 延迟类型(默认"dx")
+            model: 延迟类型(默认"dx")
         """
-        return self.dm_instance.SetMouseDelay(type, delay)
+        return self.dm_instance.SetMouseDelay(model, delay)
 
     def move_r(self, x, y):
         """
@@ -123,7 +124,7 @@ class Mouse:
         sleep(t)
         self.dm_instance.RightUp()
 
-    def safe_click(self, x: int, y: int, autoResetPos: bool = False) -> None:
+    def safe_click(self, x: int, y: int, auto_reset_pos: bool = False) -> None:
         """安全的鼠标点击操作
         Args:
             x: 目标X坐标
@@ -134,11 +135,9 @@ class Mouse:
             x0, y0 = self.position
             self.dm_instance.MoveTo(x, y)
             self.dm_instance.LeftClick()
-            sleep(random.randint(50, 400) / 1000)
-            if autoResetPos:
-                self.dm_instance.MoveTo(
-                    x0 + random.randint(50, 300), y0 + random.randint(50, 300)
-                )
+            sleep(random.randint(50, 400) / 1000)  # noqa: S311
+            if auto_reset_pos:
+                self.dm_instance.MoveTo(x0 + random.randint(50, 300), y0 + random.randint(50, 300))  # noqa: S311
         except Exception as e:
             self._last_error = str(e)
-            print(f"_safe_click点击操作失败: {self._last_error}")
+            raise KeyError(f'_safe_click点击操作失败: {self._last_error}') from e

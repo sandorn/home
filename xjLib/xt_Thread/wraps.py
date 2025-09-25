@@ -38,15 +38,8 @@ from functools import wraps
 from typing import Any, ClassVar, TypeVar
 
 import wrapt
-
-from .qthread import (
-    QtThreadBase,
-    QtThreadManager,
-)
-from .thread import (
-    ThreadBase,
-    ThreadManager,
-)
+from xt_thread.qthread import QtThreadBase, QtThreadManager
+from xt_thread.thread import ThreadBase, ThreadManager
 
 # 类型定义
 T = TypeVar('T')  # 泛型类型变量，用于表示任意类型

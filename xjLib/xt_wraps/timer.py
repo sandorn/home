@@ -32,8 +32,8 @@ from functools import wraps
 from time import perf_counter
 from typing import Any
 
-from .exception import handle_exception
-from .log import create_basemsg, mylog
+from xt_wraps.exception import handle_exception
+from xt_wraps.log import create_basemsg, mylog
 
 
 def timer_wraps(fn: Callable | None = None):
@@ -81,7 +81,7 @@ def timer_wraps(fn: Callable | None = None):
             except Exception as err:
                 return handle_exception(basemsg=basemsg, errinfo=err, re_raise=True)
             finally:
-                mylog.debug(f'{basemsg} | 执行耗时：{perf_counter() - start_time:.4f} 秒')
+                mylog.info(f'{basemsg} | 执行耗时：{perf_counter() - start_time:.4f} 秒')
 
         @wraps(func)
         async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -92,7 +92,7 @@ def timer_wraps(fn: Callable | None = None):
             except Exception as err:
                 return handle_exception(basemsg=basemsg, errinfo=err, re_raise=True)
             finally:
-                mylog.debug(f'{basemsg} | 执行耗时：{perf_counter() - start_time:.4f} 秒')
+                mylog.info(f'{basemsg} | 执行耗时：{perf_counter() - start_time:.4f} 秒')
 
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
 

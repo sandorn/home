@@ -1,15 +1,26 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  : 头部注释
+Description  : HTTP请求工具模块 - 提供简化的requests调用和会话管理功能
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
-LastEditTime : 2024-06-07 10:35:33
+LastEditTime : 2024-09-06 11:00:00
 FilePath     : /CODE/xjLib/xt_requests.py
 Github       : https://github.com/sandorn/home
+
+本模块提供以下核心功能:
+- 简化的HTTP请求方法(get, post等)，自动添加请求头和超时设置
+- 请求重试机制，提高网络请求稳定性
+- 会话管理，支持Cookie持久化和请求头管理
+- 与htmlResponse集成，方便后续解析处理
+
+主要特性:
+- 自动随机User-Agent设置，减少请求被拦截的风险
+- 统一的异常处理和响应封装
+- 支持同步函数的重试机制
+- 会话复用，提高请求效率
 ==============================================================
-requests 简化调用
 """
 
 from __future__ import annotations
@@ -20,195 +31,273 @@ from typing import Any
 import requests
 from xt_head import TIMEOUT, Head
 from xt_response import htmlResponse
-from xt_wraps import log_wraps, retry_wraps
+from xt_wraps import log_wraps, mylog, retry_wraps
 
-request_methods = ('get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch')
+# 支持的HTTP请求方法
+supported_request_methods = ('get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch')
 
 
 @retry_wraps
 def _retry_request(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResponse:
-    """利用 retry_wraps 实现重试"""
+    """利用retry_wraps实现请求重试机制
+
+    Args:
+        method: HTTP请求方法
+        url: 请求URL
+        *args: 传递给requests.request的位置参数
+        **kwargs: 传递给requests.request的关键字参数
+            callback: 回调函数(会被忽略)
+            index: 响应对象的索引标识，默认为url的id
+            timeout: 请求超时时间，默认使用TIMEOUT常量
+
+    Returns:
+        htmlResponse: 包装后的响应对象
+
+    Raises:
+        requests.HTTPError: 当HTTP状态码不是2xx时抛出
+    """
+    # 移除不支持的参数
     _ = kwargs.pop('callback', None)
     index = kwargs.pop('index', id(url))
     timeout = kwargs.pop('timeout', TIMEOUT)
-    response = requests.request(method, url, *args, timeout=timeout, **kwargs)
-    response.raise_for_status()
 
-    return htmlResponse(response, response.content, index)
+    try:
+        response = requests.request(method, url, *args, timeout=timeout, **kwargs)
+        response.raise_for_status()
+        return htmlResponse(response, response.content, index)
+    except Exception as e:
+        mylog.error(f'Request failed: {method} {url}, error: {e!s}')
+        raise
 
 
 def single_parse(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResponse:
-    if method.lower() not in request_methods:
-        return htmlResponse(None, f'Method:{method} not in {request_methods}'.encode(), id(url))
-    kwargs.setdefault('headers', Head().randua)  # @headers
-    kwargs.setdefault('timeout', TIMEOUT)  # @timeout
-    kwargs.setdefault('cookies', {})  # @cookies
+    """执行单次HTTP请求，自动设置默认请求头和超时
 
-    return _retry_request(method.lower(), url, *args, **kwargs)
+    Args:
+        method: HTTP请求方法
+        url: 请求URL
+        *args: 传递给_retry_request的位置参数
+        **kwargs: 传递给_retry_request的关键字参数
+            headers: 请求头，默认为随机User-Agent
+            timeout: 请求超时时间，默认使用TIMEOUT常量
+            cookies: Cookie字典，默认为空字典
+
+    Returns:
+        htmlResponse: 包装后的响应对象，如果方法不支持则返回错误信息
+    """
+    method_lower = method.lower()
+
+    if method_lower not in supported_request_methods:
+        error_msg = f'Method:{method} not in {supported_request_methods}'
+        mylog.warning(error_msg)
+        return htmlResponse(None, error_msg.encode(), id(url))
+
+    # 设置默认参数
+    kwargs.setdefault('headers', Head().randua)  # 自动设置随机User-Agent
+    kwargs.setdefault('timeout', TIMEOUT)  # 自动设置超时时间
+    kwargs.setdefault('cookies', {})  # 自动设置空Cookie字典
+
+    return _retry_request(method_lower, url, *args, **kwargs)
 
 
+# 创建常用请求方法的快捷方式
 get = partial(single_parse, 'get')
 post = partial(single_parse, 'post')
+head = partial(single_parse, 'head')
+options = partial(single_parse, 'options')
+put = partial(single_parse, 'put')
+delete = partial(single_parse, 'delete')
+patch = partial(single_parse, 'patch')
 
 
 class SessionClient:
-    """封装session,保存cookies,利用TRETRY三方库实现重试"""
+    """会话客户端 - 封装requests.Session，管理Cookie持久化和请求重试
 
-    __slots__ = ('args', 'callback', 'kwargs', 'method', 'session', 'url')
+    提供会话级别的HTTP请求管理，支持Cookie保存和请求头持久化，
+    适用于需要维持会话状态的场景。
+
+    Example:
+        >>> with SessionClient() as client:
+        >>> # 登录获取Cookie
+        >>>     client.post('https://example.com/login', data={'username': 'user', 'password': 'pass'})
+        >>> # 使用同一会话访问需要登录的页面
+        >>>     response = client.get('https://example.com/user/profile')
+    """
+
+    __slots__ = ('args', 'kwargs', 'method', 'session', 'url')
 
     def __init__(self):
+        """初始化会话客户端"""
         self.session = requests.session()
         self.session.default_timeout = TIMEOUT
         self.method: str = ''
         self.args: tuple = ()
-        self.kwargs: dict = {}
+        self.kwargs: dict[str, Any] = {}
         self.url: str = ''
 
     def __enter__(self):
+        """支持上下文管理器协议，用于自动关闭会话"""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """退出上下文时关闭会话"""
         self.session.close()
 
-    def __getitem__(self, method):
-        self.method = method.lower()  # 保存请求方法
-        return self.create_task  # 调用方法
-        # return lambda *args, **kwargs: self.create_task(*args, **kwargs)
+    def __getitem__(self, method: str):
+        """支持通过索引方式设置请求方法
 
-    def __getattr__(self, method):
+        Args:
+            method: HTTP请求方法
+
+        Returns:
+            指向create_task方法的引用，用于链式调用
+        """
+        self.method = method.lower()  # 保存请求方法
+        return self.create_task  # 返回创建任务的方法
+
+    def __getattr__(self, method: str):
+        """支持通过属性访问设置请求方法
+
+        Args:
+            method: HTTP请求方法名称
+
+        Returns:
+            指向create_task方法的引用，用于链式调用
+        """
         return self.__getitem__(method)
 
     @log_wraps
-    def create_task(self, *args, **kwargs):
+    def create_task(self, *args, **kwargs) -> htmlResponse:
+        """创建并执行请求任务
+
+        Args:
+            *args: 位置参数，第一个参数为URL
+            **kwargs: 关键字参数
+                headers: 请求头，默认为随机User-Agent
+                cookies: Cookie字典，默认为空字典
+                timeout: 请求超时时间，默认使用TIMEOUT常量
+                callback: 回调函数(会被忽略)
+
+        Returns:
+            htmlResponse: 包装后的响应对象
+        """
         self.url = args[0]
-        if self.method not in request_methods:
-            return htmlResponse(
-                None,
-                f'Method:{self.method} not in {request_methods}'.encode(),
-                id(self.url),
-            )
+
+        if self.method not in supported_request_methods:
+            error_msg = f'Method:{self.method} not in {supported_request_methods}'
+            mylog.warning(error_msg)
+            return htmlResponse(None, error_msg.encode(), id(self.url))
+
         self.args = args[1:]
 
+        # 更新请求头和Cookie
         self.update_headers(kwargs.pop('headers', Head().randua))
         self.update_cookies(kwargs.pop('cookies', {}))
+
+        # 移除不支持的参数并设置默认值
         _ = kwargs.pop('callback', None)
         kwargs.setdefault('timeout', TIMEOUT)
         self.kwargs = kwargs
+
         return self._fetch()
 
     @retry_wraps
-    def _fetch(self):
+    def _fetch(self) -> htmlResponse:
+        """执行请求并处理响应
+
+        Returns:
+            htmlResponse: 包装后的响应对象
+        """
         response = self.session.request(self.method, self.url, *self.args, **self.kwargs)
+        # 自动更新Cookie
         self.update_cookies(response.cookies)
         return htmlResponse(response, response.content, id(self.url))
 
-    def update_cookies(self, cookie_dict):
+    def update_cookies(self, cookie_dict: dict[str, str]) -> None:
+        """更新会话的Cookie
+
+        Args:
+            cookie_dict: 包含Cookie键值对的字典
+        """
         self.session.cookies.update(cookie_dict)
 
-    def update_headers(self, header_dict):
+    def update_headers(self, header_dict: dict[str, str]) -> None:
+        """更新会话的请求头
+
+        Args:
+            header_dict: 包含请求头键值对的字典
+        """
         self.session.headers.update(header_dict)
 
 
 if __name__ == '__main__':
-    urls = [
-        'https://www.163.com',
-        'https://www.126.com',
-        'https://httpbin.org/post',
-        'https://httpbin.org/headers',
-        'https://www.google.com',
-    ]
-    elestr = '//title/text()'
+    """模块使用示例和测试"""
 
-    def main():
-        print(111111111111111111111, SessionClient().get('https://www.google.com'))
+    def basic_request_example():
+        """基础请求示例"""
+        # 简单GET请求
+        mylog.info('执行简单GET请求')
+        response = get('http://www.163.com')
+        if isinstance(response, htmlResponse):
+            mylog.success(f'请求成功，状态码: {response.status}')
+            # 解析响应内容
+            content = response.text
+            mylog.debug(f'响应内容长度: {len(content)} 字符')
+            print('xpath(//title/text()) ：', response.xpath('//title/text()'))
+            print('xpath([//title/text(), //title/text()]) ：', response.xpath(['//title/text()', '//title/text()']))
+            print('//title/text() ：', response.xpath(['//title/text()', '', ' ']))
+            print('xpath( ) ：', response.xpath(' '))
+            print('xpath() ：', response.xpath(''))
+            print('dom.xpath(//title/text()) ：', response.dom.xpath('//title/text()'))
+            print('html.xpath(//title/text()) ：', response.html.xpath('//title/text()'))
+            print('element.xpath(//title/text()) ：', response.element.xpath('//title/text()'))
+            print('query(title).text() ：', response.query('title').text())
+            print('soup.select(title)[0].text ：', response.soup.select('title')[0].text)
+            print('soup.find(title).text ：', response.soup.find('title').text)
 
-        # print(222222222222222222222, partial(single_parse, "HEAD")(urls[3]))
-        # print(3333333333333333333, get(urls[4]))
-        print(4444444444444444444, res := get(urls[0], index=0))
+    def session_example():
+        """会话请求示例"""
+        mylog.info('执行会话请求')
+        # 使用上下文管理器创建会话
+        with SessionClient() as client:
+            # 第一次请求，设置Cookie
+            client.get('https://httpbin.org/cookies/set?name=value')
+            # 第二次请求，会自动携带Cookie
+            response = client.get('https://httpbin.org/cookies')
+            if isinstance(response, htmlResponse):
+                try:
+                    # 使用标准json模块解析JSON数据
+                    import json
 
-        # 进行类型检查，确保res是htmlResponse类型
-        if isinstance(res, htmlResponse):
-            print('xpath-1'.ljust(10), ':', res.xpath(elestr))
-            print('xpath-2'.ljust(10), ':', res.xpath([elestr, elestr]))
-            print(
-                'blank'.ljust(10),
-                ':',
-                res.xpath(['', ' ', ' \t', ' \n', ' \r', ' \r\n', ' \n\r', ' \r\n\t']),
-            )
-            print('dom'.ljust(10), ':', res.dom.xpath(elestr), res.dom.url)
-            print('query'.ljust(10), ':', res.query('title').text())
-            print('element'.ljust(10), ':', res.element.xpath(elestr), res.element.base)
-            print('html'.ljust(10), ':', res.html.xpath(elestr), res.html.base_url)
-        else:
-            print('Error: Invalid response type received -', type(res))
+                    cookies = json.loads(response.text).get('cookies', {})
+                    mylog.success(f'会话Cookie: {cookies}')
+                except Exception as e:
+                    mylog.error(f'解析Cookie失败: {e!s}')
+                    mylog.debug(f'响应内容: {response.text[:100]}...')
 
-    main()
+    def post_request_example():
+        """POST请求示例"""
+        mylog.info('执行POST请求')
+        data = {'key1': 'value1', 'key2': 'value2'}
+        response = post('https://httpbin.org/post', data=data)
+        if isinstance(response, htmlResponse):
+            try:
+                # 使用标准json模块解析JSON数据
+                import json
 
-    @retry_wraps()
-    def my_func():
-        return get('https://www.google.com')
+                json_data = json.loads(response.text)
+                form_data = json_data.get('form', {})
+                mylog.success(f'POST数据接收: {form_data}')
+            except Exception as e:
+                mylog.error(f'解析POST响应失败: {e!s}')
+                mylog.debug(f'响应内容: {response.text[:100]}...')
 
-    # print(my_func())
-
-    """
-    ###############################################################
-    # allow_redirects=False #取消重定向
-    res = get_wraps('https://www.biqukan8.cc/38_38163/')
-    pr = res.query('.listmain dl dd:gt(11)').children()
-    bookname = res.query('h2').text()
-    temp_urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
-    titles = [i.text() for i in pr.items()]
-    res2 = get_wraps(temp_urls[0])
-    title = res2.query('h1').text()
-    content = res2.query('#content').text()
-    # print(bookname, title, '\n', content)
-    # pr = res.query('.listmain dl dt+dd~dd')
-    div = res.query('dt').eq(1).nextAll()
-    urls = [f'https://www.biqukan8.cc{i.attr("href")}' for i in pr.items()]
-    titles = [i.text() for i in pr.items()]
-    print(len(urls), len(titles))
-    ###############################################################
-    # #s.session.auth = ('user', 'pass')
-
-    self.cookies = requests.cookies.RequestsCookieJar()
-    set_cookies(cookies)
-
-    # 将CookieJar转为字典：
-    cookies = requests.utils.dict_from_cookiejar(r.cookies)
-
-    # 将字典转为CookieJar：
-    cookies = requests.utils.cookiejar_from_dict(cookie_dict, cookiejar=None, overwrite=True)
-    #其中cookie_dict是要转换字典转换完之后就可以把它赋给cookies 并传入到session中了：
-    s=requests.Session()
-    s.cookies=cookies
-
-    可以把headers这个请求头直接转成cookiejar类型放入cookies里面
-    cookies = requests.utils.cookiejar_from_dict(headers, cookiejar=None, overwrite=True)
-
-    # https://blog.csdn.net/falseen/article/details/46962011
-    用cookies属性的update方法更新cookie
-
-    cookie_dict = {"a":1}
-    session = requests.Session()
-    session.cookies.update(cookie_dict)
-
-    # 将新的cookies信息更新到手动cookies字典
-    for i in res_cookies_dic.keys():
-        cookies[i] = res_cookies_dic[i]
-    return cookies
-
-
-    res = get("https://www.biqukan.com/38_38836/")
-    element = res.element
-
-    全部章节节点 = element.xpath(
-        '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a')
-
-    for each in 全部章节节点:
-        print(each.xpath("@href")[0])  # 获取属性方法1
-        print(each.attrib['href'])  # 获取属性方法2
-        print(each.get('href'))  # 获取属性方法3
-
-        print(each.xpath("string(.)").strip())  # 获取文本方法1,全
-        print(each.text.strip())  # 获取文本方法2,可能不全
-"""
+    # 执行示例
+    mylog.info('=== HTTP请求工具模块测试开始 ===')
+    try:
+        basic_request_example()
+        session_example()
+        post_request_example()
+        mylog.success('=== HTTP请求工具模块测试完成 ===')
+    except Exception as e:
+        mylog.error(f'测试过程中发生错误: {e!s}')

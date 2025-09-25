@@ -35,7 +35,8 @@ from collections.abc import Callable
 from threading import Event, Thread
 from typing import Any, ClassVar, TypeVar, cast
 
-from xt_wraps import LogCls, SingletonMixin
+from xt_wraps.log import LogCls
+from xt_wraps.singleton import SingletonMixin
 
 log = LogCls()
 

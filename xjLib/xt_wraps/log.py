@@ -34,13 +34,12 @@ from functools import wraps
 from typing import Any
 
 from loguru import logger
-
-from .singleton import SingletonMixin
+from xt_wraps.singleton import SingletonMixin
 
 # 常量定义 - 日志配置参数
 IS_DEV = os.getenv('ENV', 'dev').lower() == 'dev'
 DEFAULT_LOG_LEVEL = 10  # 默认日志级别(DEBUG)
-LOG_FILE_ROTATION_SIZE = '98 MB'  # 日志文件轮转大小
+LOG_FILE_ROTATION_SIZE = '16 MB'  # 日志文件轮转大小
 LOG_FILE_RETENTION_DAYS = '30 days'  # 日志文件保留时间
 MAX_MODULE_PARTS = 3  # 模块路径最多向上追溯的层数
 
@@ -126,14 +125,27 @@ def _process_file_path(file_path: str) -> str:
 
 
 class LogCls(SingletonMixin):
-    """日志配置类 - 采用单例模式确保全局日志配置一致性"""
+    """日志配置类 - 采用单例模式确保全局日志配置一致性
+    特殊符号: ▶️ ✅ ❌ ⚠️  🚫 ⛔ ℹ️ ⏹️ 🚨 🚀
+    - info() - 带ℹ️符号的INFO级别日志
+    - start() - 带▶️符号的DEBUG级别日志
+    - stop() - 带⏹️符号的DEBUG级别日志
+    - ok() - 带✅符号的SUCCESS级别日志
+    - warning() - 带⚠️符号的WARNING级别日志
+    - fail() - 带❌符号的ERROR级别日志
+    - forbidden() - 带⛔符号的CRITICAL级别日志
+    """
 
     def __init__(self, level=DEFAULT_LOG_LEVEL, logger=logger):
         self.log = logger
         self.log.remove()
-
+        # workspace_root = os.path.dirname(os.getcwd())
+        workspace_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # 确保logs目录存在
+        logs_dir = os.path.join(workspace_root, 'logs')
+        os.makedirs(logs_dir, exist_ok=True)
+        log_file = os.path.join(logs_dir, f'xt_{datetime.now().strftime("%Y%m%d")}.log')
         # 文件日志(始终记录)
-        log_file = f'xt_{datetime.now().strftime("%Y%m%d")}.log'
         self.log.add(
             log_file,
             rotation=LOG_FILE_ROTATION_SIZE,
@@ -157,6 +169,38 @@ class LogCls(SingletonMixin):
         except Exception as err:
             raise AttributeError(f"[{type(self).__name__}].[{attr}]: '{err}'") from err
 
+    def info(self, message: str, **kwargs: Any) -> None:
+        """记录带ℹ️ 符号的信息日志(INFO级别)"""
+        self.log.info(f'ℹ️ {message}', **kwargs)
+
+    def start(self, message: str, **kwargs: Any) -> None:
+        """记录带▶️ 符号的开始日志(DEBUG级别)"""
+        self.log.debug(f'▶️ {message}', **kwargs)
+
+    def stop(self, message: str, **kwargs: Any) -> None:
+        """记录带⏹️ 符号的停止日志(DEBUG级别)"""
+        self.log.debug(f'⏹️ {message}', **kwargs)
+
+    def ok(self, message: str, **kwargs: Any) -> None:
+        """记录带✅ 符号的成功日志(SUCCESS级别)"""
+        self.log.success(f'✅ {message}', **kwargs)
+
+    def warning(self, message: str, **kwargs: Any) -> None:
+        """记录带⚠️ 符号的警告日志(WARNING级别)"""
+        self.log.warning(f'⚠️ {message}', **kwargs)
+
+    def warn(self, message: str, **kwargs: Any) -> None:
+        """记录带⚠️ 符号的警告日志(WARNING级别)"""
+        self.log.warning(f'⚠️ {message}', **kwargs)
+
+    def fail(self, message: str, **kwargs: Any) -> None:
+        """记录带❌ 符号的失败日志(ERROR级别)"""
+        self.log.error(f'❌ {message}', **kwargs)
+
+    def forbidden(self, message: str, **kwargs: Any) -> None:
+        """记录带⛔ 符号的禁止日志(CRITICAL级别)"""
+        self.log.critical(f'⛔ {message}', **kwargs)
+
 
 # 全局日志实例
 mylog = LogCls()
@@ -164,77 +208,94 @@ mylog = LogCls()
 
 def log_wraps(
     func: Callable | None = None,
-    log_args: bool = True,
-    log_result: bool = True,
-):
+    log_args: bool = False,
+    log_result: bool = False,
+    re_raise: bool = False,
+    default_return: Any = None,
+    simplify_traceback: bool = False,
+    max_frames: int = 5
+) -> Callable:
     """
-    日志记录装饰器 - 同时支持同步和异步函数,提供参数、返回值记录和异常处理
+    增强版日志记录装饰器 - 提供更丰富的异常处理和日志配置选项
 
     Args:
         func: 被装饰的函数,可选(支持直接装饰和带参数装饰两种方式)
-        log_level: 日志级别,默认10(DEBUG)
-        log_args: 是否记录函数参数
-        log_result: 是否记录函数返回结果
+        log_args: 是否记录函数参数,默认为True
+        log_result: 是否记录函数返回结果,默认为True
+        re_raise: 是否重新抛出异常,默认为True
+        default_return: 不重新抛出异常时的默认返回值,默认为None
+        simplify_traceback: 是否简化堆栈信息,默认为True
+        max_frames: 简化堆栈时显示的最大帧数,默认为5
 
     Returns:
         装饰后的函数,保持原函数签名和功能
 
     Example:
-        >>> # 1. 直接装饰同步函数
-        >>> @log_wraps
-        >>> def add(x, y):
-        >>>     return x + y
+        >>> # 1. 增强版装饰器
+        >>> @log_wraps(re_raise=False)
+        >>> def critical_operation(data):
+        >>>     # 关键操作,异常时不中断程序
+        >>>     return process_data(data)
         >>>
-        >>> # 2. 带参数装饰异步函数
-        >>> @log_wraps(log_result=False)
-        >>> async def process_data(data):
-        >>>     await asyncio.sleep(1)
-        >>>     return f"Processed: {data}"
-        >>>
-        >>> # 3. 完整参数设置
-        >>> @log_wraps(log_level=20, log_args=True, log_result=True)
-        >>> def complex_operation(param1, param2=None):
-        >>> # 函数实现
-        >>>     return result
+        >>> # 2. 带详细堆栈信息的装饰器
+        >>> @log_wraps(simplify_traceback=False, max_frames=10)
+        >>> def debug_operation():
+        >>>     # 调试时显示完整堆栈信息
+        >>>     return complex_calculation()
     """
+    from xt_wraps.exception import handle_exception
 
     def decorator(func: Callable) -> Callable:
-        # 生成基础日志信息,避免在每次函数调用时重新计算
         basemsg = create_basemsg(func)
 
         @wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
-            """同步函数包装器 - 处理同步函数的日志记录和异常捕获"""
+            """同步函数包装器 - 增强版异常处理和日志记录"""
             if log_args:
-                mylog.debug(f'{basemsg} | Args: {args} | Kwargs: {kwargs}')
+                mylog.start(f'{basemsg} | Args: {args} | Kwargs: {kwargs}')
+            
             try:
                 result = func(*args, **kwargs)
                 if log_result:
-                    mylog.success(f'{basemsg} | success | result: {type(result).__name__} = {result}')
-                else:
-                    mylog.success(f'{basemsg} | success | result: {type(result).__name__}')
+                    mylog.ok(f'{basemsg} | result: {type(result).__name__} = {result}')
+
                 return result
             except Exception as err:
-                mylog.error(f'{basemsg} | {type(err).__name__} | {err!s}')
-                # handle_exception(basemsg, err, loger=mylog)
+                # 使用统一的异常处理函数
+                return handle_exception(
+                    basemsg=basemsg,
+                    errinfo=err,
+                    re_raise=re_raise,
+                    default_return=default_return,
+                    simplify_traceback=simplify_traceback,
+                    max_frames=max_frames
+                )
 
         @wraps(func)
         async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
-            """异步函数包装器 - 处理异步函数的日志记录和异常捕获"""
+            """异步函数包装器 - 增强版异常处理和日志记录"""
             if log_args:
-                mylog.debug(f'{basemsg} | Args: {args} | Kwargs: {kwargs}')
+                mylog.start(f'{basemsg} | Args: {args} | Kwargs: {kwargs}')
+            
             try:
                 result = await func(*args, **kwargs)
                 if log_result:
-                    mylog.success(f'{basemsg} | success | result: {type(result).__name__} = {result}')
-                else:
-                    mylog.success(f'{basemsg} | success | result: {type(result).__name__}')
+                    mylog.ok(f'{basemsg} | result: {type(result).__name__} = {result}')
+
                 return result
             except Exception as err:
-                mylog.error(f'{basemsg} | {type(err).__name__} | {err!s}')
+                # 使用统一的异常处理函数
+                return handle_exception(
+                    basemsg=basemsg,
+                    errinfo=err,
+                    re_raise=re_raise,
+                    default_return=default_return,
+                    simplify_traceback=simplify_traceback,
+                    max_frames=max_frames
+                )
 
         # 根据函数类型返回对应的包装函数
         return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
 
-    # 支持两种调用方式:@log_wraps 或 @log_wraps()
+    # 支持两种调用方式:@log_wraps_enhanced 或 @log_wraps_enhanced()
     return decorator(func) if func else decorator

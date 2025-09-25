@@ -33,8 +33,8 @@ from concurrent.futures import Executor, ThreadPoolExecutor
 from functools import partial, wraps
 from typing import Any, TypeVar
 
-from .exception import handle_exception
-from .log import create_basemsg
+from xt_wraps.exception import handle_exception
+from xt_wraps.log import create_basemsg
 
 R = TypeVar('R')
 T = TypeVar('T', bound=Callable[..., Any])

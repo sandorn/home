@@ -11,6 +11,8 @@ Github       : https://github.com/sandorn/home
 ==============================================================
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 
@@ -21,12 +23,11 @@ class CoreEngine:
             dm_instance: 大漠插件实例
         """
         if not dm_instance:
-            raise ValueError("dmobject cannot be None")
+            raise ValueError('dmobject cannot be None')
         self.dm_instance = dm_instance
 
     def __repr__(self):
-        ret = f"版本： {self.ver()} ID：{self.GetID()}"
-        return ret
+        return f'版本： {self.ver()} ID：{self.GetID()}'
 
     def GetDmCount(self):
         return self.dm_instance.GetDmCount()
@@ -69,15 +70,13 @@ class CoreEngine:
         x2,
         y2,
         pic_name,
-        delta_color="101010",
+        delta_color='101010',
         sim=0.9,
         dir=0,
         # intX=0,
         # intY=0,
     ):
-        return self.dm_instance.FindPic(
-            x1, y1, x2, y2, pic_name, delta_color=delta_color, sim=sim, dir=dir
-        )
+        return self.dm_instance.FindPic(x1, y1, x2, y2, pic_name, delta_color=delta_color, sim=sim, dir=dir)
 
     def FindColor(self, x1, y1, x2, y2, color, sim, dir, intX, intY):
         # _, x0, y0 = dm.FindColor(0, 0, 1200, 800, color = "757575", sim = 1.0, dir = 1,  intX = 0, intY = 0)
@@ -107,9 +106,9 @@ class CoreEngine:
     def BindWindow(
         self,
         hwnd,
-        display=["normal", "gdi", "gdi2", "dx", "dx2"][1],
-        mouse=["normal", "windows", "windows2", "windows3", "dx", "dx2"][3],
-        keypad=["normal", "windows", "dx"][1],
+        display=['normal', 'gdi', 'gdi2', 'dx', 'dx2'][1],
+        mouse=['normal', 'windows', 'windows2', 'windows3', 'dx', 'dx2'][3],
+        keypad=['normal', 'windows', 'dx'][1],
         mode=[0, 1, 2, 3, 4, 5, 6, 7, 101, 103][8],
     ):
         return self.dm_instance.BindWindow(hwnd, display, mouse, keypad, mode)
@@ -123,7 +122,7 @@ class CoreEngine:
     def MoveWindow(self, hwnd, x, y):
         return self.dm_instance.MoveWindow(hwnd, x, y)
 
-    def FindWindow(self, class_name="", title_name=""):
+    def FindWindow(self, class_name='', title_name=''):
         return self.dm_instance.FindWindow(class_name, title_name)
 
     def ClientToScreen(self, hwnd, x, y):
@@ -133,9 +132,7 @@ class CoreEngine:
         return self.dm_instance.ScreenToClient(hwnd, x, y)
 
     def FindWindowByProcess(self, process_name, class_name, title_name):
-        return self.dm_instance.FindWindowByProcess(
-            process_name, class_name, title_name
-        )
+        return self.dm_instance.FindWindowByProcess(process_name, class_name, title_name)
 
     def FindWindowByProcessId(self, process_id, class_, title):
         return self.dm_instance.FindWindowByProcessId(process_id, class_, title)
@@ -171,14 +168,10 @@ class CoreEngine:
         return self.dm_instance.EnumWindow(parent, title, class_name, filter)
 
     def EnumWindowByProcess(self, process_name, title, class_name, filter):
-        return self.dm_instance.EnumWindowByProcess(
-            process_name, title, class_name, filter
-        )
+        return self.dm_instance.EnumWindowByProcess(process_name, title, class_name, filter)
 
     def EnumWindowSuper(self, spec1, flag1, type1, spec2, flag2, type2, sort):
-        return self.dm_instance.EnumWindowSuper(
-            spec1, flag1, type1, spec2, flag2, type2, sort
-        )
+        return self.dm_instance.EnumWindowSuper(spec1, flag1, type1, spec2, flag2, type2, sort)
 
     def GetCursorPos(self, x=0, y=0):
         return self.dm_instance.GetCursorPos(x, y)
@@ -186,14 +179,10 @@ class CoreEngine:
     def GetKeyState(self, vk_code):
         return self.dm_instance.GetKeyState(vk_code)
 
-    def SetKeypadDelay(
-        self, type=["normal", "windows", "dx"][-1], delay=[0.03, 0.01, 0.05][-1]
-    ):
+    def SetKeypadDelay(self, type=['normal', 'windows', 'dx'][-1], delay=[0.03, 0.01, 0.05][-1]):
         return self.dm_instance.SetKeypadDelay(type, delay)
 
-    def SetMouseDelay(
-        self, type=["normal", "windows", "dx"][-1], delay=[0.03, 0.01, 0.04][-1]
-    ):
+    def SetMouseDelay(self, type=['normal', 'windows', 'dx'][-1], delay=[0.03, 0.01, 0.04][-1]):
         return self.dm_instance.SetMouseDelay(type, delay)
 
     def WaitKey(self, vk_code, time_out=0):
@@ -268,9 +257,7 @@ class CoreEngine:
         return self.dm_instance.FindData(hwnd, addr_range, data)
 
     def FindDataEx(self, hwnd, addr_range, data, step, multi_thread, mode):
-        return self.dm_instance.FindDataEx(
-            hwnd, addr_range, data, step, multi_thread, mode
-        )
+        return self.dm_instance.FindDataEx(hwnd, addr_range, data, step, multi_thread, mode)
 
     def DoubleToData(self, value):
         return self.dm_instance.DoubleToData(value)

@@ -23,9 +23,14 @@ Github       : https://github.com/sandorn/home
 
 from __future__ import annotations
 
+import asyncio
 import os
 import traceback
+from collections.abc import Callable
+from functools import wraps
 from typing import Any
+
+from xt_wraps.log import create_basemsg, mylog
 
 # 常量定义 - 异常处理配置参数
 DEFAULT_MAX_FRAMES = 5  # 默认最大显示堆栈帧数
@@ -98,7 +103,6 @@ def get_simplified_traceback(
 def handle_exception(
     basemsg: str,
     errinfo: Exception,
-    loger: Any = None,
     re_raise: bool = False,
     default_return: Any = None,
     simplify_traceback: bool = DEFAULT_SIMPLIFY_TRACEBACK,
@@ -112,7 +116,6 @@ def handle_exception(
     Args:
         basemsg: 异常上下文信息，通常包含函数名、文件名等标识信息
         errinfo: 异常对象
-        loger: 日志记录器实例，如果为None则使用模块内的默认日志记录器
         re_raise: 是否重新抛出异常，默认False（不抛出，返回默认值）
         default_return: 不抛出异常时的默认返回值，default_return为None时返回：(None, 错误信息)
         simplify_traceback: 是否简化堆栈信息，默认True（简化）
@@ -141,13 +144,7 @@ def handle_exception(
         ...     handle_exception(e, 'critical_operation', loger=logger, re_raise=True, simplify_traceback=True, max_frames=3)
     """
     # 统一的日志格式
-    error_message = f'Handle Exception: {basemsg} | {type(errinfo).__name__} | {errinfo!s}'
-
-    # 如果没有提供日志记录器，使用标准错误输出
-    if loger is None:
-        from .log import mylog
-
-        loger = mylog
+    error_message = f'{basemsg} | handle_exception | {type(errinfo).__name__} | {errinfo!s}'
 
     # 环境感知处理 - 开发环境显示更详细的堆栈信息
     stack_info: str = ''
@@ -157,12 +154,57 @@ def handle_exception(
         stack_info = traceback.format_exc()  # 使用完整的堆栈信息
 
     if os.getenv('ENV', 'dev').lower() == 'dev':
-        loger.error(f'{error_message} | Stack: {stack_info}')
+        mylog.warning(f'{error_message} | Stack: {stack_info}')
     else:
         # 生产环境仅记录必要信息
-        loger.error(error_message)
+        mylog.warning(error_message)
 
     # 根据需要重新抛出异常
     if re_raise:
         raise type(errinfo)(error_message) from errinfo
     return error_message if default_return is None else default_return
+
+
+def exc_wraps(
+    func: Callable | None = None,
+    re_raise: bool = True,
+    default_return: Any = None,
+    simplify_traceback: bool = False,
+    max_frames: int = DEFAULT_MAX_FRAMES,
+    include_library_frames: bool = DEFAULT_INCLUDE_LIBRARY_FRAMES,
+    show_full_path: bool = DEFAULT_SHOW_FULL_PATH,
+):
+    """
+    异常装饰器 - 同时支持同步和异步函数,提供参数、返回值记录和异常处理
+
+    Args:
+        func: 被装饰的函数,可选(支持直接装饰和带参数装饰两种方式)
+
+    Returns:
+        装饰后的函数,保持原函数签名和功能
+    """
+
+    def decorator(func: Callable) -> Callable:
+        basemsg = create_basemsg(func)
+
+        @wraps(func)
+        def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
+            """同步函数包装器 - 处理同步函数的异常捕获"""
+            try:
+                return func(*args, **kwargs)
+            except Exception as err:
+                handle_exception(basemsg, err, re_raise=re_raise, default_return=default_return, simplify_traceback=simplify_traceback, max_frames=max_frames, include_library_frames=include_library_frames, show_full_path=show_full_path)
+
+        @wraps(func)
+        async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
+            """异步函数包装器 - 处理异步函数的异常捕获"""
+            try:
+                return await func(*args, **kwargs)
+            except Exception as err:
+                handle_exception(basemsg, err, re_raise=re_raise, default_return=default_return, simplify_traceback=simplify_traceback, max_frames=max_frames, include_library_frames=include_library_frames, show_full_path=show_full_path)
+
+        # 根据函数类型返回对应的包装函数
+        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+
+    # 支持两种调用方式:@log_wraps 或 @log_wraps()
+    return decorator(func) if func else decorator

@@ -43,10 +43,9 @@ from threading import Condition, Lock, RLock, current_thread
 from typing import Any, TypeVar
 
 import psutil
+from xt_thread.thread import SafeThread, ThreadBase
+from xt_thread.thread import ThreadManager as ThreadInstanceManager
 from xt_wraps import handle_exception
-
-from .thread import SafeThread, ThreadBase
-from .thread import ThreadManager as ThreadInstanceManager
 
 T = TypeVar('T')
 R = TypeVar('R')

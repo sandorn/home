@@ -8,9 +8,9 @@ Date         : 2024-08-21 14:27:52
 """
 from __future__ import annotations
 
-from concurrent.futures import wait
 import time
 import unittest
+from concurrent.futures import wait
 
 from xt_thread.futures import (
     AsyncFunction,

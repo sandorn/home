@@ -29,7 +29,7 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 from .core import decorate_sync_async
-from .exception import handle_exception
+from .exception import exc_wraps, handle_exception
 from .executor import (
     executor_wraps,
     future_wraps,
@@ -52,6 +52,7 @@ __all__ = [
     'create_basemsg',
     'decorate_sync_async',
     'ensure_initialized',
+    'exc_wraps',
     'executor_wraps',
     'future_wraps',
     'future_wraps_result',

@@ -23,17 +23,18 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from functools import wraps
-from typing import Any, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar, cast, overload
 
-from .exception import handle_exception
-from .log import create_basemsg
+from xt_wraps.exception import handle_exception
+from xt_wraps.log import create_basemsg
 
 T = TypeVar('T', bound=Callable[..., Any])
+P = ParamSpec('P')
 
 
-def decorate_sas(decorator_func: Callable) -> Callable:
+def decorate_sas(decorator_func: Callable[..., Any]) -> Callable[[T], T]:
     """
     使装饰器同时支持同步和异步函数的装饰器工厂 - 基础版本
 
@@ -62,7 +63,10 @@ def decorate_sas(decorator_func: Callable) -> Callable:
     @wraps(decorator_func)
     def wrapper(func: T) -> T:
         async def async_wrapped(*args: Any, **kwargs: Any) -> Any:
-            return await decorator_func(func, *args, **kwargs)
+            result = decorator_func(func, *args, **kwargs)
+            if asyncio.iscoroutine(result):
+                return await result
+            return result
 
         def sync_wrapped(*args: Any, **kwargs: Any) -> Any:
             return decorator_func(func, *args, **kwargs)
@@ -73,8 +77,7 @@ def decorate_sas(decorator_func: Callable) -> Callable:
     return wrapper
 
 
-def create_async_wrapper[T](decorator_func: Callable, func: T, decorator_kwargs: dict) -> Callable:
-    # T 是被装饰函数的类型参数
+def create_async_wrapper[F: Callable[..., Any]](decorator_func: Callable[..., Any], func: F, decorator_kwargs: dict[str, Any]) -> Callable[P, Awaitable[Any]]:
     """创建异步包装函数"""
 
     @wraps(func)
@@ -82,11 +85,16 @@ def create_async_wrapper[T](decorator_func: Callable, func: T, decorator_kwargs:
         try:
             # 判断装饰器函数的调用方式
             if decorator_func.__code__.co_argcount > 0:
-                return await decorator_func(func, *args, **kwargs)
+                result = decorator_func(func, *args, **kwargs)
+                if asyncio.iscoroutine(result):
+                    return await result
+                return result
+
             # 直接调用装饰后的函数
             decorated_func = decorator_func(**decorator_kwargs)
             if asyncio.iscoroutinefunction(decorated_func):
                 return await decorated_func(*args, **kwargs)
+
             # 对于同步装饰后的函数，使用run_in_executor确保不阻塞事件循环
             loop = asyncio.get_event_loop()
             return await loop.run_in_executor(None, lambda: decorated_func(*args, **kwargs))
@@ -98,8 +106,7 @@ def create_async_wrapper[T](decorator_func: Callable, func: T, decorator_kwargs:
     return async_wrapped
 
 
-def create_sync_wrapper[T](decorator_func: Callable, func: T, decorator_kwargs: dict) -> Callable:
-    # T 是被装饰函数的类型参数
+def create_sync_wrapper[F: Callable[..., Any]](decorator_func: Callable[..., Any], func: F, decorator_kwargs: dict[str, Any]) -> Callable[P, Any]:
     """创建同步包装函数"""
 
     @wraps(func)
@@ -117,7 +124,15 @@ def create_sync_wrapper[T](decorator_func: Callable, func: T, decorator_kwargs: 
     return sync_wrapped
 
 
-def decorate_sync_async[T](decorator_func: T = None, **decorator_kwargs) -> T:
+@overload
+def decorate_sync_async[F: Callable[..., Any]](decorator_func: F) -> Callable[[T], T]: ...
+
+
+@overload
+def decorate_sync_async[F: Callable[..., Any]](decorator_func: None = None, **decorator_kwargs: Any) -> Callable[[F], Callable[[T], T]]: ...
+
+
+def decorate_sync_async[F: Callable[..., Any]](decorator_func: F | None = None, **decorator_kwargs: Any) -> Callable[[T], T] | Callable[[F], Callable[[T], T]]:
     """
     增强版装饰器工厂 - 同时支持同步和异步函数，支持可选参数和无参数装饰器模式
 
@@ -166,8 +181,8 @@ def decorate_sync_async[T](decorator_func: T = None, **decorator_kwargs) -> T:
     # 处理无参数装饰器模式 @decorate_sync_async
     if decorator_func is None:
 
-        def decorator_wrapper(func: Callable) -> Callable:
-            return decorate_sync_async(func, **decorator_kwargs)
+        def decorator_wrapper(inner_func: F) -> Callable[[T], T]:
+            return decorate_sync_async(inner_func, **decorator_kwargs)
 
         return decorator_wrapper
 
@@ -178,3 +193,4 @@ def decorate_sync_async[T](decorator_func: T = None, **decorator_kwargs) -> T:
         return cast(T, wrapped)
 
     return decorator
+

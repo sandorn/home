@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
 LastEditTime : 2025-09-07 10:00:00
-FilePath     : /CODE/xjLib/xt_ahttp.py
+FilePath     : /CODE/xjlib/xt_ahttp.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能:
@@ -31,7 +31,6 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 import asyncio
-import selectors
 from collections.abc import Callable
 from functools import partial
 
@@ -39,22 +38,6 @@ from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, Head
 from xt_response import ACResponse
 from xt_wraps import TRETRY, handle_exception, log_wraps
-
-
-class MyPolicy(asyncio.DefaultEventLoopPolicy):
-    """自定义事件循环策略,使用SelectSelector提高兼容性
-    解决Windows平台上asyncio事件循环的一些兼容性问题,
-    特别是在不同Python版本和系统环境下的稳定性。
-    """
-
-    def new_event_loop(self):
-        """创建新的事件循环实例,使用SelectSelector作为底层实现"""
-        selector = selectors.SelectSelector()
-        return asyncio.SelectorEventLoop(selector)
-
-
-# 设置自定义事件循环策略以提高兼容性
-asyncio.set_event_loop_policy(MyPolicy())
 
 # 定义模块公开接口
 __all__ = ('AsyncHttpClient', 'ahttp_get', 'ahttp_get_all', 'ahttp_post', 'ahttp_post_all')
@@ -344,7 +327,6 @@ ahttp_post = partial(single_parse, 'post')
 ahttp_get_all = partial(multi_parse, 'get')
 ahttp_post_all = partial(multi_parse, 'post')
 ahttp_get_all_sequential = partial(multi_parse, 'get', max_concurrency=24, force_sequential=True)
-
 
 # 为保持与xt_ahttp.py的兼容性
 ahttpGet = ahttp_get  # 兼容驼峰命名  # noqa: N816

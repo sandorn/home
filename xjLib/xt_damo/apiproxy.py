@@ -1,30 +1,11 @@
+from __future__ import annotations
+
 import math
 import random
-from time import sleep, time
+from time import sleep
 from typing import Any
 
 from bdtime import tt
-
-
-class _timed_loop:
-    """超时循环上下文管理器"""
-
-    def __init__(self, timeout):
-        self.timeout = timeout
-        self.start = time() * 1000
-
-    def __iter__(self):
-        while not self._expired():
-            yield
-
-    def _expired(self):
-        return self.timeout > 0 and (time() * 1000 - self.start) >= self.timeout
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        pass
 
 
 class ApiProxy:
@@ -36,17 +17,17 @@ class ApiProxy:
             ValueError: 如果dmobject为None
         """
         if not dm_instance:
-            raise ValueError("dmobject参数不能为空")
+            raise ValueError('dmobject参数不能为空')
         self.dm_instance = dm_instance
-        self._last_error = ""  # 新增错误记录属性
+        self._last_error = ''  # 新增错误记录属性
 
     def 绑定窗口(
         self,
         hwnd: int,
-        display: str = ["normal", "gdi", "gdi2", "dx", "dx2"][1],
-        mouse: str = ["normal", "windows", "windows2", "windows3", "dx", "dx2"][3],
-        keypad: str = ["normal", "windows", "dx"][1],
-        pulic: str = "dx.public.fake.window.min|dx.public.hack.speed",
+        display: str = ['normal', 'gdi', 'gdi2', 'dx', 'dx2'][1],
+        mouse: str = ['normal', 'windows', 'windows2', 'windows3', 'dx', 'dx2'][3],
+        keypad: str = ['normal', 'windows', 'dx'][1],
+        pulic: str = 'dx.public.fake.window.min|dx.public.hack.speed',
         mode: int = [0, 1, 2, 3, 4, 5, 6, 7, 101, 103][8],
     ) -> bool:
         """绑定窗口
@@ -63,10 +44,10 @@ class ApiProxy:
         ret = self.dm_instance.BindWindowEx(hwnd, display, mouse, keypad, pulic, mode)
         if ret != 1:
             self._last_error = self.dm_instance.GetLastError()
-            print(f"窗口绑定失败! 错误代码: {self._last_error}")
+            print(f'窗口绑定失败! 错误代码: {self._last_error}')
             return False
 
-        print("窗口绑定成功!")
+        print('窗口绑定成功!')
         return True
 
     def 解绑窗口(self):
@@ -79,15 +60,14 @@ class ApiProxy:
 
     def _parse_result(self, ret: str):
         """解析坐标结果，增加容错处理，始终返回(x, y)格式的坐标二元组"""
-        parts = (ret or "").split("|")
+        parts = (ret or '').split('|')
         try:
             if len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit():
                 return (int(parts[1]), int(parts[2]))
-            elif len(parts) >= 2 and parts[1].isdigit():
+            if len(parts) >= 2 and parts[1].isdigit():
                 # 如果只有一个有效数字，返回(x, 0)的形式
                 return (int(parts[1]), 0)
-            else:
-                return (0, 0)
+            return (0, 0)
         except (ValueError, IndexError):
             return (0, 0)
 
@@ -101,72 +81,64 @@ class ApiProxy:
         target,
         timeout=0,
         click=False,
-        autoResetPos=False,
+        reset_pos=False,
         disappear=False,
         confidence=0.9,
     ):
-        """通用查找执行方法（使用_timed_loop优化）"""
+        """通用查找执行方法（使用bdtime优化）"""
         state = False
         x: int = 0
         y: int = 0
 
         while tt.during(timeout):
-                x, y = self._parse_result(find_func(x1, y1, x2, y2, target))
+            x, y = self._parse_result(find_func(x1, y1, x2, y2, target))
 
-                if x > 0 and y > 0:
-                    if click:
-                        self.dm_instance.safe_click(x, y, autoResetPos)
-                    state = True
-                    if not disappear:
-                        break
-
-                elif disappear:
+            if x > 0 and y > 0:
+                if click:
+                    self.dm_instance.safe_click(x, y, reset_pos)
+                state = True
+                if not disappear:
                     break
 
-                sleep(random.randint(50, 400) / 1000)
+            elif disappear:
+                break
+
+            sleep(random.randint(50, 400) / 1000)
 
         return state, x, y
 
-    def 找字单击至消失(
-        self, x1, y1, x2, y2, text, color, timeout=0, autoResetPos=False
-    ):
+    def 找字单击至消失(self, x1, y1, x2, y2, text, color, timeout=0, reset_pos=False):
         """优化参数命名和lambda表达式"""
         return self._find_and_act(
             x1,
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(
-                x1, y1, x2, y2, t, color, 0.9
-            ),
+            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(x1, y1, x2, y2, t, color, 0.9),
             text,
             timeout,
             click=True,
-            autoResetPos=autoResetPos,
+            reset_pos=reset_pos,
             disappear=True,
         )
 
-    def 找字单击(self, x1, y1, x2, y2, text, color, timeout=0, autoResetPos=False):
+    def 找字单击(self, x1, y1, x2, y2, text, color, timeout=0, reset_pos=False):
         return self._find_and_act(
             x1,
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(
-                x1, y1, x2, y2, t, color, 0.9
-            ),
+            lambda x1, y1, x2, y2, t: self.dm_instance.FindStrE(x1, y1, x2, y2, t, color, 0.9),
             text,
             timeout,
             click=True,
-            autoResetPos=autoResetPos,
+            reset_pos=reset_pos,
         )
 
     def 找字返回坐标(self, x1, y1, x2, y2, text, color, timeout=0):
         state, (x, y) = False, (0, 0)
         while tt.during(timeout):
-            x, y = self._parse_result(
-                self.dm_instance.FindStrE(x1, y1, x2, y2, text, color, 0.9)
-            )
+            x, y = self._parse_result(self.dm_instance.FindStrE(x1, y1, x2, y2, text, color, 0.9))
             if x > 0 and y > 0:
                 state = True
                 break
@@ -183,40 +155,32 @@ class ApiProxy:
             t,
         )
 
-    def 找图单击至消失(
-        self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, autoResetPos=False
-    ):
+    def 找图单击至消失(self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, reset_pos=False):
         """优化参数命名和lambda表达式"""
         return self._find_and_act(
             x1,
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
-                x1, y1, x2, y2, n, "000000", 0.9, scan_mode
-            ),
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(x1, y1, x2, y2, n, '000000', 0.9, scan_mode),
             name,
             timeout,
             click=True,
-            autoResetPos=autoResetPos,
+            reset_pos=reset_pos,
             disappear=True,
         )
 
-    def 找图单击(
-        self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, autoResetPos=False
-    ):
+    def 找图单击(self, x1, y1, x2, y2, name, timeout=0, scan_mode=0, reset_pos=False):
         return self._find_and_act(
             x1,
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
-                x1, y1, x2, y2, n, "000000", 0.9, scan_mode
-            ),
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(x1, y1, x2, y2, n, '000000', 0.9, scan_mode),
             name,
             timeout,
             click=True,
-            autoResetPos=autoResetPos,
+            reset_pos=reset_pos,
         )
 
     def 找图返回坐标(self, x1, y1, x2, y2, name, timeout=0, scan_mode=0):
@@ -226,9 +190,7 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
-                x1, y1, x2, y2, n, "000000", 0.9, scan_mode
-            ),
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(x1, y1, x2, y2, n, '000000', 0.9, scan_mode),
             name,
             timeout,
         )
@@ -240,9 +202,7 @@ class ApiProxy:
             y1,
             x2,
             y2,
-            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(
-                x1, y1, x2, y2, n, "000000", 0.9, scan_mode
-            ),
+            lambda x1, y1, x2, y2, n: self.dm_instance.FindPicE(x1, y1, x2, y2, n, '000000', 0.9, scan_mode),
             name,
             timeout,
         )
@@ -256,9 +216,9 @@ class ApiProxy:
 
         if timeout > 0:
             while tt.during(timeout):
-                    if text := ocr_operation():
-                        return text
-                    sleep(random.uniform(0.05, 0.4))
+                if text := ocr_operation():
+                    return text
+                sleep(random.uniform(0.05, 0.4))
         else:
             if text := ocr_operation():
                 return text
@@ -314,9 +274,7 @@ class ApiProxy:
         # 遍历完所有圈数未找到目标，返回失败
         return False
 
-    def 散点渐开找鼠标(
-        self, 起点坐标X, 起点坐标Y, 鼠标特征码, radius=2, radius步长=0.6, 圈数判定=80
-    ):
+    def 散点渐开找鼠标(self, 起点坐标X, 起点坐标Y, 鼠标特征码, radius=2, radius步长=0.6, 圈数判定=80):
         for _ in range(圈数判定):
             xzb = 起点坐标X + math.cos(radius) + radius * math.sin(radius)
             yzb = 起点坐标Y + math.sin(radius) - radius * math.cos(radius)

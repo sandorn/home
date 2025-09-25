@@ -25,17 +25,6 @@ from xt_wraps import LogCls
 mylog = LogCls()
 
 
-class MyPolicy(asyncio.DefaultEventLoopPolicy):
-    """自定义事件循环策略类 - 配置异步IO事件循环类型"""
-
-    def new_event_loop(self):
-        # return asyncio.ProactorEventLoop()
-        return asyncio.SelectorEventLoop()
-
-
-asyncio.set_event_loop_policy(MyPolicy())
-
-
 class AioCrawl:
     """异步类 - 使用TaskExecutor实现高效的任务管理
 
@@ -57,12 +46,7 @@ class AioCrawl:
         self.max_workers = max_workers
         self.io_bound = io_bound
 
-    def add_pool(
-        self,
-        func,
-        iterables: list[tuple | list[tuple | list, dict]] | list[Any],
-        callback=None,
-    ):
+    def add_pool(self, func, iterables: list[tuple | list[tuple | list, dict]] | list[Any], callback=None):
         """添加函数(同步异步均可)及参数列表，异步运行
 
         参数:
@@ -77,12 +61,7 @@ class AioCrawl:
         """
         return asyncio.run(self.multi_fetch(func, iterables, callback=callback))
 
-    async def multi_fetch(
-        self,
-        func: Callable,
-        iterables: list[tuple | list[tuple | list, dict]] | list[Any],
-        callback: Callable | None = None,
-    ):
+    async def multi_fetch(self, func: Callable, iterables: list[tuple | list[tuple | list, dict]] | list[Any], callback: Callable | None = None):
         """异步批量执行函数
 
         参数:
@@ -123,12 +102,7 @@ class AioCrawl:
 
         return await asyncio.gather(*tasks, return_exceptions=True)
 
-    def fetch_tasks(
-        self,
-        func: Callable,
-        iterables: list[tuple | list[tuple | list, dict]] | list[Any],
-        callback: Callable | None = None,
-    ) -> list[Any]:
+    def fetch_tasks(self, func: Callable, iterables: list[tuple | list[tuple | list, dict]] | list[Any], callback: Callable | None = None) -> list[Any]:
         """执行自定义任务列表
 
         使用TaskExecutor管理任务执行，支持并行处理多个HTTP请求或其他I/O任务。

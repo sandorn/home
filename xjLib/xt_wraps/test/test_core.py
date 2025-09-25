@@ -11,8 +11,8 @@ https://mp.weixin.qq.com/s/4nkQITVniE9FhESDMt34Ow  # wrapt库
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
 import time
+from collections.abc import Callable
 from typing import Any
 
 from xt_wraps.core import decorate_sas, decorate_sync_async
@@ -42,26 +42,22 @@ class TestResult:
 
 def print_test_header(title: str, indent: int = 0) -> None:
     """打印测试标题"""
-    prefix = '  ' * indent
-    print(f'{prefix}===== {title} =====')
+    '  ' * indent
 
 
 def print_test_case(test_id: str, description: str, indent: int = 1) -> None:
     """打印测试用例信息"""
-    prefix = '  ' * indent
-    print(f'{prefix}{test_id}. {description}')
+    '  ' * indent
 
 
 def print_call_path(call_info: str, indent: int = 2) -> None:
     """打印调用路径信息"""
-    prefix = '  ' * indent
-    print(f'{prefix}↳ {call_info}')
+    '  ' * indent
 
 
 def print_test_result(result: Any, indent: int = 2) -> None:
     """打印测试结果"""
-    prefix = '  ' * indent
-    print(f'{prefix}结果: {result}')
+    '  ' * indent
 
 
 # 1. 测试 decorate_sas 函数 - 基本功能测试
@@ -71,8 +67,7 @@ def simple_decorator(func: Callable) -> Callable:
     """1.1.1 一个简单的装饰器函数，用于测试decorate_sas"""
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         print_call_path(f'简单装饰器: 调用函数 {func.__name__}')
-        result = func(*args, **kwargs)
-        return result
+        return func(*args, **kwargs)
     return wrapper
 
 
@@ -81,8 +76,7 @@ def simple_decorator(func: Callable) -> Callable:
 def sas_decorator(func: Callable, *args: Any, **kwargs: Any) -> Any:
     """1.2.1 使用decorate_sas包装的装饰器函数"""
     print_call_path(f'SAS装饰器: 调用函数 {func.__name__}')
-    result = func(*args, **kwargs)
-    return result
+    return func(*args, **kwargs)
 
 
 # 先定义装饰器,再使用它
@@ -91,7 +85,7 @@ sas_wrapper = decorate_sas(sas_decorator)
 
 # 2. 测试 decorate_sync_async 函数 - 基本功能测试
 # 2.1 创建用于测试的装饰器函数，支持参数
-def enhanced_decorator(func: Callable = None, prefix: str = '[Enhanced]', print_args: bool = False) -> Callable:
+def enhanced_decorator(func: Callable | None = None, prefix: str = '[Enhanced]', print_args: bool = False) -> Callable:
     """2.1.1 增强的装饰器函数，支持参数"""
     # 处理无参数调用模式
     if func is None:
@@ -105,8 +99,7 @@ def enhanced_decorator(func: Callable = None, prefix: str = '[Enhanced]', print_
         print_call_path(f'{prefix} 调用函数 {func.__name__}')
         if print_args:
             print_call_path(f'{prefix} 参数: args={args}, kwargs={kwargs}')
-        result = func(*args, **kwargs)
-        return result
+        return func(*args, **kwargs)
     
     return decorator(func)
 
@@ -322,7 +315,6 @@ async def run_all_tests():
 
     # 输出测试总结
     print_test_header('所有测试完成!', 0)
-    print(f'\n{test_result.summary()}')
 
 
 # 运行测试
