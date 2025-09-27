@@ -28,11 +28,12 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 from threading import RLock
-from typing import Any, TypeVar, cast
+from typing import Any
 from weakref import WeakKeyDictionary, WeakValueDictionary
 
-T = TypeVar('T')
-S = TypeVar('S')  # 用于SingletonWraps的泛型参数
+# 类型别名定义
+T = type[Any]
+S = type[Any]
 
 
 class SingletonMeta(type):
@@ -85,37 +86,37 @@ class SingletonMeta(type):
     _instances: WeakValueDictionary[type, Any] = WeakValueDictionary()  # 使用弱引用字典来存储实例
     _instance_lock: RLock = RLock()  # 使用可重入锁，避免递归调用问题
 
-    def __call__(cls: type[T], *args: Any, **kwargs: Any) -> T:
+    def __call__(cls: T, *args: Any, **kwargs: Any) -> Any:
         """获取单例实例（带异常处理）"""
         # 第一次检查（无锁）
         if cls in cls._instances:
-            return cast(T, cls._instances[cls])
+            return cls._instances[cls]
 
         # 获取锁
         with cls._instance_lock:
             # 第二次检查（有锁）
             if cls in cls._instances:
-                return cast(T, cls._instances[cls])
+                return cls._instances[cls]
 
             try:
                 instance = super().__call__(*args, **kwargs)
                 cls._instances[cls] = instance
-                return cast(T, instance)
+                return instance
             except Exception as e:
                 raise RuntimeError(f'SingletonMeta __call__ failed for {cls.__name__}: {e}') from e
 
-    def reset_instance(cls: type[Any]) -> None:
+    def reset_instance(cls: T) -> None:
         """重置单例实例（通过类调用）"""
         with cls._instance_lock:
             cls._instances.pop(cls, None)  # 移除该类的实例引用
 
-    def has_instance(cls: type[Any]) -> bool:
+    def has_instance(cls: T) -> bool:
         """检查是否存在单例实例"""
         return cls in cls._instances
 
-    def get_instance(cls: type[T]) -> T | None:
+    def get_instance(cls: T) -> Any | None:
         """获取当前单例实例（不创建新实例）"""
-        return cast(T, cls._instances.get(cls)) if cls in cls._instances else None
+        return cls._instances.get(cls) if cls in cls._instances else None
 
 
 class SingletonMixin:
@@ -177,17 +178,17 @@ class SingletonMixin:
     _instance_lock: RLock = RLock()  # 使用可重入锁，避免递归调用问题
     _instances: WeakValueDictionary[type, Any] = WeakValueDictionary()
 
-    def __new__(cls: type[T], *args: Any, **kwargs: Any) -> T:
+    def __new__(cls: T, *args: Any, **kwargs: Any) -> Any:
         """实例化处理（带错误日志和双重检查锁）"""
         # 第一次检查（无锁）
         if cls in cls._instances:
-            return cast(T, cls._instances[cls])
+            return cls._instances[cls]
 
         # 获取锁
         with cls._instance_lock:
             # 第二次检查（有锁）
             if cls in cls._instances:
-                return cast(T, cls._instances[cls])
+                return cls._instances[cls]
 
             try:
                 # 创建实例
@@ -195,7 +196,7 @@ class SingletonMixin:
                 # 存储实例引用
                 cls._instances[cls] = instance
                 # 注意：不手动调用__init__，让Python正常流程处理初始化
-                return cast(T, instance)
+                return instance
             except Exception as e:
                 # 清理失败的实例
                 if cls in cls._instances:
@@ -204,23 +205,23 @@ class SingletonMixin:
                 raise RuntimeError(f'SingletonMixin {cls.__name__} __new__ failed: {e}') from e
 
     @classmethod
-    def reset_instance(cls: type[Any]) -> None:
+    def reset_instance(cls: T) -> None:
         """重置单例实例"""
         with cls._instance_lock:
             cls._instances.pop(cls, None)  # 移除该类的实例引用
 
     @classmethod
-    def has_instance(cls: type[Any]) -> bool:
+    def has_instance(cls: T) -> bool:
         """检查是否存在单例实例"""
         return cls in cls._instances
 
     @classmethod
-    def get_instance(cls: type[T]) -> T | None:
+    def get_instance(cls: T) -> Any | None:
         """获取当前单例实例（不创建新实例）"""
-        return cast(T, cls._instances.get(cls)) if cls in cls._instances else None
+        return cls._instances.get(cls) if cls in cls._instances else None
 
 
-class SingletonWraps[S]:
+class SingletonWraps:
     """线程安全的单例装饰器类实现（增强版）
 
     核心功能：
@@ -276,12 +277,12 @@ class SingletonWraps[S]:
         print(f"新实例最大大小: {cache4.max_size}")  # 输出: 500
     """
 
-    def __init__(self, cls: type[S]) -> None:
-        self._cls: type[S] = cls
+    def __init__(self, cls: S) -> None:
+        self._cls: S = cls
         self._instance_rlock: RLock = RLock()  # 使用可重入锁
-        self._instances: WeakKeyDictionary[type[S], S] = WeakKeyDictionary()  # 使用弱键字典存储类与实例的关联
+        self._instances: WeakKeyDictionary[S, Any] = WeakKeyDictionary()  # 使用弱键字典存储类与实例的关联
 
-    def __call__(self, *args: Any, **kwargs: Any) -> S:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """获取/创建单例实例"""
         reinit: bool = kwargs.pop('reinit', False)  # 支持重新初始化
 
@@ -313,24 +314,24 @@ class SingletonWraps[S]:
         """检查是否存在单例实例"""
         return self._cls in self._instances
 
-    def get_instance(self) -> S | None:
+    def get_instance(self) -> Any | None:
         """安全获取实例（处理弱引用,不创建新实例）"""
         return self._instances.get(self._cls)
 
 
-def singleton[S](cls: type[S]) -> SingletonWraps[S]:
+def singleton(cls: S) -> SingletonWraps:
     """简单的单例装饰器函数
 
     这是SingletonWraps类的语法糖，提供更简洁的使用方式。
     功能上等同于 @SingletonWraps 装饰器。
 
-    参数说明：
-    - cls: 要转换为单例的目标类
+    Args:
+        cls: 要转换为单例的目标类
 
-    返回值：
-    - 装饰后的类，确保全局只有一个实例
+    Returns:
+        装饰后的类，确保全局只有一个实例
 
-    使用示例：
+    Example:
         # 基本用法
         @singleton
         class AppConfig:
@@ -357,4 +358,4 @@ def singleton[S](cls: type[S]) -> SingletonWraps[S]:
         config3 = AppConfig()
         print(f"新实例: {config3}")
     """
-    return SingletonWraps[S](cls)
+    return SingletonWraps(cls)

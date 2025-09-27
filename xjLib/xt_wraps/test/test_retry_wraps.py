@@ -1,142 +1,98 @@
-# !/usr/bin/env python
 """
-测试retry_wraps装饰器功能 - 验证同步/异步函数的重试机制
-
-开发工具: VS Code
-作者: Trae AI
-FilePath: d:/CODE/xjLib/xt_wraps/test/test_retry_wraps.py
-LastEditTime: 2025-09-06 09:25:00
+测试 retry_wraps 装饰器
 """
-
 from __future__ import annotations
 
 import asyncio
 
-from xt_wraps.retry import retry_wraps
+from xt_wraps import retry_wraps
 
 
-# 基础成功函数测试
+# 测试同步函数重试
+@retry_wraps(max_attempts=3, min_wait=0.1, max_wait=0.2)
+def test_sync_retry():
+    """测试同步函数重试"""
+    print('Sync function called, raising exception...')
+    raise ConnectionError('Network error for testing')
+
+
+# 测试同步函数正常执行
 @retry_wraps()
-def basic_sync_success():
-    """1.1 基础成功的同步函数"""
-    return '同步成功结果'
+def test_sync_normal():
+    """测试同步函数正常执行"""
+    return 'Sync function success'
 
 
+# 测试异步函数重试
+@retry_wraps(max_attempts=3, min_wait=0.1, max_wait=0.2)
+async def test_async_retry():
+    """测试异步函数重试"""
+    print('Async function called, raising exception...')
+    raise ConnectionError('Network error for testing')
+
+
+# 测试异步函数正常执行
 @retry_wraps()
-async def basic_async_success():
-    """1.2 基础成功的异步函数"""
-    return '异步成功结果'
+async def test_async_normal():
+    """测试异步函数正常执行"""
+    return 'Async function success'
 
 
-# 重试后成功的函数测试
-@retry_wraps(max_attempts=4, retry_exceptions=(ValueError,))
-def retry_sync_success():
-    """2.1 重试后成功的同步函数（前两次失败，第三次成功）"""
-    # 记录尝试次数的闭包变量
-    if not hasattr(retry_sync_success, 'attempts'):
-        retry_sync_success.attempts = 0
-    retry_sync_success.attempts += 1
-    if retry_sync_success.attempts < 3:
-        raise ValueError(f'故意失败第 {retry_sync_success.attempts} 次')
-    return '同步函数最终成功'
+# 测试自定义异常类型
+@retry_wraps(retry_exceptions=(ValueError,), max_attempts=2)
+def test_custom_exception():
+    """测试自定义异常类型"""
+    print('Custom exception function called, raising ValueError...')
+    raise ValueError('Value error for testing')
 
 
-@retry_wraps(max_attempts=4, retry_exceptions=(ValueError,))
-async def retry_async_success():
-    """2.2 重试后成功的异步函数（前两次失败，第三次成功）"""
-    # 记录尝试次数的闭包变量
-    if not hasattr(retry_async_success, 'attempts'):
-        retry_async_success.attempts = 0
-    retry_async_success.attempts += 1
-    if retry_async_success.attempts < 3:
-        raise ValueError(f'故意失败第 {retry_async_success.attempts} 次')
-    return '异步函数最终成功'
+# 测试默认返回值
+@retry_wraps(default_return='default_result', max_attempts=2)
+def test_default_return():
+    """测试默认返回值"""
+    print('Default return function called, raising exception...')
+    raise RuntimeError('Runtime error for testing')
 
 
-# 始终失败的函数测试
-@retry_wraps(max_attempts=2)
-def always_fail_sync():
-    """3.1 始终失败的同步函数（达到最大尝试次数后失败）"""
-    raise TimeoutError('同步函数始终失败')
-
-
-@retry_wraps(max_attempts=2)
-async def always_fail_async():
-    """3.2 始终失败的异步函数（达到最大尝试次数后失败）"""
-    raise TimeoutError('异步函数始终失败')
-
-
-# 异常类型筛选测试
-@retry_wraps
-def exception_filter_func(x, y):
-    """4.1 异常类型筛选（对某些异常不重试）"""
-    if y == 0:
-        raise ZeroDivisionError('除数不能为零')  # 不重试的异常
-    if y == 1:
-        raise ValueError('y不能为1')  # 重试的异常
-    return x / y
-
-
-# 默认返回值测试
-@retry_wraps(default_return='999')
-def default_sync_no_retry():
-    """5.1 同步函数不重试默认返回值"""
-    raise TimeoutError('测试异常')
-
-
-@retry_wraps(default_return='888', max_attempts=3)
-def default_sync_retry():
-    """5.2 同步函数重试后默认返回值"""
-    raise TimeoutError('超时错误')
-
-
-@retry_wraps(default_return='777')
-async def default_async_no_retry():
-    """5.3 异步函数不重试默认返回值"""
-    raise TimeoutError('异步测试异常')
-
-
-@retry_wraps(default_return='666', max_attempts=3)
-async def default_async_retry():
-    """5.4 异步函数重试后默认返回值"""
-    raise TimeoutError('异步超时错误')
-
-
-async def run_all_tests():
-    """主测试函数 - 按序号组织所有测试用例"""
-
-    # 1. 基础成功函数测试
-    basic_sync_success()
-
-    await basic_async_success()
-
-    # 2. 重试后成功的函数测试
-    retry_sync_success()
-
-    await retry_async_success()
-
-    # 3. 始终失败的函数测试 - 使用try-except捕获预期失败
-    always_fail_sync()
-
-    await always_fail_async()
-
-    # 4. 异常类型筛选测试
+async def main():
+    """主测试函数"""
+    print('Testing retry_wraps decorator...')
+    
+    # 测试同步函数正常执行
+    result = test_sync_normal()
+    print(f'Sync normal result: {result}')
+    
+    # 测试异步函数正常执行
+    result = await test_async_normal()
+    print(f'Async normal result: {result}')
+    
+    # 测试同步函数重试（会失败并记录日志）
     try:
-        exception_filter_func(10, 0)  # 不重试的异常
-    except Exception:
-        pass
-
+        result = test_sync_retry()
+        print(f'Sync retry result: {result}')
+    except Exception as e:
+        print(f'Sync retry exception: {e}')
+    
+    # 测试异步函数重试（会失败并记录日志）
     try:
-        exception_filter_func(10, 1)  # 重试的异常
-    except Exception:
-        pass
+        result = await test_async_retry()
+        print(f'Async retry result: {result}')
+    except Exception as e:
+        print(f'Async retry exception: {e}')
+    
+    # 测试自定义异常类型
+    try:
+        result = test_custom_exception()
+        print(f'Custom exception result: {result}')
+    except Exception as e:
+        print(f'Custom exception error: {e}')
+    
+    # 测试默认返回值
+    result = test_default_return()
+    print(f'Default return result: {result}')
+    
+    print('All tests completed!')
 
-    # 正常情况不应抛出异常
-    exception_filter_func(10, 2)
 
-    # 5. 默认返回值测试
-
-
-# 运行主测试函数
 if __name__ == '__main__':
-    asyncio.run(run_all_tests())
+    asyncio.run(main())

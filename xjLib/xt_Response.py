@@ -61,7 +61,7 @@ import requests_html
 from bs4 import BeautifulSoup
 from chardet import detect
 from pyquery import PyQuery
-from xt_unicode import text_cleaner
+from xt_utils.unicode import text_cleaner
 from xt_wraps import LogCls
 
 # 初始化日志

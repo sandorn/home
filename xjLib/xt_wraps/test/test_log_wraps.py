@@ -16,9 +16,8 @@ from __future__ import annotations
 import asyncio
 import time
 
-from xt_wraps.log import LogCls, log_wraps
-
-log = LogCls()
+from xt_wraps.log import log_wraps
+from xt_wraps.log import mylog as log
 
 # 常量定义
 TEST_SLEEP_TIME = 0.1  # 测试用的睡眠时间:秒
@@ -84,59 +83,60 @@ async def main():
     log.info('====== 开始测试修复后的 log_wraps 装饰器 ======')
 
     # 1. 基础性能测试
-    log('\n1. 基础性能测试:')
+    log.info('\n1. 基础性能测试:')
     result = test_function()
-    log(f'1.1 测试性能同步函数结果: {result}')
+    log.info(f'1.1 测试性能同步函数结果: {result}')
 
     # 2. 异步基础函数测试
-    log('\n2. 异步基础函数测试:')
+    log.info('\n2. 异步基础函数测试:')
     res2 = await async_test_function(10, 2)
-    log(f'2.1 测试正常异步函数结果: {res2}')
+    log.info(f'2.1 测试正常异步函数结果: {res2}')
 
     # 3. 异常处理测试
-    log('\n3. 异常处理测试:')
+    log.info('\n3. 异常处理测试:')
     try:
         await async_test_function(10, 0)
     except ZeroDivisionError:
-        log('3.1 异步函数异常测试: 成功捕获除零错误')
+        log.info('3.1 异步函数异常测试: 成功捕获除零错误')
 
     # 4. 同步函数详细测试
-    log('\n4. 同步函数详细测试:')
+    log.info('\n4. 同步函数详细测试:')
     try:
         # 测试正常同步函数
         result1 = sync_function(5, 3)
-        log(f'4.1 基本同步函数结果: {result1}')
+        log.info(f'4.1 基本同步函数结果: {result1}')
 
         # 测试不记录结果的同步函数
         result2 = sync_function_no_result(5, 3)
-        log(f'4.2 不记录结果同步函数结果: {result2}')
+        log.info(f'4.2 不记录结果同步函数结果: {result2}')
 
         # 测试同步函数异常 - 除零
         try:
             sync_function_with_error(10, 0)
         except ZeroDivisionError:
-            log('4.3 同步函数异常测试: 成功捕获除零错误')
+            log.info('4.3 同步函数异常测试: 成功捕获除零错误')
 
     except Exception as e:
-        log(f'同步函数测试失败: {e}')
+        log.info(f'同步函数测试失败: {e}')
 
     # 5. 异步函数详细测试
-    log('\n5. 异步函数详细测试:')
+    log.info('\n5. 异步函数详细测试:')
     try:
         # 测试正常异步函数
         result4 = await async_function(7, 4)
-        log(f'5.1 基本异步函数结果: {result4}')
+        log.info(f'5.1 基本异步函数结果: {result4}')
 
         # 测试异步函数异常 - 除零
         try:
             await async_function_with_error(15, 0)
         except ZeroDivisionError:
-            log('5.2 异步函数异常测试: 成功捕获除零错误')
+            log.info('5.2 异步函数异常测试: 成功捕获除零错误')
 
     except Exception as e:
-        log(f'异步函数测试失败: {e}')
+        log.info(f'异步函数测试失败: {e}')
 
-    log('\n====== 测试完成 ======')
+    log.info('\n====== 测试完成 ======')
+    log.loger.info('====== 测试完成 ======')
 
 
 if __name__ == '__main__':

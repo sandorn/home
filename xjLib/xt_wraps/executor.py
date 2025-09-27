@@ -28,16 +28,10 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
-from concurrent.futures import Executor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
-from typing import Any, TypeVar
 
 from xt_wraps.exception import handle_exception
-from xt_wraps.log import create_basemsg
-
-R = TypeVar('R')
-T = TypeVar('T', bound=Callable[..., Any])
 
 # 常量定义
 DEFAULT_EXECUTOR_MAX_WORKERS = 10  # 默认线程池最大工作线程数
@@ -47,17 +41,17 @@ DEFAULT_FUTURE_TIMEOUT = 30.0  # 默认Future超时时间（秒）
 _default_executor = ThreadPoolExecutor(max_workers=DEFAULT_EXECUTOR_MAX_WORKERS, thread_name_prefix='XtExecutor')
 
 
-def _create_exception_handler(base_msg: str):
+def _create_exception_handler():
     """创建统一的异常处理回调函数"""
 
     def exception_handler(fut):
         if fut.exception():
-            handle_exception(base_msg, fut.exception())
+            handle_exception(fut.exception())
 
     return exception_handler
 
 
-def run_on_executor(executor: Executor | None = None, background: bool = False):
+def run_on_executor(executor=None, background=False):
     """
     异步装饰器
     - 支持同步函数使用 executor 加速
@@ -96,61 +90,60 @@ class WrapperFactory:
     """包装器工厂类 - 集中管理各种包装器的创建逻辑"""
 
     @staticmethod
-    def create_async_background_wrapper[R](func: Callable[..., R], base_msg: str) -> Callable[..., asyncio.Task[Any]]:
+    def create_async_background_wrapper(func):
         """创建异步后台执行包装器"""
 
         @wraps(func)
-        def async_background_wrapper[R](*args: Any, **kwargs: Any) -> asyncio.Task[R]:
-            # R 是返回值类型参数，与外部保持一致
+        def async_background_wrapper(*args, **kwargs):
             async def task_wrapper():
                 try:
                     return await func(*args, **kwargs)
                 except Exception as err:
-                    handle_exception(base_msg, err, re_raise=True)
+                    handle_exception(err, re_raise=True)
 
             return asyncio.create_task(task_wrapper())
 
         return async_background_wrapper
 
     @staticmethod
-    def create_async_wrapper[R](func: Callable[..., R], base_msg: str) -> Callable[..., Any]:
+    def create_async_wrapper(func):
         """创建异步包装器"""
 
         @wraps(func)
-        async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
+        async def async_wrapper(*args, **kwargs):
             try:
                 return await func(*args, **kwargs)
             except Exception as err:
-                return handle_exception(base_msg, err, re_raise=True)
+                return handle_exception(err, re_raise=True)
 
         return async_wrapper
 
     @staticmethod
-    def create_sync_background_wrapper[R](func: Callable[..., R], base_msg: str, executor: ThreadPoolExecutor) -> Callable[..., asyncio.Future[R]]:
+    def create_sync_background_wrapper(func, executor):
         """创建同步后台执行包装器"""
 
         @wraps(func)
-        def sync_background_wrapper(*args: Any, **kwargs: Any) -> asyncio.Future[R]:
+        def sync_background_wrapper(*args, **kwargs):
             loop = asyncio.get_event_loop()
             task_func = partial(func, *args, **kwargs)
             future = loop.run_in_executor(executor, task_func)
-            future.add_done_callback(_create_exception_handler(base_msg))
+            future.add_done_callback(_create_exception_handler())
             return future
 
         return sync_background_wrapper
 
     @staticmethod
-    def create_sync_wrapper[R](func: Callable[..., R], base_msg: str, executor: ThreadPoolExecutor) -> Callable[..., R]:
+    def create_sync_wrapper(func, executor):
         """创建同步包装器"""
 
         @wraps(func)
-        async def sync_wrapper(*args: Any, **kwargs: Any) -> R:
+        async def sync_wrapper(*args, **kwargs):
             loop = asyncio.get_event_loop()
             task_func = partial(func, *args, **kwargs)
             try:
                 return await loop.run_in_executor(executor, task_func)
             except Exception as err:
-                return handle_exception(base_msg, err, re_raise=True)
+                return handle_exception('Sync wrapper error', err, re_raise=True)
 
         return sync_wrapper
 
@@ -188,11 +181,11 @@ class ExecutorDecorators:
 
     @staticmethod
     def executor_wraps(
-        fn: Callable[..., Any] | None = None,
+        fn=None,
         *,
-        background: bool = False,
-        executor: ThreadPoolExecutor | None = None,
-    ) -> Callable[..., Any]:
+        background=False,
+        executor=None,
+    ):
         """
         异步执行器装饰器 - 将同步函数转换为异步函数执行，或增强异步函数的执行能力
 
@@ -215,35 +208,23 @@ class ExecutorDecorators:
             - 当background=True时：返回Future/Task对象，可后续await获取结果
         """
 
-        def decorator[R](func: Callable[..., R]) -> Callable[..., Any]:
-            # R 是原函数返回值类型参数
+        def decorator(func):
             used_executor = executor or _default_executor
-            base_msg = create_basemsg(func)
 
-            match (asyncio.iscoroutinefunction(func), background):
-                case (True, True):
-                    return WrapperFactory.create_async_background_wrapper(func, base_msg)
-                case (True, False):
-                    return WrapperFactory.create_async_wrapper(func, base_msg)
-                case (False, True):
-                    return WrapperFactory.create_sync_background_wrapper(func, base_msg, used_executor)
-                case _:
-                    return WrapperFactory.create_sync_wrapper(func, base_msg, used_executor)
-            # # 根据函数类型和执行模式选择合适的包装器
-            # if asyncio.iscoroutinefunction(func):
-            #     if background:
-            #         return WrapperFactory.create_async_background_wrapper(func, base_msg)
-            #     return WrapperFactory.create_async_wrapper(func, base_msg)
-
-            # if background:
-            #     return WrapperFactory.create_sync_background_wrapper(func, base_msg, used_executor)
-            # return WrapperFactory.create_sync_wrapper(func, base_msg, used_executor)
+            if asyncio.iscoroutinefunction(func):
+                if background:
+                    return WrapperFactory.create_async_background_wrapper(func)
+                return WrapperFactory.create_async_wrapper(func)
+            
+            if background:
+                return WrapperFactory.create_sync_background_wrapper(func, used_executor)
+            return WrapperFactory.create_sync_wrapper(func, used_executor)
 
         # 处理装饰器调用方式
         return decorator(fn) if fn else decorator
 
     @staticmethod
-    def run_executor_wraps(fn: Callable[..., Any] | None = None) -> Callable[..., Any]:
+    def run_executor_wraps(fn=None):
         """
         同步运行异步函数装饰器 - 将异步函数转换为可直接调用的同步函数
 
@@ -259,12 +240,9 @@ class ExecutorDecorators:
             同步函数，可以直接调用而不需要await
         """
 
-        def decorator[R](func: Callable[..., R]) -> Callable[..., R]:
-            # R 是原函数返回值类型参数
-            base_msg = create_basemsg(func)
-
+        def decorator(func):
             @wraps(func)
-            def sync_wrapper(*args: Any, **kwargs: Any) -> R:
+            def sync_wrapper(*args, **kwargs):
                 if asyncio.iscoroutinefunction(func):
                     try:
                         result = EventLoopManager.get_event_loop()
@@ -274,12 +252,12 @@ class ExecutorDecorators:
                         # 否则直接运行协程
                         return result.run_until_complete(func(*args, **kwargs))
                     except Exception as err:
-                        return handle_exception(base_msg, err)
+                        return handle_exception(err)
                 else:
                     try:
                         return func(*args, **kwargs)
                     except Exception as err:
-                        return handle_exception(base_msg, err)
+                        return handle_exception(err)
 
             return sync_wrapper
 
@@ -288,10 +266,10 @@ class ExecutorDecorators:
 
     @staticmethod
     def future_wraps(
-        fn: Callable[..., Any] | None = None,
+        fn=None,
         *,
-        executor: ThreadPoolExecutor | None = None,
-    ) -> Callable[..., Any]:
+        executor=None,
+    ):
         """
         Future执行器装饰器 - 将同步函数包装成返回asyncio.Future对象的函数
 
@@ -308,18 +286,14 @@ class ExecutorDecorators:
             装饰后的函数，返回asyncio.Future对象，可通过await获取结果
         """
 
-        def decorator[R](func: Callable[..., R]) -> Callable[..., asyncio.Future[R]]:
-            # R 是原函数返回值类型参数
-            base_msg = create_basemsg(func)
-
+        def decorator(func):
             @wraps(func)
-            def wrapper[R](*args: Any, **kwargs: Any) -> asyncio.Future[R]:
-                # R 是原函数返回值类型参数
+            def wrapper(*args, **kwargs):
                 try:
                     loop = asyncio.get_event_loop()
                     used_executor = executor or _default_executor
                     future = loop.run_in_executor(used_executor, lambda: func(*args, **kwargs))
-                    future.add_done_callback(_create_exception_handler(base_msg))
+                    future.add_done_callback(_create_exception_handler())
                     return future
                 except Exception as err:
                     # 创建一个已完成的future并设置异常
@@ -338,7 +312,7 @@ run_executor_wraps = ExecutorDecorators.run_executor_wraps
 future_wraps = ExecutorDecorators.future_wraps
 
 
-async def future_wraps_result[T](future: asyncio.Future[T]) -> T:
+async def future_wraps_result(future):
     """
     Future结果获取器 - 等待Future完成并返回结果，带超时处理和异常管理
 
@@ -383,8 +357,8 @@ async def future_wraps_result[T](future: asyncio.Future[T]) -> T:
         # 如果超时，取消任务并抛出异常
         if not future.done():
             future.cancel()
-        return handle_exception(create_basemsg(_dummy_func_for_log), timerr, re_raise=True)
+        return handle_exception(timerr, re_raise=True)
     except asyncio.CancelledError as cancerr:
-        return handle_exception(create_basemsg(_dummy_func_for_log), cancerr, re_raise=True)
+        return handle_exception(cancerr, re_raise=True)
     except Exception as err:
-        return handle_exception(create_basemsg(_dummy_func_for_log), err, re_raise=True)
+        return handle_exception(err, re_raise=True)

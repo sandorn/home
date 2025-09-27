@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
 LastEditTime : 2025-09-10 15:30:00
-FilePath     : /CODE/xjlib/xt_time.py
+FilePath     : /CODE/xjlib/xt_utils/time.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能:
@@ -28,14 +28,10 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
 from datetime import datetime
-from time import perf_counter
-from typing import Any
 
 from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
-from wrapt import decorator
 from xt_enum import StrEnum
 from xt_wraps import SingletonMeta
 
@@ -484,86 +480,6 @@ class TimeUtil(metaclass=SingletonMeta):
         return weekdays
 
 
-@decorator
-def fn_timer(func: Callable, instance: Any, args: tuple, kwargs: dict) -> Any:
-    """
-    函数执行时间计时器装饰器
-
-    Args:
-        func: 被装饰的函数
-        instance: 实例(如果是类方法)
-        args: 位置参数
-        kwargs: 关键字参数
-
-    Returns:
-        Any: 原函数的返回值
-
-    Example:
-        >>> @fn_timer
-        >>> def slow_function():
-        >>>     time.sleep(1)
-        >>>     return "Done"
-        >>> # 调用会输出: [Timer | Function:`slow_function`] | <Time-Consuming 1.0012s>
-        >>> result = slow_function()
-    """
-    duration = perf_counter()
-    result = func(*args, **kwargs)
-    print(f'[Timer | Function:`{func.__name__}`] | <Time-Consuming {perf_counter() - duration:.4f}s>')
-    return result
-
-
-timeit = fn_timer
-
-
-class TimerWrapt:
-    """
-    计时器装饰器类 - 提供函数执行时间统计功能
-
-    Example:
-        >>> @TimerWrapt
-        >>> def process_data():
-        >>>     time.sleep(0.5)
-        >>>     return "Processed"
-        >>> # 调用会输出: [TimerWrapt | Function:`process_data`] | <Time-Consuming 0.5003s>
-        >>> result = process_data()
-    """
-
-    def __init__(self, func: Callable):
-        self.func = func
-        self.__name__ = func.__name__
-        self.__doc__ = func.__doc__
-        self.__module__ = func.__module__
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        """执行被装饰的函数并计时"""
-        start_time = perf_counter()
-        result = self.func(*args, **kwargs)
-        print(f'[TimerWrapt | Function:`{self.__name__}`] | <Time-Consuming {perf_counter() - start_time:.4f}s>')
-        return result
-
-
-class Timer:
-    """
-    计时器上下文管理器 - 用于测量代码块的执行时间
-
-    Example:
-        >>> with Timer():
-        >>> # 要计时的代码块
-        >>>     time.sleep(1)
-        >>>     print("代码执行完毕")
-        >>> # 输出: 代码执行完毕
-        >>> # 输出: Timer 耗时: 1.0011秒
-    """
-
-    def __enter__(self):
-        """进入上下文管理器，开始计时"""
-        self.start = perf_counter()
-
-    def __exit__(self, *args: Any):
-        """退出上下文管理器，结束计时并输出结果"""
-        print(f'Timer 耗时: {perf_counter() - self.start:.4f}秒')
-
-
 # 快捷函数定义
 def get_time() -> str:
     """获取当前时间的完整字符串表示"""
@@ -618,17 +534,3 @@ if __name__ == '__main__':
     print('当前时间戳(秒):', get_timestamp())
     print('当前时间戳(毫秒):', get_timestamp(size=13))
     print('指定时间的时间戳:', get_timestamp('2020-06-15 13:28:27'))
-
-    # 测试计时装饰器
-    @timeit
-    def test_timer():  # 注意: 不建议同时使用多个计时装饰器
-        time.sleep(0.301)
-        print('test_timer Function executed')
-
-    test_timer()
-
-    # 测试上下文管理器
-    with Timer():
-        time.sleep(0.21)
-        print('with Timer')
-        print(get_timestamp('2020-06-15 13:28:27'))

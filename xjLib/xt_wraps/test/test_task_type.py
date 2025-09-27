@@ -15,10 +15,12 @@ from __future__ import annotations
 import asyncio
 
 from xt_wraps.executor import executor_wraps
+from xt_wraps.timer import timer_wraps
 
 
 # 测试异步函数 - 后台执行
 @executor_wraps(background=True)
+@timer_wraps
 async def async_background_function():
     """测试异步函数的后台执行"""
     await asyncio.sleep(1)  # 模拟较长时间操作

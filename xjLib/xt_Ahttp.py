@@ -37,7 +37,7 @@ from functools import partial
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, Head
 from xt_response import ACResponse
-from xt_wraps import TRETRY, handle_exception, log_wraps
+from xt_wraps import handle_exception, log_wraps, retry_wraps
 
 # 定义模块公开接口
 __all__ = ('AsyncHttpClient', 'ahttp_get', 'ahttp_get_all', 'ahttp_post', 'ahttp_post_all')
@@ -213,7 +213,7 @@ class AsyncTask:
         self.kwargs: dict = kwargs
         return self
 
-    @TRETRY
+    @retry_wraps(default_return=(None, '重试失败'))
     async def _fetch(self) -> ACResponse:
         """执行HTTP请求,内部方法
 
@@ -247,14 +247,11 @@ class AsyncTask:
         Returns:
             ACResponse: 统一的响应对象,包含状态码、头部和内容
         """
-        try:
-            response, content = await self._fetch()
-            return ACResponse(response, content, self.index)
-        except Exception as err:
-            handle_exception(f'AsyncTask.start:{self}', err)
-            return ACResponse(None, f'{type(err).__name__} | {err!s}'.encode(), self.index)
 
-    @TRETRY
+        response, content = await self._fetch()
+        return ACResponse(response, content, self.index)
+ 
+    @retry_wraps
     async def multi_start(self, client: ClientSession) -> ACResponse:
         """在共享会话中执行任务
 
@@ -271,7 +268,7 @@ class AsyncTask:
                 content = await response.content.read()
                 result = ACResponse(response, content, self.index)
         except Exception as err:
-            handle_exception(f'AsyncTask.multi_start:{self}', err)
+            handle_exception(err, callfrom=self.multi_start)
             result = ACResponse(None, f'{type(err).__name__} | {err!s}'.encode(), self.index)
         return self.callback(result) if callable(self.callback) else result
 
@@ -337,7 +334,7 @@ ahttpPostAll = ahttp_post_all  # 兼容驼峰命名  # noqa: N816
 
 class AHttpLoop:
     """异步HTTP客户端 - 使用loop实现"""
-
+    
     def __init__(self, max_concurrent: int = 10):
         self.method: str = ''  # 保存请求方法
         self.max_concurrent: int = max_concurrent  # 最大并发请求数
@@ -353,7 +350,7 @@ class AHttpLoop:
             self._session = self._loop.run_until_complete(self.create_session())
         except Exception as err:
             self._session = None
-            return handle_exception('AHttpLoop.__init__失败', err, re_raise=True)
+            return handle_exception(err, re_raise=True, callfrom=self.__init__)
 
     async def __aenter__(self):
         """异步上下文管理器入口"""
@@ -397,7 +394,7 @@ class AHttpLoop:
                 asyncio.set_event_loop(loop)
                 loop.run_until_complete(self._session.close())
                 loop.close()
-                handle_exception('AHttpLoop.close失败', err, re_raise=True)
+                handle_exception(err, re_raise=True, callfrom=self.close)
                 return f'AHttpLoop.close失败 | Exception:{err!r}'
             finally:
                 self._session = None
@@ -425,7 +422,7 @@ class AHttpLoop:
         index = index or id(url)
         _ = kwargs.pop('callback', None)
 
-        @TRETRY
+        @retry_wraps
         async def _single_fetch() -> tuple:
             if self._session is None:
                 self._session = await self.create_session()
@@ -438,8 +435,8 @@ class AHttpLoop:
             response, content = await _single_fetch()
             return ACResponse(response, content, index)
         except Exception as err:
-            handle_exception(f'AHttpLoop._retry_request:{self}', err)
-            return ACResponse(None, f'{type(err).__name__} | {err!s}'.encode(), self.index)
+            handle_exception(err, callfrom=self._retry_request)
+            return ACResponse(None, f'{type(err).__name__} | {err!s}'.encode(), index)
 
     async def _multi_fetch(self, method: str, urls_list: list[str], **kwargs):
         self.method = method
@@ -455,43 +452,42 @@ class AHttpLoop:
 
 if __name__ == '__main__':
     """示例用法和测试代码"""
-    from xt_wraps import LogCls
+    from xt_wraps import mylog
 
-    mylog = LogCls()
     # 测试URL列表
     urls = ('https://www.163.com', 'https://www.qq.com', 'https://www.126.com', 'https://httpbin.org/post')
 
     def main():
         """主测试函数"""
         # 使用便捷函数发送单个GET请求
-        # mylog('发送单个GET请求...', ahttp_get(urls[0]))
+        # mylog.info('发送单个GET请求...', ahttp_get(urls[0]))
 
         # 使用便捷函数发送多个GET请求
-        mylog('发送多个GET请求...', ahttp_get_all(urls, force_sequential=False))
+        mylog.info('发送多个GET请求...', ahttp_get_all(urls, force_sequential=False))
 
         # 发送POST请求
-        # mylog('发送POST请求...', ahttp_post(urls[3], data=b'test_data'))
+        # mylog.info('发送POST请求...', ahttp_post(urls[3], data=b'test_data'))
 
     async def demo_async_client():
         """演示AsyncHttpClient的异步用法"""
         client = AsyncHttpClient(max_concurrent=3)  # 设置最大并发数为3
 
         # 单个请求
-        mylog('\n执行单个异步请求:')
-        mylog('#########################', await client.request('get', urls[3]), '#########################')
+        mylog.info('\n执行单个异步请求:')
+        mylog.info('#########################', await client.request('get', urls[3]), '#########################')
 
         # 批量请求(共享会话方式)
-        mylog('\n执行批量异步请求(共享会话):')
-        mylog(await client.request_multi('get', urls[2:4]))
+        mylog.info('\n执行批量异步请求(共享会话):')
+        mylog.info(await client.request_multi('get', urls[2:4]))
 
         # 批量请求(分批处理方式)
-        mylog('\n执行批量异步请求(分批处理):')
-        mylog(await client.request_batch('get', urls[2:4]))
+        mylog.info('\n执行批量异步请求(分批处理):')
+        mylog.info(await client.request_batch('get', urls[2:4]))
 
     def test_ahttploop():
         ahc = AHttpLoop()
-        mylog(111111, ahc.get('https://www.163.com'))
-        mylog(222222, ahc.getall(['https://www.163.com', 'https://httpbin.org/ip']))
+        mylog.info(111111, ahc.get('https://www.163.com'))
+        mylog.info(222222, ahc.getall(['https://www.163.com', 'https://httpbin.org/ip']))
 
     # test_ahttploop()
     # asyncio.run(demo_async_client())

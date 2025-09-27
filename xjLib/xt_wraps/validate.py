@@ -14,6 +14,7 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import wraps
 from typing import Any, TypeVar
 
 from xt_wraps.exception import handle_exception
@@ -219,3 +220,20 @@ def readonly(name: str) -> property:
         raise AttributeError(f"Cannot delete read-only attribute '{self.__class__.__name__}.{storage_name.lstrip('_')}'")
 
     return prop
+
+
+def type_check_wrapper(*types):
+    """
+    简单参数类型检查装饰器，仅支持同步函数。
+    :param types: 期望的参数类型
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for i, (a, t) in enumerate(zip(args, types, strict=False)):
+                if not isinstance(a, t):
+                    raise TypeError(f'参数 {i} 应为 {t.__name__}, 实际为 {type(a).__name__}')
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+

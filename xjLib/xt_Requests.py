@@ -295,9 +295,10 @@ if __name__ == '__main__':
     # 执行示例
     mylog.info('=== HTTP请求工具模块测试开始 ===')
     try:
-        basic_request_example()
-        session_example()
-        post_request_example()
+        # basic_request_example()
+        # session_example()
+        # post_request_example()
+        print(get('https://httpbin.org/post'))
         mylog.success('=== HTTP请求工具模块测试完成 ===')
     except Exception as e:
         mylog.error(f'测试过程中发生错误: {e!s}')

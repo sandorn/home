@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-06-16 13:20:56
 LastEditTime : 2025-09-17 14:30:00
-FilePath     : /CODE/xjlib/xt_unicode.py
+FilePath     : /CODE/xjlib/xt_utils/unicode.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能:

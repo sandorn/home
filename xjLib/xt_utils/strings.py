@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
 LastEditTime : 2023-02-25 04:31:14
-FilePath     : /CODE/xjLib/xt_String.py
+FilePath     : /CODE/xjlib/xt_utils/string.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 https://zhuanlan.zhihu.com/p/696103020

@@ -1,3 +1,4 @@
+# !/usr/bin/env python3
 """
 ==============================================================
 Description  : 重试机制模块 - 提供函数执行失败自动重试功能
@@ -46,7 +47,6 @@ from tenacity import (
     wait_random,
 )
 from xt_wraps.exception import handle_exception
-from xt_wraps.log import create_basemsg
 
 # 导入需要使用的异常类型
 gaierror = socket.gaierror  # DNS解析错误
@@ -133,22 +133,17 @@ class RetryHandler:
         TemporaryFailure,  # 临时故障（SMTP相关）
     )
 
-    def __init__(self):
-        self._basemsg = ''
-        self._default_return = None
+    def __init__(self) -> None:
+        self._default_return: Any = None
+        self._callfrom: Callable | None = None
 
-    def configure(self, basemsg: str, default_return: Any) -> None:
-        """配置RetryHandler的基础消息和默认返回值
-
-        Args:
-            basemsg: 基础日志消息前缀
-            default_return: 重试失败时的默认返回值
-        """
-        self._basemsg = basemsg
+    def configure(self, default_return: Any | None = None, callfrom: Callable | None = None) -> None:
+        """配置RetryHandler的基础消息和默认返回值"""
         self._default_return = default_return
+        self._callfrom = callfrom
 
     def err_back(self, retry_state: RetryCallState) -> Any:
-        """所有重试失败后的回调函数 - 记录错误日志并返回默认值
+        """最后一次重试失败时执行的回调函数 - 记录错误日志并返回默认值
 
         Args:
             retry_state: tenacity的重试状态对象
@@ -156,26 +151,64 @@ class RetryHandler:
         Returns:
             配置的默认返回值
         """
-        errinfo = retry_state.outcome.exception()
-        return handle_exception(basemsg=self._basemsg + f' | 共 {retry_state.attempt_number} 次失败', errinfo=errinfo, default_return=self._default_return)
+        # 获取原始错误对象（若有异常）
+        original_exception = retry_state.outcome.exception()
+        return handle_exception(errinfo=original_exception, default_return=self._default_return, callfrom=self._callfrom)
 
-    def after(self, retry_state: RetryCallState) -> None:
-        """重试前的回调函数 - 记录即将进行的重试信息
 
-        Args:
-            retry_state: tenacity的重试状态对象
-        """
-        errinfo = retry_state.outcome.exception()
-        handle_exception(basemsg=self._basemsg + f' | 第 {retry_state.attempt_number} 次失败', errinfo=errinfo)
+def _create_retry_decorator(max_attempts: int, min_wait: float, max_wait: float, retry_exceptions: tuple[type[Exception], ...], retry_handler: RetryHandler, is_err_back: bool) -> Callable:
+    """创建tenacity重试装饰器
+
+    Args:
+        max_attempts: 最大尝试次数
+        min_wait: 最小等待时间
+        max_wait: 最大等待时间
+        retry_exceptions: 需要重试的异常类型元组
+        retry_handler: 重试处理器实例
+        is_err_back: 是否使用错误回调
+
+    Returns:
+        配置好的tenacity重试装饰器
+    """
+    retry_condition = retry_if_exception_type(retry_exceptions)
+
+    return retry(
+        reraise=True,
+        stop=stop_after_attempt(max_attempts),
+        wait=wait_random(min=min_wait, max=max_wait),
+        retry=retry_condition,
+        retry_error_callback=retry_handler.err_back if is_err_back else None,
+    )
+
+
+def _handle_exception(errinfo: Exception, retry_exceptions: tuple[type[Exception], ...], default_return: Any, silent_on_no_retry: bool, func: Callable) -> Any:
+    """统一异常处理函数 - 处理同步和异步函数的异常
+
+    Args:
+        errinfo: 异常对象
+        retry_exceptions: 需要重试的异常类型元组
+        default_return: 默认返回值
+        silent_on_no_retry: 是否静默处理非重试异常
+        func: 原始函数
+
+    Returns:
+        处理结果
+    """
+    error_message = f'Retry Error: {type(errinfo).__name__} | {errinfo!s}'
+    is_retry_exception = any(isinstance(errinfo, exc_type) for exc_type in retry_exceptions)
+
+    if is_retry_exception or silent_on_no_retry:
+        return error_message if default_return is None else default_return
+
+    return handle_exception(errinfo=errinfo, re_raise=True, callfrom=func)
 
 
 def retry_wraps(
-    fn: Callable[..., Any] | None = None,
+    fn: Callable | None = None,
     max_attempts: int = DEFAULT_RETRY_ATTEMPTS,
     min_wait: float = DEFAULT_MIN_WAIT_TIME,
     max_wait: float = DEFAULT_MAX_WAIT_TIME,
     retry_exceptions: tuple[type[Exception], ...] = RetryHandler.RETRY_EXCEPT,
-    is_after: bool = True,
     is_err_back: bool = True,
     silent_on_no_retry: bool = True,
     default_return: Any = None,
@@ -196,7 +229,6 @@ def retry_wraps(
         min_wait: 重试间隔的最小等待时间(秒)，默认为0.0秒
         max_wait: 重试间隔的最大等待时间(秒)，默认为1.0秒
         retry_exceptions: 需要重试的异常类型元组，默认为网络和I/O相关异常
-        is_after: 是否在重试前调用回调函数，默认为True
         is_err_back: 是否在所有重试失败后调用回调函数，默认为True
         silent_on_no_retry: 遇到非重试异常时是否静默处理（不抛出错误），默认为True
         default_return: 重试失败或静默处理时的默认返回值，默认为None
@@ -236,43 +268,22 @@ def retry_wraps(
             return result
     """
 
-    def decorator(func: Callable[..., Any]) -> Callable:
-        #  创建RetryHandler实例,设置基础消息和默认返回
+    def decorator(func: Callable) -> Callable:
+        # 创建RetryHandler实例,设置基础消息和默认返回
         retry_handler = RetryHandler()
-        basemsg = create_basemsg(func)
-        retry_handler.configure(basemsg, default_return)
+        retry_handler.configure(default_return, func)
 
-        # 创建重试条件 - 只重试指定类型的异常
-        # !不再直接修改类变量RETRY_EXCEPT，而是使用局部参数retry_exceptions
-        retry_condition = retry_if_exception_type(retry_exceptions)
-
-        # 配置tenacity的retry装饰器
-        retry_decorator = retry(
-            reraise=True,  # 保持为True，让异常传播到我们的包装器
-            stop=stop_after_attempt(max_attempts),
-            wait=wait_random(min=min_wait, max=max_wait),
-            retry=retry_condition,
-            before_sleep=retry_handler.after if is_after else None,
-            retry_error_callback=retry_handler.err_back if is_err_back else None,
-        )
+        # 创建tenacity的retry装饰器
+        retry_decorator = _create_retry_decorator(max_attempts, min_wait, max_wait, retry_exceptions, retry_handler, is_err_back)
 
         # 同步函数包装器
         @wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 # 使用retry_decorator包装函数调用
-                # #raise：可重试错误会重试足够次数，不重试错误只运行1次
                 return retry_decorator(func)(*args, **kwargs)
             except Exception as errinfo:
-                error_message = f'Retry Sync: {basemsg} | {type(errinfo).__name__} | {errinfo!s}'
-                # 不再使用RetryHandler.should_retry，而是直接检查当前装饰器配置的异常类型
-                is_retry_exception = any(isinstance(errinfo, exc_type) for exc_type in retry_exceptions)
-                if is_retry_exception:  # 检查是否重试异常
-                    return error_message if default_return is None else default_return  # 重试异常在所有重试失败后返回默认值
-                if silent_on_no_retry:  # 检查是否静默处理非重试异常
-                    return error_message if default_return is None else default_return  # 非重试异常返回默认值
-                # raise  # 否则重新抛出异常
-                handle_exception(basemsg=basemsg, errinfo=errinfo, re_raise=True)
+                return _handle_exception(errinfo, retry_exceptions, default_return, silent_on_no_retry, func)
 
         # 异步函数包装器
         @wraps(func)
@@ -281,17 +292,13 @@ def retry_wraps(
                 # 使用retry_decorator包装函数调用
                 return await retry_decorator(func)(*args, **kwargs)
             except Exception as errinfo:
-                error_message = f'Retry Async: {basemsg} | {type(errinfo).__name__} | {errinfo!s}'
-                # 不再使用RetryHandler.should_retry，而是直接检查当前装饰器配置的异常类型
-                is_retry_exception = any(isinstance(errinfo, exc_type) for exc_type in retry_exceptions)
-                if is_retry_exception:  # 检查是否重试异常
-                    return error_message if default_return is None else default_return  # 重试异常在所有重试失败后返回默认值
-                if silent_on_no_retry:  # 检查是否静默处理非重试异常
-                    return error_message if default_return is None else default_return  # 非重试异常返回默认值
-                # raise  # 否则重新抛出异常
-                handle_exception(basemsg=basemsg, errinfo=errinfo, re_raise=True)
+                return _handle_exception(errinfo, retry_exceptions, default_return, silent_on_no_retry, func)
 
         # 根据函数类型返回相应的包装器
-        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+        if asyncio.iscoroutinefunction(func):
+            return async_wrapper
+        return sync_wrapper
 
-    return decorator(fn) if fn else decorator
+    if fn is None:
+        return decorator
+    return decorator(fn)

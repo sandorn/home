@@ -6,7 +6,7 @@ Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2022-12-22 17:35:56
 LastEditTime : 2025-01-15 11:57:50
-FilePath     : /CODE/xjLib/xt_file.py
+FilePath     : /CODE/xjlib/xt_utils/files.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
