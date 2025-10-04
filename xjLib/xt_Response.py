@@ -61,12 +61,10 @@ import requests_html
 from bs4 import BeautifulSoup
 from chardet import detect
 from pyquery import PyQuery
+from xt_log import mylog
 from xt_utils.unicode import text_cleaner
-from xt_wraps import LogCls
 
 # 初始化日志
-logger = LogCls()
-
 DEFAULT_ENCODING = 'utf-8'
 
 
@@ -137,7 +135,7 @@ class BaseResponse:
             if detected_encoding:
                 return detected_encoding
         except Exception as e:
-            logger.warning(f'编码检测失败: {e}')
+            mylog.warning(f'编码检测失败: {e}')
 
         # 如果chardet检测失败，尝试使用原始响应对象的编码
         if self._raw and hasattr(self._raw, 'encoding'):
@@ -201,7 +199,7 @@ class BaseResponse:
                     return raw_text.decode(self._encoding, 'ignore')
                 return raw_text
         except Exception as e:
-            logger.error(f'文本解码失败: {e}')
+            mylog.error(f'文本解码失败: {e}')
 
         # 所有尝试都失败，返回空字符串
         return ''
@@ -288,14 +286,14 @@ class BaseResponse:
             try:
                 return self._raw.json()
             except (ValueError, TypeError, AttributeError) as e:
-                logger.debug(f'使用raw.json()解析失败: {e}')
+                mylog.debug(f'使用raw.json()解析失败: {e}')
 
         # 尝试使用标准json模块解析text属性
         try:
             if self.text:
                 return json.loads(self.text)
         except (ValueError, TypeError) as e:
-            logger.debug(f'使用json.loads()解析失败: {e}')
+            mylog.debug(f'使用json.loads()解析失败: {e}')
 
         # 解析失败时返回空字典
         return {}
@@ -338,10 +336,10 @@ class HtmlResponse(BaseResponse):
                 parser = lxml.html.HTMLParser(encoding=self._encoding)
                 self._html_cache = lxml.html.fromstring(html_content, base_url=str(self.url), parser=parser)
             except ImportError:
-                logger.error('lxml库未安装，无法使用html属性')
+                mylog.error('lxml库未安装，无法使用html属性')
                 self._html_cache = None
             except Exception as e:
-                logger.warning(f'HTML解析失败: {e}')
+                mylog.warning(f'HTML解析失败: {e}')
                 # 备用方案：使用etree并指定编码
                 self._html_cache = self.element
         return self._html_cache
@@ -372,10 +370,10 @@ class HtmlResponse(BaseResponse):
                 parser = lxml.etree.HTMLParser(encoding=self._encoding)
                 self._element_cache = lxml.etree.HTML(html_content, base_url=str(self.url), parser=parser)
             except ImportError:
-                logger.error('lxml库未安装，无法使用element属性')
+                mylog.error('lxml库未安装，无法使用element属性')
                 self._element_cache = None
             except Exception as e:
-                logger.warning(f'Element解析失败: {e}')
+                mylog.warning(f'Element解析失败: {e}')
                 # 备用方案：直接使用text并指定编码
                 try:
                     parser = lxml.etree.HTMLParser(encoding=self._encoding)
@@ -413,15 +411,15 @@ class HtmlResponse(BaseResponse):
                 parser = 'lxml'
             except ImportError:
                 parser = 'html.parser'
-                logger.debug('lxml不可用，使用html.parser')
+                mylog.debug('lxml不可用，使用html.parser')
 
             self._soup_cache = BeautifulSoup(self._content, parser)
             return self._soup_cache
         except ImportError:
-            logger.error('bs4库未安装，无法使用soup属性')
+            mylog.error('bs4库未安装，无法使用soup属性')
             self._soup_cache = None
         except Exception as e:
-            logger.warning(f'Soup解析失败: {e}')
+            mylog.warning(f'Soup解析失败: {e}')
             self._soup_cache = None
         return self._soup_cache
 
@@ -448,10 +446,10 @@ class HtmlResponse(BaseResponse):
             try:
                 self._dom_cache = requests_html.HTML(html=self._content, url=str(self.url))
             except ImportError:
-                logger.error('requests_html库未安装，无法使用dom属性')
+                mylog.error('requests_html库未安装，无法使用dom属性')
                 self._dom_cache = None
             except Exception as e:
-                logger.warning(f'DOM解析失败: {e}')
+                mylog.warning(f'DOM解析失败: {e}')
                 self._dom_cache = None
         return self._dom_cache
 
@@ -478,7 +476,7 @@ class HtmlResponse(BaseResponse):
                 html_str = self._content.decode(self._encoding, 'ignore') if isinstance(self._content, bytes) else str(self._content)
                 self._query_cache = PyQuery(html_str, parser='html')
             except Exception as e:
-                logger.warning(f'PyQuery解析失败: {e}')
+                mylog.warning(f'PyQuery解析失败: {e}')
                 try:
                     self._query_cache = PyQuery(self.text, parser='html')
                 except Exception:
@@ -528,9 +526,9 @@ class HtmlResponse(BaseResponse):
                 continue
 
             try:
-                # 优先使用lxml的xpath方法
-                if hasattr(self.html, 'xpath') and self.html is not None:
-                    selector_results = self.html.xpath(selector)
+                # ! 优先使用lxml的xpath方法
+                if hasattr(self.dom, 'xpath') and self.dom is not None:
+                    selector_results = self.dom.xpath(selector)
                     results.append(selector_results)
                 elif self.soup is not None:
                     # 备用方案：尝试使用BeautifulSoup的CSS选择器
@@ -540,7 +538,7 @@ class HtmlResponse(BaseResponse):
                 else:
                     results.append([])
             except Exception as e:
-                logger.warning(f'XPath查询失败: {selector}, 错误: {e}')
+                mylog.warning(f'XPath查询失败: {selector}, 错误: {e}')
                 results.append([])
 
         return results
@@ -581,7 +579,7 @@ class HtmlResponse(BaseResponse):
             text = '\n'.join(lines)
             return re.sub(r'\n{3,}', '\n\n', text)  # 多个空行压缩为两个
         except Exception as e:
-            logger.error(f'纯净文本提取失败: {e}')
+            mylog.error(f'纯净文本提取失败: {e}')
             return self.text
 
     @property
@@ -598,7 +596,7 @@ class HtmlResponse(BaseResponse):
             raw_text = self.text
             return text_cleaner.clean_and_normalize(raw_text)
         except Exception as e:
-            logger.error(f'文本清理失败: {e}')
+            mylog.error(f'文本清理失败: {e}')
             return self.text
 
 
@@ -685,103 +683,103 @@ if __name__ == '__main__':
 
     def test_base_attributes(response):
         """测试基础响应属性"""
-        logger.info('=' * 60)
-        logger.info(f'测试URL: {response.url} | 状态码: {response.status} | 编码: {response.encoding} | 响应对象类型: {type(response).__name__} | __repr__: {response!r}')
-        logger.info('请求头示例(前5个):')
+        mylog.info('=' * 60)
+        mylog.info(f'测试URL: {response.url} | 状态码: {response.status} | 编码: {response.encoding} | 响应对象类型: {type(response).__name__} | __repr__: {response!r}')
+        mylog.info('请求头示例(前5个):')
         for _, (key, value) in enumerate(list(response.headers.items())[:1]):
-            logger.info(f'  {key}: {value}')
-        logger.info(f'Cookie数量: {len(response.cookies)}')
+            mylog.info(f'  {key}: {value}')
+        mylog.info(f'Cookie数量: {len(response.cookies)}')
         if response.cookies:
-            logger.info(f'Cookie示例: {response.cookies.items()}')
+            mylog.info(f'Cookie示例: {response.cookies.items()}')
 
     def test_html_parsing(response):
         """测试HTML解析功能"""
-        logger.info('-' * 50)
+        mylog.info('-' * 50)
         # 测试标题解析
         title_xpath = '//title/text()'
         title_css = 'title'
 
         # 使用不同的解析方式获取标题
-        logger.info('页面标题解析:')
+        mylog.info('页面标题解析:')
         try:
             dom_title = response.dom.xpath(title_xpath)[0] if response.dom.xpath(title_xpath) else 'N/A'
-            logger.info(f'  dom.xpath: {dom_title}')
+            mylog.info(f'  dom.xpath: {dom_title}')
         except Exception as e:
-            logger.error(f'  dom.xpath 解析失败: {e!s}')
+            mylog.error(f'  dom.xpath 解析失败: {e!s}')
 
         try:
             query_title = response.query(title_css).text() if response.query(title_css) else 'N/A'
-            logger.info(f'  query: {query_title}')
+            mylog.info(f'  query: {query_title}')
         except Exception as e:
-            logger.error(f'  query 解析失败: {e!s}')
+            mylog.error(f'  query 解析失败: {e!s}')
 
         try:
             element_title = response.element.xpath(title_xpath)[0] if response.element.xpath(title_xpath) else 'N/A'
-            logger.info(f'  element.xpath: {element_title}')
+            mylog.info(f'  element.xpath: {element_title}')
         except Exception as e:
-            logger.error(f'  element.xpath 解析失败: {e!s}')
+            mylog.error(f'  element.xpath 解析失败: {e!s}')
 
         try:
             html_title = response.html.xpath(title_xpath)[0] if response.html.xpath(title_xpath) else 'N/A'
-            logger.info(f'  html.xpath: {html_title}')
+            mylog.info(f'  html.xpath: {html_title}')
         except Exception as e:
-            logger.error(f'  html.xpath 解析失败: {e!s}')
+            mylog.error(f'  html.xpath 解析失败: {e!s}')
 
         try:
             html_title = response.soup.select(title_css)[0].text if response.soup.select(title_css) else 'N/A'
-            logger.info(f'  soup.select: {html_title}')
+            mylog.info(f'  soup.select: {html_title}')
         except Exception as e:
-            logger.error(f'  soup.select 解析失败: {e!s}')
+            mylog.error(f'  soup.select 解析失败: {e!s}')
         # 测试自定义xpath方法
         try:
             custom_xpath_title = response.xpath(title_xpath)[0][0] if response.xpath(title_xpath) else 'N/A'
-            logger.info(f'  自定义xpath方法: {custom_xpath_title}')
+            mylog.info(f'  自定义xpath方法: {custom_xpath_title}')
         except Exception as e:
-            logger.error(f'  自定义xpath方法 解析失败: {e!s}')
+            mylog.error(f'  自定义xpath方法 解析失败: {e!s}')
 
     def test_text_processing(response):
         """测试文本处理功能"""
-        logger.info('-' * 50)
-        logger.info('文本处理测试:')
+        mylog.info('-' * 50)
+        mylog.info('文本处理测试:')
 
         # 获取页面文本样本
         sample_text = response.text[:200] + '...' if len(response.text) > 200 else response.text
-        logger.info(f'原始文本样本: {sample_text}')
+        mylog.info(f'原始文本样本: {sample_text}')
 
         # 测试clean_text
         clean_sample = response.clean_text[:200] + '...' if len(response.clean_text) > 200 else response.clean_text
-        logger.info(f'清理后文本样本: {clean_sample}')
-        logger.info(f'清理后文本样本2: {response.ctext[:200]}')
+        mylog.info(f'清理后文本样本: {clean_sample}')
+        mylog.info(f'清理后文本样本2: {response.ctext[:200]}')
 
     def test_json_parsing(response):
         """测试JSON解析功能"""
-        logger.info('\n' + '-' * 50)
-        logger.info('\nJSON解析测试:')
+        mylog.info('\n' + '-' * 50)
+        mylog.info('\nJSON解析测试:')
         try:
             json_data = response.json
             if isinstance(json_data, dict) and json_data:
-                logger.info(f'JSON数据类型: {type(json_data)}')
-                logger.info(f'JSON键数量: {len(json_data)}')
+                mylog.info(f'JSON数据类型: {type(json_data)}')
+                mylog.info(f'JSON键数量: {len(json_data)}')
                 # 显示前5个键值对
                 json_preview = dict(list(json_data.items())[:5])
-                logger.info(f'JSON数据预览: {json_preview}')
+                mylog.info(f'JSON数据预览: {json_preview}')
             else:
-                logger.info('响应内容不包含有效JSON数据')
+                mylog.info('响应内容不包含有效JSON数据')
         except Exception as e:
-            logger.error(f'JSON解析失败: {e!s}')
+            mylog.error(f'JSON解析失败: {e!s}')
 
     def run_comprehensive_test(urls_to_test=None, max_urls=3):
         """运行全面测试，测试常用中文网站的响应处理"""
         if urls_to_test is None:
             urls_to_test = chinese_urls  # 默认测试前3个网址
 
-        logger.info('=' * 70)
-        logger.info('响应类综合测试 - 常用中文网站')
+        mylog.info('=' * 70)
+        mylog.info('响应类综合测试 - 常用中文网站')
 
         for url in urls_to_test:
             try:
-                logger.info('=' * 70)
-                logger.info(f'正在测试网站: {url}')
+                mylog.info('=' * 70)
+                mylog.info(f'正在测试网站: {url}')
 
                 # 获取响应
                 response = get(url)
@@ -799,16 +797,16 @@ if __name__ == '__main__':
                 # test_json_parsing(response)
 
             except Exception as e:
-                logger.error(f'\n测试网址 {url} 时出错: {e!s}')
+                mylog.error(f'\n测试网址 {url} 时出错: {e!s}')
                 import traceback
 
                 traceback.print_exc()
 
         # 运行兼容性测试
 
-        logger.info('=' * 70)
-        logger.info('测试完成')
-        logger.info('=' * 70)
+        mylog.info('=' * 70)
+        mylog.info('测试完成')
+        mylog.info('=' * 70)
 
     # 运行全面测试，默认测试前3个常用中文网址
     run_comprehensive_test()

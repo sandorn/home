@@ -1,0 +1,112 @@
+
+
+#------------------------------------------
+[tool.ruff]
+target-version = "py313"
+cache-dir = "D:/TMP/ruff_cache"
+preview = true
+line-length = 200
+
+# 排除配置
+exclude = [
+    ".venv", "__pycache__", "build", "dist",
+    "migrations", "node_modules", "tests/fixtures",
+    "**/generated/*.py", "*.pyc", "*.pyo", "*.pyd",
+    "*.so", "*.dll", "*.dylib", "*.egg-info", "*.egg",
+    "*.log", "*.tmp", "*.bak", "old_code/**"
+]
+
+[tool.ruff.lint]
+select = [
+    "B",    # bugbear
+    "SIM",  # simplify
+    "RUF",  # ruff
+    "UP",   # pyupgrade
+    "I",    # isort
+    "C90",  # mccabe
+    "N",    # pep8-naming
+    "S",    # bandit
+    "T",    # flake8-print
+    "F",    # pyflakes
+    "E",    # pycodestyle
+    "RET",  # flake8-return
+    "PT",   # flake8-pytest-style
+]
+
+ignore = [
+    "A",    # 完全禁用 flake8-annotations
+    "ANN",  # 完全禁用 flake8-annotations 扩展
+    "E501", # 行超长 (由 line-length 控制)
+    "B006", # 可变默认值
+    "RUF002", # 字符串中全角标点
+    "RUF003", # 字符串中全角标点
+    "Q000", # 与格式化器冲突的引号规则
+    "Q003", # 与格式化器冲突的引号规则
+    "RUF022",  # __all__ 排序
+    "D203", "D212",  # 文档字符串格式
+    "S101",  # 测试文件中允许断言
+    "T201",  # 测试文件中允许 print
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # 未使用的导入在 __init__ 中可接受
+"examples/**" = ["F401"]  # 示例代码中允许未使用的导入
+
+
+[tool.ruff.lint.isort]
+known-first-party = []
+known-third-party = []
+required-imports = ["from __future__ import annotations"]
+combine-as-imports = true
+force-single-line = false
+order-by-type = true
+force-sort-within-sections = false
+split-on-trailing-comma = false  # 添加这一行
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "single"
+docstring-code-format = true
+line-ending = "auto"
+skip-magic-trailing-comma = false  # 改为 true 避免与长行冲突
+
+
+# 选择一个类型检查器（推荐 basedpyright）
+[tool.basedpyright]
+pythonVersion = "3.13"
+typeCheckingMode = "basic"
+reportMissingImports = "error"
+reportUnusedImport = "none"
+reportUnusedVariable = "warning"
+reportExplicitAny = "none"
+reportAny = "none"
+reportUnannotatedClassAttribute = "none"
+exclude = [
+    "**/tests/**",
+    "**/test_*", 
+    "**/__pycache__/**",
+    "**/.git/**",
+    "**/migrations/**",
+    "**/node_modules/**",
+    "**/old_code/**"
+]
+
+# 可选：如果要使用 mypy 而不是 basedpyright，注释掉上面的 basedpyright 配置，取消注释下面的
+# [tool.mypy]
+# python_version = "3.13"
+# cache_dir = "D:/TMP/mypy_cache/"
+# show_error_codes = true
+# check_untyped_defs = true
+# disallow_incomplete_defs = false
+# disallow_untyped_defs = false
+# disallow_untyped_decorators = false
+# implicit_optional = false
+# strict_equality = false
+# strict_optional = true
+# 
+# [[tool.mypy.overrides]]
+# module = "tkinter.*"
+# ignore_errors = true
+
+#------------------------------------------
+

@@ -45,7 +45,7 @@ from typing import Any, TypeVar
 import psutil
 from xt_thread.thread import SafeThread, ThreadBase
 from xt_thread.thread import ThreadManager as ThreadInstanceManager
-from xt_wraps import handle_exception
+from xt_wraps.exception import handle_exception
 
 T = TypeVar('T')
 R = TypeVar('R')

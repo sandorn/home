@@ -19,10 +19,8 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
+from xt_log import mylog
 from xt_thread.futures import TaskExecutor
-from xt_wraps import LogCls
-
-mylog = LogCls()
 
 
 class AioCrawl:
@@ -146,10 +144,7 @@ class AioCrawl:
 
 
 if __name__ == '__main__':
-    from xt_wraps import LogCls
-
-    mylog = LogCls()
-
+    
     urls = ['https://www.126.com', 'https://www.126.com', 'https://httpbin.org/post']
     task_params = []
     args_list = []
@@ -161,13 +156,13 @@ if __name__ == '__main__':
     myaio = AioCrawl()
     from xt_requests import get
 
-    mylog('示例11 结果:', myaio.add_pool(get, urls))
-    mylog('示例12 结果:', myaio.add_pool(get, task_params))
-    mylog('示例13 结果:', myaio.fetch_tasks(get, urls))
-    mylog('示例14 结果:', myaio.fetch_tasks(get, args_list))
+    mylog.debug('示例11 结果:', myaio.add_pool(get, [urls[0]]))
+    # mylog.debug('示例12 结果:', myaio.add_pool(get, task_params))
+    # mylog.debug('示例13 结果:', myaio.fetch_tasks(get, urls))
+    # mylog.debug('示例14 结果:', myaio.fetch_tasks(get, args_list))
 
-    from xt_ahttp import ahttpGet
+    # from xt_ahttp import ahttpGet
 
-    mylog('示例21 结果:', myaio.add_pool(ahttpGet, urls))
-    mylog('示例23 结果:', myaio.fetch_tasks(ahttpGet, urls))
-    mylog('示例24 结果:', myaio.fetch_tasks(ahttpGet, args_list))
+    # mylog.debug('示例21 结果:', myaio.add_pool(ahttpGet, urls))
+    # mylog.debug('示例23 结果:', myaio.fetch_tasks(ahttpGet, urls))
+    # mylog.debug('示例24 结果:', myaio.fetch_tasks(ahttpGet, args_list))

@@ -30,8 +30,10 @@ from typing import Any
 
 import requests
 from xt_head import TIMEOUT, Head
+from xt_log import mylog
 from xt_response import htmlResponse
-from xt_wraps import log_wraps, mylog, retry_wraps
+from xt_wraps.log import log_wraps
+from xt_wraps.retry import retry_wraps
 
 # 支持的HTTP请求方法
 supported_request_methods = ('get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch')
@@ -232,7 +234,6 @@ class SessionClient:
 
 if __name__ == '__main__':
     """模块使用示例和测试"""
-
     def basic_request_example():
         """基础请求示例"""
         # 简单GET请求
@@ -243,17 +244,17 @@ if __name__ == '__main__':
             # 解析响应内容
             content = response.text
             mylog.debug(f'响应内容长度: {len(content)} 字符')
-            print('xpath(//title/text()) ：', response.xpath('//title/text()'))
-            print('xpath([//title/text(), //title/text()]) ：', response.xpath(['//title/text()', '//title/text()']))
-            print('//title/text() ：', response.xpath(['//title/text()', '', ' ']))
-            print('xpath( ) ：', response.xpath(' '))
-            print('xpath() ：', response.xpath(''))
-            print('dom.xpath(//title/text()) ：', response.dom.xpath('//title/text()'))
-            print('html.xpath(//title/text()) ：', response.html.xpath('//title/text()'))
-            print('element.xpath(//title/text()) ：', response.element.xpath('//title/text()'))
-            print('query(title).text() ：', response.query('title').text())
-            print('soup.select(title)[0].text ：', response.soup.select('title')[0].text)
-            print('soup.find(title).text ：', response.soup.find('title').text)
+            mylog.info('xpath(//title/text()) ：', response.xpath('//title/text()'))
+            mylog.info('xpath([//title/text(), //title/text()]) ：', response.xpath(['//title/text()', '//title/text()']))
+            mylog.info('//title/text() ：', response.xpath(['//title/text()', '', ' ']))
+            mylog.info('xpath( ) ：', response.xpath(' '))
+            mylog.info('xpath() ：', response.xpath(''))
+            mylog.info('dom.xpath(//title/text()) ：', response.dom.xpath('//title/text()'))
+            mylog.info('html.xpath(//title/text()) ：', response.html.xpath('//title/text()'))
+            mylog.info('element.xpath(//title/text()) ：', response.element.xpath('//title/text()'))
+            mylog.info('query(title).text() ：', response.query('title').text())
+            mylog.info('soup.select(title)[0].text ：', response.soup.select('title')[0].text)
+            mylog.info('soup.find(title).text ：', response.soup.find('title').text)
 
     def session_example():
         """会话请求示例"""
@@ -298,7 +299,7 @@ if __name__ == '__main__':
         # basic_request_example()
         # session_example()
         # post_request_example()
-        print(get('https://httpbin.org/post'))
+        mylog.info(get('https://httpbin.org/post'))
         mylog.success('=== HTTP请求工具模块测试完成 ===')
     except Exception as e:
         mylog.error(f'测试过程中发生错误: {e!s}')

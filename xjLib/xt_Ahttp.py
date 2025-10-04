@@ -37,7 +37,9 @@ from functools import partial
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from xt_head import TIMEOUT, Head
 from xt_response import ACResponse
-from xt_wraps import handle_exception, log_wraps, retry_wraps
+from xt_wraps.exception import handle_exception
+from xt_wraps.log import log_wraps
+from xt_wraps.retry import retry_wraps
 
 # 定义模块公开接口
 __all__ = ('AsyncHttpClient', 'ahttp_get', 'ahttp_get_all', 'ahttp_post', 'ahttp_post_all')
@@ -452,7 +454,7 @@ class AHttpLoop:
 
 if __name__ == '__main__':
     """示例用法和测试代码"""
-    from xt_wraps import mylog
+    from xt_thread.wraps import thread_print
 
     # 测试URL列表
     urls = ('https://www.163.com', 'https://www.qq.com', 'https://www.126.com', 'https://httpbin.org/post')
@@ -460,36 +462,32 @@ if __name__ == '__main__':
     def main():
         """主测试函数"""
         # 使用便捷函数发送单个GET请求
-        # mylog.info('发送单个GET请求...', ahttp_get(urls[0]))
+        thread_print('发送单个GET请求...', ahttp_get(urls[0]))
 
         # 使用便捷函数发送多个GET请求
-        mylog.info('发送多个GET请求...', ahttp_get_all(urls, force_sequential=False))
+        thread_print('ahttp_get_all 发送多个GET请求...', ahttp_get_all(urls, force_sequential=False))
 
         # 发送POST请求
-        # mylog.info('发送POST请求...', ahttp_post(urls[3], data=b'test_data'))
-
-    async def demo_async_client():
-        """演示AsyncHttpClient的异步用法"""
-        client = AsyncHttpClient(max_concurrent=3)  # 设置最大并发数为3
-
-        # 单个请求
-        mylog.info('\n执行单个异步请求:')
-        mylog.info('#########################', await client.request('get', urls[3]), '#########################')
-
-        # 批量请求(共享会话方式)
-        mylog.info('\n执行批量异步请求(共享会话):')
-        mylog.info(await client.request_multi('get', urls[2:4]))
-
-        # 批量请求(分批处理方式)
-        mylog.info('\n执行批量异步请求(分批处理):')
-        mylog.info(await client.request_batch('get', urls[2:4]))
+        thread_print('发送POST请求...', ahttp_post(urls[3], data=b'test_data'))
 
     def test_ahttploop():
         ahc = AHttpLoop()
-        mylog.info(111111, ahc.get('https://www.163.com'))
-        mylog.info(222222, ahc.getall(['https://www.163.com', 'https://httpbin.org/ip']))
+        thread_print(111111, ahc.get('https://www.163.com'))
+        thread_print(222222, ahc.getall(['https://www.163.com', 'https://httpbin.org/ip']))
 
+    async def demo_async_client():
+        """演示AsyncHttpClient的异步用法"""
+        client = _default_client
+
+        # 单个请求
+        thread_print('\nclient.request:', await client.request('get', urls[3]))
+
+        # 批量请求(共享会话方式)
+        thread_print('\nclient.request_multi(共享会话):', await client.request_multi('get', urls[2:4]))
+
+        # 批量请求(分批处理方式)
+        thread_print('\nclient.request_batch(分批处理):', await client.request_batch('get', urls[2:4]))
+
+    # main()
     # test_ahttploop()
-    # asyncio.run(demo_async_client())
-    # 执行主测试函数
-    main()
+    asyncio.run(demo_async_client())

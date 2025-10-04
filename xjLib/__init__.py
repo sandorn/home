@@ -21,4 +21,4 @@ __author__ = "Even.Sand"
 # software license used for the package
 __license__ = "NewSea"
 
-LIB_VERSION = "0.7"
+LIB_VERSION = "0.0.7"

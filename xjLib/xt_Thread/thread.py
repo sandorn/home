@@ -35,10 +35,9 @@ from collections.abc import Callable
 from threading import Event, Thread
 from typing import Any, ClassVar, TypeVar, cast
 
-from xt_wraps.log import LogCls
 from xt_wraps.singleton import SingletonMixin
 
-log = LogCls()
+from xtlog import mylog as log
 
 # 类型定义
 _T = TypeVar('_T')
