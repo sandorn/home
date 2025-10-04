@@ -22,9 +22,10 @@ Github       : https://github.com/sandorn/home
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
-from xt_log import mylog
+from xtlog import mylog
 
 
 class TemplateClass:
@@ -113,7 +114,7 @@ def utility_function(input_data: str | int) -> list[str]:
     return result
 
 
-def simple_decorator(func: Any) -> Any:
+def simple_decorator(func: Callable[..., Any]) -> Any:
     """简单装饰器示例
 
     Args:
