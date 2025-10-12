@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 """
 ==============================================================
-Description  : AsyncEnhancedThreadPool 测试程序
+Description  : FutureThreadPool 测试程序
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
 Date         : 2025-10-10
@@ -14,15 +14,15 @@ import asyncio
 import time
 import unittest
 
-from xt_thread.futures import AsyncEnhancedThreadPool
+from xt_thread.futures import FutureThreadPool
 
 
-class TestAsyncEnhancedThreadPool(unittest.TestCase):
-    """AsyncEnhancedThreadPool 测试类 - 针对简化版本"""
+class TestFutureThreadPool(unittest.TestCase):
+    """FutureThreadPool 测试类 - 针对简化版本"""
 
     def setUp(self):
         """测试前准备"""
-        self.pool = AsyncEnhancedThreadPool(max_workers=2)
+        self.pool = FutureThreadPool(max_workers=2)
 
     # 测试同步函数
     def test_sync_function(self):
@@ -174,7 +174,7 @@ class TestAsyncEnhancedThreadPool(unittest.TestCase):
     # 测试上下文管理器
     def test_context_manager(self):
         """测试上下文管理器用法"""
-        with AsyncEnhancedThreadPool(max_workers=2) as pool:
+        with FutureThreadPool(max_workers=2) as pool:
             result = pool.submit_task(lambda x: x * 3, 4)
             self.assertEqual(result, 12)
 
@@ -234,7 +234,7 @@ class TestAsyncEnhancedThreadPool(unittest.TestCase):
         def custom_handler(exc):
             exception_caught.append(str(exc))
 
-        pool = AsyncEnhancedThreadPool(exception_handler=custom_handler)
+        pool = FutureThreadPool(exception_handler=custom_handler)
 
         def faulty_function():
             raise ValueError('Custom handler test')
@@ -245,12 +245,12 @@ class TestAsyncEnhancedThreadPool(unittest.TestCase):
         self.assertIn('Custom handler test', exception_caught[0])
 
 
-class TestAsyncEnhancedThreadPoolAdvanced(unittest.TestCase):
+class TestFutureThreadPoolAdvanced(unittest.TestCase):
     """高级测试用例"""
 
     def setUp(self):
         """测试前准备"""
-        self.pool = AsyncEnhancedThreadPool(max_workers=4)
+        self.pool = FutureThreadPool(max_workers=4)
 
     def test_mixed_async_sync_batch(self):
         """测试混合异步和同步函数的批量任务执行"""
@@ -277,8 +277,8 @@ class TestAsyncEnhancedThreadPoolAdvanced(unittest.TestCase):
             return x**2
 
         # 创建多个线程池实例
-        pool1 = AsyncEnhancedThreadPool(max_workers=1)
-        pool2 = AsyncEnhancedThreadPool(max_workers=1)
+        pool1 = FutureThreadPool(max_workers=1)
+        pool2 = FutureThreadPool(max_workers=1)
 
         results1 = pool1.submit_tasks(task_that_uses_resources, [1, 2, 3])
         results2 = pool2.submit_tasks(task_that_uses_resources, [4, 5, 6])
@@ -315,12 +315,12 @@ class TestAsyncEnhancedThreadPoolAdvanced(unittest.TestCase):
         self.assertEqual(result3, 4)
 
 
-class TestAsyncEnhancedThreadPoolEdgeCases(unittest.TestCase):
+class TestFutureThreadPoolEdgeCases(unittest.TestCase):
     """边界情况测试"""
 
     def setUp(self):
         """测试前准备"""
-        self.pool = AsyncEnhancedThreadPool(max_workers=2)
+        self.pool = FutureThreadPool(max_workers=2)
 
     def test_single_item_batch(self):
         """测试单个项目的批量任务"""
@@ -395,7 +395,7 @@ class TestAsyncEnhancedThreadPoolEdgeCases(unittest.TestCase):
 
 def performance_demo():
     """性能演示函数"""
-    print('=== AsyncEnhancedThreadPool 性能演示 ===')
+    print('=== FutureThreadPool 性能演示 ===')
 
     def slow_sync_task(x):
         time.sleep(0.1)
@@ -405,7 +405,7 @@ def performance_demo():
         await asyncio.sleep(0.1)
         return x * 3
 
-    pool = AsyncEnhancedThreadPool(max_workers=4)
+    pool = FutureThreadPool(max_workers=4)
 
     # 测试同步任务性能
     print('测试同步任务...')
@@ -429,7 +429,7 @@ def performance_demo():
 
 if __name__ == '__main__':
     # 运行测试
-    print('开始运行 AsyncEnhancedThreadPool 测试...')
+    print('开始运行 FutureThreadPool 测试...')
     unittest.main()  # verbosity=2)
 
     # 运行性能演示

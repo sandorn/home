@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 """
-AsyncLoopThreadPool 类测试程序（优化版）
+AsyncThreadPool 类测试程序（优化版）
 修复结果格式和参数传递问题
 """
 
@@ -14,7 +14,7 @@ import time
 # 添加路径以导入模块
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from xt_thread.futures import AsyncLoopThreadPool
+from xt_thread.futures import AsyncThreadPool
 
 
 def simple_sync_task(task_id: int) -> int:
@@ -37,7 +37,7 @@ def error_task(task_id: int) -> int:
 
 
 def extract_results(results: list) -> list:
-    """从AsyncLoopThreadPool的结果中提取实际值"""
+    """从AsyncThreadPool的结果中提取实际值"""
     if not results:
         return []
 
@@ -56,7 +56,7 @@ def test_basic_sync_tasks():
     print('=' * 50)
 
     try:
-        with AsyncLoopThreadPool(max_workers=2) as pool:
+        with AsyncThreadPool(max_workers=2) as pool:
             print('[OK] 线程池创建成功')
 
             # 提交3个简单同步任务
@@ -88,7 +88,7 @@ def test_basic_async_tasks():
     print('=' * 50)
 
     try:
-        with AsyncLoopThreadPool(max_workers=2) as pool:
+        with AsyncThreadPool(max_workers=2) as pool:
             print('[OK] 线程池创建成功')
 
             # 提交3个简单异步任务
@@ -120,7 +120,7 @@ def test_mixed_sync_async():
     print('=' * 50)
 
     try:
-        with AsyncLoopThreadPool(max_workers=4) as pool:
+        with AsyncThreadPool(max_workers=4) as pool:
             print('[OK] 线程池创建成功')
 
             # 混合提交同步和异步任务
@@ -160,7 +160,7 @@ def test_batch_tasks():
     print('=' * 50)
 
     try:
-        with AsyncLoopThreadPool(max_workers=3) as pool:
+        with AsyncThreadPool(max_workers=3) as pool:
             print('[OK] 线程池创建成功')
 
             # 批量提交任务（不使用callback参数）
@@ -198,7 +198,7 @@ def test_exception_handling():
         def exception_handler(e: Exception) -> None:
             exceptions.append(e)
 
-        with AsyncLoopThreadPool(exception_handler=exception_handler) as pool:
+        with AsyncThreadPool(exception_handler=exception_handler) as pool:
             print('[OK] 线程池创建成功')
 
             # 提交包含异常的任务
@@ -233,7 +233,7 @@ def test_timeout_feature():
             time.sleep(0.2)  # 较慢的任务
             return task_id * 2
 
-        with AsyncLoopThreadPool(max_workers=2) as pool:
+        with AsyncThreadPool(max_workers=2) as pool:
             print('[OK] 线程池创建成功')
 
             # 提交慢任务
@@ -270,7 +270,7 @@ def test_performance():
 
         start_time = time.time()
 
-        with AsyncLoopThreadPool(max_workers=4) as pool:
+        with AsyncThreadPool(max_workers=4) as pool:
             # 提交50个快速任务（减少数量避免卡住）
             for i in range(50):
                 pool.submit_task(quick_task, i)
@@ -297,7 +297,7 @@ def test_performance():
 
 def run_all_tests():
     """运行所有测试"""
-    print('AsyncLoopThreadPool 功能测试开始')
+    print('AsyncThreadPool 功能测试开始')
     print('测试时间:', time.strftime('%Y-%m-%d %H:%M:%S'))
 
     tests = [
