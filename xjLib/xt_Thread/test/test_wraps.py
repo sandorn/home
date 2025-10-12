@@ -16,16 +16,7 @@ import threading
 import time
 
 # 导入要测试的装饰器
-from xt_thread.wraps import (
-    ThreadWrapsManager,
-    parallelize_wraps,
-    qthread_wraps,
-    run_in_qtthread,
-    run_in_thread,
-    thread_print,
-    thread_safe,
-    thread_wraps,
-)
+from xt_thread.wraps import ThreadWrapsManager, parallelize_wraps, qthread_wraps, run_in_qtthread, run_in_thread, thread_print, thread_safe, thread_wraps
 
 # 准备测试数据和辅助函数
 global_counter = 0
@@ -245,11 +236,6 @@ def test_05_thread_wraps_manager():
     all_results = ThreadWrapsManager.get_all_result()
     print(f'所有线程结果数量: {len(all_results)}')
 
-    # 测试清除功能
-    ThreadWrapsManager.clear()
-    all_results = ThreadWrapsManager.get_all_result()
-    print(f'清除后所有线程结果数量: {len(all_results)}')
-
 
 # 6. 测试parallelize_wraps装饰器
 def test_06_parallelize_wraps():
@@ -293,7 +279,7 @@ def test_06_parallelize_wraps():
     start_time = time.time()
     results = parallel_square(data, max_workers=2)
     end_time = time.time()
-
+    print(f'并行处理结果2: {results}')
     print(f'自定义线程池大小(2)处理耗时: {end_time - start_time:.4f}秒')
 
     # 测试异常处理
@@ -427,14 +413,14 @@ def test_10_exception_handling():
     # 测试run_in_thread异常处理
     thread = task_with_exception()
     try:
-        result = thread.get_result()
+        thread.get_result()
     except Exception as e:
         print(f'run_in_thread异常测试: 正确捕获到异常 - {e}')
 
     # 测试thread_wraps异常处理
     thread = wrapped_task_with_exception()
     try:
-        result = thread.get_result()
+        thread.get_result()
     except Exception as e:
         print(f'thread_wraps异常测试: 正确捕获到异常 - {e}')
 

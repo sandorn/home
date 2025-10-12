@@ -29,11 +29,11 @@ from functools import partial
 from typing import Any
 
 import requests
+from nswrapslite.log import logging_wraps as log_wraps
+from nswrapslite.retry import retry_wraps
 from xt_head import TIMEOUT, Head
-from xt_log import mylog
 from xt_response import htmlResponse
-from xt_wraps.log import log_wraps
-from xt_wraps.retry import retry_wraps
+from xtlog import mylog
 
 # 支持的HTTP请求方法
 supported_request_methods = ('get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch')

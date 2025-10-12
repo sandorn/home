@@ -4,7 +4,6 @@
 Description  : 时间工具模块 - 提供时间格式化、转换、计算和计时功能
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
-Date         : 2022-12-22 17:35:56
 LastEditTime : 2025-09-10 15:30:00
 FilePath     : /CODE/xjlib/xt_utils/time.py
 Github       : https://github.com/sandorn/home

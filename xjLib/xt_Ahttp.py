@@ -35,11 +35,11 @@ from collections.abc import Callable
 from functools import partial
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
+from nswrapslite.exception import _handle_exception as handle_exception
+from nswrapslite.log import logging_wraps as log_wraps
+from nswrapslite.retry import retry_wraps
 from xt_head import TIMEOUT, Head
 from xt_response import ACResponse
-from xt_wraps.exception import handle_exception
-from xt_wraps.log import log_wraps
-from xt_wraps.retry import retry_wraps
 
 # 定义模块公开接口
 __all__ = ('AsyncHttpClient', 'ahttp_get', 'ahttp_get_all', 'ahttp_post', 'ahttp_post_all')

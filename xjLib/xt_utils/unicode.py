@@ -4,7 +4,6 @@
 Description  : Unicode工具模块 - 精确处理 Unicode 文本,提供Unicode字符分析、文本规范化和清理功能
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
-Date         : 2025-06-16 13:20:56
 LastEditTime : 2025-09-17 14:30:00
 FilePath     : /CODE/xjlib/xt_utils/unicode.py
 Github       : https://github.com/sandorn/home

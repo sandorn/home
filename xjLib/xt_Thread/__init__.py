@@ -4,10 +4,8 @@
 Description  : 线程与进程管理增强包 - 提供全面的并发编程解决方案
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
-Date         : 2022-12-22 17:35:56
 LastEditTime : 2025-09-07 10:00:00
-FilePath     : /CODE/xjlib/xt_thread/__init__.py
-Github       : https://github.com/sandorn/home
+Github       : https://github.com/sandorn/nsthread
 
 xt_thread包提供了全面的并发编程工具，包括线程管理、进程管理、生产者-消费者模式以及PyQt线程支持。
 
@@ -28,88 +26,51 @@ xt_thread包提供了全面的并发编程工具，包括线程管理、进程�
 ==============================================================
 """
 
-# 从线程池模块导入
 from __future__ import annotations
 
-from .futures import (
-    AsyncFunction,
-    BaseThreadPool,
-    DynamicThreadPool,
-    EnhancedThreadPool,
-    TaskExecutor,
-    ThreadPoolManager,
-)
+from .exception import handle_exception, safe_call
+from .futures import AsyncThreadPool, BaseThreadRunner, DynamicThreadRunner, EnhancedThreadPool, FutureThreadPool, ThreadPoolManager
+from .process import CustomProcess, ProcessBase, ProcessManager, SafeProcess, process_manager, run_custom_process
+from .production import AsyncProduction, Production
+from .qthread import ComposedSingletonQtThread, QtSafeThread, QtThreadBase, QtThreadManager, SingletonQtThread
+from .thread import ComposedSingletonThread, SafeThread, SingletonThread, ThreadBase, ThreadManager
+from .wraps import ThreadWrapsManager, parallelize_wraps, qthread_wraps, run_in_qtthread, run_in_thread, thread_print, thread_safe, thread_wraps
 
-# 从多进程模块导入
-from .process import (
-    CustomProcess,
-    run_custom_process,
-)
-
-# 从生产者-消费者模式模块导入
-from .production import (
-    AsyncProduction,
-    Production,
-)
-
-# 从PyQt线程模块导入
-from .qthread import (
-    ComposedSingletonQtThread,
-    QtSafeThread,
-    QtThreadBase,
-    QtThreadManager,
-    SingletonQtThread,
-)
-
-# 从线程基础模块导入
-from .thread import (
-    ComposedSingletonThread,
-    SafeThread,
-    SingletonThread,
-    ThreadBase,
-    ThreadManager,
-)
-
-# 从装饰器模块导入
-from .wraps import (
-    ThreadWrapsManager,
-    parallelize_wraps,
-    qthread_wraps,
-    run_in_qtthread,
-    run_in_thread,
-    thread_print,
-    thread_safe,
-    thread_wraps,
-)
-
-# 导出公共API，按功能模块分组排序
 __all__ = (
-    'AsyncFunction',
-    'AsyncProduction',
-    'BaseThreadPool',
+    'AsyncThreadPool',
+    'BaseThreadRunner',
     'ComposedSingletonQtThread',
     'ComposedSingletonThread',
     'CustomProcess',
-    'DynamicThreadPool',
+    'DynamicThreadRunner',
     'EnhancedThreadPool',
+    'FutureThreadPool',
+    'ProcessBase',
+    'ProcessManager',
     'Production',
     'QtSafeThread',
     'QtThreadBase',
     'QtThreadManager',
+    'SafeProcess',
     'SafeThread',
     'SingletonQtThread',
     'SingletonThread',
-    'TaskExecutor',
     'ThreadBase',
     'ThreadManager',
     'ThreadPoolManager',
     'ThreadWrapsManager',
+    'handle_exception',
     'parallelize_wraps',
+    'process_manager',
     'qthread_wraps',
     'run_custom_process',
     'run_in_qtthread',
     'run_in_thread',
+    'safe_call',
     'thread_print',
     'thread_safe',
     'thread_wraps',
 )
+
+
+__version__ = '0.0.7'

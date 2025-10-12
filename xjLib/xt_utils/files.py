@@ -4,7 +4,6 @@
 Description  : 文件操作工具库，提供文件读写、路径处理、大小计算等功能
 Develop      : VSCode
 Author       : sandorn sandorn@live.cn
-Date         : 2022-12-22 17:35:56
 LastEditTime : 2025-01-15 11:57:50
 FilePath     : /CODE/xjlib/xt_utils/files.py
 Github       : https://github.com/sandorn/home
@@ -35,7 +34,7 @@ class FileSize:
     >>> log(size.mb)  # 获取MB数
     """
 
-    __slots__ = ('_bytes',)  # 优化内存使用
+    __slots__ = ('_bytes', )  # 优化内存使用
 
     def __init__(self, file_path: str | os.PathLike):
         """
@@ -51,7 +50,8 @@ class FileSize:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f'文件不存在: {file_path}')
         if os.path.isdir(file_path):
-            raise IsADirectoryError(f'路径指向的是目录，不是文件: {file_path}')
+            raise IsADirectoryError(f'路径指向的是目录,不是文件: {file_path}')
+        self._file_path = file_path
         self._bytes = os.path.getsize(file_path)
 
     @property
@@ -93,7 +93,7 @@ class FileSize:
 
     def __repr__(self) -> str:
         """返回FileSize实例的代码表示"""
-        return f'FileSize(bytes={self._bytes})'
+        return f'{self._file_path} | Size(bytes={self._bytes})'
 
 
 class QSSTools:

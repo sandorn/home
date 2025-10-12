@@ -30,9 +30,7 @@ from collections.abc import Callable
 from types import CodeType, FunctionType
 from typing import Any
 
-from xt_wraps import LogCls
-
-log = LogCls()
+from xtlog import mylog as log
 
 
 def _create_func(code_body: str, func_name: str | None = None, **kwargs) -> Callable[..., Any]:
@@ -122,7 +120,7 @@ CODE_ATTRS = (
 )
 
 
-def get_dynamic_function_attributes(func: callable, include_special: bool = True) -> list[str]:
+def get_dynamic_function_attributes(func: Callable[..., Any], include_special: bool = True) -> list[str]:
     """动态获取函数对象的所有属性
 
     Args:
@@ -255,7 +253,7 @@ def log_attr(attr_name: str, obj: Any, width: int = 15) -> None:
         log(f'{attr_name:{width}}: 错误 - {str(e)[:50]}')
 
 
-def inspect_function(func: Callable, use_dynamic_attrs: bool = False, include_special_methods: bool = False) -> None:
+def inspect_function(func: Callable[..., Any], use_dynamic_attrs: bool = False, include_special_methods: bool = False) -> None:
     """检查并打印函数属性，包括函数自身属性和__code__对象属性
 
     Args:
@@ -296,7 +294,7 @@ def inspect_function(func: Callable, use_dynamic_attrs: bool = False, include_sp
 
 
 if __name__ == '__main__':
-    """主程序：展示模块功能的使用示例"""
+    """主程序:展示模块功能的使用示例"""
     import sys
 
     # 测试1: 创建简单函数

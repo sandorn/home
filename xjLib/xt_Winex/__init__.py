@@ -1,5 +1,4 @@
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 ==============================================================
 Description  : 头部注释
@@ -11,6 +10,8 @@ FilePath     : /CODE/xjLib/xt_Win32.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+
+from __future__ import annotations
 
 import ctypes
 import threading
@@ -52,11 +53,7 @@ def enum_windows():
     hwnd_title = {}
 
     def callback(hwnd, hwnd_title):
-        if (
-            win32gui.IsWindow(hwnd)
-            and win32gui.IsWindowEnabled(hwnd)
-            and win32gui.IsWindowVisible(hwnd)
-        ):
+        if win32gui.IsWindow(hwnd) and win32gui.IsWindowEnabled(hwnd) and win32gui.IsWindowVisible(hwnd):
             hwnd_title[hwnd] = win32gui.GetWindowText(hwnd)
 
     win32gui.EnumWindows(callback, hwnd_title)
@@ -76,7 +73,7 @@ def GetWindowPlacement(hwnd):
 
 def WindowFromPoint(x, y):
     """通过坐标获取坐标下的【窗口句柄】"""
-    return win32gui.WindowFromPoint(x, y)
+    return win32gui.WindowFromPoint((x, y))
 
 
 def WindowFromPos():
@@ -143,11 +140,7 @@ def SetWindowTop(hwnd):
         0,
         0,
         0,
-        win32con.SWP_NOMOVE
-        | win32con.SWP_NOACTIVATE
-        | win32con.SWP_NOOWNERZORDER
-        | win32con.SWP_SHOWWINDOW
-        | win32con.SWP_NOSIZE,
+        win32con.SWP_NOMOVE | win32con.SWP_NOACTIVATE | win32con.SWP_NOOWNERZORDER | win32con.SWP_SHOWWINDOW | win32con.SWP_NOSIZE,
     )
 
 
@@ -171,9 +164,7 @@ def SetForegroundWindow(hwnd):
 
 def SetWindowPos(hwnd, x, y, w, h):
     """通过句柄设置窗口位置和大小"""
-    win32gui.SetWindowPos(
-        hwnd, win32con.HWND_TOPMOST, x, y, w, h, win32con.SWP_SHOWWINDOW
-    )
+    win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, x, y, w, h, win32con.SWP_SHOWWINDOW)
 
 
 def IsWindowEnabled(hwnd):
@@ -259,11 +250,11 @@ def set_window_icon_path(hwnd, icon_path):
             win32con.WM_SETICON,
             win32con.ICON_BIG,
             ctypes.cast(new_icon, ctypes.c_void_p).value,
-            ## new_icon
-            ## int(new_icon)
+            # new_icon
+            # int(new_icon)
         )
     else:
-        print("图标加载失败，请检查路径是否正确。")
+        print('图标加载失败，请检查路径是否正确。')
 
 
 def SetWindowIconPathSmall(hwnd, iconpath):
@@ -290,15 +281,13 @@ def GetPixel(hwnd, x, y):
 def EnumWindows():
     def win_enum_handler(hwnd, window_list):
         """将窗口句柄添加到列表中"""
-        window_list.append(
-            {
-                "HWND": hwnd,
-                "TEXT": win32gui.GetWindowText(hwnd),
-                "NAME": win32gui.GetClassName(hwnd),
-                # 'IDDD': win32api.GetWindowLong(hwnd, win32con.GWL_ID),
-                "ID": getThreadProcessId(hwnd),
-            }
-        )
+        window_list.append({
+            'HWND': hwnd,
+            'TEXT': win32gui.GetWindowText(hwnd),
+            'NAME': win32gui.GetClassName(hwnd),
+            # 'IDDD': win32api.GetWindowLong(hwnd, win32con.GWL_ID),
+            'ID': getThreadProcessId(hwnd),
+        })
 
     windowslist = []
     win32gui.EnumWindows(win_enum_handler, windowslist)
@@ -334,29 +323,22 @@ def close(hwnd):
 def isVisible(hwnd):
     # 获取DWM状态
     cloaked = ctypes.c_bool()
-    ctypes.windll.dwmapi.DwmGetWindowAttribute(
-        hwnd, 14, ctypes.byref(cloaked), ctypes.sizeof(cloaked)
-    )
+    ctypes.windll.dwmapi.DwmGetWindowAttribute(hwnd, 14, ctypes.byref(cloaked), ctypes.sizeof(cloaked))
 
     # 获取窗口可见性状态
     _style = win32con.WS_VISIBLE | win32con.WS_MINIMIZE
-    _exStyle = (
-        win32con.WS_EX_APPWINDOW | win32con.WS_EX_TOOLWINDOW | win32con.WS_EX_NOACTIVATE
-    )
+    _exStyle = win32con.WS_EX_APPWINDOW | win32con.WS_EX_TOOLWINDOW | win32con.WS_EX_NOACTIVATE
 
     isVisible = ctypes.windll.user32.IsWindowVisible(hwnd)
     styleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_STYLE) & _style
-    exStyleState = (
-        ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_EXSTYLE) & _exStyle
-    )
+    exStyleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_EXSTYLE) & _exStyle
 
     # 判断窗口状态
     if cloaked.value:
         return None
-    elif isVisible and styleState and not exStyleState:
+    if isVisible and styleState and not exStyleState:
         return True
-    else:
-        return False
+    return False
 
 
 def isUnicode(hwnd):
@@ -365,18 +347,14 @@ def isUnicode(hwnd):
     ctypes.windll.user32.GetWindowThreadProcessId(hwnd, ctypes.byref(processID))
 
     # 打开进程获取进程相关信息
-    processHandle = ctypes.windll.kernel32.OpenProcess(
-        win32con.PROCESS_QUERY_INFORMATION, False, processID
-    )
+    processHandle = ctypes.windll.kernel32.OpenProcess(win32con.PROCESS_QUERY_INFORMATION, False, processID)
 
     if not processHandle:
         return False  # 如果无法打开进程，直接返回False
 
     # 获取进程的PEB结构体信息
     peb = wintypes.LPVOID()
-    ctypes.windll.ntdll.NtQueryInformationProcess(
-        processHandle, 0, ctypes.byref(peb), ctypes.sizeof(peb), None
-    )
+    ctypes.windll.ntdll.NtQueryInformationProcess(processHandle, 0, ctypes.byref(peb), ctypes.sizeof(peb), None)
 
     # 定义一个函数来读取内存
     def read_memory(offset):
@@ -401,30 +379,18 @@ def isUnicode(hwnd):
 
 
 # waitEx函数：等待窗口出现
-def waitEx(
-    parentHwnd=None, index=1, classNamePattern=None, titlePattern=None, controlId=None
-):
+def waitEx(parentHwnd=None, index=1, classNamePattern=None, titlePattern=None, controlId=None):
     hwnd = None
     count = 0
 
+    hwndList = []
     while count <= 10:
-        hwndList = []
-
         # 根据parentHwnd选择合适的枚举函数
         enum_func = win32gui.EnumChildWindows if parentHwnd else win32gui.EnumWindows
         enum_func(parentHwnd, lambda h, p: p.append(h), hwndList)
 
         # 过滤符合条件的窗口
-        hwndList = [
-            hwnd
-            for hwnd in hwndList
-            if (
-                classNamePattern
-                and classNamePattern in win32gui.GetClassName(hwnd)
-                and titlePattern
-                and titlePattern in win32gui.GetWindowText(hwnd)
-            )
-        ]
+        hwndList = [hwnd for hwnd in hwndList if (classNamePattern and classNamePattern in win32gui.GetClassName(hwnd) and titlePattern and titlePattern in win32gui.GetWindowText(hwnd))]
 
         # 检查是否找到了目标窗口
         if len(hwndList) >= index:
@@ -468,10 +434,7 @@ def findEx(
         if style is not None or nStyle is not None:
             if win32gui.GetWindowLong(hwndfind, win32con.GWL_STYLE) & style != style:
                 continue
-            if (
-                win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE) & nStyle
-                != nStyle
-            ):
+            if win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE) & nStyle != nStyle:
                 continue
 
         hwnd = hwndfind
@@ -483,14 +446,12 @@ def findEx(
     if hwnd is None and className is not None and title is not None:
         hwndList = []
         win32gui.EnumWindows(
-            lambda h, p: p.append(
-                (
-                    h,
-                    win32gui.GetWindowText(h),
-                    win32gui.GetWindowThreadProcessId(h)[0],
-                    win32gui.GetWindowThreadProcessId(h)[1],
-                )
-            ),
+            lambda h, p: p.append((
+                h,
+                win32gui.GetWindowText(h),
+                win32gui.GetWindowThreadProcessId(h)[0],
+                win32gui.GetWindowThreadProcessId(h)[1],
+            )),
             hwndList,
         )
         for hwndfind, hwndtitle, threadId, processId in hwndList:
@@ -501,15 +462,9 @@ def findEx(
             if win32gui.GetWindow(hwndfind, win32gui.GW_OWNER) != parent:
                 continue
             if style is not None or nStyle is not None:
-                if (
-                    win32gui.GetWindowLong(hwndfind, win32con.GWL_STYLE) & style
-                    != style
-                ):
+                if win32gui.GetWindowLong(hwndfind, win32con.GWL_STYLE) & style != style:
                     continue
-                if (
-                    win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE) & nStyle
-                    != nStyle
-                ):
+                if win32gui.GetWindowLong(hwndfind, win32con.GWL_EXSTYLE) & nStyle != nStyle:
                     continue
 
             hwnd = hwndfind
@@ -531,8 +486,7 @@ def closeAndWait(hwnd):
         if hwnd == hwnd and msg == win32con.WM_DESTROY:
             event.set()
             return 0
-        else:
-            return win32gui.DefWindowProc(hwnd, msg, wparam, lparam)
+        return win32gui.DefWindowProc(hwnd, msg, wparam, lparam)
 
     # 注册消息处理函数
     win32gui.SetWindowLong(hwnd, win32con.GWL_WNDPROC, callback)
@@ -558,11 +512,7 @@ def removeBorder(hwnd):
         0,
         0,
         0,
-        win32con.SWP_FRAMECHANGED
-        | win32con.SWP_NOACTIVATE
-        | win32con.SWP_NOMOVE
-        | win32con.SWP_NOSIZE
-        | win32con.SWP_NOZORDER,
+        win32con.SWP_FRAMECHANGED | win32con.SWP_NOACTIVATE | win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER,
     )
 
 
@@ -601,7 +551,7 @@ def findSubMenu(hMenu, label, *args):
         buf = ctypes.create_unicode_buffer(1024)
         for pos in range(count):
             user32.GetMenuString(hMenu, pos, buf, 512, 0x400)
-            target = buf.value.replace("\\&", "")
+            target = buf.value.replace('\\&', '')
             if label in target:
                 label = pos + 1
                 break
@@ -616,6 +566,7 @@ def findSubMenu(hMenu, label, *args):
             return hMenu, None
         hMenu = user32.GetSubMenu(hMenu, label - 1)
         return findSubMenu(hMenu, *args)
+    return None, None
 
 
 def findMenu(hwnd=None, *args):
@@ -624,11 +575,12 @@ def findMenu(hwnd=None, *args):
     return findSubMenu(user32.GetMenuP(hwnd), *args)
 
 
-if __name__ == "__main__":
-    # print(GetDesktopWindow())
-    print(isUnicode(GetDesktopWindow()))
+if __name__ == '__main__':
+    print(GetDesktopWindow())
+    # print(isUnicode(GetDesktopWindow()))
     # print(GetClassName(GetForegroundWindow()))
-    # for item in EnumWindows(): print(item)
+    for item in EnumWindows():
+        print(item)
     # res = FindWindow(None, classname='Chrome_WidgetWin_1')
     # print(GetWindowText(res), GetClassName(res))
     # print(findEx(className='Chrome_WidgetWin_1'))

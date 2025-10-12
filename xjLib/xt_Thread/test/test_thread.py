@@ -2,25 +2,20 @@
 """
 测试thread.py模块的功能
 """
+
 from __future__ import annotations
 
 import random
 import time
 
-from xt_thread.thread import (
-        ComposedSingletonThread,
-        SafeThread,
-        SingletonThread,
-        ThreadBase,
-        ThreadManager,
-)
+from xt_thread.thread import ComposedSingletonThread, SafeThread, SingletonThread, ThreadBase, ThreadManager
 
 
 # 改进callback匿名函数，确保正确返回结果
 def callback_func(result):
-    print(f'callback |{result}')
+    print(result := f'callback |{result}')
     return result
-    
+
 
 # 测试辅助函数
 def simple_task():
@@ -47,11 +42,8 @@ def risky_task():
 def test_01_thread_base():
     """1. 测试ThreadBase类"""
     print('\n=== 1. 测试ThreadBase类 ===')
-    
-    thread = ThreadBase(
-        simple_task,
-        callback=callback_func
-    )
+
+    thread = ThreadBase(simple_task)
     thread.start()
     result = thread.get_result()
     print(f'ThreadBase结果: {result}')
@@ -76,10 +68,10 @@ def test_03_thread_manager():
     # 创建线程
     ThreadManager.create_thread(simple_task)
     ThreadManager.create_safe_thread(risky_task, max_retries=2)
-    
+
     # 检查活动线程数量
     print(f'活动线程数量: {ThreadManager.get_active_count()}')
-    
+
     # 获取线程结果
     results = ThreadManager.wait_all_completed()
     print(f'所有线程结果: {results}')
@@ -93,9 +85,9 @@ def test_04_singleton_thread():
     # 创建两个相同目标函数的线程实例
     thread1 = SingletonThread(simple_task)
     thread2 = SingletonThread(simple_task)
-    
+
     print(f'两个线程实例是否相同: {thread1 is thread2}')
-    
+
     # 启动线程
     thread1.start()
     result = thread1.get_result()
@@ -109,9 +101,9 @@ def test_05_composed_singleton_thread():
     # 创建两个相同目标函数的线程实例
     thread1 = ComposedSingletonThread(simple_task)
     thread2 = ComposedSingletonThread(simple_task)
-    
+
     print(f'两个线程实例是否相同: {thread1 is thread2}')
-    
+
     # 启动线程
     thread1.start()
     result = thread1.get_result()

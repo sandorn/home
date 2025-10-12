@@ -13,10 +13,9 @@ Github       : https://github.com/sandorn/home
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from enum import Enum
-from typing import Any, TypeVar
-
-T = TypeVar('T')
+from typing import Any
 
 
 class BaseEnum(Enum):
@@ -32,6 +31,9 @@ class BaseEnum(Enum):
     >>> StatusEnum.SUCCESS.code  # 200
     >>> StatusEnum.SUCCESS.msg  # '操作成功'
     """
+
+    # 声明_desc_属性的类型，使静态类型检查工具能够识别
+    _desc_: str | None
 
     def __new__(cls, value: Any, desc: str | None = None) -> BaseEnum:
         """
@@ -51,16 +53,16 @@ class BaseEnum(Enum):
         else:
             obj = object.__new__(cls)
         obj._value_ = value
-        obj.desc = desc
+        obj._desc_ = desc
         return obj
 
     def __str__(self) -> str:
         """返回枚举的字符串表示"""
-        return f'{self.name}: {self.value}({self.desc})'
+        return f'{self.name}: {self.value}({self._desc_})'
 
     def __repr__(self) -> str:
         """返回枚举的代码表示"""
-        return f'{self.__class__.__name__}.{self.name}({self.value!r}, {self.desc!r})'
+        return f'{self.__class__.__name__}.{self.name}({self.value!r}, {self._desc_!r})'
 
     @property
     def code(self) -> Any:
@@ -70,10 +72,10 @@ class BaseEnum(Enum):
     @property
     def msg(self) -> str | None:
         """获取枚举的描述信息"""
-        return self.desc
+        return self._desc_
 
     @classmethod
-    def get_members(cls, exclude_members: list[BaseEnum] | None = None, only_value: bool = False) -> list[BaseEnum] | list[Any]:
+    def get_members(cls, exclude_members: Sequence[BaseEnum] | None = None, only_value: bool = False) -> list[BaseEnum] | list[Any]:
         """
         获取枚举的所有成员
 
@@ -96,7 +98,7 @@ class BaseEnum(Enum):
         return members
 
     @classmethod
-    def get_values(cls, exclude_members: list[BaseEnum] | None = None) -> list[Any]:
+    def get_values(cls, exclude_members: Sequence[BaseEnum] | None = None) -> list[Any]:
         """
         获取枚举的所有成员值
 

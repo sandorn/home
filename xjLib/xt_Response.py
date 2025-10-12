@@ -61,8 +61,8 @@ import requests_html
 from bs4 import BeautifulSoup
 from chardet import detect
 from pyquery import PyQuery
-from xt_log import mylog
 from xt_utils.unicode import text_cleaner
+from xtlog import mylog
 
 # 初始化日志
 DEFAULT_ENCODING = 'utf-8'
