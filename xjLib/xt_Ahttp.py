@@ -31,15 +31,15 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from functools import partial
 
-from aiohttp import ClientSession, ClientTimeout, TCPConnector
+from aiohttp import ClientResponse, ClientSession, ClientTimeout, TCPConnector
 from nswrapslite.exception import _handle_exception as handle_exception
 from nswrapslite.log import logging_wraps as log_wraps
 from nswrapslite.retry import retry_wraps
 from xt_head import TIMEOUT, Head
-from xt_response import ACResponse
+from xtresp import UnifiedResp as ACResponse
 
 # 定义模块公开接口
 __all__ = ('AsyncHttpClient', 'ahttp_get', 'ahttp_get_all', 'ahttp_post', 'ahttp_post_all')
@@ -86,7 +86,7 @@ class AsyncHttpClient:
         async with self.semaphore:
             return await task.start()
 
-    async def request_multi(self, method: str, urls: list[str], *args, **kwargs) -> list[ACResponse | Exception]:
+    async def request_multi(self, method: str, urls: Sequence[str], *args, **kwargs) -> Sequence[ACResponse | BaseException]:
         """批量执行HTTP请求(共享会话方式)
 
         特点:使用共享的TCP连接器和ClientSession,大幅减少连接建立的开销
@@ -98,7 +98,7 @@ class AsyncHttpClient:
             **kwargs: 传递给每个请求的额外关键字参数
 
         Returns:
-            list[Union[ACResponse, Exception]]: 响应对象或异常的列表
+            Sequence[Union[ACResponse, BaseException]]: 响应对象或异常的序列
         """
         tasks = [AsyncTask(index)[method](url, *args, **kwargs) for index, url in enumerate(urls)]
 
@@ -106,9 +106,10 @@ class AsyncHttpClient:
             connector=TCPConnector(ssl=False, limit=self.max_concurrent),
             timeout=ClientTimeout(total=TIMEOUT),
         ) as client:
-            return await asyncio.gather(*[task.multi_start(client) for task in tasks], return_exceptions=True)
+            coros = [task.multi_start(client) for task in tasks]
+            return await asyncio.gather(*coros, return_exceptions=True)
 
-    async def request_batch(self, method: str, urls: list[str], *args, **kwargs) -> list[ACResponse | Exception]:
+    async def request_batch(self, method: str, urls: Sequence[str], *args, **kwargs) -> Sequence[ACResponse | BaseException]:
         """批量执行HTTP请求(分批处理方式)
 
         特点:将请求分成多个批次执行,每批次不超过max_concurrent个请求
@@ -120,7 +121,7 @@ class AsyncHttpClient:
             **kwargs: 传递给每个请求的额外关键字参数
 
         Returns:
-            list[Union[ACResponse, Exception]]: 响应对象或异常的列表
+            Sequence[Union[ACResponse, BaseException]]: 响应对象或异常的序列
         """
         tasks = [AsyncTask(index)[method](url, *args, **kwargs) for index, url in enumerate(urls)]
 
@@ -216,7 +217,7 @@ class AsyncTask:
         return self
 
     @retry_wraps(default_return=(None, '重试失败'))
-    async def _fetch(self) -> ACResponse:
+    async def _fetch(self) -> tuple[ClientResponse | None, bytes | str]:
         """执行HTTP请求,内部方法
 
         使用独立的ClientSession执行请求,自动重试失败的请求
@@ -297,7 +298,7 @@ def single_parse(method: str, url: str, *args, **kwargs) -> ACResponse:
     return asyncio.run(_default_client.request(method, url, *args, **kwargs))
 
 
-def multi_parse(method: str, urls: list[str], *args, **kwargs) -> list[ACResponse | Exception]:
+def multi_parse(method: str, urls: Sequence[str], *args, **kwargs) -> Sequence[ACResponse | BaseException]:
     """构建并运行多个HTTP请求任务
 
     Args:
@@ -307,7 +308,7 @@ def multi_parse(method: str, urls: list[str], *args, **kwargs) -> list[ACRespons
         **kwargs: 额外关键字参数
 
     Returns:
-        list[Union[ACResponse, Exception]]: 响应对象或异常的列表
+        Sequence[ACResponse | BaseException]: 响应对象或异常的序列
     """
     if method.lower() not in REQUEST_METHODS:
         return [ACResponse(None, f'不支持的请求方法:{method},支持的方法:{REQUEST_METHODS}'.encode(), 0)]
@@ -439,15 +440,15 @@ class AHttpLoop:
             handle_exception(err)
             return ACResponse(None, f'{type(err).__name__} | {err!s}'.encode(), index)
 
-    async def _multi_fetch(self, method: str, urls_list: list[str], **kwargs):
+    async def _multi_fetch(self, method: str, urls_list: Sequence[str], **kwargs):
         self.method = method
         task_list = [self._retry_request(url, index=index, **kwargs) for index, url in enumerate(urls_list)]
         return await asyncio.gather(*task_list, return_exceptions=True)
 
-    def getall(self, urls_list: list[str], **kwargs):
+    def getall(self, urls_list: Sequence[str], **kwargs):
         return self._loop.run_until_complete(self._multi_fetch('get', urls_list, **kwargs))
 
-    def postall(self, urls_list: list[str], **kwargs):
+    def postall(self, urls_list: Sequence[str], **kwargs):
         return self._loop.run_until_complete(self._multi_fetch('post', urls_list, **kwargs))
 
 

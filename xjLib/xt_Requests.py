@@ -10,16 +10,16 @@ FilePath     : /CODE/xjLib/xt_requests.py
 Github       : https://github.com/sandorn/home
 
 本模块提供以下核心功能:
-- 简化的HTTP请求方法(get, post等)，自动添加请求头和超时设置
-- 请求重试机制，提高网络请求稳定性
-- 会话管理，支持Cookie持久化和请求头管理
-- 与htmlResponse集成，方便后续解析处理
+- 简化的HTTP请求方法(get, post等),自动添加请求头和超时设置
+- 请求重试机制,提高网络请求稳定性
+- 会话管理,支持Cookie持久化和请求头管理
+- 与htmlResponse集成,方便后续解析处理
 
 主要特性:
-- 自动随机User-Agent设置，减少请求被拦截的风险
+- 自动随机User-Agent设置,减少请求被拦截的风险
 - 统一的异常处理和响应封装
 - 支持同步函数的重试机制
-- 会话复用，提高请求效率
+- 会话复用,提高请求效率
 ==============================================================
 """
 
@@ -32,8 +32,8 @@ import requests
 from nswrapslite.log import logging_wraps as log_wraps
 from nswrapslite.retry import retry_wraps
 from xt_head import TIMEOUT, Head
-from xt_response import htmlResponse
 from xtlog import mylog
+from xtresp import HttpError, RespFactory, UnifiedResp as htmlResponse
 
 # 支持的HTTP请求方法
 supported_request_methods = ('get', 'post', 'head', 'options', 'put', 'delete', 'trace', 'connect', 'patch')
@@ -49,8 +49,8 @@ def _retry_request(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResp
         *args: 传递给requests.request的位置参数
         **kwargs: 传递给requests.request的关键字参数
             callback: 回调函数(会被忽略)
-            index: 响应对象的索引标识，默认为url的id
-            timeout: 请求超时时间，默认使用TIMEOUT常量
+            index: 响应对象的索引标识,默认为url的id
+            timeout: 请求超时时间,默认使用TIMEOUT常量
 
     Returns:
         htmlResponse: 包装后的响应对象
@@ -65,32 +65,38 @@ def _retry_request(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResp
 
     try:
         response = requests.request(method, url, *args, timeout=timeout, **kwargs)
-        response.raise_for_status()
-        return htmlResponse(response, response.content, index)
-    except Exception as e:
+        # 创建统一响应对象
+        unified_resp = htmlResponse(response, response.content, index)
+        # response.raise_for_status()
+        # 增加参数控制是否自动检查状态码
+        if kwargs.pop('check_status', True) and not RespFactory.is_success(unified_resp):
+            raise HttpError(unified_resp)
+        return unified_resp
+    except requests.exceptions.RequestException as e:
         mylog.error(f'Request failed: {method} {url}, error: {e!s}')
-        raise
+        # 传递原始异常信息
+        return htmlResponse(None, str(e).encode(), index, exception=e)
 
 
 def single_parse(method: str, url: str, *args: Any, **kwargs: Any) -> htmlResponse:
-    """执行单次HTTP请求，自动设置默认请求头和超时
+    """执行单次HTTP请求,自动设置默认请求头和超时
 
     Args:
         method: HTTP请求方法
         url: 请求URL
         *args: 传递给_retry_request的位置参数
         **kwargs: 传递给_retry_request的关键字参数
-            headers: 请求头，默认为随机User-Agent
-            timeout: 请求超时时间，默认使用TIMEOUT常量
-            cookies: Cookie字典，默认为空字典
+            headers: 请求头,默认为随机User-Agent
+            timeout: 请求超时时间,默认使用TIMEOUT常量
+            cookies: Cookie字典,默认为空字典
 
     Returns:
-        htmlResponse: 包装后的响应对象，如果方法不支持则返回错误信息
+        htmlResponse: 包装后的响应对象,如果方法不支持则返回错误信息
     """
     method_lower = method.lower()
 
     if method_lower not in supported_request_methods:
-        error_msg = f'Method:{method} not in {supported_request_methods}'
+        error_msg = f'Method:{method} not in supported_request_methods'
         mylog.warning(error_msg)
         return htmlResponse(None, error_msg.encode(), id(url))
 
@@ -113,9 +119,9 @@ patch = partial(single_parse, 'patch')
 
 
 class SessionClient:
-    """会话客户端 - 封装requests.Session，管理Cookie持久化和请求重试
+    """会话客户端 - 封装requests.Session,管理Cookie持久化和请求重试
 
-    提供会话级别的HTTP请求管理，支持Cookie保存和请求头持久化，
+    提供会话级别的HTTP请求管理,支持Cookie保存和请求头持久化,
     适用于需要维持会话状态的场景。
 
     Example:
@@ -126,19 +132,19 @@ class SessionClient:
         >>>     response = client.get('https://example.com/user/profile')
     """
 
-    __slots__ = ('args', 'kwargs', 'method', 'session', 'url')
+    __slots__ = ('args', 'kwargs', 'method', 'session', 'timeout', 'url')
 
     def __init__(self):
         """初始化会话客户端"""
         self.session = requests.session()
-        self.session.default_timeout = TIMEOUT
+        self.timeout: float = TIMEOUT
         self.method: str = ''
         self.args: tuple = ()
         self.kwargs: dict[str, Any] = {}
         self.url: str = ''
 
     def __enter__(self):
-        """支持上下文管理器协议，用于自动关闭会话"""
+        """支持上下文管理器协议,用于自动关闭会话"""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -152,7 +158,7 @@ class SessionClient:
             method: HTTP请求方法
 
         Returns:
-            指向create_task方法的引用，用于链式调用
+            指向create_task方法的引用,用于链式调用
         """
         self.method = method.lower()  # 保存请求方法
         return self.create_task  # 返回创建任务的方法
@@ -164,7 +170,7 @@ class SessionClient:
             method: HTTP请求方法名称
 
         Returns:
-            指向create_task方法的引用，用于链式调用
+            指向create_task方法的引用,用于链式调用
         """
         return self.__getitem__(method)
 
@@ -173,11 +179,11 @@ class SessionClient:
         """创建并执行请求任务
 
         Args:
-            *args: 位置参数，第一个参数为URL
+            *args: 位置参数,第一个参数为URL
             **kwargs: 关键字参数
-                headers: 请求头，默认为随机User-Agent
-                cookies: Cookie字典，默认为空字典
-                timeout: 请求超时时间，默认使用TIMEOUT常量
+                headers: 请求头,默认为随机User-Agent
+                cookies: Cookie字典,默认为空字典
+                timeout: 请求超时时间,默认使用TIMEOUT常量
                 callback: 回调函数(会被忽略)
 
         Returns:
@@ -212,7 +218,7 @@ class SessionClient:
         """
         response = self.session.request(self.method, self.url, *self.args, **self.kwargs)
         # 自动更新Cookie
-        self.update_cookies(response.cookies)
+        self.update_cookies(dict(response.cookies))
         return htmlResponse(response, response.content, id(self.url))
 
     def update_cookies(self, cookie_dict: dict[str, str]) -> None:
@@ -234,36 +240,37 @@ class SessionClient:
 
 if __name__ == '__main__':
     """模块使用示例和测试"""
+
     def basic_request_example():
         """基础请求示例"""
         # 简单GET请求
         mylog.info('执行简单GET请求')
         response = get('http://www.163.com')
         if isinstance(response, htmlResponse):
-            mylog.success(f'请求成功，状态码: {response.status}')
+            mylog.success(f'请求成功,状态码: {response.status}')
             # 解析响应内容
             content = response.text
             mylog.debug(f'响应内容长度: {len(content)} 字符')
-            mylog.info('xpath(//title/text()) ：', response.xpath('//title/text()'))
-            mylog.info('xpath([//title/text(), //title/text()]) ：', response.xpath(['//title/text()', '//title/text()']))
-            mylog.info('//title/text() ：', response.xpath(['//title/text()', '', ' ']))
-            mylog.info('xpath( ) ：', response.xpath(' '))
-            mylog.info('xpath() ：', response.xpath(''))
-            mylog.info('dom.xpath(//title/text()) ：', response.dom.xpath('//title/text()'))
-            mylog.info('html.xpath(//title/text()) ：', response.html.xpath('//title/text()'))
-            mylog.info('element.xpath(//title/text()) ：', response.element.xpath('//title/text()'))
-            mylog.info('query(title).text() ：', response.query('title').text())
-            mylog.info('soup.select(title)[0].text ：', response.soup.select('title')[0].text)
-            mylog.info('soup.find(title).text ：', response.soup.find('title').text)
+            mylog.info('xpath(//title/text()):', response.xpath('//title/text()'))
+            mylog.info('xpath([//title/text(), //title/text()]):', response.xpath(['//title/text()', '//title/text()']))
+            mylog.info('//title/text():', response.xpath(['//title/text()', '', ' ']))
+            mylog.info('xpath( ):', response.xpath(' '))
+            mylog.info('xpath():', response.xpath(''))
+            mylog.info('dom.xpath(//title/text()):', response.dom.xpath('//title/text()'))
+            mylog.info('query(title).text():', response.query('title').text())
+            # if response.query is not None:
+            #     mylog.info('query(title).text():', response.query('title').text())
+            # else:
+            #     mylog.info('query(title).text():None')
 
     def session_example():
         """会话请求示例"""
         mylog.info('执行会话请求')
         # 使用上下文管理器创建会话
         with SessionClient() as client:
-            # 第一次请求，设置Cookie
+            # 第一次请求,设置Cookie
             client.get('https://httpbin.org/cookies/set?name=value')
-            # 第二次请求，会自动携带Cookie
+            # 第二次请求,会自动携带Cookie
             response = client.get('https://httpbin.org/cookies')
             if isinstance(response, htmlResponse):
                 try:

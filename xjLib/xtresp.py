@@ -18,9 +18,9 @@ Github       : https://github.com/sandorn/home
 
 【使用示例】
     >>> from xt_requests import get
-    >>> from xt_response_unified import ResponseFactory
+    >>> from xt_response_unified import RespFactory
     >>> response = get('https://example.com')
-    >>> unified_resp = ResponseFactory.create_response(response)
+    >>> unified_resp = RespFactory.create_response(response)
     >>> print(unified_resp.status)  # 获取状态码
     200
     >>> title = unified_resp.xpath('//title/text()')[0][0]  # 使用XPath提取标题
@@ -49,6 +49,16 @@ DEFAULT_ENCODING = 'utf-8'
 RawResponseType = Any  # 原始响应对象类型
 ContentDataType = str | bytes | None  # 响应内容类型
 SelectorType = str | Sequence[str]  # 选择器类型
+
+
+class HttpError(Exception):
+    """HTTP状态码错误异常"""
+
+    def __init__(self, response, message=None):
+        self.response = response
+        self.status_code = response.status if response else 999
+        self.message = message or f'HTTP Error {self.status_code}'
+        super().__init__(self.message)
 
 
 class IResponseAdapter(ABC):
@@ -155,14 +165,14 @@ class AiohttpAdapter(IResponseAdapter):
         return getattr(self.raw_response, 'reason', '')
 
 
-class UnifiedResponse:
+class UnifiedResp:
     """统一响应类，提供同步和异步HTTP响应的统一接口"""
 
     # 缓存属性，避免重复解析
     _dom_cache: Any | None = None
     _query_cache: PyQuery | None = None
 
-    def __init__(self, response: RawResponseType = None, content: ContentDataType = None, index: int | None = None, adapter: IResponseAdapter | None = None):
+    def __init__(self, response: RawResponseType = None, content: ContentDataType = None, index: int | None = None, adapter: IResponseAdapter | None = None, exception: Exception | None = None):
         """初始化统一响应对象
 
         Args:
@@ -175,13 +185,32 @@ class UnifiedResponse:
         self._index: int = index if index is not None else id(self)
 
         # 如果没有提供适配器，自动选择合适的适配器
-        self._adapter = adapter or ResponseFactory._select_adapter(response)
+        self._adapter = adapter or RespFactory._select_adapter(response)
 
         # 处理内容
         self._content: bytes = self._process_content(content)
 
         # 确定编码
         self._encoding: str = self._determine_encoding()
+
+        # 异常信息
+        self._exception: Exception | None = exception  # 保存原始异常对象类型
+        self._error_type = type(exception).__name__ if exception else None
+
+    @property
+    def ok(self):
+        """检查响应是否成功"""
+        return RespFactory.is_success(self)
+
+    @property
+    def exception(self):
+        """获取原始异常对象"""
+        return self._exception
+
+    def raise_for_status(self):
+        """如果状态码不是200-299，抛出异常"""
+        if not self.ok:
+            raise HttpError(self)
 
     def _process_content(self, content: ContentDataType) -> bytes:
         """处理响应内容，转换为统一的字节格式"""
@@ -437,31 +466,36 @@ class UnifiedResponse:
     def _get_pyquery(self) -> PyQuery | None:
         """延迟初始化PyQuery对象"""
         if self._query_cache is None and self.text:
+            from pyquery import PyQuery
+
+            # 对于已经解码的字符串，PyQuery可以直接处理
+            # 如果遇到编码问题，可以尝试使用字节流初始化并指定编码
             try:
-                from pyquery import PyQuery
+                self._query_cache = PyQuery(self.text, parser='html')
+                print(99999999, self._query_cache.size())
+            except UnicodeDecodeError:
+                # 如果字符串解码有问题，尝试使用原始内容并指定编码
+                if isinstance(self._content, bytes):
+                    self._query_cache = PyQuery(self._content, parser='html', encoding=self._encoding)
+                else:
+                    # 转换为字节流再尝试
+                    self._query_cache = PyQuery(self.text.encode(self._encoding, 'ignore'), parser='html', encoding=self._encoding)
 
-                # 对于已经解码的字符串，PyQuery可以直接处理
-                # 如果遇到编码问题，可以尝试使用字节流初始化并指定编码
-                try:
-                    self._query_cache = PyQuery(self.text, parser='html')
-                except UnicodeDecodeError:
-                    # 如果字符串解码有问题，尝试使用原始内容并指定编码
-                    if isinstance(self._content, bytes):
-                        self._query_cache = PyQuery(self._content, parser='html', encoding=self._encoding)
-                    else:
-                        # 转换为字节流再尝试
-                        self._query_cache = PyQuery(self.text.encode(self._encoding, 'ignore'), parser='html', encoding=self._encoding)
-
-                return self._query_cache
-            except Exception as e:
-                mylog.warning(f'初始化PyQuery失败: {e}')
-                return None
         return self._query_cache
 
     @property
-    def query(self) -> PyQuery | None:
-        """CSS选择器对象(PyQuery)"""
-        return self._get_pyquery()
+    def query(self) -> PyQuery:
+        """CSS选择器对象(PyQuery)
+        
+        Returns:
+            PyQuery: 始终返回一个可用的PyQuery对象，不会返回None
+        """
+        result = self._get_pyquery()
+        if result is None:
+            # 当无法创建PyQuery对象时，返回空的PyQuery对象
+            from pyquery import PyQuery
+            return PyQuery('')
+        return result
 
     def xpath(self, selectors: SelectorType = '') -> list[list[Any]]:
         """执行XPath选择查询
@@ -505,7 +539,7 @@ class UnifiedResponse:
         return self._get_lxml_dom()
 
 
-class ResponseFactory:
+class RespFactory:
     """响应对象工厂，负责创建适当类型的响应对象"""
 
     @staticmethod
@@ -520,7 +554,7 @@ class ResponseFactory:
         return RequestsAdapter(response)
 
     @staticmethod
-    def create_response(response: RawResponseType = None, content: ContentDataType = None, index: int | None = None) -> UnifiedResponse:
+    def create_response(response: RawResponseType = None, content: ContentDataType = None, index: int | None = None) -> UnifiedResp:
         """创建统一响应对象
 
         Args:
@@ -529,14 +563,14 @@ class ResponseFactory:
             index: 响应对象的唯一标识符,可选
 
         Returns:
-            UnifiedResponse: 统一响应对象
+            UnifiedResp: 统一响应对象
         """
-        return UnifiedResponse(response=response, content=content, index=index)
+        return UnifiedResp(response=response, content=content, index=index)
 
     @staticmethod
-    def is_success(response: UnifiedResponse | RawResponseType) -> bool:
+    def is_success(response: UnifiedResp | RawResponseType) -> bool:
         """检查响应是否成功(状态码在200-299之间)"""
-        if isinstance(response, UnifiedResponse):
+        if isinstance(response, UnifiedResp):
             return 200 <= response.status < 300
 
         # 处理原始响应对象
@@ -564,7 +598,7 @@ if __name__ == '__main__':
             raw_response = get(url)
 
             # 创建统一响应对象
-            unified_resp = ResponseFactory.create_response(raw_response)
+            unified_resp = RespFactory.create_response(raw_response)
 
             mylog.info(f'响应状态: {unified_resp.status}|{unified_resp.index}')
             mylog.info(f'响应URL: {unified_resp.url}')
