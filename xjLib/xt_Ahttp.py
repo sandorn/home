@@ -206,13 +206,13 @@ class AsyncTask:
         Returns:
             AsyncTask: 配置完成的任务对象,支持链式调用
         """
-        self.url: str = url
-        self.args: tuple = args
+        self.url = url
+        self.args = args
         kwargs.setdefault('headers', Head().randua)
         kwargs.setdefault('timeout', ClientTimeout(TIMEOUT))
-        self.cookies: dict = kwargs.pop('cookies', {})
-        self.callback: Callable | None = kwargs.pop('callback', None)
-        self.kwargs: dict = kwargs
+        self.cookies = kwargs.pop('cookies', {})
+        self.callback = kwargs.pop('callback', None)
+        self.kwargs = kwargs
         return self
 
     @retry_wraps(default_return=(None, '重试失败'))
@@ -252,7 +252,7 @@ class AsyncTask:
 
         response, content = await self._fetch()
         return ACResponse(response, content, self.index)
- 
+
     @retry_wraps
     async def multi_start(self, client: ClientSession) -> ACResponse:
         """在共享会话中执行任务
@@ -270,7 +270,7 @@ class AsyncTask:
                 content = await response.content.read()
                 result = ACResponse(response, content, self.index)
         except Exception as err:
-            handle_exception(err, callfrom=self.multi_start)
+            handle_exception(err)
             result = ACResponse(None, f'{type(err).__name__} | {err!s}'.encode(), self.index)
         return self.callback(result) if callable(self.callback) else result
 
@@ -336,7 +336,7 @@ ahttpPostAll = ahttp_post_all  # 兼容驼峰命名  # noqa: N816
 
 class AHttpLoop:
     """异步HTTP客户端 - 使用loop实现"""
-    
+
     def __init__(self, max_concurrent: int = 10):
         self.method: str = ''  # 保存请求方法
         self.max_concurrent: int = max_concurrent  # 最大并发请求数
@@ -352,7 +352,7 @@ class AHttpLoop:
             self._session = self._loop.run_until_complete(self.create_session())
         except Exception as err:
             self._session = None
-            return handle_exception(err, re_raise=True, callfrom=self.__init__)
+            return handle_exception(err, re_raise=True)
 
     async def __aenter__(self):
         """异步上下文管理器入口"""
@@ -396,11 +396,10 @@ class AHttpLoop:
                 asyncio.set_event_loop(loop)
                 loop.run_until_complete(self._session.close())
                 loop.close()
-                handle_exception(err, re_raise=True, callfrom=self.close)
-                return f'AHttpLoop.close失败 | Exception:{err!r}'
+                handle_exception(err, re_raise=True)
             finally:
                 self._session = None
-        return None
+        return
 
     def __del__(self):
         """析构函数，确保资源释放"""
@@ -437,7 +436,7 @@ class AHttpLoop:
             response, content = await _single_fetch()
             return ACResponse(response, content, index)
         except Exception as err:
-            handle_exception(err, callfrom=self._retry_request)
+            handle_exception(err)
             return ACResponse(None, f'{type(err).__name__} | {err!s}'.encode(), index)
 
     async def _multi_fetch(self, method: str, urls_list: list[str], **kwargs):
@@ -454,7 +453,7 @@ class AHttpLoop:
 
 if __name__ == '__main__':
     """示例用法和测试代码"""
-    from xt_thread.wraps import thread_print
+    from nsthread import thread_print
 
     # 测试URL列表
     urls = ('https://www.163.com', 'https://www.qq.com', 'https://www.126.com', 'https://httpbin.org/post')
