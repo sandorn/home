@@ -252,16 +252,12 @@ if __name__ == '__main__':
             content = response.text
             mylog.debug(f'响应内容长度: {len(content)} 字符')
             mylog.info('xpath(//title/text()):', response.xpath('//title/text()'))
-            mylog.info('xpath([//title/text(), //title/text()]):', response.xpath(['//title/text()', '//title/text()']))
-            mylog.info('//title/text():', response.xpath(['//title/text()', '', ' ']))
+            mylog.info('xpath([//title/text(), //title/text()]):', response.xpath('//title/text()', '//title/text()'))
+            mylog.info('//title/text():', response.xpath('//title/text()', '', ' '))
             mylog.info('xpath( ):', response.xpath(' '))
             mylog.info('xpath():', response.xpath(''))
             mylog.info('dom.xpath(//title/text()):', response.dom.xpath('//title/text()'))
             mylog.info('query(title).text():', response.query('title').text())
-            # if response.query is not None:
-            #     mylog.info('query(title).text():', response.query('title').text())
-            # else:
-            #     mylog.info('query(title).text():None')
 
     def session_example():
         """会话请求示例"""
@@ -303,9 +299,9 @@ if __name__ == '__main__':
     # 执行示例
     mylog.info('=== HTTP请求工具模块测试开始 ===')
     try:
-        # basic_request_example()
-        # session_example()
-        # post_request_example()
+        basic_request_example()
+        session_example()
+        post_request_example()
         mylog.info(get('https://httpbin.org/post'))
         mylog.success('=== HTTP请求工具模块测试完成 ===')
     except Exception as e:
