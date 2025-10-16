@@ -10,6 +10,7 @@ FilePath     : /CODE/xjLib/xt_damo/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+from __future__ import annotations
 
 __name__ = "pydamo"
 

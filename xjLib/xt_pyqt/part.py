@@ -10,14 +10,10 @@ FilePath     : /CODE/xjLib/xt_Ui/part.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+from __future__ import annotations
 
 from PyQt6.QtCore import Qt, QThread
-from PyQt6.QtGui import (
-    QAction,
-    QCursor,
-    QStandardItem,
-    QStandardItemModel,
-)
+from PyQt6.QtGui import QAction, QCursor, QStandardItem, QStandardItemModel
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -94,7 +90,7 @@ class xt_QTabWidget(QTabWidget):
         elif isinstance(int(textlist), int):  # 可以输入数值
             for index in range(int(textlist)):
                 self.tab[index] = QWidget()
-                self.addTab(self.tab[index], f"TAB_{str(index)}")
+                self.addTab(self.tab[index], f"TAB_{index!s}")
         else:
             self.addTab(self.tab[0], "TAB_0")
 
@@ -121,11 +117,11 @@ class xt_QTabWidget(QTabWidget):
     # 动态调整tab页签宽度
     def resizeEvent(self, event):
         # print(self.styleSheet())
-        _tabCount = self.count()
-        if _tabCount == 0:
+        tabCount = self.count()
+        if tabCount == 0:
             return
-        _tabWidth = round(self.width() / _tabCount)
-        self.setStyleSheet(self.stylestring + "QTabBar::tab{width:%upx;}" % _tabWidth)
+        tabWidth = round(self.width() / tabCount)
+        self.setStyleSheet(self.stylestring + "QTabBar::tab{width:%upx;}" % tabWidth)
 
 
 class xt_QTableView(QTableView):
@@ -601,9 +597,9 @@ class xt_QListWidget(QListWidget):
         count = self.count()
         # 遍历listwidget中的内容
         for index in range(count):
-            _item = self.item(index)
-            assert isinstance(_item, QListWidgetItem)
-            widgetres.append(_item.text())
+            item = self.item(index)
+            assert isinstance(item, QListWidgetItem)
+            widgetres.append(item.text())
 
         return widgetres
 
@@ -685,14 +681,11 @@ class xt_QTreeWidget(QTreeWidget):
     def addItem(self, name_list=None, parent=None):
         if name_list is None:
             name_list = []
-        if parent is None:
-            child = QTreeWidgetItem(self.root)
-        else:
-            child = QTreeWidgetItem(parent)
+        child = QTreeWidgetItem(self.root) if parent is None else QTreeWidgetItem(parent)
 
-        for index in self.columns.keys():
-            _text = name_list[index] if index < len(name_list) else ""
-            child.setText(index, _text)
+        for index in self.columns:
+            text = name_list[index] if index < len(name_list) else ""
+            child.setText(index, text)
 
     def clicked_event(self, qmodelindex):
         """PyQt5.QtCore.QModelIndex对象"""
@@ -810,10 +803,10 @@ class xt_QTextBrowser(QTextBrowser):
         cursor.setCharFormat(char_format)
         self.setTextCursor(cursor)
 
-        _text = self.toPlainText().strip()
+        text = self.toPlainText().strip()
         if not cursor.selectedText().strip():
             self.clear()
-            self.setText(_text)
+            self.setText(text)
         self.repaint()  # 强制刷新
 
 
@@ -969,7 +962,7 @@ class xt_QSpinBox(QSpinBox):
         self.setRange(0, 100)  # 范围
         self.setSingleStep(1)  # 步长
         #  当前值 self.setValue(150)
-        self.setPrefix("缩放: ")  #  前缀
+        self.setPrefix("缩放: ")  # 前缀
         # self.setSuffix(" %")  #  后缀
         # 特殊显示文本
         # self.setSpecialValueText("Automatic")
@@ -996,7 +989,7 @@ class xt_QDoubleSpinBox(QDoubleSpinBox):
         self.setSingleStep(0.01)  # 步长
         self.setDecimals(2)  # 精度
         #  当前值 self.setValue(150)
-        self.setPrefix("缩放: ")  #  前缀
+        self.setPrefix("缩放: ")  # 前缀
         # self.setSuffix(" %")  #  后缀
         # self.setSpecialValueText("Automatic")# 特殊显示文本
         # self.setWrapping(True)#  开启循环

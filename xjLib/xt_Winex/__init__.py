@@ -326,19 +326,17 @@ def isVisible(hwnd):
     ctypes.windll.dwmapi.DwmGetWindowAttribute(hwnd, 14, ctypes.byref(cloaked), ctypes.sizeof(cloaked))
 
     # 获取窗口可见性状态
-    _style = win32con.WS_VISIBLE | win32con.WS_MINIMIZE
-    _exStyle = win32con.WS_EX_APPWINDOW | win32con.WS_EX_TOOLWINDOW | win32con.WS_EX_NOACTIVATE
+    style = win32con.WS_VISIBLE | win32con.WS_MINIMIZE
+    exStyle = win32con.WS_EX_APPWINDOW | win32con.WS_EX_TOOLWINDOW | win32con.WS_EX_NOACTIVATE
 
     isVisible = ctypes.windll.user32.IsWindowVisible(hwnd)
-    styleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_STYLE) & _style
-    exStyleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_EXSTYLE) & _exStyle
+    styleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_STYLE) & style
+    exStyleState = ctypes.windll.user32.GetWindowLongW(hwnd, win32con.GWL_EXSTYLE) & exStyle
 
     # 判断窗口状态
     if cloaked.value:
         return None
-    if isVisible and styleState and not exStyleState:
-        return True
-    return False
+    return bool(isVisible and styleState and not exStyleState)
 
 
 def isUnicode(hwnd):
@@ -454,7 +452,7 @@ def findEx(
             )),
             hwndList,
         )
-        for hwndfind, hwndtitle, threadId, processId in hwndList:
+        for hwndfind, hwndtitle, _threadId, _processId in hwndList:
             if className not in win32gui.GetClassName(hwndfind):
                 continue
             if title not in hwndtitle:

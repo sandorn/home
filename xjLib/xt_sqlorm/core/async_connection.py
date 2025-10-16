@@ -26,8 +26,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_scoped_session, async_sessionmaker, create_async_engine
 from xt_database.cfg import connect_str
 from xt_wraps.exception import exc_wraps, handle_exception
-from xt_wraps.log import log_wraps
-from xt_wraps.log import mylog as loger
+from xt_wraps.log import log_wraps, mylog as loger
 from xt_wraps.singleton import SingletonMeta
 
 if TYPE_CHECKING:

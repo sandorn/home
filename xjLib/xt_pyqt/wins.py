@@ -10,6 +10,7 @@ FilePath     : /CODE/xjLib/xt_Ui/windowspy.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+from __future__ import annotations
 
 import os
 import random
@@ -173,12 +174,12 @@ class xt_QMainWindow(QMainWindow):
         self.status2 = xt_QLabel()
         self.status3 = xt_QLabel()
         self.pbar = xt_QProgressBar()
-        _statusBar = self.statusBar()
-        _statusBar.setSizeGripEnabled(False)
-        _statusBar.addWidget(self.status1, stretch=1)
-        _statusBar.addWidget(self.status2, stretch=1)
-        _statusBar.addWidget(self.status3, stretch=1)
-        _statusBar.addWidget(self.pbar, stretch=1)
+        statusBar = self.statusBar()
+        statusBar.setSizeGripEnabled(False)
+        statusBar.addWidget(self.status1, stretch=1)
+        statusBar.addWidget(self.status2, stretch=1)
+        statusBar.addWidget(self.status3, stretch=1)
+        statusBar.addWidget(self.pbar, stretch=1)
         self.status1.showMessage("Ready to compose")
 
     @pyqtSlot()

@@ -10,7 +10,7 @@ FilePath     : /CODE/xjLib/xt_pyqt/utils.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
-
+from __future__ import annotations
 
 import sys
 from functools import wraps

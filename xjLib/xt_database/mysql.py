@@ -34,8 +34,7 @@ import MySQLdb
 import pymysql
 from xt_database.cfg import DB_CFG
 from xt_database.untilsql import make_insert_sql, make_update_sql
-from xt_wraps.log import create_basemsg, log_wraps
-from xt_wraps.log import mylog as logger
+from xt_wraps.log import create_basemsg, log_wraps, mylog as logger
 
 
 class DbEngine:

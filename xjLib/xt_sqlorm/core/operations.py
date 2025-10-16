@@ -29,8 +29,7 @@ from sqlalchemy import and_, func, or_, text
 from sqlalchemy.orm import Query, Session
 from xt_sqlorm.core.connection import SqlConnection
 from xt_wraps.exception import handle_exception
-from xt_wraps.log import create_basemsg, log_wraps
-from xt_wraps.log import mylog as log
+from xt_wraps.log import create_basemsg, log_wraps, mylog as log
 
 
 class OrmOperations[T]:

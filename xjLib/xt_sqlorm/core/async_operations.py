@@ -27,8 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from xt_database.untilsql import make_insert_sql, make_update_sql
 from xt_sqlorm.core.async_connection import AsyncSqlConnection
 from xt_wraps.exception import exc_wraps
-from xt_wraps.log import log_wraps
-from xt_wraps.log import mylog as loger
+from xt_wraps.log import log_wraps, mylog as loger
 
 
 class AsyncOrmOperations[T]:

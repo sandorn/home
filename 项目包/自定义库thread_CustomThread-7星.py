@@ -10,7 +10,7 @@ FilePath     : /CODE/项目包/自定义库thread_CustomThread-7星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
-
+from __future__ import annotations
 
 import os
 

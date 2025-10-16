@@ -10,7 +10,8 @@ FilePath     : /CODE/xjLib/xt_pyqt/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+from __future__ import annotations
 
 from .utils import appexec, event_loop
 
-__all__ = ("event_loop", "appexec")
+__all__ = ("appexec", "event_loop")

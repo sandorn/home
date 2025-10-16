@@ -10,6 +10,7 @@ FilePath     : /CODE/xjLib/xt_ScrapyRun.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+from __future__ import annotations
 
 import os
 import sys
@@ -22,6 +23,6 @@ def ScrapyRun(dirpath, spilername):
     sys.path.append(dirpath)
     # 切换工作目录
     os.chdir(dirpath)
-    print(f"{dirpath} | {str(spilername)} 爬虫启动中.......")
+    print(f"{dirpath} | {spilername!s} 爬虫启动中.......")
     # 启动爬虫,第三个参数为爬虫name
     execute(["scrapy", "crawl", spilername])

@@ -35,8 +35,7 @@ from xt_sqlorm.core.async_operations import AsyncOrmOperations
 from xt_sqlorm.core.connection import SqlConnection
 from xt_sqlorm.core.operations import OrmOperations
 from xt_sqlorm.models.base import BaseModel
-from xt_wraps.log import create_basemsg, log_wraps
-from xt_wraps.log import mylog as log
+from xt_wraps.log import create_basemsg, log_wraps, mylog as log
 
 
 @log_wraps

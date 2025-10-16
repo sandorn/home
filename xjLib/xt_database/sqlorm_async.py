@@ -33,8 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from xt_database.cfg import connect_str
 from xt_database.sqlorm_meta import ErrorMetaClass, copy_db_model
 from xt_database.untilsql import make_insert_sql, make_update_sql
-from xt_wraps.log import log_wraps
-from xt_wraps.log import mylog as loger
+from xt_wraps.log import log_wraps, mylog as loger
 from xt_wraps.singleton import SingletonMeta
 
 

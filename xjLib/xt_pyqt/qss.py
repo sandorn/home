@@ -11,6 +11,7 @@
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 """
+from __future__ import annotations
 
 QStatusBarstyle = """
     QStatusBar{background-color:LightGray;color:Navy;font:bold 10pt 'Sarasa Term SC'}

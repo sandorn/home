@@ -10,10 +10,9 @@ FilePath     : /CODE/xjLib/xt_damo/像素颜色捕捉.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
-
+from __future__ import annotations
 
 from bdtime import tt, vk
-
 from damo import DM
 
 dm = DM()
@@ -21,8 +20,7 @@ dm = DM()
 
 def conv_to_rgb(color):
     RGB_str = [color[:2], color[2:-2], color[-2:]]
-    RGB = [int(i, 16) for i in RGB_str]
-    return RGB
+    return [int(i, 16) for i in RGB_str]
 
 
 tt.__init__()

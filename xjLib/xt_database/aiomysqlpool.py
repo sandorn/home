@@ -33,8 +33,7 @@ import aiomysql
 import pymysql
 from xt_database.cfg import DB_CFG
 from xt_wraps import SingletonMixin
-from xt_wraps.log import create_basemsg, log_wraps
-from xt_wraps.log import mylog as logger
+from xt_wraps.log import create_basemsg, log_wraps, mylog as logger
 
 
 class AioMySQLPool(SingletonMixin):
@@ -443,7 +442,6 @@ def create_async_mysql_pool(db_key: str = 'default', **kwargs) -> AioMySQLPool:
 if __name__ == '__main__':
     """测试代码 - 演示连接池的各种用法"""
 
-    # ruff: noqa : T201
     async def _test_basic_operations():
         """测试基本的数据库操作，包括初始化、查询、插入和关闭等核心功能。
 

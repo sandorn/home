@@ -13,8 +13,9 @@ Github       : https://github.com/sandorn/home
 
 - 相对位移的误差问题
 """
-from bdtime import tt
+from __future__ import annotations
 
+from bdtime import tt
 from damo import DM
 
 dm = DM()

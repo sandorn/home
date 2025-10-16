@@ -26,8 +26,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Query, Session, scoped_session, sessionmaker
 from xt_database.cfg import connect_str
 from xt_wraps.exception import exc_wraps, handle_exception
-from xt_wraps.log import log_wraps
-from xt_wraps.log import mylog
+from xt_wraps.log import log_wraps, mylog
 from xt_wraps.singleton import SingletonMeta
 
 if TYPE_CHECKING:
@@ -280,7 +279,7 @@ class SqlConnection(metaclass=SingletonMeta):
             mylog.success('SqlConnection@session_scope | 事务完成')
         except Exception as e:
             session.rollback()
-            handle_exception(e, re_raise=True,callfrom=self.session_scope)
+            handle_exception(e, re_raise=True, callfrom=self.session_scope)
         finally:
             session.close()
             mylog.info('SqlConnection@session_scope | 事务会话关闭')

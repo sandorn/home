@@ -812,22 +812,22 @@ if __name__ == '__main__':
         def test_remove_whitespace(self):
             """测试移除多余空白字符"""
             html = 'New\n\t\r  Sea'
-            self.assertEqual(format_html_string(html), 'New Sea')
+            assert format_html_string(html) == 'New Sea'
 
         def test_remove_script_tags(self):
             """测试移除script标签"""
             html = '<script>alert(1)</script>Hello'
-            self.assertEqual(format_html_string(html), 'Hello')
+            assert format_html_string(html) == 'Hello'
 
         def test_remove_a_tags(self):
             """测试移除a标签"""
             html = "<a href='#'>Link</a>Text"
-            self.assertEqual(format_html_string(html), 'Text')
+            assert format_html_string(html) == 'Text'
 
         def test_special_chars(self):
             """测试特殊字符替换"""
             html = "'Hello'\u2022World\ufeff"
-            self.assertEqual(format_html_string(html), "'Hello':World")
+            assert format_html_string(html) == "'Hello':World"
 
     # 运行单元测试
     # main()

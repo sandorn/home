@@ -16,6 +16,8 @@ Github       : https://github.com/sandorn/home
 # __init__.py
 
 # author of the package
+from __future__ import annotations
+
 __author__ = "Even.Sand"
 
 # software license used for the package

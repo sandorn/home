@@ -10,15 +10,9 @@ FilePath     : /CODE/xjLib/xt_damo/enum_wind.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+from __future__ import annotations
 
-from win32gui import (
-    EnumWindows,
-    GetClassName,
-    GetWindowText,
-    IsWindow,
-    IsWindowEnabled,
-    IsWindowVisible,
-)
+from win32gui import EnumWindows, GetClassName, GetWindowText, IsWindow, IsWindowEnabled, IsWindowVisible
 
 
 def _is_valid_window(hwnd):
@@ -53,9 +47,8 @@ def get_class_winds(class_name=None):
     titles = set()
 
     def foo(hwnd, mouse):
-        if IsWindow(hwnd) and IsWindowEnabled(hwnd) and IsWindowVisible(hwnd):
-            if GetClassName(hwnd) == class_name:
-                titles.add(hwnd)
+        if IsWindow(hwnd) and IsWindowEnabled(hwnd) and IsWindowVisible(hwnd) and GetClassName(hwnd) == class_name:
+            titles.add(hwnd)
 
     EnumWindows(foo, 0)
     lt = [t for t in titles if t]
@@ -71,9 +64,8 @@ def get_title_winds(title_name=None, subset=1):
 
     def foo(hwnd, mouse):
         if IsWindow(hwnd) and IsWindowEnabled(hwnd) and IsWindowVisible(hwnd):
-            if subset:
-                if title_name in GetWindowText(hwnd):
-                    titles.add(hwnd)
+            if subset and title_name in GetWindowText(hwnd):
+                titles.add(hwnd)
 
             if GetWindowText(hwnd) == title_name:
                 titles.add(hwnd)

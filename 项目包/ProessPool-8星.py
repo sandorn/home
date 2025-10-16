@@ -10,6 +10,7 @@ FilePath     : /CODE/项目包/ProessPool-8星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+from __future__ import annotations
 
 import os
 

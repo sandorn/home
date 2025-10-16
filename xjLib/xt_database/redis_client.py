@@ -27,8 +27,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 
-from redis import Redis
-from redis import asyncio as aioredis
+from redis import Redis, asyncio as aioredis
 from xt_database.cfg import DB_CFG
 from xt_wraps import LogCls
 
