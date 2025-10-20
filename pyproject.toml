@@ -10,6 +10,7 @@ authors = [
 dependencies = [
     "aiohttp>=3.13.1",
     "pyqt6>=6.9.1",
+    "qdarkstyle>=3.2.3",
     "tenacity>=9.1.2",
     "xthttp>=0.1.1",
     "xtlog>=0.1.9",

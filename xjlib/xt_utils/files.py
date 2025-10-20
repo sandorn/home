@@ -16,9 +16,7 @@ import os
 import winreg
 from typing import Any
 
-from xt_wraps import LogCls
-
-log = LogCls()
+from xtlog import mylog as log
 
 
 class FileSize:
@@ -34,7 +32,7 @@ class FileSize:
     >>> log(size.mb)  # 获取MB数
     """
 
-    __slots__ = ('_bytes', )  # 优化内存使用
+    __slots__ = ('_bytes',)  # 优化内存使用
 
     def __init__(self, file_path: str | os.PathLike):
         """

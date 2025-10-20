@@ -10,12 +10,13 @@ FilePath     : /CODE/xjLib/xt_pyqt/utils.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+
 from __future__ import annotations
 
 import sys
 from functools import wraps
 
-from PyQt6.QtCore import QEventLoop, Qt
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication
 
 
@@ -28,10 +29,7 @@ def event_loop(func):
             # 显示等待中的鼠标
             QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
             # 忽略用户键鼠输入
-            QApplication.processEvents(
-                QEventLoop.ExcludeUserInputEvents,
-                QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents,
-            )
+            QApplication.processEvents()
 
             return func(*args, **kwargs)
 
