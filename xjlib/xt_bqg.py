@@ -15,10 +15,8 @@ from __future__ import annotations
 
 from functools import partial
 
-from xt_ahttp import ahttp_get
-from xt_requests import get
-from xt_response import ACResponse, htmlResponse
-from xt_str import format_html_string, re_sub, str_clean
+from xt_utils.strings import format_html_string, re_sub, str_clean
+from xthttp import UnifiedResp, ahttp_get, get
 
 
 def clean_content(in_str):
@@ -55,12 +53,14 @@ def clean_content(in_str):
 
 
 def resp_handle(resp):
-    if not isinstance(resp, (ACResponse, htmlResponse)):
+    if not isinstance(resp, UnifiedResp):
         return [0, resp, '']
 
     try:
-        title = resp.query('h1').text()
-        content = resp.query('#chaptercontent').text()
+        # _xpath = ['//h1/text()', '//*[@id="chaptercontent"]/text()']
+        # title, content = resp.xpath('//h1/text()', '//*[@id="chaptercontent"]/text()')
+        title = resp.css_select('h1').text()
+        content = resp.css_select('#chaptercontent').text()
         title = ''.join(str_clean(''.join(title), ['\u3000', '\xa0', '\u00a0']))
         content = clean_content(content).strip()
         return [resp.index, title, content]
@@ -73,8 +73,6 @@ def resps_handle(resps):
     texts = []
 
     for resp in resps:
-        if not isinstance(resp, (ACResponse, htmlResponse)):
-            continue
         texts.append(resp_handle(resp))
 
     texts.sort(key=lambda x: x[0])
@@ -95,7 +93,7 @@ def get_download_url(url):
         # '//dt[1]/following-sibling::dd/a/text()',
         # '//div[@class="listmain"]/dl/dt[2]/following-sibling::dd/a/@href',
     )
-    bookname, temp_urls, temp_urls2, titles, titles2 = resp.xpath(xpath_list)
+    bookname, temp_urls, temp_urls2, titles, titles2 = resp.xpath(*xpath_list)
     titles += titles2
     temp_urls += temp_urls2
     bookname = ''.join(bookname)
@@ -107,35 +105,24 @@ def get_download_url(url):
 def get_contents(*args, fn=get):
     index, url = args[0:2]
     resp = fn(url, *args[2:])
-
-    if not isinstance(resp, (ACResponse, htmlResponse)):
-        return [0, resp, '']
-
-    # pyquery
-    title = resp.query('h1').text()
-    content = resp.query('#chaptercontent').text()
-    # _xpath = ['//h1/text()', '//*[@id="chaptercontent"]/text()']
-    # title, content = resp.xpath(_xpath)
-
-    title = ''.join(str_clean(''.join(title), ['\u3000', '\xa0', '\u00a0']))
-    content = clean_content(content).strip()
-
-    return [index, title, content]
+    return resp_handle(resp)
 
 
 ahttp_get_contents = partial(get_contents, fn=ahttp_get)
 
 
 if __name__ == '__main__':
-    from xt_wraps import LogCls
+    from xtlog import mylog
 
-    mylog = LogCls()
+    url = 'https://www.bigee.cc/book/6909/'
+    bookname, urls, titles = get_download_url(url)
+    # mylog(f'bookname: {bookname}')
+    # mylog(f'urls: {urls}')
+    # mylog(f'titles: {titles}')
+    mylog(f'urls[0]: {urls[0]}')
+    res = get_contents(0, 'https://www.d3016ba0.icu/book/58732/1.html')
+    mylog(res)
 
-    # url = "https://www.bigee.cc/book/6909/"
-    # bookname, urls, titles = get_download_url(url)
-    # mylog(bookname, urls, titles)
-    # res = get_contents(0, urls[0])
-    # mylog(res)
     def test_clean_content():
         """测试clean_Content函数"""
         test_cases = [
@@ -162,8 +149,3 @@ if __name__ == '__main__':
         mylog('=== 测试完成 ===')
 
     # test_clean_content()
-
-    mylog(
-        33333333333333333333,
-        resp := get_download_url('https://www.bigee.cc/book/6909/'),
-    )
