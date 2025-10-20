@@ -1,5 +1,18 @@
-
-
+[project]
+name = "xjlib"
+version = "0.2.0"
+authors = [
+    { name="sandorn", email="sandorn@live.cn" },
+]
+dependencies = [
+    "aiohttp>=3.13.1",
+    "pyqt6>=6.9.1",
+    "tenacity>=9.1.2",
+    "xthttp>=0.1.1",
+    "xtlog>=0.1.9",
+    "xtthread>=0.0.7",
+    "xtwraps>=0.2.1",
+]
 #------------------------------------------
 [tool.ruff]
 target-version = "py313"
