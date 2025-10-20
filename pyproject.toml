@@ -1,6 +1,9 @@
 [project]
 name = "xjlib"
 version = "0.2.0"
+description = "Python 工具库集合"
+readme = "README.md"
+requires-python = ">=3.13"
 authors = [
     { name="sandorn", email="sandorn@live.cn" },
 ]
