@@ -10,17 +10,18 @@ FilePath     : /CODE/项目包/自定义库futures异步-9星.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
+
 from __future__ import annotations
 
 import os
 
 from xt_bqg import get_contents, get_download_url
-from xt_file import savefile
-from xt_thread import EnhancedThreadPool
-from xt_time import fn_timer
+from xt_utils.files import save_file
+from xtthread import EnhancedThreadPool
+from xtwraps import timer
 
 
-@fn_timer
+@timer
 def myEnhancedThreadPool(book_name, urls_list):
     thread_pool = EnhancedThreadPool(max_workers=200)
     texts = []
@@ -31,7 +32,7 @@ def myEnhancedThreadPool(book_name, urls_list):
         futures.append(future)
 
     # 等待所有任务完成
-    thread_pool.wait_for_completion()
+    thread_pool.wait_all_completed()
 
     # 获取结果
     results = thread_pool.get_results()
@@ -42,11 +43,11 @@ def myEnhancedThreadPool(book_name, urls_list):
     thread_pool.shutdown()
     texts.sort(key=lambda x: x[0])
     # sorted(texts, key=lambda x: x[0])
-    files = os.path.basename(__file__).split(".")[0]
-    savefile(f"{files}&{book_name}AioHttpCrawl_pool.txt", texts, br="\n")
+    files = os.path.basename(__file__).split('.')[0]
+    save_file(f'{files}&{book_name}AioHttpCrawl_pool.txt', texts, br='\n')
 
 
-if __name__ == "__main__":
-    url = "https://www.bigee.cc/book/6909/"
+if __name__ == '__main__':
+    url = 'https://www.bigee.cc/book/6909/'
     book_name, urls, _ = get_download_url(url)
     myEnhancedThreadPool(book_name, urls[0:10])  # | <Time-Consuming 77.5360s>

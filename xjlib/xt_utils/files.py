@@ -32,7 +32,7 @@ class FileSize:
     >>> log(size.mb)  # 获取MB数
     """
 
-    __slots__ = ('_bytes',)  # 优化内存使用
+    __slots__ = ('_bytes', '_file_path')  # 优化内存使用
 
     def __init__(self, file_path: str | os.PathLike):
         """
@@ -49,7 +49,9 @@ class FileSize:
             raise FileNotFoundError(f'文件不存在: {file_path}')
         if os.path.isdir(file_path):
             raise IsADirectoryError(f'路径指向的是目录,不是文件: {file_path}')
-        self._file_path = file_path
+
+        self._file_path: str = str(file_path)
+
         self._bytes = os.path.getsize(file_path)
 
     @property

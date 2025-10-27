@@ -31,8 +31,8 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
-from xt_enum import StrEnum
-from xt_wraps import SingletonMeta
+from xt_utils.xtenum import StrEnum
+from xtwraps import SingletonMeta
 
 
 class TimeFormatEnum(StrEnum):
@@ -532,4 +532,4 @@ if __name__ == '__main__':
     print('SQL时间:', get_sql_time())
     print('当前时间戳(秒):', get_timestamp())
     print('当前时间戳(毫秒):', get_timestamp(size=13))
-    print('指定时间的时间戳:', get_timestamp('2020-06-15 13:28:27'))
+    print('指定时间的时间戳:', get_timestamp(size=13, timestr='2020-06-15 13:28:27'))

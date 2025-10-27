@@ -3,17 +3,27 @@ name = "xjlib"
 version = "0.2.0"
 description = "Python 工具库集合"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 authors = [
     { name="sandorn", email="sandorn@live.cn" },
 ]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+]
+
 dependencies = [
-    "aiohttp>=3.13.1",
-    "pyqt6>=6.9.1",
-    "qdarkstyle>=3.2.3",
-    "tenacity>=9.1.2",
+    "pyqt6>=6.10.0",
+    "pywin32>=311",
+    "xtdbase[all]>=0.1.0",
     "xthttp>=0.1.1",
     "xtlog>=0.1.9",
+    "xtsqlorm>=0.1.0",
     "xtthread>=0.0.7",
     "xtwraps>=0.2.1",
 ]
@@ -59,7 +69,7 @@ ignore = [
     "RUF003", # 字符串中全角标点
     "Q000", # 与格式化器冲突的引号规则
     "Q003", # 与格式化器冲突的引号规则
-    # "RUF022",  # __all__ 排序
+    "RUF022",  # __all__ 排序
     "D203", "D212",  # 文档字符串格式
     "S101",  # 测试文件中允许断言
     "T201",  # 测试文件中允许 print
