@@ -125,7 +125,7 @@ skip-magic-trailing-comma = false  # 改为 true 避免与长行冲突
 # 类型检查器: basedpyright
 
 [tool.pyright]
-pythonVersion = "3.10"
+pythonVersion = "3.14"
 typeCheckingMode = "basic"
 reportMissingImports = "error"
 reportMissingTypeStubs = "none"
