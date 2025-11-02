@@ -53,8 +53,50 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "I", "N", "UP", "YTT", "S", "BLE", "FBT", "B", "A", "COM", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ISC", "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD", "FIX", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "AIR", "PERF", "FURB", "LOG", "RUF"]
-ignore = ["S101", "T201", "PT011"]
+# 基础规则集 - 大多数项目适用
+select = [
+    "E",   # Pycodestyle 错误
+    "W",   # Pycodestyle 警告  
+    "F",   # Pyflakes
+    "I",   # Isort
+    "N",   # Pep8 命名规范
+    "UP",  # Pyupgrade
+    "S",   # 安全相关
+    "BLE", # 盲异常捕获
+    "FBT", # 布尔陷阱
+    "B",   # 漏洞相关
+    "A",   # 内置类型滥用
+    "COM", # 逗号相关
+    "C4",  # 理解性检查
+    "DTZ", # 日期时区
+    "EM",  # 异常消息
+    "RSE", # 请求时不使用超时
+    "RET", # 返回语句
+    "SLF", # self 参数
+    "SIM", # 简化
+    "TID", # 整理导入
+    "PTH", # 路径处理
+    "FIX", # 快速修复
+    "ERA", # 多余范围
+    "TRY", # 异常处理
+]
+
+# 忽略的规则
+ignore = [
+    "S101", # assert 使用
+    "T201", # print 使用
+    "PT011", # pytest 异常检查
+    "E501", # 行长度（通常由格式化工具处理）
+    "N802", # 函数名小写（有时需要例外）
+    "N803", # 第一个参数小写
+    "PLR2004", # 魔术值比较
+    "FBT001", # 布尔参数规则
+    "FBT002", # 布尔参数规则
+    "SIM108", # 三元表达式规则
+    "ERA001", # 被注释掉的代码
+    "SLF001" # 访问私有成员
+]
+
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "N812"]
