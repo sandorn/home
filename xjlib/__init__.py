@@ -10,7 +10,7 @@ FilePath     : /CODE/xjLib/__init__.py
 Github       : https://github.com/sandorn/home
 ==============================================================
 """
-
+# xjLib 是一个 Python 库，提供了一些常用的函数和类，用于简化开发过程。
 
 # package
 # __init__.py
