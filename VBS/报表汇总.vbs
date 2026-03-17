@@ -95,7 +95,7 @@ End Function
 
 ' 构建源文件路径
 Private Function BuildSourcePath() As String
-    BuildSourcePath = ThisWorkbook.Path & "\" & REPORT_FOLDER_NAME & "\" 
+    BuildSourcePath = ThisWorkbook.path & "\" & REPORT_FOLDER_NAME & "\"
 End Function
 
 ' 验证源文件路径
