@@ -18,7 +18,7 @@ import asyncio
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -70,6 +70,8 @@ class EventDrivenWorker:
                     handlers = self.event_handlers[event.event_type]
                     await asyncio.gather(*[handler(event) for handler in handlers])
                 self.event_queue.task_done()
+            except asyncio.CancelledError:
+                raise
             except Exception as e:
                 print(f'工人 任务处理异常: {e}')
 
@@ -108,9 +110,11 @@ class EventDrivenSystem:
                     print(f'工场系统 分发任务: {event} | 目标: {event.worker_id}')
                     # 广播事件给所有工作者
                     await asyncio.gather(
-                        *[worker.publish(event) for worker in self.workers.values()]
+                        *[worker.publish(event) for worker in self.workers.values()],
                     )
                 self.event_bus.task_done()
+            except asyncio.CancelledError:
+                raise
             except Exception as e:
                 print(f'工场系统 任务分发异常: {e}')
 
@@ -139,10 +143,10 @@ async def main():
 
     # 定义处理函数（添加完成回调）
     async def handle_task_completed(event: WorkEvent):
-        print(f'[{datetime.now().isoformat()}]  {worker1.worker_id}  处理任务完成事件: {event.payload}')
+        print(f'[{datetime.now(UTC).isoformat()}]  {worker1.worker_id}  处理任务完成事件: {event.payload}')
 
     async def handle_data_processed(event: WorkEvent):
-        print(f'[{datetime.now().isoformat()}]  {worker2.worker_id}  处理数据处理事件: {event.payload}')
+        print(f'[{datetime.now(UTC).isoformat()}]  {worker2.worker_id}  处理数据处理事件: {event.payload}')
 
     # 订阅事件类型
     worker1.subscribe(handler_events[0], handle_task_completed)

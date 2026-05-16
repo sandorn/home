@@ -31,8 +31,9 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 from pydantic import BaseModel
-from xt_utils.xtenum import StrEnum
-from xtwraps import SingletonMeta
+
+from .xtenum import StrEnum
+from ..xtwraps import SingletonMeta
 
 
 class TimeFormatEnum(StrEnum):
