@@ -8,4 +8,5 @@ Run `ruff format .` and `ruff check --fix --unsafe-fixes .` to format and fix al
 ```powershell
 ruff format .
 ruff check --fix --unsafe-fixes .
+basedpyright .
 ```
