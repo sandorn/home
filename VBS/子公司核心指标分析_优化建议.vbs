@@ -62,9 +62,14 @@ Private Type AnalysisQuality
 End Type
 
 ' ============================================================================
-' 优化4: 新增 - 上下文缓存
+' 优化4: 新增 - 上下文缓存（存储已完成分析的公司名称和摘要）
 ' ============================================================================
-Private previousAnalysisResults() As String
+Private Type CompanyContext
+    Name As String
+    Summary As String
+End Type
+
+Private previousAnalysisResults() As CompanyContext
 Private analysisCount As Long
 
 ' ============================================================================
@@ -478,19 +483,20 @@ Private Function AnalyzeWithQualityCheck(companyName As String, dataPrompt As St
 End Function
 
 ' ============================================================================
-' 优化9: 新增 - 分批处理策略
+' 优化9: 新增 - 从分析结果中提取摘要（第一行）
 ' ============================================================================
-Private Sub ProcessCompanyBatch(companyNames() As String, startIndex As Long, batchSize As Long)
-    Dim i As Long
-    Dim endIndex As Long
-    endIndex = startIndex + batchSize - 1
-    If endIndex > UBound(companyNames) Then endIndex = UBound(companyNames)
-    For i = startIndex To endIndex
-        If Len(Trim(companyNames(i))) > 0 Then
-            If DEBUG_MODE Then Debug.Print "处理批次中的公司: " & companyNames(i)
-        End If
-    Next i
-End Sub
+Private Function ExtractSummary(analysisResult As String) As String
+    Dim lines As Variant
+    Dim firstLine As String
+    If Len(analysisResult) = 0 Then
+        ExtractSummary = ""
+        Exit Function
+    End If
+    lines = Split(analysisResult, vbCrLf)
+    firstLine = Trim$(CStr(lines(0)))
+    If Len(firstLine) > 80 Then firstLine = Left$(firstLine, 80) & "..."
+    ExtractSummary = firstLine
+End Function
 
 ' ============================================================================
 ' 优化10: 增强版分析单个公司
@@ -528,15 +534,27 @@ Private Function AnalyzeCompany(companyName As String, Optional index As Long = 
         progressPercent = 0#
     End If
 
-    ' 优化11: 增强数据提示词 - 加入序号提醒
+    ' 优化11: 增强数据提示词 - 加入序号提醒和上下文参考
     dataPrompt = "公司名称：" & companyName & vbCrLf & _
                  "年份：" & GetAnalysisYear() & vbCrLf & _
                  "当前月份：" & monthText & vbCrLf & _
                  "序时进度：" & Format$(progressPercent, "0.00") & "%" & vbCrLf & _
                  "数据单位：万元" & vbCrLf & _
                  "分析序号：第" & index & "/" & total & "家公司" & vbCrLf & _
-                 "注意：请保持与前面公司一致的分析深度和质量，不要因为序号靠后而简化输出。" & vbCrLf & _
-                 "请按系统提示词要求输出指定格式。" & vbCrLf & _
+                 "注意：请保持与前面公司一致的分析深度和质量，不要因为序号靠后而简化输出。" & vbCrLf
+
+    ' 追加已分析公司的摘要作为上下文参考
+    If analysisCount > 0 Then
+        Dim ctxIdx As Long
+        dataPrompt = dataPrompt & "已完成分析的公司摘要参考：" & vbCrLf
+        For ctxIdx = 1 To analysisCount
+            dataPrompt = dataPrompt & "  " & ctxIdx & ". " & previousAnalysisResults(ctxIdx).Name & _
+                         " - " & previousAnalysisResults(ctxIdx).Summary & vbCrLf
+        Next ctxIdx
+        dataPrompt = dataPrompt & "请保持与上述公司一致的分析风格和输出格式。" & vbCrLf
+    End If
+
+    dataPrompt = dataPrompt & "请按系统提示词要求输出指定格式。" & vbCrLf & _
                  BuildDataPrompt(wsData)
 
     ' 优化12: 使用带质量检查的分析函数
@@ -630,20 +648,32 @@ Public Sub 多轮经营分析_优化版()
 
             Application.StatusBar = "正在分析: " & companyName & " (" & companyIndex & "/" & totalCount & ")"
 
-            ' 优化15: 每批处理后增加延迟
-            If batchCount > batchSize Then
-                If DEBUG_MODE Then Debug.Print "批次完成，等待 " & BATCH_DELAY_MS & "ms 后继续..."
-                Application.Wait Now + TimeSerial(0, 0, BATCH_DELAY_MS / 1000)
-                batchCount = 1
-            End If
-
             If AnalyzeCompany(companyName, companyIndex, totalCount) Then
                 processedCount = processedCount + 1
                 analysisCount = analysisCount + 1
-                previousAnalysisResults(analysisCount) = companyName
+                previousAnalysisResults(analysisCount).Name = companyName
+                ' 从结果单元格读取摘要
+                On Error Resume Next
+                Dim wsTarget As Worksheet
+                Set wsTarget = ThisWorkbook.Worksheets(companyName)
+                If Not wsTarget Is Nothing Then
+                    Dim cellVal As String
+                    cellVal = Trim$(CStr(wsTarget.Range(RESULT_CELL).Value))
+                    If Len(cellVal) > 0 Then
+                        previousAnalysisResults(analysisCount).Summary = ExtractSummary(cellVal)
+                    End If
+                End If
+                On Error GoTo ErrorHandler
                 If DEBUG_MODE Then Debug.Print "成功分析(" & companyIndex & "/" & totalCount & "): " & companyName
             Else
                 If DEBUG_MODE Then Debug.Print "分析失败(" & companyIndex & "/" & totalCount & "): " & companyName
+            End If
+
+            ' 优化15: 每批处理完后增加延迟（避免API限流）
+            If batchCount Mod batchSize = 0 And companyIndex < totalCount Then
+                If DEBUG_MODE Then Debug.Print "批次完成(" & batchCount & "/" & totalCount & ")，等待 " & BATCH_DELAY_MS & "ms 后继续..."
+                Application.StatusBar = "批次完成，等待 " & BATCH_DELAY_MS & "ms 后继续..."
+                Application.Wait Now + TimeSerial(0, 0, BATCH_DELAY_MS / 1000)
             End If
         End If
     Next cell
