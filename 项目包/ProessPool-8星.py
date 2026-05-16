@@ -14,6 +14,7 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 import os
+import pathlib
 
 from xt_bqg import get_contents, get_download_url
 from xt_utils.files import save_file
@@ -29,7 +30,7 @@ def new_get_contents(args):
 def cmpro(bookname, urls):
     res_list = run_custom_process(new_get_contents, [(i, url) for i, url in enumerate(urls, 1)])
     res_list.sort(key=lambda x: x[0])  # #排序
-    files = os.path.splitext(os.path.basename(__file__))[0]
+    files = os.path.splitext(pathlib.Path(__file__).name)[0]
     save_file(f'{files}&{bookname}&cmpro.txt', res_list, br='\n')
 
 

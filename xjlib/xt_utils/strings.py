@@ -50,7 +50,8 @@ def is_valid_id(id_number: str | int) -> bool:
     if isinstance(id_number, int):
         id_number = str(id_number)
     elif not isinstance(id_number, str):
-        raise TypeError('身份证号码必须是字符串或整数类型')
+        msg = '身份证号码必须是字符串或整数类型'
+        raise TypeError(msg)
 
     # 移除可能存在的空格
     id_number = id_number.strip()
@@ -73,7 +74,7 @@ def is_valid_id(id_number: str | int) -> bool:
             calculated_check_code = check_codes[sum_weights % 11]
             # 检查校验码是否匹配（不区分大小写）
             return id_number[-1].upper() == calculated_check_code
-        except (ValueError, IndexError):
+        except ValueError, IndexError:
             return False
 
     # 身份证长度不正确
@@ -298,7 +299,8 @@ def align(str1: Any, distance: int = 36, alignment: Literal['L', 'C', 'R'] = 'L'
     elif alignment == 'R':
         aligned_str = f'{" " * slen}{str1}'
     else:
-        raise ValueError("Alignment must be one of 'L', 'C', or 'R'")
+        msg = "Alignment must be one of 'L', 'C', or 'R'"
+        raise ValueError(msg)
 
     return aligned_str
 
@@ -324,7 +326,8 @@ def remove_all_blank(value: str, keep_blank: bool = True, custom_invisible: Patt
         'Hello world '
     """
     if not isinstance(value, str):
-        raise TypeError(f'输入必须是字符串类型，当前输入类型为: {type(value)}')
+        msg = f'输入必须是字符串类型，当前输入类型为: {type(value)}'
+        raise TypeError(msg)
 
     # 移除控制字符等不可见字符
     custom_invisible = custom_invisible or re.compile(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]+')
@@ -360,13 +363,16 @@ def str_replace(replacement: str, trims: Sequence[tuple[str, str]], implementati
     """
     # 输入验证
     if not isinstance(replacement, str):
-        raise TypeError(f"'replacement'应为字符串类型，实际为{type(replacement).__name__}")
+        msg = f"'replacement'应为字符串类型，实际为{type(replacement).__name__}"
+        raise TypeError(msg)
 
     for i, (search, replace) in enumerate(trims):
         if not isinstance(search, str) or not isinstance(replace, str):
-            raise ValueError(f'替换规则[{i}]必须包含两个字符串')
+            msg = f'替换规则[{i}]必须包含两个字符串'
+            raise ValueError(msg)
         if not search:
-            raise ValueError(f'替换规则[{i}]的查找字符串不能为空')
+            msg = f'替换规则[{i}]的查找字符串不能为空'
+            raise ValueError(msg)
 
     if implementation == 'loop':
         # 实现方式1: 循环遍历（最直观）
@@ -379,7 +385,8 @@ def str_replace(replacement: str, trims: Sequence[tuple[str, str]], implementati
         # 实现方式2: 函数式编程（原始实现）
         return reduce(lambda strtmp, item: strtmp.replace(item[0], item[1]), trims, replacement)
 
-    raise ValueError(f"无效实现方式: {implementation}，请选择'loop'/'reduce'")
+    msg = f"无效实现方式: {implementation}，请选择'loop'/'reduce'"
+    raise ValueError(msg)
 
 
 def str_clean(replacement: str, trims: Sequence[str]) -> str:
@@ -422,18 +429,21 @@ def re_sub(replacement: str, trims: Sequence[tuple[str, str]]) -> str:
     """
     # 输入类型验证
     if not isinstance(replacement, str):
-        raise TypeError(f"'replacement'必须是字符串，实际为{type(replacement).__name__}")
+        msg = f"'replacement'必须是字符串，实际为{type(replacement).__name__}"
+        raise TypeError(msg)
 
     # 预编译正则表达式并验证规则
     compiled_rules = []
     for idx, (pattern, repl) in enumerate(trims):
         if not isinstance(pattern, str) or not isinstance(repl, str):
-            raise TypeError(f'规则[{idx}]必须包含两个字符串')
+            msg = f'规则[{idx}]必须包含两个字符串'
+            raise TypeError(msg)
         try:
             compiled_pattern = re.compile(pattern)
             compiled_rules.append((compiled_pattern, repl))
         except re.error as e:
-            raise re.error(f'规则[{idx}]正则表达式无效: {e}') from e
+            msg = f'规则[{idx}]正则表达式无效: {e}'
+            raise re.error(msg) from e
 
     if not compiled_rules:
         return replacement
@@ -481,21 +491,25 @@ def re_compile(replacement: str, replace_rules: Sequence[tuple[str, str]]) -> st
 
     # 输入类型验证
     if not isinstance(replacement, str):
-        raise TypeError(f"'replacement'必须是字符串，实际为{type(replacement).__name__}")
+        msg = f"'replacement'必须是字符串，实际为{type(replacement).__name__}"
+        raise TypeError(msg)
 
     if not isinstance(replace_rules, Sequence):
-        raise TypeError(f"'replace_rules'必须是序列类型，实际为{type(replace_rules).__name__}")
+        msg = f"'replace_rules'必须是序列类型，实际为{type(replace_rules).__name__}"
+        raise TypeError(msg)
 
     # 验证规则格式并提取模式
     patterns = []
     replacements: dict[str, str] = {}
     for idx, rule in enumerate(replace_rules):
         if not isinstance(rule, tuple) or len(rule) != 2:
-            raise TypeError(f'规则[{idx}]必须是包含两个元素的元组')
+            msg = f'规则[{idx}]必须是包含两个元素的元组'
+            raise TypeError(msg)
 
         pattern_str, repl_str = rule
         if not isinstance(pattern_str, str) or not isinstance(repl_str, str):
-            raise TypeError(f'规则[{idx}]的元素必须是字符串')
+            msg = f'规则[{idx}]的元素必须是字符串'
+            raise TypeError(msg)
 
         escaped_pattern = re.escape(pattern_str)
         patterns.append(escaped_pattern)
@@ -684,7 +698,7 @@ def random_char(length: int = 20) -> str:
             chr(
                 random.randint(97, 122)  # 小写字母  # noqa: S311
                 if random.randint(1, 2) == 1  # noqa: S311
-                else random.randint(65, 90)  # 大写字母 # noqa: S311
+                else random.randint(65, 90),  # 大写字母 # noqa: S311
             )
         )
         for _ in range(length)

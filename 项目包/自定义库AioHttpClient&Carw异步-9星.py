@@ -13,7 +13,7 @@ Github       : https://github.com/sandorn/home
 
 from __future__ import annotations
 
-import os
+import pathlib
 
 from xt_bqg import get_contents, get_download_url, resps_handle
 from xt_utils.files import save_file
@@ -29,7 +29,7 @@ def AioHttpCrawl_pool(book_name, urls_list):
     texts = myaio.submit_tasks(get_contents, args_list)
     texts.sort(key=lambda x: x[0])
     # sorted(texts, key=lambda x: x[0])
-    files = os.path.basename(__file__).split('.')[0]
+    files = pathlib.Path(__file__).name.split('.')[0]
     save_file(f'{files}&{book_name}AioHttpCrawl_pool.txt', texts, br='\n')
 
 
@@ -37,7 +37,7 @@ def AioHttpCrawl_pool(book_name, urls_list):
 def ahttp_GetAll(book_name, urls):
     resps = ahttp_get_all(urls)
     texts = resps_handle(resps)
-    files = os.path.basename(__file__).split('.')[0]
+    files = pathlib.Path(__file__).name.split('.')[0]
     save_file(f'{files}&{book_name}ahttp_get_all.txt', texts, br='\n')
 
 
@@ -48,7 +48,7 @@ def AsyncHttpClient_run(book_name, urls):
     resps = AHC.multi_request('get', urls)
     texts = [resp.result for resp in resps]
     texts.sort(key=lambda x: x[0])
-    files = os.path.basename(__file__).split('.')[0]
+    files = pathlib.Path(__file__).name.split('.')[0]
     save_file(f'{files}&{book_name}AsyncHttpClient_run.txt', texts, br='\n')
 
 

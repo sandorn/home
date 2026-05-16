@@ -311,7 +311,8 @@ class TextNormalizer:
             >>> normalized = normalizer.normalize_text(text, form='NFD')
         """
         if form not in self.normalization_forms:
-            raise ValueError(f'不支持的规范化形式: {form}')
+            msg = f'不支持的规范化形式: {form}'
+            raise ValueError(msg)
 
         return unicodedata.normalize(form, text)
 

@@ -13,7 +13,7 @@ Github       : https://github.com/sandorn/home
 
 from __future__ import annotations
 
-import os
+import pathlib
 
 from xt_bqg import get_contents, get_download_url
 from xt_utils.files import save_file
@@ -43,7 +43,7 @@ def myEnhancedThreadPool(book_name, urls_list):
     thread_pool.shutdown()
     texts.sort(key=lambda x: x[0])
     # sorted(texts, key=lambda x: x[0])
-    files = os.path.basename(__file__).split('.')[0]
+    files = pathlib.Path(__file__).name.split('.')[0]
     save_file(f'{files}&{book_name}AioHttpCrawl_pool.txt', texts, br='\n')
 
 

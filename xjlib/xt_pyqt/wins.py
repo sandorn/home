@@ -13,7 +13,7 @@ Github       : https://github.com/sandorn/home
 
 from __future__ import annotations
 
-import os
+import pathlib
 import random
 
 import qdarkstyle
@@ -73,7 +73,7 @@ class xt_QMainWindow(QMainWindow):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.basepath = os.path.dirname(__file__)
+        self.basepath = pathlib.Path(__file__).parent
         # #窗体title,setupUI
         self.title = title
         self.setWindowTitle(title)

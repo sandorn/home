@@ -65,12 +65,14 @@ def _create_func(code_body: str, func_name: str | None = None, **kwargs) -> Call
         module_code = compile(code_body, filename, exmethod)
         exec(module_code, globals_dict)  # noqa: S102
     except SyntaxError as e:
-        raise SyntaxError(f'代码语法错误: {e}') from e
+        msg = f'代码语法错误: {e}'
+        raise SyntaxError(msg) from e
 
     # 查找目标函数
     if func_name:
         if func_name not in globals_dict:
-            raise NameError(f"函数 '{func_name}' 未找到")
+            msg = f"函数 '{func_name}' 未找到"
+            raise NameError(msg)
         return globals_dict[func_name]
 
     # 自动查找第一个函数
@@ -78,7 +80,8 @@ def _create_func(code_body: str, func_name: str | None = None, **kwargs) -> Call
         if isinstance(obj, FunctionType):
             return obj
 
-    raise ValueError('代码中未找到任何函数定义')
+    msg = '代码中未找到任何函数定义'
+    raise ValueError(msg)
 
 
 FUNC_ATTRS = ('__closure__', '__code__', '__defaults__', '__dict__', '__doc__', '__globals__', '__name__', '__module__', '__qualname__')
@@ -121,7 +124,8 @@ def get_dynamic_function_attributes(func: Callable[..., Any], include_special: b
         >>> print(attrs)  # ['__code__', '__name__', ...]
     """
     if not callable(func):
-        raise TypeError('输入必须是可调用对象')
+        msg = '输入必须是可调用对象'
+        raise TypeError(msg)
 
     # 获取所有属性并过滤
     all_attrs = dir(func)
@@ -152,7 +156,8 @@ def get_dynamic_code_attributes(code_obj: CodeType) -> list[str]:
         >>> print(attrs)  # ['co_argcount', 'co_code', ...]
     """
     if not isinstance(code_obj, CodeType):
-        raise TypeError('输入必须是代码对象')
+        msg = '输入必须是代码对象'
+        raise TypeError(msg)
 
     # 获取并过滤代码对象属性
     all_attrs = dir(code_obj)
@@ -235,7 +240,8 @@ def inspect_function(func: Callable[..., Any], use_dynamic_attrs: bool = False, 
         >>> inspect_function(sample_func, use_dynamic_attrs=True)
     """
     if not callable(func):
-        raise TypeError('输入必须是可调用对象')
+        msg = '输入必须是可调用对象'
+        raise TypeError(msg)
 
     # 获取函数名
     name = getattr(func, '__qualname__', getattr(func, '__name__', 'unnamed'))
@@ -286,7 +292,8 @@ def get_function_info(func: Callable[..., Any]) -> dict[str, Any]:
         包含函数信息的字典
     """
     if not callable(func):
-        raise TypeError('输入必须是可调用对象')
+        msg = '输入必须是可调用对象'
+        raise TypeError(msg)
 
     info = {
         'name': getattr(func, '__name__', 'unnamed'),

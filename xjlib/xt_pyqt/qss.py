@@ -11,6 +11,7 @@
 #License      : (C)Copyright 2009-2020, NewSea
 #==============================================================
 """
+
 from __future__ import annotations
 
 QStatusBarstyle = """
@@ -85,7 +86,20 @@ QSplitterstyle = """
     QSplitter::handle{background:lightgray;}
 """
 
-allstyles = QStatusBarstyle + QProgressBarstyle + QToolBarstyle + QMenuBarstyle + QTableWidgetstyle + QListWidgetstyle + QTabWidgetstyle + QPushButtonstyle + QLineEditstyle + QLabelstyle + QTextEditstyle + QSplitterstyle
+allstyles = (
+    QStatusBarstyle
+    + QProgressBarstyle
+    + QToolBarstyle
+    + QMenuBarstyle
+    + QTableWidgetstyle
+    + QListWidgetstyle
+    + QTabWidgetstyle
+    + QPushButtonstyle
+    + QLineEditstyle
+    + QLabelstyle
+    + QTextEditstyle
+    + QSplitterstyle
+)
 
 if __name__ == '__main__':
     pass

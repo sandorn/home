@@ -13,6 +13,7 @@ Github       : https://github.com/sandorn/home
 from __future__ import annotations
 
 import os
+import pathlib
 import winreg
 from typing import Any
 
@@ -45,14 +46,16 @@ class FileSize:
             FileNotFoundError: 当文件不存在时
             IsADirectoryError: 当路径指向目录时
         """
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f'文件不存在: {file_path}')
-        if os.path.isdir(file_path):
-            raise IsADirectoryError(f'路径指向的是目录,不是文件: {file_path}')
+        if not pathlib.Path(file_path).exists():
+            msg = f'文件不存在: {file_path}'
+            raise FileNotFoundError(msg)
+        if pathlib.Path(file_path).is_dir():
+            msg = f'路径指向的是目录,不是文件: {file_path}'
+            raise IsADirectoryError(msg)
 
         self._file_path: str = str(file_path)
 
-        self._bytes = os.path.getsize(file_path)
+        self._bytes = pathlib.Path(file_path).stat().st_size
 
     @property
     def bytes(self) -> int:
@@ -118,14 +121,16 @@ class QSSTools:
             FileNotFoundError: 当QSS文件不存在时
             AttributeError: 当obj没有setStyleSheet方法时
         """
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f'QSS文件不存在: {file_path}')
+        if not pathlib.Path(file_path).exists():
+            msg = f'QSS文件不存在: {file_path}'
+            raise FileNotFoundError(msg)
 
-        with open(file_path, encoding='UTF-8') as f:
+        with pathlib.Path(file_path).open(encoding='UTF-8') as f:
             qss_content = f.read()
 
         if not hasattr(obj, 'setStyleSheet'):
-            raise AttributeError(f'对象没有setStyleSheet方法: {type(obj).__name__}')
+            msg = f'对象没有setStyleSheet方法: {type(obj).__name__}'
+            raise AttributeError(msg)
 
         obj.setStyleSheet(qss_content)
 
@@ -147,7 +152,8 @@ def get_desktop() -> str:
         ) as key:
             return winreg.QueryValueEx(key, 'Desktop')[0]
     except OSError as e:
-        raise OSError(f'无法获取桌面路径: {e}') from e
+        msg = f'无法获取桌面路径: {e}'
+        raise OSError(msg) from e
 
 
 def file_to_list(filepath: str | os.PathLike, encoding: str = 'utf-8') -> list[str]:
@@ -166,12 +172,14 @@ def file_to_list(filepath: str | os.PathLike, encoding: str = 'utf-8') -> list[s
         IOError: 当读取文件失败时
     """
     try:
-        with open(filepath, encoding=encoding) as file_content:
+        with pathlib.Path(filepath).open(encoding=encoding) as file_content:
             return list(file_content)
     except FileNotFoundError as e:
-        raise FileNotFoundError(f'文件不存在: {filepath}') from e
+        msg = f'文件不存在: {filepath}'
+        raise FileNotFoundError(msg) from e
     except OSError as e:
-        raise OSError(f'读取文件失败: {filepath}, 错误: {e}') from e
+        msg = f'读取文件失败: {filepath}, 错误: {e}'
+        raise OSError(msg) from e
 
 
 def save_file(filename: str | os.PathLike, data: Any, br: str = '\n') -> None:
@@ -187,12 +195,12 @@ def save_file(filename: str | os.PathLike, data: Any, br: str = '\n') -> None:
         IOError: 当写入文件失败时
     """
     # 确保目录存在
-    directory = os.path.dirname(filename)
-    if directory and not os.path.exists(directory):
-        os.makedirs(directory, exist_ok=True)
+    directory = pathlib.Path(filename).parent
+    if directory and not pathlib.Path(directory).exists():
+        pathlib.Path(directory).mkdir(exist_ok=True, parents=True)
 
     try:
-        with open(filename, 'w', encoding='utf-8') as file:
+        with pathlib.Path(filename).open('w', encoding='utf-8') as file:
             file.write(str(filename) + br)
 
             def _write_nested(data_item: Any) -> None:
@@ -214,7 +222,8 @@ def save_file(filename: str | os.PathLike, data: Any, br: str = '\n') -> None:
         log(f'[{filename}]保存完成,\tfile {size}。')
 
     except OSError as e:
-        raise OSError(f'写入文件失败: {filename}, 错误: {e}') from e
+        msg = f'写入文件失败: {filename}, 错误: {e}'
+        raise OSError(msg) from e
 
 
 def read_file(filepath: str | os.PathLike, encoding: str = 'utf-8') -> str:
@@ -233,12 +242,14 @@ def read_file(filepath: str | os.PathLike, encoding: str = 'utf-8') -> str:
         IOError: 当读取文件失败时
     """
     try:
-        with open(filepath, encoding=encoding) as f:
+        with pathlib.Path(filepath).open(encoding=encoding) as f:
             return f.read()
     except FileNotFoundError as err:
-        raise FileNotFoundError(f'文件不存在: {filepath}') from err
+        msg = f'文件不存在: {filepath}'
+        raise FileNotFoundError(msg) from err
     except OSError as err:
-        raise OSError(f'读取文件失败: {filepath}, 错误: {err}') from err
+        msg = f'读取文件失败: {filepath}, 错误: {err}'
+        raise OSError(msg) from err
 
 
 def write_file(filepath: str | os.PathLike, content: str, encoding: str = 'utf-8', append: bool = False) -> None:
@@ -257,15 +268,16 @@ def write_file(filepath: str | os.PathLike, content: str, encoding: str = 'utf-8
     mode = 'a' if append else 'w'
 
     # 确保目录存在
-    directory = os.path.dirname(filepath)
-    if directory and not os.path.exists(directory):
-        os.makedirs(directory, exist_ok=True)
+    directory = pathlib.Path(filepath).parent
+    if directory and not pathlib.Path(directory).exists():
+        pathlib.Path(directory).mkdir(exist_ok=True, parents=True)
 
     try:
-        with open(filepath, mode, encoding=encoding) as f:
+        with pathlib.Path(filepath).open(mode, encoding=encoding) as f:
             f.write(content)
     except OSError as e:
-        raise OSError(f'写入文件失败: {filepath}, 错误: {e}') from e
+        msg = f'写入文件失败: {filepath}, 错误: {e}'
+        raise OSError(msg) from e
 
 
 def ensure_dir(path: str | os.PathLike) -> None:
@@ -278,11 +290,12 @@ def ensure_dir(path: str | os.PathLike) -> None:
     Raises:
         OSError: 当创建目录失败时
     """
-    if not os.path.exists(path):
+    if not pathlib.Path(path).exists():
         try:
-            os.makedirs(path, exist_ok=True)
+            pathlib.Path(path).mkdir(exist_ok=True, parents=True)
         except OSError as e:
-            raise OSError(f'创建目录失败: {path}, 错误: {e}') from e
+            msg = f'创建目录失败: {path}, 错误: {e}'
+            raise OSError(msg) from e
 
 
 def get_file_extension(filepath: str | os.PathLike) -> str:
@@ -310,8 +323,8 @@ def get_file_name(filepath: str | os.PathLike, with_extension: bool = True) -> s
         str: 文件名
     """
     if with_extension:
-        return os.path.basename(filepath)
-    return os.path.splitext(os.path.basename(filepath))[0]
+        return pathlib.Path(filepath).name
+    return os.path.splitext(pathlib.Path(filepath).name)[0]
 
 
 if __name__ == '__main__':
@@ -350,8 +363,8 @@ if __name__ == '__main__':
         log(f'按行读取的内容: {lines}')
 
         # 清理测试文件
-        if os.path.exists(test_file):
-            os.remove(test_file)
+        if pathlib.Path(test_file).exists():
+            pathlib.Path(test_file).unlink()
             log(f'测试文件已删除: {test_file}')
     except (OSError, FileNotFoundError) as e:
         log(f'文件操作测试失败: {e}')

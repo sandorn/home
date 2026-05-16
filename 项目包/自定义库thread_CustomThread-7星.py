@@ -16,8 +16,7 @@ from __future__ import annotations
 import os
 
 from xt_bqg import get_contents, get_download_url
-from xt_utils.files import save_file
-from xtthread import EnhancedThreadPool, ThreadBase, ThreadPool
+from xtthread import EnhancedThreadPool, ThreadBase
 from xtwraps import timer
 
 
