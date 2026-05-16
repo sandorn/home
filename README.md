@@ -1,6 +1,6 @@
 # CODE — 个人代码仓库
 
-> GitHub / Gitee 云代码，留存，当做动态更新的网盘使用。
+> Gitee 云代码仓库，作为动态更新的代码网盘使用。
 
 ## 包含内容
 
@@ -15,5 +15,6 @@
 ## 环境
 
 - Python 包管理：`uv`
-- 代码格式化：`ruff`
+- 代码格式化：`ruff` + `basedpyright` 类型检查
 - 编辑器：Cursor (VS Code 衍生)
+- 开发命令详见 `CLAUDE.md`

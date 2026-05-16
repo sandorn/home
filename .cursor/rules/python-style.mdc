@@ -1,0 +1,44 @@
+---
+description: Python 编码规范与风格指南
+globs: *.py
+---
+
+# Python 编码规范
+
+## 基础规范
+
+- 行长度限制: 200 字符
+- 必须通过 `ruff check --fix` 验证
+- 必须通过 `basedpyright` 类型检查
+
+## 命名规范
+
+- 语义化命名: `user_count` 而非 `uc`
+- 布尔变量: `is_`, `has_`, `can_` 前缀
+- 常量: 全大写加下划线 `MAX_RETRIES`
+- 临时变量: `tmp_` 前缀（可选）
+
+## 类型注解
+
+- 所有函数参数和返回值必须标注类型（包括 None）
+- 使用现代类型语法: `list[int]` 而非 `List[int]`
+- 禁止使用: `List`, `Dict`, `Tuple`, `Optional`, `Union`
+- 使用 `from __future__ import annotations`
+
+## 代码结构
+
+- 单一职责: 函数/类职责明确
+- 嵌套限制: 不超过 4 层
+- 导入规范: 绝对路径导入，禁止相对导入
+- 卫语句: 优先使用提前返回，避免深层嵌套
+
+## 日志
+
+- 统一使用 `from xtlog import mylog`
+- 合理使用日志级别: debug, info, warning, error, success
+
+## 异常处理
+
+- 捕获特定异常，禁止使用裸 `except:`
+- 记录详细上下文信息
+- 数据库操作必须有事务处理和异常回滚机制
