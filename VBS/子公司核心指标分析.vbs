@@ -40,6 +40,7 @@ Private Const CONFIG_SHEET As String = "填写页"
 Private Const TARGET_RANGE As String = "C2:C10"
 Private Const MONTH_NUMBER_CELL As String = "A2"
 Private Const YEAR_CELL As String = "A4"
+Private Const PROGRESS_CELL As String = "A8"
 Private Const API_KEY_CELL As String = "I1"
 Private Const SYSTEM_PROMPT_CELL As String = "C20"
 
@@ -59,14 +60,6 @@ Private Type AnalysisQuality
     Score As Long
 End Type
 
-' 上下文缓存（存储已完成分析的公司名称和摘要）
-Private Type CompanyContext
-    Name As String
-    Summary As String
-End Type
-
-Private previousAnalysisResults() As CompanyContext
-Private analysisCount As Long
 
 ' ============================================================================
 ' 工具函数
@@ -165,6 +158,52 @@ Private Function GetAnalysisYear() As String
         GetAnalysisYear = yearText
     Else
         GetAnalysisYear = CStr(Year(Date))
+    End If
+End Function
+
+' 从配置表读取序时进度（填写页!A8），无效时回退到月份计算
+Private Function GetProgressFromConfig() As Double
+    Dim wsConfig As Worksheet
+    Dim v As Variant
+    Dim s As String
+    Dim monthNum As Long
+
+    Set wsConfig = GetConfigSheet()
+    If wsConfig Is Nothing Then
+        GetProgressFromConfig = 0#
+        Exit Function
+    End If
+
+    v = wsConfig.Range(PROGRESS_CELL).Value
+
+    If IsEmpty(v) Then
+        GoTo FallbackMonth
+    End If
+
+    If IsNumeric(v) Then
+        Dim val As Double
+        val = CDbl(v)
+        If val <= 1# Then
+            GetProgressFromConfig = val * 100#
+        Else
+            GetProgressFromConfig = val
+        End If
+        Exit Function
+    End If
+
+    s = Trim$(CStr(v))
+    s = Replace(s, "%", "")
+    If IsNumeric(s) Then
+        GetProgressFromConfig = CDbl(s)
+        Exit Function
+    End If
+
+FallbackMonth:
+    monthNum = GetMonthNumberFromConfig()
+    If monthNum >= 1 And monthNum <= 12 Then
+        GetProgressFromConfig = (monthNum / 12#) * 100#
+    Else
+        GetProgressFromConfig = 0#
     End If
 End Function
 
@@ -545,19 +584,6 @@ Private Function AnalyzeWithQualityCheck(companyName As String, dataPrompt As St
     AnalyzeWithQualityCheck = analysisResult
 End Function
 
-' 从分析结果中提取摘要（第一行）
-Private Function ExtractSummary(analysisResult As String) As String
-    Dim lines As Variant
-    Dim firstLine As String
-    If Len(analysisResult) = 0 Then
-        ExtractSummary = ""
-        Exit Function
-    End If
-    lines = Split(analysisResult, vbCrLf)
-    firstLine = Trim$(CStr(lines(0)))
-    If Len(firstLine) > 80 Then firstLine = Left$(firstLine, 80) & "..."
-    ExtractSummary = firstLine
-End Function
 
 ' ============================================================================
 ' 主业务流程
@@ -594,33 +620,18 @@ Private Function AnalyzeCompany(companyName As String, Optional index As Long = 
     monthNumber = GetMonthNumberFromConfig()
     If monthNumber >= 1 And monthNumber <= 12 Then
         monthText = MonthNumberToText(monthNumber)
-        progressPercent = (monthNumber / 12#) * 100#
     Else
         monthText = "未知"
-        progressPercent = 0#
     End If
+    progressPercent = GetProgressFromConfig()
 
-    ' 增强数据提示词 - 加入序号提醒和上下文参考
+    ' 构建数据提示词
     dataPrompt = "公司名称：" & companyName & vbCrLf & _
                  "年份：" & GetAnalysisYear() & vbCrLf & _
                  "当前月份：" & monthText & vbCrLf & _
                  "序时进度：" & Format$(progressPercent, "0.00") & "%" & vbCrLf & _
                  "数据单位：万元" & vbCrLf & _
-                 "分析序号：第" & index & "/" & total & "家公司" & vbCrLf & _
-                 "注意：请保持与前面公司一致的分析深度和质量，不要因为序号靠后而简化输出。" & vbCrLf
-
-    ' 追加已分析公司的摘要作为上下文参考
-    If analysisCount > 0 Then
-        Dim ctxIdx As Long
-        dataPrompt = dataPrompt & "已完成分析的公司摘要参考：" & vbCrLf
-        For ctxIdx = 1 To analysisCount
-            dataPrompt = dataPrompt & "  " & ctxIdx & ". " & previousAnalysisResults(ctxIdx).Name & _
-                         " - " & previousAnalysisResults(ctxIdx).Summary & vbCrLf
-        Next ctxIdx
-        dataPrompt = dataPrompt & "请保持与上述公司一致的分析风格和输出格式。" & vbCrLf
-    End If
-
-    dataPrompt = dataPrompt & "请按系统提示词要求输出指定格式。" & vbCrLf & _
+                 "请按系统提示词要求输出指定格式。" & vbCrLf & _
                  BuildDataPrompt(wsData)
 
     ' 使用带质量检查的分析函数
@@ -663,6 +674,8 @@ Public Sub 多轮经营分析()
     Dim totalCount As Long
     Dim companyIndex As Long
     Dim batchCount As Long
+    Dim targetNames As Variant
+    Dim rowIdx As Long
 
     On Error GoTo ErrorHandler
 
@@ -678,12 +691,17 @@ Public Sub 多轮经营分析()
     ' 获取配置信息
     Set wsConfig = ThisWorkbook.Worksheets(CONFIG_SHEET)
     Set targetSheetNames = wsConfig.Range(TARGET_RANGE)
+    targetNames = targetSheetNames.Value
 
     ' 统计待处理公司数量
     totalCount = 0
-    For Each cell In targetSheetNames
-        If Len(Trim(cell.Value)) > 0 Then totalCount = totalCount + 1
-    Next cell
+    If IsArray(targetNames) Then
+        For rowIdx = 1 To UBound(targetNames, 1)
+            If Len(Trim(CStr(targetNames(rowIdx, 1)))) > 0 Then totalCount = totalCount + 1
+        Next rowIdx
+    Else
+        If Len(Trim(CStr(targetNames))) > 0 Then totalCount = 1
+    End If
 
     If totalCount = 0 Then
         MsgBox "未找到待分析的公司名称，请在填写页C2:C10范围内填写。", vbExclamation
@@ -697,51 +715,48 @@ Public Sub 多轮经营分析()
         GoTo Cleanup
     End If
 
-    ' 初始化上下文缓存
-    ReDim previousAnalysisResults(1 To totalCount)
-    analysisCount = 0
     processedCount = 0
     companyIndex = 0
     batchCount = 0
 
     ' 循环处理每个子公司（分批处理）
-    For Each cell In targetSheetNames
-        companyName = Trim(cell.Value)
-        If Len(companyName) > 0 Then
-            companyIndex = companyIndex + 1
-            batchCount = batchCount + 1
+    If IsArray(targetNames) Then
+        For rowIdx = 1 To UBound(targetNames, 1)
+            companyName = Trim(CStr(targetNames(rowIdx, 1)))
+            If Len(companyName) > 0 Then
+                companyIndex = companyIndex + 1
+                batchCount = batchCount + 1
 
-            Application.StatusBar = "正在分析: " & companyName & " (" & companyIndex & "/" & totalCount & ")"
+                Application.StatusBar = "正在分析: " & companyName & " (" & companyIndex & "/" & totalCount & ")"
 
-            If AnalyzeCompany(companyName, companyIndex, totalCount) Then
-                processedCount = processedCount + 1
-                analysisCount = analysisCount + 1
-                previousAnalysisResults(analysisCount).Name = companyName
-                ' 从结果单元格读取摘要
-                On Error Resume Next
-                Dim wsTarget As Worksheet
-                Set wsTarget = ThisWorkbook.Worksheets(companyName)
-                If Not wsTarget Is Nothing Then
-                    Dim cellVal As String
-                    cellVal = Trim$(CStr(wsTarget.Range(RESULT_CELL).Value))
-                    If Len(cellVal) > 0 Then
-                        previousAnalysisResults(analysisCount).Summary = ExtractSummary(cellVal)
-                    End If
+                If AnalyzeCompany(companyName, companyIndex, totalCount) Then
+                    processedCount = processedCount + 1
+                    If DEBUG_MODE Then Debug.Print "成功分析(" & companyIndex & "/" & totalCount & "): " & companyName
+                Else
+                    If DEBUG_MODE Then Debug.Print "分析失败(" & companyIndex & "/" & totalCount & "): " & companyName
                 End If
-                On Error GoTo ErrorHandler
-                If DEBUG_MODE Then Debug.Print "成功分析(" & companyIndex & "/" & totalCount & "): " & companyName
-            Else
-                If DEBUG_MODE Then Debug.Print "分析失败(" & companyIndex & "/" & totalCount & "): " & companyName
-            End If
 
-            ' 每批处理完后增加延迟（避免API限流）
-            If batchCount Mod BATCH_SIZE = 0 And companyIndex < totalCount Then
-                If DEBUG_MODE Then Debug.Print "批次完成，等待 " & BATCH_DELAY_MS & "ms 后继续..."
-                Application.StatusBar = "批次完成，等待 " & BATCH_DELAY_MS & "ms 后继续..."
-                Application.Wait Now + TimeSerial(0, 0, BATCH_DELAY_MS / 1000)
+                ' 每批处理完后增加延迟（避免API限流）
+                If batchCount Mod BATCH_SIZE = 0 And companyIndex < totalCount Then
+                    If DEBUG_MODE Then Debug.Print "批次完成，等待 " & BATCH_DELAY_MS & "ms 后继续..."
+                    Application.StatusBar = "批次完成，等待 " & BATCH_DELAY_MS & "ms 后继续..."
+                    Application.Wait Now + TimeSerial(0, 0, BATCH_DELAY_MS / 1000)
+                End If
+            End If
+        Next rowIdx
+    Else
+        companyName = Trim(CStr(targetNames))
+        If Len(companyName) > 0 Then
+            companyIndex = 1
+            batchCount = 1
+            Application.StatusBar = "正在分析: " & companyName & " (1/1)"
+            If AnalyzeCompany(companyName, 1, 1) Then
+                processedCount = 1
+            Else
+                If DEBUG_MODE Then Debug.Print "分析失败(1/1): " & companyName
             End If
         End If
-    Next cell
+    End If
 
 Cleanup:
     ' 恢复应用状态
@@ -750,8 +765,7 @@ Cleanup:
     Application.ScreenUpdating = prevScreenUpdating
     Application.StatusBar = False
 
-    MsgBox "分析完成！共处理 " & processedCount & "/" & totalCount & " 家公司。" & vbCrLf & _
-           "（优化版已启用质量检查和重试机制）", vbInformation
+        MsgBox "分析完成！共处理 " & processedCount & "/" & totalCount & " 家公司。", vbInformation
     Exit Sub
 
 ErrorHandler:
