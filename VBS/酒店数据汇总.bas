@@ -732,3 +732,4 @@ End Sub
 Private Function ColLetter(ByVal colNum As Long) As String
     ColLetter = Split(Cells(1, colNum).Address(True, False), "$")(0)
 End Function
+
