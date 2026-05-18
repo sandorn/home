@@ -26,33 +26,33 @@ Private Const REPORT_SHEET_NAME As String = "指标统计"
 ' ---- 营销活动 ----
 ' 目标结果区域：A1:D5
 ' A列=类别, B列=项目, C列=伯豪瑞廷, D列=重庆瑞尔
-Private Const TARGET_COL_BHRT As Long = 3   ' C列
-Private Const TARGET_COL_CQRER As Long = 4  ' D列
+Private Const TARGET_COL_BHRT As Long = 3 ' C列
+Private Const TARGET_COL_CQRER As Long = 4 ' D列
 
 ' 伯豪瑞廷营销活动行分组（在12:23范围内）
 ' 投放数量：12-14行（官微、抖音、OTA）
 ' 受众数量：15-17行（官微、抖音、OTA）
 ' 成交数量：18-20行（官微、抖音、OTA）
-Private Const BHRT_PUT_ROW1 As Long = 12   ' 投放数量-官微
-Private Const BHRT_PUT_ROW2 As Long = 13   ' 投放数量-抖音
-Private Const BHRT_PUT_ROW3 As Long = 14   ' 投放数量-OTA
-Private Const BHRT_AUD_ROW1 As Long = 15   ' 受众数量-官微
-Private Const BHRT_AUD_ROW2 As Long = 16   ' 受众数量-抖音
-Private Const BHRT_AUD_ROW3 As Long = 17   ' 受众数量-OTA
-Private Const BHRT_DEAL_ROW1 As Long = 18  ' 成交数量-官微
-Private Const BHRT_DEAL_ROW2 As Long = 19  ' 成交数量-抖音
-Private Const BHRT_DEAL_ROW3 As Long = 20  ' 成交数量-OTA
+Private Const BHRT_PUT_ROW1 As Long = 12 ' 投放数量-官微
+Private Const BHRT_PUT_ROW2 As Long = 13 ' 投放数量-抖音
+Private Const BHRT_PUT_ROW3 As Long = 14 ' 投放数量-OTA
+Private Const BHRT_AUD_ROW1 As Long = 15 ' 受众数量-官微
+Private Const BHRT_AUD_ROW2 As Long = 16 ' 受众数量-抖音
+Private Const BHRT_AUD_ROW3 As Long = 17 ' 受众数量-OTA
+Private Const BHRT_DEAL_ROW1 As Long = 18 ' 成交数量-官微
+Private Const BHRT_DEAL_ROW2 As Long = 19 ' 成交数量-抖音
+Private Const BHRT_DEAL_ROW3 As Long = 20 ' 成交数量-OTA
 
 ' 重庆瑞尔营销活动行号
-Private Const CQRER_PUT_ROW As Long = 12   ' 投放数量
-Private Const CQRER_AUD_ROW As Long = 13   ' 受众数量
-Private Const CQRER_DEAL_ROW As Long = 14  ' 成交数量
+Private Const CQRER_PUT_ROW As Long = 12 ' 投放数量
+Private Const CQRER_AUD_ROW As Long = 13 ' 受众数量
+Private Const CQRER_DEAL_ROW As Long = 14 ' 成交数量
 
 ' ---- 业务指标 ----
 ' 目标结果区域：E1:K13
-Private Const TARGET_OTA_COL_BHRT As Long = 6   ' F列（伯豪瑞廷OTA）
-Private Const TARGET_OTA_COL_CQRER As Long = 7  ' G列（重庆瑞尔OTA）
-Private Const TARGET_OCC_COL_BHRT As Long = 10  ' J列（伯豪瑞廷入住率）
+Private Const TARGET_OTA_COL_BHRT As Long = 6 ' F列（伯豪瑞廷OTA）
+Private Const TARGET_OTA_COL_CQRER As Long = 7 ' G列（重庆瑞尔OTA）
+Private Const TARGET_OCC_COL_BHRT As Long = 10 ' J列（伯豪瑞廷入住率）
 Private Const TARGET_OCC_COL_CQRER As Long = 11 ' K列（重庆瑞尔入住率）
 Private Const TARGET_MONTH_START_ROW As Long = 2 ' 1月所在行（第2行）
 
@@ -61,7 +61,7 @@ Private Const CONFIG_SHEET_NAME As String = "填写页"
 Private Const MONTH_NUMBER_CELL As String = "A2"
 
 ' 经营报表中指标行号
-Private Const REPORT_ROW_OCCUPANCY As Long = 15  ' 月均入住率
+Private Const REPORT_ROW_OCCUPANCY As Long = 15 ' 月均入住率
 Private Const REPORT_ROW_OTA_RATING As Long = 17 ' OTA网络评价
 
 ' 辅助区域起始列（AE列 = 第31列）
@@ -86,13 +86,13 @@ Public Sub 酒店数据汇总()
     Application.Calculation = xlCalculationManual
     Application.EnableEvents = False
 
-    On Error GoTo ErrorHandler
+     On Error Goto ErrorHandler
 
     ' 获取目标工作表
     Set wsTarget = GetTargetWorksheet()
     If wsTarget Is Nothing Then
         MsgBox "目标工作表 '" & TARGET_SHEET_NAME & "' 不存在！", vbCritical
-        GoTo Cleanup
+        Goto Cleanup
     End If
 
     ' 构建文件夹路径
@@ -102,11 +102,11 @@ Public Sub 酒店数据汇总()
     ' 检查文件夹是否存在
     If Dir(sourceFolderPath, vbDirectory) = "" Then
         MsgBox "活动量文件夹不存在: " & sourceFolderPath, vbCritical
-        GoTo Cleanup
+        Goto Cleanup
     End If
     If Dir(reportFolderPath, vbDirectory) = "" Then
         MsgBox "经营报表文件夹不存在: " & reportFolderPath, vbCritical
-        GoTo Cleanup
+        Goto Cleanup
     End If
 
     ' ==========================================
@@ -139,18 +139,18 @@ Public Sub 酒店数据汇总()
 
     MsgBox "酒店类数据汇总完成！", vbInformation, "处理完成"
 
-Cleanup:
+    Cleanup :
     Application.ScreenUpdating = prevScreenUpdating
     Application.Calculation = prevCalculation
     Application.EnableEvents = prevEnableEvents
     Application.StatusBar = False
     Exit Sub
 
-ErrorHandler:
+    ErrorHandler :
     MsgBox "处理过程中发生错误: " & Err.Description & vbCrLf & _
-           "错误代码: " & Err.Number, vbCritical
+        "错误代码: " & Err.Number, vbCritical
     Err.Clear
-    GoTo Cleanup
+    Goto Cleanup
 End Sub
 
 ' ============================================================
@@ -203,15 +203,15 @@ Private Function GetMonthFromFolderName() As Long
     folderName = pathParts(UBound(pathParts))
 
     yearPos = InStr(1, folderName, "年", vbTextCompare)
-    If yearPos = 0 Then GoTo Fallback
+    If yearPos = 0 Then Goto Fallback
 
     monthPos = InStr(yearPos + 1, folderName, "月", vbTextCompare)
-    If monthPos = 0 Then GoTo Fallback
+    If monthPos = 0 Then Goto Fallback
 
     monthStr = ""
     For i = yearPos + 1 To monthPos - 1
-        If IsNumeric(Mid$(folderName, i, 1)) Then
-            monthStr = monthStr & Mid$(folderName, i, 1)
+        If IsNumeric(Mid $(folderName, i, 1)) Then
+            monthStr = monthStr & Mid $(folderName, i, 1)
         End If
     Next i
 
@@ -220,7 +220,7 @@ Private Function GetMonthFromFolderName() As Long
         Exit Function
     End If
 
-Fallback:
+    Fallback :
     GetMonthFromFolderName = Month(Date)
 End Function
 
@@ -290,7 +290,7 @@ Private Function ExtractSingleNumber(ByVal text As String) As Double
     foundDot = False
 
     For i = 1 To Len(text)
-        ch = Mid$(text, i, 1)
+        ch = Mid $(text, i, 1)
         If ch >= "0" And ch <= "9" Then
             numStr = numStr & ch
             foundDigit = True
@@ -317,18 +317,18 @@ End Function
 ' 用VBA直接计算提取数字并写入辅助区域
 ' ============================================================
 Private Sub CreateAuxFormulasBHRT(ByVal wsSource As Worksheet, _
-                                   ByVal srcRow As Long, _
-                                   ByVal numMonths As Long)
-' 伯豪瑞廷达成列：E=5(1月), G=7(2月), I=9(3月), K=11(4月), ...
-' 辅助列：AE=31(1月), AF=32(2月), AG=33(3月), AH=34(4月), ...
-Dim m As Long
-Dim srcCol As Long
-Dim auxCol As Long
-Dim cellValue As Variant
+        ByVal srcRow As Long, _
+        ByVal numMonths As Long)
+    ' 伯豪瑞廷达成列：E=5(1月), G=7(2月), I=9(3月), K=11(4月), ...
+    ' 辅助列：AE=31(1月), AF=32(2月), AG=33(3月), AH=34(4月), ...
+    Dim m As Long
+    Dim srcCol As Long
+    Dim auxCol As Long
+    Dim cellValue As Variant
 
-For m = 1 To numMonths
-    srcCol = 2 * m + 3   ' E=5, G=7, I=9, K=11, ...
-    auxCol = AUX_START_COL + (m - 1)  ' AE=31, AF=32, AG=33, ...
+    For m = 1 To numMonths
+        srcCol = 2 * m + 3 ' E=5, G=7, I=9, K=11, ...
+        auxCol = AUX_START_COL + (m - 1) ' AE=31, AF=32, AG=33, ...
         cellValue = wsSource.Cells(srcRow, srcCol).Value
         wsSource.Cells(srcRow, auxCol).Value = ExtractNumberFromCell(cellValue)
     Next m
@@ -340,8 +340,8 @@ End Sub
 ' 用VBA直接计算提取数字并写入辅助区域
 ' ============================================================
 Private Sub CreateAuxFormulasCQRER(ByVal wsSource As Worksheet, _
-                                    ByVal srcRow As Long, _
-                                    ByVal numMonths As Long)
+        ByVal srcRow As Long, _
+        ByVal numMonths As Long)
     ' 重庆瑞尔达成列：D=4(1月), F=6(2月), H=8(3月), J=10(4月), ...
     ' 辅助列：AE=31(1月), AF=32(2月), AG=33(3月), AH=34(4月), ...
     Dim m As Long
@@ -350,8 +350,8 @@ Private Sub CreateAuxFormulasCQRER(ByVal wsSource As Worksheet, _
     Dim cellValue As Variant
 
     For m = 1 To numMonths
-        srcCol = 2 * m + 2   ' D=4, F=6, H=8, J=10, ...
-        auxCol = AUX_START_COL + (m - 1)  ' AE=31, AF=32, AG=33, ...
+        srcCol = 2 * m + 2 ' D=4, F=6, H=8, J=10, ...
+        auxCol = AUX_START_COL + (m - 1) ' AE=31, AF=32, AG=33, ...
         cellValue = wsSource.Cells(srcRow, srcCol).Value
         wsSource.Cells(srcRow, auxCol).Value = ExtractNumberFromCell(cellValue)
     Next m
@@ -361,8 +361,8 @@ End Sub
 ' 计算辅助区域中指定行的合计（VBA直接求和）
 ' ============================================================
 Private Function SumAuxRow(ByVal wsSource As Worksheet, _
-                            ByVal srcRow As Long, _
-                            ByVal numMonths As Long) As Double
+        ByVal srcRow As Long, _
+        ByVal numMonths As Long) As Double
     Dim total As Double
     Dim m As Long
     Dim auxCol As Long
@@ -387,7 +387,7 @@ End Function
 ' 成交数量：18-20行（官微、抖音、OTA）→ 合计
 ' ============================================================
 Private Sub ProcessActivityBHRT(ByVal sourceFolderPath As String, _
-                                 ByVal wsTarget As Worksheet)
+        ByVal wsTarget As Worksheet)
     Dim sourceFilePath As String
     Dim wbSource As Workbook
     Dim wsSource As Worksheet
@@ -399,14 +399,14 @@ Private Sub ProcessActivityBHRT(ByVal sourceFolderPath As String, _
     sourceFilePath = sourceFolderPath & BHRT_SOURCE_FILE
     If Dir(sourceFilePath) = "" Then
         MsgBox "未找到伯豪瑞廷源文件！" & vbCrLf & _
-               "文件名应为: " & BHRT_SOURCE_FILE, vbExclamation
+            "文件名应为: " & BHRT_SOURCE_FILE, vbExclamation
         Exit Sub
     End If
 
     Application.StatusBar = "正在处理: 伯豪瑞廷 营销活动..."
 
     On Error Resume Next
-    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly:=True)
+    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly : = True)
     If Err.Number <> 0 Then
         MsgBox "无法打开伯豪瑞廷源文件: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
         On Error GoTo 0
@@ -417,14 +417,14 @@ Private Sub ProcessActivityBHRT(ByVal sourceFolderPath As String, _
     Set wsSource = GetActivityWorksheet(wbSource)
     If wsSource Is Nothing Then
         MsgBox "伯豪瑞廷源文件中未找到 '" & ACTIVITY_SHEET_NAME & "' 工作表！", vbExclamation
-        wbSource.Close SaveChanges:=False
+        wbSource.Close SaveChanges : = False
         Exit Sub
     End If
 
     numMonths = GetTargetMonth()
     If numMonths < 1 Or numMonths > 12 Then
         MsgBox "无法确定报告月份: " & numMonths, vbCritical
-        wbSource.Close SaveChanges:=False
+        wbSource.Close SaveChanges : = False
         Exit Sub
     End If
 
@@ -443,23 +443,23 @@ Private Sub ProcessActivityBHRT(ByVal sourceFolderPath As String, _
 
     ' 计算辅助区域合计
     putTotal = SumAuxRow(wsSource, BHRT_PUT_ROW1, numMonths) _
-             + SumAuxRow(wsSource, BHRT_PUT_ROW2, numMonths) _
-             + SumAuxRow(wsSource, BHRT_PUT_ROW3, numMonths)
+         + SumAuxRow(wsSource, BHRT_PUT_ROW2, numMonths) _
+         + SumAuxRow(wsSource, BHRT_PUT_ROW3, numMonths)
 
     audTotal = SumAuxRow(wsSource, BHRT_AUD_ROW1, numMonths) _
-             + SumAuxRow(wsSource, BHRT_AUD_ROW2, numMonths) _
-             + SumAuxRow(wsSource, BHRT_AUD_ROW3, numMonths)
+         + SumAuxRow(wsSource, BHRT_AUD_ROW2, numMonths) _
+         + SumAuxRow(wsSource, BHRT_AUD_ROW3, numMonths)
 
     dealTotal = SumAuxRow(wsSource, BHRT_DEAL_ROW1, numMonths) _
-              + SumAuxRow(wsSource, BHRT_DEAL_ROW2, numMonths) _
-              + SumAuxRow(wsSource, BHRT_DEAL_ROW3, numMonths)
+         + SumAuxRow(wsSource, BHRT_DEAL_ROW2, numMonths) _
+         + SumAuxRow(wsSource, BHRT_DEAL_ROW3, numMonths)
 
     ' 写入目标
     wsTarget.Cells(2, TARGET_COL_BHRT).Value = putTotal
     wsTarget.Cells(3, TARGET_COL_BHRT).Value = audTotal
     wsTarget.Cells(4, TARGET_COL_BHRT).Value = dealTotal
 
-    wbSource.Close SaveChanges:=False
+    wbSource.Close SaveChanges : = False
     Set wbSource = Nothing
     Set wsSource = Nothing
 End Sub
@@ -471,7 +471,7 @@ End Sub
 ' 成交数量：第14行
 ' ============================================================
 Private Sub ProcessActivityCQRER(ByVal sourceFolderPath As String, _
-                                  ByVal wsTarget As Worksheet)
+        ByVal wsTarget As Worksheet)
     Dim sourceFilePath As String
     Dim wbSource As Workbook
     Dim wsSource As Worksheet
@@ -483,14 +483,14 @@ Private Sub ProcessActivityCQRER(ByVal sourceFolderPath As String, _
     sourceFilePath = sourceFolderPath & CQRER_SOURCE_FILE
     If Dir(sourceFilePath) = "" Then
         MsgBox "未找到重庆瑞尔源文件！" & vbCrLf & _
-               "文件名应为: " & CQRER_SOURCE_FILE, vbExclamation
+            "文件名应为: " & CQRER_SOURCE_FILE, vbExclamation
         Exit Sub
     End If
 
     Application.StatusBar = "正在处理: 重庆瑞尔 营销活动..."
 
     On Error Resume Next
-    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly:=True)
+    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly : = True)
     If Err.Number <> 0 Then
         MsgBox "无法打开重庆瑞尔源文件: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
         On Error GoTo 0
@@ -501,14 +501,14 @@ Private Sub ProcessActivityCQRER(ByVal sourceFolderPath As String, _
     Set wsSource = GetActivityWorksheet(wbSource)
     If wsSource Is Nothing Then
         MsgBox "重庆瑞尔源文件中未找到 '" & ACTIVITY_SHEET_NAME & "' 工作表！", vbExclamation
-        wbSource.Close SaveChanges:=False
+        wbSource.Close SaveChanges : = False
         Exit Sub
     End If
 
     numMonths = GetTargetMonth()
     If numMonths < 1 Or numMonths > 12 Then
         MsgBox "无法确定报告月份: " & numMonths, vbCritical
-        wbSource.Close SaveChanges:=False
+        wbSource.Close SaveChanges : = False
         Exit Sub
     End If
 
@@ -529,7 +529,7 @@ Private Sub ProcessActivityCQRER(ByVal sourceFolderPath As String, _
     wsTarget.Cells(3, TARGET_COL_CQRER).Value = audTotal
     wsTarget.Cells(4, TARGET_COL_CQRER).Value = dealTotal
 
-    wbSource.Close SaveChanges:=False
+    wbSource.Close SaveChanges : = False
     Set wbSource = Nothing
     Set wsSource = Nothing
 End Sub
@@ -562,7 +562,7 @@ End Sub
 ' 从"指标统计"工作表的第15行（月均入住率）和第17行（OTA网络评价）提取月度数据
 ' ============================================================
 Private Sub ProcessReportBHRT(ByVal reportFolderPath As String, _
-                               ByVal wsTarget As Worksheet)
+        ByVal wsTarget As Worksheet)
     Dim sourceFilePath As String
     Dim wbSource As Workbook
     Dim wsSource As Worksheet
@@ -574,14 +574,14 @@ Private Sub ProcessReportBHRT(ByVal reportFolderPath As String, _
     sourceFilePath = reportFolderPath & BHRT_SOURCE_FILE
     If Dir(sourceFilePath) = "" Then
         MsgBox "未找到伯豪瑞廷经营报表！" & vbCrLf & _
-               "文件名应为: " & BHRT_SOURCE_FILE, vbExclamation
+            "文件名应为: " & BHRT_SOURCE_FILE, vbExclamation
         Exit Sub
     End If
 
     Application.StatusBar = "正在处理: 伯豪瑞廷 业务指标..."
 
     On Error Resume Next
-    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly:=True)
+    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly : = True)
     If Err.Number <> 0 Then
         MsgBox "无法打开伯豪瑞廷经营报表: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
         On Error GoTo 0
@@ -592,21 +592,21 @@ Private Sub ProcessReportBHRT(ByVal reportFolderPath As String, _
     Set wsSource = GetReportWorksheet(wbSource)
     If wsSource Is Nothing Then
         MsgBox "伯豪瑞廷经营报表中未找到 '" & REPORT_SHEET_NAME & "' 工作表！", vbExclamation
-        wbSource.Close SaveChanges:=False
+        wbSource.Close SaveChanges : = False
         Exit Sub
     End If
 
     numMonths = GetTargetMonth()
     If numMonths < 1 Or numMonths > 12 Then
         MsgBox "无法确定报告月份: " & numMonths, vbCritical
-        wbSource.Close SaveChanges:=False
+        wbSource.Close SaveChanges : = False
         Exit Sub
     End If
 
     ' 写入月度数据（1月到12月）
     ' 数据列：D=4(1月), E=5(2月), F=6(3月), ...
     For m = 1 To 12
-        col = m + 3  ' D=4, E=5, F=6, ...
+        col = m + 3 ' D=4, E=5, F=6, ...
 
         ' 月均入住率（第15行）
         If m <= numMonths Then
@@ -625,7 +625,7 @@ Private Sub ProcessReportBHRT(ByVal reportFolderPath As String, _
         End If
     Next m
 
-    wbSource.Close SaveChanges:=False
+    wbSource.Close SaveChanges : = False
     Set wbSource = Nothing
     Set wsSource = Nothing
 End Sub
@@ -634,7 +634,7 @@ End Sub
 ' 处理重庆瑞尔业务指标（经营报表）
 ' ============================================================
 Private Sub ProcessReportCQRER(ByVal reportFolderPath As String, _
-                                ByVal wsTarget As Worksheet)
+        ByVal wsTarget As Worksheet)
     Dim sourceFilePath As String
     Dim wbSource As Workbook
     Dim wsSource As Worksheet
@@ -646,14 +646,14 @@ Private Sub ProcessReportCQRER(ByVal reportFolderPath As String, _
     sourceFilePath = reportFolderPath & CQRER_SOURCE_FILE
     If Dir(sourceFilePath) = "" Then
         MsgBox "未找到重庆瑞尔经营报表！" & vbCrLf & _
-               "文件名应为: " & CQRER_SOURCE_FILE, vbExclamation
+            "文件名应为: " & CQRER_SOURCE_FILE, vbExclamation
         Exit Sub
     End If
 
     Application.StatusBar = "正在处理: 重庆瑞尔 业务指标..."
 
     On Error Resume Next
-    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly:=True)
+    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly : = True)
     If Err.Number <> 0 Then
         MsgBox "无法打开重庆瑞尔经营报表: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
         On Error GoTo 0
@@ -664,21 +664,21 @@ Private Sub ProcessReportCQRER(ByVal reportFolderPath As String, _
     Set wsSource = GetReportWorksheet(wbSource)
     If wsSource Is Nothing Then
         MsgBox "重庆瑞尔经营报表中未找到 '" & REPORT_SHEET_NAME & "' 工作表！", vbExclamation
-        wbSource.Close SaveChanges:=False
+        wbSource.Close SaveChanges : = False
         Exit Sub
     End If
 
     numMonths = GetTargetMonth()
     If numMonths < 1 Or numMonths > 12 Then
         MsgBox "无法确定报告月份: " & numMonths, vbCritical
-        wbSource.Close SaveChanges:=False
+        wbSource.Close SaveChanges : = False
         Exit Sub
     End If
 
     ' 写入月度数据（1月到12月）
     ' 数据列：D=4(1月), E=5(2月), F=6(3月), ...
     For m = 1 To 12
-        col = m + 3  ' D=4, E=5, F=6, ...
+        col = m + 3 ' D=4, E=5, F=6, ...
 
         ' 月均入住率（第15行）
         If m <= numMonths Then
@@ -697,7 +697,7 @@ Private Sub ProcessReportCQRER(ByVal reportFolderPath As String, _
         End If
     Next m
 
-    wbSource.Close SaveChanges:=False
+    wbSource.Close SaveChanges : = False
     Set wbSource = Nothing
     Set wsSource = Nothing
 End Sub
