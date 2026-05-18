@@ -19,27 +19,19 @@ Private Const API_KEY_SHEET As String = "填写页"
 Private Const API_KEY_CELL As String = "I1"
 Private Const MONTH_NUMBER_CELL As String = "A2"
 
-' 读取系统提示词（保险类!L1），为空时使用内置默认模板
+' 系统消息从保险类!L1读取，为空时返回空字符串（由调用方处理）
 Private Function GetSystemMessage() As String
     Dim wsInsurance As Worksheet
-    Dim msg As String
     
     On Error Resume Next
     Set wsInsurance = ThisWorkbook.Worksheets(INSURANCE_SHEET)
     On Error GoTo 0
-    If Not wsInsurance Is Nothing Then
-        msg = Trim$(CStr(wsInsurance.Range(SYSTEM_PROMPT_CELL).Value))
+    If wsInsurance Is Nothing Then
+        GetSystemMessage = ""
+        Exit Function
     End If
     
-    If Len(msg) = 0 Then
-        msg = "保险中介子公司月度经营数据分析提示词（通用版）" & vbCrLf & vbCrLf & _
-              "请基于两家保险中介子公司在同一张表中的对比数据，采用“客观叙述为主、趋势分析为辅”的风格，生成约半页PPT可用的分析文字。" & vbCrLf & _
-              "数据包含三部分：人力与活动数据（项目/盛唐融信/君康经纪）、承保新单及效率指标（项目/盛唐融信/君康经纪）、按月份列示的规模保费（月份/盛唐融信/君康经纪，缺失月份为 #N/A 或空白，仅基于已有月份分析）。" & vbCrLf & _
-              "分析需包含：1-2 句整体摘要；分别比较两家在人力规模与活动率、承保新单规模保费和效率指标、月度规模保费水平与趋势方面的差异，只陈述“是什么”，不分析原因、不提出建议；所有结论必须基于表中实际数值。" & vbCrLf & _
-              "输出格式：第一行直接写摘要内容（1-2 句客观陈述），不要输出“[简洁摘要]”或任何方括号占位符；随后三行依次为“人力与活动：…”，“承保新单及效率：…”，“月度规模保费：…”。"
-    End If
-    
-    GetSystemMessage = msg
+    GetSystemMessage = Trim$(CStr(wsInsurance.Range(SYSTEM_PROMPT_CELL).Value))
 End Function
 
 ' 从配置表读取 API Key（填写页!I1）
@@ -430,6 +422,14 @@ Public Sub 保险业态分析()
     Application.Calculation = xlCalculationManual
     Application.EnableEvents = False
     
+    ' 检查系统提示词是否已配置
+    Dim systemMsg As String
+    systemMsg = GetSystemMessage()
+    If Len(systemMsg) = 0 Then
+        MsgBox "系统提示词为空，请在 '" & INSURANCE_SHEET & "' 工作表的 " & SYSTEM_PROMPT_CELL & " 单元格中填写分析提示词。", vbExclamation
+        GoTo Cleanup
+    End If
+    
     ' 读取数据区域
     wsData = wsInsurance.Range(DATA_RANGE).Value
     
@@ -482,6 +482,3 @@ ErrorHandler:
     
     MsgBox "保险业态分析错误: " & Err.Description & " (错误代码: " & Err.Number & ")", vbCritical
 End Sub
-
-
-

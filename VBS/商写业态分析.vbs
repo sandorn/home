@@ -18,26 +18,19 @@ Private Const SYSTEM_PROMPT_CELL As String = "L1"
 Private Const API_KEY_SHEET As String = "填写页"
 Private Const API_KEY_CELL As String = "I1"
 
-' 读取系统提示词（商写类!L1），为空时使用内置默认模板（精简版，避免“行继续太多”）
+' 系统消息从商写类!L1读取，为空时返回空字符串（由调用方处理）
 Private Function GetSystemMessage() As String
     Dim ws As Worksheet
-    Dim msg As String
     
     On Error Resume Next
     Set ws = ThisWorkbook.Worksheets(OFFICE_RETAIL_SHEET)
     On Error GoTo 0
-    If Not ws Is Nothing Then
-        msg = Trim$(CStr(ws.Range(SYSTEM_PROMPT_CELL).Value))
+    If ws Is Nothing Then
+        GetSystemMessage = ""
+        Exit Function
     End If
     
-    If Len(msg) = 0 Then
-        msg = "商写租赁业态子公司数据分析提示词（通用版）" & vbCrLf & vbCrLf & _
-              "请基于提供的商写租赁类子公司数据（表格列为：类别、项目、各子公司），以客观叙述为主、趋势描述为辅，生成约半页PPT文字。" & vbCrLf & _
-              "要求：只陈述数值对比与差异（高/低/为0/缺失等），不分析原因、不提建议；若有缺失用“-”或空白，按缺失处理。" & vbCrLf & _
-              "输出格式：第一行直接写1-2句摘要；随后按“整体情况、合作渠道、自有招商、续租情况”四段输出，每段以“段名：...”开头。"
-    End If
-    
-    GetSystemMessage = msg
+    GetSystemMessage = Trim$(CStr(ws.Range(SYSTEM_PROMPT_CELL).Value))
 End Function
 
 ' 从配置表读取 API Key（填写页!I1）
@@ -76,7 +69,7 @@ Private Function EscapeJSONString(ByVal text As String) As String
                 Mid$(result, pos, 2) = "\\"
                 pos = pos + 2
             Case """"
-                Mid$(result, pos, 2) = "\""""
+                Mid$(result, pos, 2) = "\"""
                 pos = pos + 2
             Case vbCr
                 Mid$(result, pos, 2) = "\r"
@@ -348,6 +341,14 @@ Public Sub 商写业态分析()
     Application.Calculation = xlCalculationManual
     Application.EnableEvents = False
     
+    ' 检查系统提示词是否已配置
+    Dim systemMsg As String
+    systemMsg = GetSystemMessage()
+    If Len(systemMsg) = 0 Then
+        MsgBox "系统提示词为空，请在 '" & OFFICE_RETAIL_SHEET & "' 工作表的 " & SYSTEM_PROMPT_CELL & " 单元格中填写分析提示词。", vbExclamation
+        GoTo Cleanup
+    End If
+    
     wsData = ws.Range(DATA_RANGE).Value
     
     dataPrompt = "请对以下商写租赁类子公司数据进行客观分析，并按系统提示词指定格式输出。" & vbCrLf & _
@@ -390,4 +391,3 @@ ErrorHandler:
     
     MsgBox "商写业态分析错误: " & Err.Description & " (错误代码: " & Err.Number & ")", vbCritical
 End Sub
-

@@ -12,35 +12,29 @@ Private Const TEMPERATURE As Double = 0.3
 
 ' 工作表与配置常量
 Private Const HOTEL_SHEET As String = "酒店类"
-Private Const DATA_RANGE As String = "A1:D29"
-Private Const RESULT_CELL As String = "O14"
-Private Const SYSTEM_PROMPT_CELL As String = "O1"
+Private Const RANGE_MARKETING As String = "B1:D5"    ' 营销活动（项目、伯豪瑞廷、重庆瑞尔）
+Private Const RANGE_OTA As String = "E1:G13"         ' OTA评分
+Private Const RANGE_OCCUPANCY As String = "I1:K13"   ' 入住率
+Private Const RESULT_CELL As String = "M14"
+Private Const SYSTEM_PROMPT_CELL As String = "M1"
 Private Const API_KEY_SHEET As String = "填写页"
 Private Const API_KEY_CELL As String = "I1"
 
 '（保留位置，当前业态分析不依赖月份配置）
 
-' 系统消息模板改为从配置表读取（填写页!C20），为空时回退到默认模板
+' 系统消息从酒店类!M1读取，为空时返回空字符串（由调用方处理）
 Private Function GetSystemMessage() As String
     Dim wsHotel As Worksheet
-    Dim msg As String
     
     On Error Resume Next
     Set wsHotel = ThisWorkbook.Worksheets(HOTEL_SHEET)
     On Error GoTo 0
-    If Not wsHotel Is Nothing Then
-        msg = Trim$(CStr(wsHotel.Range(SYSTEM_PROMPT_CELL).Value))
+    If wsHotel Is Nothing Then
+        GetSystemMessage = ""
+        Exit Function
     End If
     
-    If Len(msg) = 0 Then
-        msg = "酒店业态子公司月度经营数据分析提示词（通用版）" & vbCrLf & vbCrLf & _
-              "请基于提供的两家酒店子公司经营数据，采用“客观叙述为主、趋势分析为辅”的风格，生成约半页PPT文字稿。" & vbCrLf & _
-              "数据为四列表格：类别（营销活动/OTA评分/月均入住率）、项目（具体指标或月份）、伯豪瑞廷、重庆瑞尔；营销活动为截至当前的累计值，OTA评分和月均入住率按月份列示，缺失月份以 #N/A 或空白表示。" & vbCrLf & _
-              "分析需包含：一到两句整体摘要；分别比较两家在营销活动、OTA评分、月均入住率上的数值高低和变化趋势，只陈述“是什么”，不分析原因、不给出建议，所有结论必须基于表中实际数值。" & vbCrLf & _
-              "输出格式：第一行直接写摘要内容（1-2句客观陈述），不要输出“[简洁摘要]”或任何方括号占位符；随后三行依次为“营销活动：…”“OTA评分：…”“月均入住率：…”。"
-    End If
-    
-    GetSystemMessage = msg
+    GetSystemMessage = Trim$(CStr(wsHotel.Range(SYSTEM_PROMPT_CELL).Value))
 End Function
 
 ' 从配置表读取 API Key（填写页!I1）
@@ -353,7 +347,6 @@ End Function
 
 Public Sub 酒店业态分析()
     Dim wsHotel As Worksheet
-    Dim wsData As Variant
     Dim dataPrompt As String
     Dim apiResponse As String
     Dim analysisResult As String
@@ -381,12 +374,33 @@ Public Sub 酒店业态分析()
     Application.Calculation = xlCalculationManual
     Application.EnableEvents = False
     
-    ' 读取数据区域
-    wsData = wsHotel.Range(DATA_RANGE).Value
+    ' 检查系统提示词是否已配置
+    Dim systemMsg As String
+    systemMsg = GetSystemMessage()
+    If Len(systemMsg) = 0 Then
+        MsgBox "系统提示词为空，请在 '" & HOTEL_SHEET & "' 工作表的 " & SYSTEM_PROMPT_CELL & " 单元格中填写分析提示词。", vbExclamation
+        GoTo Cleanup
+    End If
+    
+    ' 读取三个独立数据区域
+    Dim dataMarketing As Variant
+    Dim dataOTA As Variant
+    Dim dataOccupancy As Variant
+    
+    dataMarketing = wsHotel.Range(RANGE_MARKETING).Value
+    dataOTA = wsHotel.Range(RANGE_OTA).Value
+    dataOccupancy = wsHotel.Range(RANGE_OCCUPANCY).Value
     
     ' 构建提示词
-    dataPrompt = "以下是两家酒店子公司的经营数据，请根据系统提示词进行分析，并按指定输出格式给出分析结果。" & vbCrLf & _
-                 BuildDataPrompt(wsData)
+    dataPrompt = "以下是两家酒店子公司的经营数据，包含三个独立区域：" & vbCrLf & _
+                 vbCrLf & _
+                 "【区域一：营销活动（B1:D5）】" & vbCrLf & _
+                 BuildDataPrompt(dataMarketing) & vbCrLf & _
+                 "【区域二：OTA网络评价（E1:G13）】" & vbCrLf & _
+                 BuildDataPrompt(dataOTA) & vbCrLf & _
+                 "【区域三：月均入住率（I1:K13）】" & vbCrLf & _
+                 BuildDataPrompt(dataOccupancy) & vbCrLf & _
+                 "请根据系统提示词进行分析，并按指定输出格式给出分析结果。"
     
     ' 调用API
     apiResponse = CallDeepSeekAPI(dataPrompt, HOTEL_SHEET)
@@ -402,7 +416,7 @@ Public Sub 酒店业态分析()
     ' 清理结果
     analysisResult = CleanAnalysisResult(analysisResult)
     
-    ' 写入结果到酒店类!O14
+    ' 写入结果到酒店类!M14
     If Len(analysisResult) > 0 Then
         With wsHotel.Range(RESULT_CELL)
             .Value = analysisResult
@@ -435,6 +449,3 @@ ErrorHandler:
     
     MsgBox "酒店业态分析错误: " & Err.Description & " (错误代码: " & Err.Number & ")", vbCritical
 End Sub
-
-
-
