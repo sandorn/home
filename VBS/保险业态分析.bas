@@ -71,7 +71,7 @@ Private Function EscapeJSONString(ByVal text As String) As String
                 Mid$(result, pos, 2) = "\\"
                 pos = pos + 2
             Case """"
-                Mid$(result, pos, 2) = "\"""""
+                Mid$(result, pos, 2) = "\"""
                 pos = pos + 2
             Case vbCr
                 Mid$(result, pos, 2) = "\r"
@@ -120,22 +120,13 @@ Private Function ParseAPIResponseSimple(apiResponse As String) As String
     
     inEscape = False
     For i = contentStart To Len(apiResponse)
-        Select Case Mid$(apiResponse, i, 1)
-            Case "\"
-                ' 反斜杠仅转义紧随其后的一个字符
-                inEscape = True
-            Case """"
-                If Not inEscape Then
-                    endPos = i - 1
-                    Exit For
-                End If
-            Case Else
-                ' 如果上一个字符是反斜杠，这个字符被视为转义内容，随后恢复
-                inEscape = False
-        End Select
-        
-        If inEscape And Mid$(apiResponse, i, 1) <> "\" Then
+        If inEscape Then
             inEscape = False
+        Else
+            Select Case Mid$(apiResponse, i, 1)
+                Case "\" : inEscape = True
+                Case """" : endPos = i - 1 : Exit For
+            End Select
         End If
     Next i
     
@@ -147,13 +138,13 @@ Private Function ParseAPIResponseSimple(apiResponse As String) As String
     result = Mid$(apiResponse, contentStart, endPos - contentStart + 1)
     
     result = Replace(result, "\""", """")
-    result = Replace(result, "\\", "\")
     result = Replace(result, "\n", vbCrLf)
     result = Replace(result, "\t", vbTab)
     result = Replace(result, "\r", "")
     result = Replace(result, "\/", "/")
     result = Replace(result, "\b", vbBack)
     result = Replace(result, "\f", vbFormFeed)
+    result = Replace(result, "\\", "\")
     
     ParseAPIResponseSimple = result
 End Function

@@ -101,7 +101,7 @@ Private Function GetSystemMessage() As String
     Dim msg As String
 
     Set wsConfig = GetConfigSheet()
-    If wsConfig Is Nothing Then
+If wsConfig Is Nothing Then
         GetSystemMessage = ""
         Exit Function
     End If

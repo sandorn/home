@@ -129,10 +129,10 @@ Public Sub 酒店数据汇总()
     Application.StatusBar = "正在处理业务指标数据..."
 
     ' 处理伯豪瑞廷业务指标
-    ProcessReportBHRT reportFolderPath, wsTarget
+    ProcessReport reportFolderPath, wsTarget, BHRT_SOURCE_FILE, "伯豪瑞廷", TARGET_OCC_COL_BHRT, TARGET_OTA_COL_BHRT
 
     ' 处理重庆瑞尔业务指标
-    ProcessReportCQRER reportFolderPath, wsTarget
+    ProcessReport reportFolderPath, wsTarget, CQRER_SOURCE_FILE, "重庆瑞尔", TARGET_OCC_COL_CQRER, TARGET_OTA_COL_CQRER
 
     ' 设置格式
     FormatTargetSheet wsTarget
@@ -210,8 +210,8 @@ Private Function GetMonthFromFolderName() As Long
 
     monthStr = ""
     For i = yearPos + 1 To monthPos - 1
-        If IsNumeric(Mid $(folderName, i, 1)) Then
-            monthStr = monthStr & Mid $(folderName, i, 1)
+        If IsNumeric(Mid$(folderName, i, 1)) Then
+            monthStr = monthStr & Mid$(folderName, i, 1)
         End If
     Next i
 
@@ -290,7 +290,7 @@ Private Function ExtractSingleNumber(ByVal text As String) As Double
     foundDot = False
 
     For i = 1 To Len(text)
-        ch = Mid $(text, i, 1)
+        ch = Mid$(text, i, 1)
         If ch >= "0" And ch <= "9" Then
             numStr = numStr & ch
             foundDigit = True
@@ -558,11 +558,15 @@ Private Sub WriteConversionRateFormulas(ByVal wsTarget As Worksheet)
 End Sub
 
 ' ============================================================
-' 处理伯豪瑞廷业务指标（经营报表）
+' 处理业务指标（经营报表）
 ' 从"指标统计"工作表的第15行（月均入住率）和第17行（OTA网络评价）提取月度数据
 ' ============================================================
-Private Sub ProcessReportBHRT(ByVal reportFolderPath As String, _
-        ByVal wsTarget As Worksheet)
+Private Sub ProcessReport(ByVal reportFolderPath As String, _
+        ByVal wsTarget As Worksheet, _
+        ByVal sourceFileName As String, _
+        ByVal companyName As String, _
+        ByVal targetOccCol As Long, _
+        ByVal targetOtaCol As Long)
     Dim sourceFilePath As String
     Dim wbSource As Workbook
     Dim wsSource As Worksheet
@@ -571,19 +575,19 @@ Private Sub ProcessReportBHRT(ByVal reportFolderPath As String, _
     Dim col As Long
     Dim cellVal As Variant
 
-    sourceFilePath = reportFolderPath & BHRT_SOURCE_FILE
+    sourceFilePath = reportFolderPath & sourceFileName
     If Dir(sourceFilePath) = "" Then
-        MsgBox "未找到伯豪瑞廷经营报表！" & vbCrLf & _
-            "文件名应为: " & BHRT_SOURCE_FILE, vbExclamation
+        MsgBox "未找到" & companyName & "经营报表！" & vbCrLf & _
+            "文件名应为: " & sourceFileName, vbExclamation
         Exit Sub
     End If
 
-    Application.StatusBar = "正在处理: 伯豪瑞廷 业务指标..."
+    Application.StatusBar = "正在处理: " & companyName & " 业务指标..."
 
     On Error Resume Next
     Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly : = True)
     If Err.Number <> 0 Then
-        MsgBox "无法打开伯豪瑞廷经营报表: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
+        MsgBox "无法打开" & companyName & "经营报表: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
         On Error GoTo 0
         Exit Sub
     End If
@@ -591,7 +595,7 @@ Private Sub ProcessReportBHRT(ByVal reportFolderPath As String, _
 
     Set wsSource = GetReportWorksheet(wbSource)
     If wsSource Is Nothing Then
-        MsgBox "伯豪瑞廷经营报表中未找到 '" & REPORT_SHEET_NAME & "' 工作表！", vbExclamation
+        MsgBox companyName & "经营报表中未找到 '" & REPORT_SHEET_NAME & "' 工作表！", vbExclamation
         wbSource.Close SaveChanges : = False
         Exit Sub
     End If
@@ -611,89 +615,17 @@ Private Sub ProcessReportBHRT(ByVal reportFolderPath As String, _
         ' 月均入住率（第15行）
         If m <= numMonths Then
             cellVal = wsSource.Cells(REPORT_ROW_OCCUPANCY, col).Value
-            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, TARGET_OCC_COL_BHRT).Value = cellVal
+            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, targetOccCol).Value = cellVal
         Else
-            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, TARGET_OCC_COL_BHRT).Value = CVErr(xlErrNA)
+            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, targetOccCol).Value = CVErr(xlErrNA)
         End If
 
         ' OTA网络评价（第17行）
         If m <= numMonths Then
             cellVal = wsSource.Cells(REPORT_ROW_OTA_RATING, col).Value
-            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, TARGET_OTA_COL_BHRT).Value = cellVal
+            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, targetOtaCol).Value = cellVal
         Else
-            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, TARGET_OTA_COL_BHRT).Value = CVErr(xlErrNA)
-        End If
-    Next m
-
-    wbSource.Close SaveChanges : = False
-    Set wbSource = Nothing
-    Set wsSource = Nothing
-End Sub
-
-' ============================================================
-' 处理重庆瑞尔业务指标（经营报表）
-' ============================================================
-Private Sub ProcessReportCQRER(ByVal reportFolderPath As String, _
-        ByVal wsTarget As Worksheet)
-    Dim sourceFilePath As String
-    Dim wbSource As Workbook
-    Dim wsSource As Worksheet
-    Dim numMonths As Long
-    Dim m As Long
-    Dim col As Long
-    Dim cellVal As Variant
-
-    sourceFilePath = reportFolderPath & CQRER_SOURCE_FILE
-    If Dir(sourceFilePath) = "" Then
-        MsgBox "未找到重庆瑞尔经营报表！" & vbCrLf & _
-            "文件名应为: " & CQRER_SOURCE_FILE, vbExclamation
-        Exit Sub
-    End If
-
-    Application.StatusBar = "正在处理: 重庆瑞尔 业务指标..."
-
-    On Error Resume Next
-    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly : = True)
-    If Err.Number <> 0 Then
-        MsgBox "无法打开重庆瑞尔经营报表: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
-        On Error GoTo 0
-        Exit Sub
-    End If
-    On Error GoTo 0
-
-    Set wsSource = GetReportWorksheet(wbSource)
-    If wsSource Is Nothing Then
-        MsgBox "重庆瑞尔经营报表中未找到 '" & REPORT_SHEET_NAME & "' 工作表！", vbExclamation
-        wbSource.Close SaveChanges : = False
-        Exit Sub
-    End If
-
-    numMonths = GetTargetMonth()
-    If numMonths < 1 Or numMonths > 12 Then
-        MsgBox "无法确定报告月份: " & numMonths, vbCritical
-        wbSource.Close SaveChanges : = False
-        Exit Sub
-    End If
-
-    ' 写入月度数据（1月到12月）
-    ' 数据列：D=4(1月), E=5(2月), F=6(3月), ...
-    For m = 1 To 12
-        col = m + 3 ' D=4, E=5, F=6, ...
-
-        ' 月均入住率（第15行）
-        If m <= numMonths Then
-            cellVal = wsSource.Cells(REPORT_ROW_OCCUPANCY, col).Value
-            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, TARGET_OCC_COL_CQRER).Value = cellVal
-        Else
-            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, TARGET_OCC_COL_CQRER).Value = CVErr(xlErrNA)
-        End If
-
-        ' OTA网络评价（第17行）
-        If m <= numMonths Then
-            cellVal = wsSource.Cells(REPORT_ROW_OTA_RATING, col).Value
-            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, TARGET_OTA_COL_CQRER).Value = cellVal
-        Else
-            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, TARGET_OTA_COL_CQRER).Value = CVErr(xlErrNA)
+            wsTarget.Cells(TARGET_MONTH_START_ROW + m - 1, targetOtaCol).Value = CVErr(xlErrNA)
         End If
     Next m
 
