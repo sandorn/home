@@ -1,0 +1,18 @@
+---
+description: 类型检查 - 运行 basedpyright 检查
+globs: 
+---
+# typecheck — 类型检查
+
+## 触发词
+- `/typecheck` — 运行类型检查
+
+## 功能说明
+
+使用 basedpyright 对项目代码进行静态类型检查。
+
+## 执行命令
+
+```powershell
+basedpyright .
+```

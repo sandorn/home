@@ -1,0 +1,24 @@
+---
+description: 技能帮助 - 查看所有可用技能
+globs: 
+---
+# help — 技能帮助
+
+## 触发词
+- `/help` — 查看所有可用技能
+
+## 功能说明
+
+显示当前项目所有可用的 Agent 技能及其触发词。
+
+## 可用技能列表
+
+| 技能 | 触发词 | 用途 |
+|------|--------|------|
+| neat-freak | `/neat`, `/sync`, `同步一下`, `整理文档`, `收尾` | 文档同步与整理 |
+| commit | `/commit` | 规范化 git commit |
+| forch | `/forch` | 代码审查与重构 |
+| help | `/help` | 技能帮助 |
+| lint | `/lint` | 代码检查 |
+| test | `/test` | 测试 |
+| typecheck | `/typecheck` | 类型检查 |

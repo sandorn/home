@@ -4,6 +4,10 @@
 
 个人代码仓库，托管于 Gitee，作为动态更新的代码网盘使用。包含多个独立子项目/模块。
 
+## 语言要求
+
+**始终使用中文** — 所有对话、界面提示、注释、文档均使用中文（简体）。代码标识符（变量名、函数名等）保持英文。
+
 ## 目录结构
 
 | 目录       | 用途                                                     |
@@ -13,7 +17,7 @@
 | `configs/` | 开发环境配置文件（git、ruff、uv、pyproject 等）          |
 | `VBS/`     | VBScript 脚本（Excel/Word 自动化、VBA 脚本库）           |
 | `xjlib/`   | 自定义 Python 工具库（数据库、HTTP、线程、日志、ORM 等） |
-| `.cursor/` | Cursor 编辑器配置（skills、rules 等）                    |
+| `.claude/` | Claude/Cursor 共享配置（skills、rules 等）               |
 
 ## 关键约定
 
@@ -24,7 +28,7 @@
 - VBScript 脚本在 `VBS/` 目录下，VBA 脚本在 `VBS/VBA脚本/`
 - 项目根 `pyproject.toml` 为 uv 项目配置（含依赖声明）
 
-## Agent Skills（`.cursor/skills/`）
+## Agent Skills（`.claude/skills/`）
 
 | Skill        | 触发词                                              | 用途                           |
 | ------------ | --------------------------------------------------- | ------------------------------ |
@@ -55,4 +59,4 @@ ruff check --fix --unsafe-fixes .; ruff format --check .; basedpyright .
 - `configs/help/` — 开发流程、符号链接、打包上传等帮助文档
 - `configs/rules/` — 项目标准、模板、设置脚本
 - `xjlib/xt_pyqt/README.md` — PyQt 工具库说明
-- `.cursor/skills/neat-freak/references/` — neat-freak 参考资料（变更影响矩阵、Agent 路径速查）
+- `.claude/skills/neat-freak/references/` — neat-freak 参考资料（变更影响矩阵、Agent 路径速查）

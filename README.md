@@ -11,6 +11,7 @@
 | `configs/` | 开发环境配置文件（git、ruff、uv、pyproject 等）          |
 | `VBS/`     | VBScript 脚本（Excel/Word 自动化、VBA 脚本库）           |
 | `xjlib/`   | 自定义 Python 工具库（数据库、HTTP、线程、日志、ORM 等） |
+| `.claude/` | Claude/Cursor 共享配置（skills、rules 等）               |
 
 ## 环境
 

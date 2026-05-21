@@ -1,0 +1,8 @@
+{
+  "language": "zh-CN",
+  "locale": "zh-CN",
+  "rules": {
+    "language": "zh-CN",
+    "alwaysUseChinese": true
+  }
+}

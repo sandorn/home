@@ -1,0 +1,41 @@
+---
+description: 项目规则 - CODE 个人代码仓库
+globs: 
+---
+# 项目规则
+
+## 项目概述
+
+个人代码仓库，托管于 Gitee，作为动态更新的代码网盘使用。
+
+## 技术栈
+
+- Python 3.10+
+- 包管理: uv
+- 代码格式化: ruff
+- 类型检查: basedpyright
+
+## 目录约定
+
+| 目录 | 用途 |
+|------|------|
+| `项目包/` | Python 并发编程示例 |
+| `AHK/` | AutoHotkey 脚本 |
+| `configs/` | 开发环境配置文件 |
+| `VBS/` | VBScript/VBA 脚本 |
+| `xjlib/` | 自定义 Python 工具库 |
+| `.claude/` | Claude/Cursor 共享配置 |
+
+## 开发命令
+
+```powershell
+# 代码质量检查
+ruff check --fix --unsafe-fixes .
+ruff format .
+
+# 类型检查
+basedpyright .
+
+# 一键检查
+ruff check --fix --unsafe-fixes .; ruff format --check .; basedpyright .
+```
