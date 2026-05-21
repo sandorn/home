@@ -41,7 +41,8 @@ Private Const TARGET_RANGE As String = "C2:C10"
 Private Const MONTH_NUMBER_CELL As String = "A2"
 Private Const YEAR_CELL As String = "A4"
 Private Const PROGRESS_CELL As String = "A8"
-Private Const API_KEY_CELL As String = "I1"
+Private Const API_KEY_FILE As String = "dskey"
+Private Const API_KEY_SECTION As String = "EXCEL"
 Private Const SYSTEM_PROMPT_CELL As String = "C20"
 
 ' ============================================================================
@@ -121,18 +122,49 @@ Private Function GetConfigSheet() As Worksheet
     On Error GoTo 0
 End Function
 
-' 从配置表读取 API Key（填写页!I1）
+' 从 ~/.dskey 文件读取 API Key（EXCEL 段）
 Private Function GetApiKey() As String
-    Dim wsConfig As Worksheet
-
-    Set wsConfig = GetConfigSheet()
-    If wsConfig Is Nothing Then
-        If DEBUG_MODE Then Debug.Print "配置错误: 未找到配置工作表 '" & CONFIG_SHEET & "'"
+    Dim filePath As String
+    Dim fileNum As Integer
+    Dim line As String
+    Dim keyPrefix As String
+    Dim pos As Long
+    
+    ' 构建文件路径：~/.dskey
+    filePath = Environ("USERPROFILE") & "\." & API_KEY_FILE
+    
+    ' 检查文件是否存在
+    On Error Resume Next
+    fileNum = FreeFile
+    Open filePath For Input As #fileNum
+    If Err.Number <> 0 Then
+        If DEBUG_MODE Then Debug.Print "配置错误: 未找到 API Key 文件 '" & filePath & "'"
         GetApiKey = ""
         Exit Function
     End If
-
-    GetApiKey = Trim$(CStr(wsConfig.Range(API_KEY_CELL).Value))
+    On Error GoTo 0
+    
+    keyPrefix = API_KEY_SECTION & "="
+    
+    ' 逐行读取，查找对应段
+    Do Until EOF(fileNum)
+        Line Input #fileNum, line
+        line = Trim$(line)
+        ' 跳过空行和注释行
+        If Len(line) > 0 And Left$(line, 1) <> "#" Then
+            pos = InStr(1, line, keyPrefix, vbTextCompare)
+            If pos > 0 Then
+                GetApiKey = Trim$(Mid$(line, pos + Len(keyPrefix)))
+                Close #fileNum
+                Exit Function
+            End If
+        End If
+    Loop
+    
+    Close #fileNum
+    
+    If DEBUG_MODE Then Debug.Print "配置错误: 未在 '" & filePath & "' 中找到 [" & API_KEY_SECTION & "] 的 API Key"
+    GetApiKey = ""
 End Function
 
 ' 从配置表读取分析年份（填写页!A4），优先使用配置，其次使用当前系统年份

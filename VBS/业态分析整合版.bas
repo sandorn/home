@@ -30,11 +30,9 @@ Private Const HTL_SYSTEM_PROMPT_CELL As String = "M1"
 ' ============================================================
 
 Public Sub 运行所有业态分析()
-    Dim wsConfig As Worksheet, apiKey As String
-    Set wsConfig = GetConfigWorksheet(CONFIG_SHEET_NAME)
-    If wsConfig Is Nothing Then MsgBox "未找到配置工作表：" & CONFIG_SHEET_NAME, vbCritical : Exit Sub
-    apiKey = GetApiKey(wsConfig, API_KEY_CELL, DEBUG_MODE, "主入口")
-    If Len(apiKey) = 0 Then MsgBox "未配置 API Key，请在 " & CONFIG_SHEET_NAME & "!" & API_KEY_CELL & " 单元格中填写。", vbExclamation : Exit Sub
+    Dim apiKey As String
+    apiKey = GetApiKey(DEBUG_MODE, "主入口")
+    If Len(apiKey) = 0 Then MsgBox "未配置 API Key，请在 ~\.dskey 文件中设置 [EXCEL] 段。", vbExclamation : Exit Sub
     Application.StatusBar = "正在运行所有业态分析..."
     运行商写业态分析 apiKey
     运行保险业态分析 apiKey
@@ -55,7 +53,7 @@ Public Sub 运行商写业态分析(Optional ByVal apiKey As String = "")
      On Error Goto ErrorHandler
     Set wsOS = GetTargetWorksheet(OS_SHEET_NAME, True)
     If wsOS Is Nothing Then Exit Sub
-    If Len(apiKey) = 0 Then Set wsConfig = GetConfigWorksheet(CONFIG_SHEET_NAME) : apiKey = GetApiKey(wsConfig, API_KEY_CELL, DEBUG_MODE, OS_SHEET_NAME) : If Len(apiKey) = 0 Then MsgBox "未配置 API Key", vbExclamation : Exit Sub
+    If Len(apiKey) = 0 Then apiKey = GetApiKey(DEBUG_MODE, OS_SHEET_NAME) : If Len(apiKey) = 0 Then MsgBox "未配置 API Key", vbExclamation : Exit Sub
     prevScreenUpdating = Application.ScreenUpdating : prevCalc = Application.Calculation : prevEnableEvents = Application.EnableEvents
     Application.ScreenUpdating = False : Application.Calculation = xlCalculationManual : Application.EnableEvents = False
     
@@ -93,7 +91,7 @@ Public Sub 运行保险业态分析(Optional ByVal apiKey As String = "")
      On Error Goto ErrorHandler
     Set wsIns = GetTargetWorksheet(INS_SHEET_NAME, True)
     If wsIns Is Nothing Then Exit Sub
-    If Len(apiKey) = 0 Then Set wsConfig = GetConfigWorksheet(CONFIG_SHEET_NAME) : apiKey = GetApiKey(wsConfig, API_KEY_CELL, DEBUG_MODE, INS_SHEET_NAME) : If Len(apiKey) = 0 Then MsgBox "未配置 API Key", vbExclamation : Exit Sub
+    If Len(apiKey) = 0 Then apiKey = GetApiKey(DEBUG_MODE, INS_SHEET_NAME) : If Len(apiKey) = 0 Then MsgBox "未配置 API Key", vbExclamation : Exit Sub
     prevScreenUpdating = Application.ScreenUpdating : prevCalc = Application.Calculation : prevEnableEvents = Application.EnableEvents
     Application.ScreenUpdating = False : Application.Calculation = xlCalculationManual : Application.EnableEvents = False
     
@@ -134,7 +132,7 @@ Public Sub 运行酒店业态分析(Optional ByVal apiKey As String = "")
      On Error Goto ErrorHandler
     Set wsHtl = GetTargetWorksheet(HTL_SHEET_NAME, True)
     If wsHtl Is Nothing Then Exit Sub
-    If Len(apiKey) = 0 Then Set wsConfig = GetConfigWorksheet(CONFIG_SHEET_NAME) : apiKey = GetApiKey(wsConfig, API_KEY_CELL, DEBUG_MODE, HTL_SHEET_NAME) : If Len(apiKey) = 0 Then MsgBox "未配置 API Key", vbExclamation : Exit Sub
+    If Len(apiKey) = 0 Then apiKey = GetApiKey(DEBUG_MODE, HTL_SHEET_NAME) : If Len(apiKey) = 0 Then MsgBox "未配置 API Key", vbExclamation : Exit Sub
     prevScreenUpdating = Application.ScreenUpdating : prevCalc = Application.Calculation : prevEnableEvents = Application.EnableEvents
     Application.ScreenUpdating = False : Application.Calculation = xlCalculationManual : Application.EnableEvents = False
     

@@ -17,8 +17,8 @@ Private Const RANGE_OTA As String = "E1:G13"         ' OTA评分
 Private Const RANGE_OCCUPANCY As String = "I1:K13"   ' 入住率
 Private Const RESULT_CELL As String = "M14"
 Private Const SYSTEM_PROMPT_CELL As String = "M1"
-Private Const API_KEY_SHEET As String = "填写页"
-Private Const API_KEY_CELL As String = "I1"
+Private Const API_KEY_FILE As String = "dskey"
+Private Const API_KEY_SECTION As String = "EXCEL"
 
 '（保留位置，当前业态分析不依赖月份配置）
 
@@ -37,20 +37,49 @@ Private Function GetSystemMessage() As String
     GetSystemMessage = Trim$(CStr(wsHotel.Range(SYSTEM_PROMPT_CELL).Value))
 End Function
 
-' 从配置表读取 API Key（填写页!I1）
+' 从 ~/.dskey 文件读取 API Key（EXCEL 段）
 Private Function GetApiKey() As String
-    Dim wsConfig As Worksheet
+    Dim filePath As String
+    Dim fileNum As Integer
+    Dim line As String
+    Dim keyPrefix As String
+    Dim pos As Long
     
+    ' 构建文件路径：~/.dskey
+    filePath = Environ("USERPROFILE") & "\." & API_KEY_FILE
+    
+    ' 检查文件是否存在
     On Error Resume Next
-    Set wsConfig = ThisWorkbook.Worksheets(API_KEY_SHEET)
-    On Error GoTo 0
-    If wsConfig Is Nothing Then
-        If DEBUG_MODE Then Debug.Print "配置错误: 未找到配置工作表 '" & API_KEY_SHEET & "'"
+    fileNum = FreeFile
+    Open filePath For Input As #fileNum
+    If Err.Number <> 0 Then
+        If DEBUG_MODE Then Debug.Print "配置错误: 未找到 API Key 文件 '" & filePath & "'"
         GetApiKey = ""
         Exit Function
     End If
+    On Error GoTo 0
     
-    GetApiKey = Trim$(CStr(wsConfig.Range(API_KEY_CELL).Value))
+    keyPrefix = API_KEY_SECTION & "="
+    
+    ' 逐行读取，查找对应段
+    Do Until EOF(fileNum)
+        Line Input #fileNum, line
+        line = Trim$(line)
+        ' 跳过空行和注释行
+        If Len(line) > 0 And Left$(line, 1) <> "#" Then
+            pos = InStr(1, line, keyPrefix, vbTextCompare)
+            If pos > 0 Then
+                GetApiKey = Trim$(Mid$(line, pos + Len(keyPrefix)))
+                Close #fileNum
+                Exit Function
+            End If
+        End If
+    Loop
+    
+    Close #fileNum
+    
+    If DEBUG_MODE Then Debug.Print "配置错误: 未在 '" & filePath & "' 中找到 [" & API_KEY_SECTION & "] 的 API Key"
+    GetApiKey = ""
 End Function
 
 ' ============================================================================
@@ -201,7 +230,7 @@ Private Function CallDeepSeekAPI(prompt As String, companyName As String) As Str
     ' 读取 API Key
     apiKey = GetApiKey()
     If Len(apiKey) = 0 Then
-        CallDeepSeekAPI = "错误：未配置 API Key，请在 '" & API_KEY_SHEET & "' 工作表的 " & API_KEY_CELL & " 单元格中填写。"
+        CallDeepSeekAPI = "错误：未配置 API Key，请在 ~\." & API_KEY_FILE & " 文件中设置 [" & API_KEY_SECTION & "] 段。"
         Exit Function
     End If
     

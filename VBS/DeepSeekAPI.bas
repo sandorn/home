@@ -18,7 +18,8 @@ Public Const TEMPERATURE As Double = 0.3
 
 ' ---- 通用配置 ----
 Public Const CONFIG_SHEET_NAME As String = "填写页"
-Public Const API_KEY_CELL As String = "I1"
+Public Const API_KEY_FILE As String = "dskey"
+Public Const API_KEY_SECTION As String = "EXCEL"
 Public Const MONTH_NUMBER_CELL As String = "A2"
 
 ' ---- 内部常量 ----
@@ -37,13 +38,49 @@ Public Function GetSystemMessage(ByVal ws As Worksheet, ByVal cellAddr As String
     GetSystemMessage = Trim$(CStr(ws.Range(cellAddr).Value))
 End Function
 
-Public Function GetApiKey(ByVal wsConfig As Worksheet, ByVal cellAddr As String, Optional ByVal debugMode As Boolean = False, Optional ByVal contextName As String = "") As String
-    If wsConfig Is Nothing Then
-        If debugMode Then Debug.Print FormatError(contextName, "配置错误", "未找到配置工作表")
+' 从 ~/.dskey 文件读取 API Key（EXCEL 段）
+Public Function GetApiKey(Optional ByVal debugMode As Boolean = False, Optional ByVal contextName As String = "") As String
+    Dim filePath As String
+    Dim fileNum As Integer
+    Dim line As String
+    Dim keyPrefix As String
+    Dim pos As Long
+    
+    ' 构建文件路径：~/.dskey
+    filePath = Environ("USERPROFILE") & "\." & API_KEY_FILE
+    
+    ' 检查文件是否存在
+    On Error Resume Next
+    fileNum = FreeFile
+    Open filePath For Input As #fileNum
+    If Err.Number <> 0 Then
+        If debugMode Then Debug.Print FormatError(contextName, "配置错误", "未找到 API Key 文件 '" & filePath & "'")
         GetApiKey = ""
         Exit Function
     End If
-    GetApiKey = Trim$(CStr(wsConfig.Range(cellAddr).Value))
+    On Error GoTo 0
+    
+    keyPrefix = API_KEY_SECTION & "="
+    
+    ' 逐行读取，查找对应段
+    Do Until EOF(fileNum)
+        Line Input #fileNum, line
+        line = Trim$(line)
+        ' 跳过空行和注释行
+        If Len(line) > 0 And Left$(line, 1) <> "#" Then
+            pos = InStr(1, line, keyPrefix, vbTextCompare)
+            If pos > 0 Then
+                GetApiKey = Trim$(Mid$(line, pos + Len(keyPrefix)))
+                Close #fileNum
+                Exit Function
+            End If
+        End If
+    Loop
+    
+    Close #fileNum
+    
+    If debugMode Then Debug.Print FormatError(contextName, "配置错误", "未在 '" & filePath & "' 中找到 [" & API_KEY_SECTION & "] 的 API Key")
+    GetApiKey = ""
 End Function
 
 ' ============================================================
