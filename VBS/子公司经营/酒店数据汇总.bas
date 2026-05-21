@@ -86,13 +86,13 @@ Public Sub 酒店数据汇总()
     Application.Calculation = xlCalculationManual
     Application.EnableEvents = False
 
-     On Error Goto ErrorHandler
+     On Error GoTo ErrorHandler
 
     ' 获取目标工作表
     Set wsTarget = GetTargetWorksheet()
     If wsTarget Is Nothing Then
         MsgBox "目标工作表 '" & TARGET_SHEET_NAME & "' 不存在！", vbCritical
-        Goto Cleanup
+        GoTo Cleanup
     End If
 
     ' 构建文件夹路径
@@ -102,11 +102,11 @@ Public Sub 酒店数据汇总()
     ' 检查文件夹是否存在
     If Dir(sourceFolderPath, vbDirectory) = "" Then
         MsgBox "活动量文件夹不存在: " & sourceFolderPath, vbCritical
-        Goto Cleanup
+        GoTo Cleanup
     End If
     If Dir(reportFolderPath, vbDirectory) = "" Then
         MsgBox "经营报表文件夹不存在: " & reportFolderPath, vbCritical
-        Goto Cleanup
+        GoTo Cleanup
     End If
 
     ' ==========================================
@@ -150,7 +150,7 @@ Public Sub 酒店数据汇总()
     MsgBox "处理过程中发生错误: " & Err.Description & vbCrLf & _
         "错误代码: " & Err.Number, vbCritical
     Err.Clear
-    Goto Cleanup
+    GoTo Cleanup
 End Sub
 
 ' ============================================================
@@ -160,68 +160,6 @@ Private Function GetTargetWorksheet() As Worksheet
     On Error Resume Next
     Set GetTargetWorksheet = ThisWorkbook.Worksheets(TARGET_SHEET_NAME)
     On Error GoTo 0
-End Function
-
-' ============================================================
-' 从填写页读取报告月份（填写页!A2）
-' ============================================================
-Private Function GetTargetMonth() As Long
-    Dim wsConfig As Worksheet
-    Dim v As Variant
-
-    On Error Resume Next
-    Set wsConfig = ThisWorkbook.Worksheets(CONFIG_SHEET_NAME)
-    On Error GoTo 0
-
-    If wsConfig Is Nothing Then
-        GetTargetMonth = GetMonthFromFolderName()
-        Exit Function
-    End If
-
-    v = wsConfig.Range(MONTH_NUMBER_CELL).Value
-    If IsNumeric(v) Then
-        GetTargetMonth = CLng(v)
-    ElseIf IsDate(v) Then
-        GetTargetMonth = Month(CDate(v))
-    Else
-        GetTargetMonth = GetMonthFromFolderName()
-    End If
-End Function
-
-' ============================================================
-' 从文件夹名解析报告月份（回退方案）
-' ============================================================
-Private Function GetMonthFromFolderName() As Long
-    Dim pathParts As Variant
-    Dim folderName As String
-    Dim yearPos As Long
-    Dim monthPos As Long
-    Dim monthStr As String
-    Dim i As Long
-
-    pathParts = Split(ThisWorkbook.path, "\")
-    folderName = pathParts(UBound(pathParts))
-
-    yearPos = InStr(1, folderName, "年", vbTextCompare)
-    If yearPos = 0 Then Goto Fallback
-
-    monthPos = InStr(yearPos + 1, folderName, "月", vbTextCompare)
-    If monthPos = 0 Then Goto Fallback
-
-    monthStr = ""
-    For i = yearPos + 1 To monthPos - 1
-        If IsNumeric(Mid$(folderName, i, 1)) Then
-            monthStr = monthStr & Mid$(folderName, i, 1)
-        End If
-    Next i
-
-    If Len(monthStr) > 0 And IsNumeric(monthStr) Then
-        GetMonthFromFolderName = CLng(monthStr)
-        Exit Function
-    End If
-
-    Fallback :
-    GetMonthFromFolderName = Month(Date)
 End Function
 
 ' ============================================================
@@ -406,7 +344,7 @@ Private Sub ProcessActivityBHRT(ByVal sourceFolderPath As String, _
     Application.StatusBar = "正在处理: 伯豪瑞廷 营销活动..."
 
     On Error Resume Next
-    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly : = True)
+    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly:=True)
     If Err.Number <> 0 Then
         MsgBox "无法打开伯豪瑞廷源文件: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
         On Error GoTo 0
@@ -417,14 +355,14 @@ Private Sub ProcessActivityBHRT(ByVal sourceFolderPath As String, _
     Set wsSource = GetActivityWorksheet(wbSource)
     If wsSource Is Nothing Then
         MsgBox "伯豪瑞廷源文件中未找到 '" & ACTIVITY_SHEET_NAME & "' 工作表！", vbExclamation
-        wbSource.Close SaveChanges : = False
+        wbSource.Close SaveChanges := False
         Exit Sub
     End If
 
     numMonths = GetTargetMonth()
     If numMonths < 1 Or numMonths > 12 Then
         MsgBox "无法确定报告月份: " & numMonths, vbCritical
-        wbSource.Close SaveChanges : = False
+        wbSource.Close SaveChanges := False
         Exit Sub
     End If
 
@@ -459,7 +397,7 @@ Private Sub ProcessActivityBHRT(ByVal sourceFolderPath As String, _
     wsTarget.Cells(3, TARGET_COL_BHRT).Value = audTotal
     wsTarget.Cells(4, TARGET_COL_BHRT).Value = dealTotal
 
-    wbSource.Close SaveChanges : = False
+    wbSource.Close SaveChanges := False
     Set wbSource = Nothing
     Set wsSource = Nothing
 End Sub
@@ -490,7 +428,7 @@ Private Sub ProcessActivityCQRER(ByVal sourceFolderPath As String, _
     Application.StatusBar = "正在处理: 重庆瑞尔 营销活动..."
 
     On Error Resume Next
-    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly : = True)
+    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly:=True)
     If Err.Number <> 0 Then
         MsgBox "无法打开重庆瑞尔源文件: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
         On Error GoTo 0
@@ -501,14 +439,14 @@ Private Sub ProcessActivityCQRER(ByVal sourceFolderPath As String, _
     Set wsSource = GetActivityWorksheet(wbSource)
     If wsSource Is Nothing Then
         MsgBox "重庆瑞尔源文件中未找到 '" & ACTIVITY_SHEET_NAME & "' 工作表！", vbExclamation
-        wbSource.Close SaveChanges : = False
+        wbSource.Close SaveChanges := False
         Exit Sub
     End If
 
     numMonths = GetTargetMonth()
     If numMonths < 1 Or numMonths > 12 Then
         MsgBox "无法确定报告月份: " & numMonths, vbCritical
-        wbSource.Close SaveChanges : = False
+        wbSource.Close SaveChanges := False
         Exit Sub
     End If
 
@@ -529,7 +467,7 @@ Private Sub ProcessActivityCQRER(ByVal sourceFolderPath As String, _
     wsTarget.Cells(3, TARGET_COL_CQRER).Value = audTotal
     wsTarget.Cells(4, TARGET_COL_CQRER).Value = dealTotal
 
-    wbSource.Close SaveChanges : = False
+    wbSource.Close SaveChanges := False
     Set wbSource = Nothing
     Set wsSource = Nothing
 End Sub
@@ -585,7 +523,7 @@ Private Sub ProcessReport(ByVal reportFolderPath As String, _
     Application.StatusBar = "正在处理: " & companyName & " 业务指标..."
 
     On Error Resume Next
-    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly : = True)
+    Set wbSource = Workbooks.Open(sourceFilePath, ReadOnly:=True)
     If Err.Number <> 0 Then
         MsgBox "无法打开" & companyName & "经营报表: " & sourceFilePath & vbCrLf & Err.Description, vbCritical
         On Error GoTo 0
@@ -596,14 +534,14 @@ Private Sub ProcessReport(ByVal reportFolderPath As String, _
     Set wsSource = GetReportWorksheet(wbSource)
     If wsSource Is Nothing Then
         MsgBox companyName & "经营报表中未找到 '" & REPORT_SHEET_NAME & "' 工作表！", vbExclamation
-        wbSource.Close SaveChanges : = False
+        wbSource.Close SaveChanges := False
         Exit Sub
     End If
 
     numMonths = GetTargetMonth()
     If numMonths < 1 Or numMonths > 12 Then
         MsgBox "无法确定报告月份: " & numMonths, vbCritical
-        wbSource.Close SaveChanges : = False
+        wbSource.Close SaveChanges := False
         Exit Sub
     End If
 
@@ -629,7 +567,7 @@ Private Sub ProcessReport(ByVal reportFolderPath As String, _
         End If
     Next m
 
-    wbSource.Close SaveChanges : = False
+    wbSource.Close SaveChanges := False
     Set wbSource = Nothing
     Set wsSource = Nothing
 End Sub
@@ -657,11 +595,4 @@ Private Sub FormatTargetSheet(ByVal wsTarget As Worksheet)
         .NumberFormat = "0%"
     End With
 End Sub
-
-' ============================================================
-' 列号转字母
-' ============================================================
-Private Function ColLetter(ByVal colNum As Long) As String
-    ColLetter = Split(Cells(1, colNum).Address(True, False), "$")(0)
-End Function
 

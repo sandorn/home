@@ -1,0 +1,28 @@
+{
+    "permissions": {
+        "allow": [
+            "Bash(taskkill *)",
+            "Bash(npm run *)",
+            "Bash(cmd *)",
+            "Bash(cargo check *)",
+            "Bash(cat *)",
+            "Bash(head *)",
+            "Bash(tail *)",
+            "Bash(wc -l *)",
+            "Bash(ls *)",
+            "Bash(find *)",
+            "Bash(tree *)",
+            "Bash(grep *)",
+            "Bash(rg *)",
+            "Bash(sed -n *)",
+            "Bash(git status *)",
+            "Bash(git diff *)",
+            "Bash(git log *)",
+            "Bash(dotnet build *)",
+            "Bash(dotnet run *)",
+            "Bash(node *)",
+            "Bash(npm list *)",
+            "Bash(npm test *)"
+        ]
+    }
+}

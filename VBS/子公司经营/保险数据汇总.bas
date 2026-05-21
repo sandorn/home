@@ -98,97 +98,6 @@ Private Function GetTargetWorksheet() As Worksheet
     On Error GoTo 0
 End Function
 
-' ============================================================
-' 从填写页读取报告月份（填写页!A2）
-' ============================================================
-Private Function GetTargetMonth() As Long
-    Dim wsConfig As Worksheet
-    Dim v As Variant
-
-    On Error Resume Next
-    Set wsConfig = ThisWorkbook.Worksheets(CONFIG_SHEET_NAME)
-    On Error GoTo 0
-
-    If wsConfig Is Nothing Then
-        GetTargetMonth = GetMonthFromFolderName()
-        Exit Function
-    End If
-
-    v = wsConfig.Range(MONTH_NUMBER_CELL).Value
-    If IsNumeric(v) Then
-        GetTargetMonth = CLng(v)
-    ElseIf IsDate(v) Then
-        GetTargetMonth = Month(CDate(v))
-    Else
-        GetTargetMonth = GetMonthFromFolderName()
-    End If
-End Function
-
-' ============================================================
-' 从文件夹名解析报告月份（回退方案）
-' ============================================================
-Private Function GetMonthFromFolderName() As Long
-    Dim pathParts As Variant
-    Dim folderName As String
-    Dim yearPos As Long
-    Dim monthPos As Long
-    Dim monthStr As String
-    Dim i As Long
-
-    pathParts = Split(ThisWorkbook.path, "\")
-    folderName = pathParts(UBound(pathParts))
-
-    yearPos = InStr(1, folderName, "年", vbTextCompare)
-    If yearPos = 0 Then GoTo Fallback
-
-    monthPos = InStr(yearPos + 1, folderName, "月", vbTextCompare)
-    If monthPos = 0 Then GoTo Fallback
-
-    monthStr = ""
-    For i = yearPos + 1 To monthPos - 1
-        If IsNumeric(Mid$(folderName, i, 1)) Then
-            monthStr = monthStr & Mid$(folderName, i, 1)
-        End If
-    Next i
-
-    If Len(monthStr) > 0 And IsNumeric(monthStr) Then
-        GetMonthFromFolderName = CLng(monthStr)
-        Exit Function
-    End If
-
-Fallback:
-    GetMonthFromFolderName = Month(Date)
-End Function
-
-' 计算指定源行从1月到报告月的达成列之和
-Private Function SumAchievementCols(ByVal wsSource As Worksheet, _
-                                     ByVal sourceRow As Long, _
-                                     ByVal numMonths As Long) As Double
-    Dim total As Double
-    Dim m As Long
-    Dim col As Long
-
-    total = 0
-    For m = 1 To numMonths
-        col = 2 * m + 2  ' D=4,F=6,H=8,J=10,...
-        If IsNumeric(wsSource.Cells(sourceRow, col).Value) Then
-            total = total + CDbl(wsSource.Cells(sourceRow, col).Value)
-        End If
-    Next m
-    SumAchievementCols = total
-End Function
-
-' 读取单个单元格值，空则返回0
-Private Function SafeRead(ByVal ws As Worksheet, ByVal r As Long, ByVal c As Long) As Double
-    Dim v As Variant
-    v = ws.Cells(r, c).Value
-    If IsNumeric(v) Then
-        SafeRead = CDbl(v)
-    Else
-        SafeRead = 0
-    End If
-End Function
-
 ' 处理单个公司的数据
 Private Sub ProcessCompany(ByVal sourceFolderPath As String, _
                            ByVal sourceFileName As String, _
@@ -376,7 +285,3 @@ Private Sub WriteFormulas(ByVal wsTarget As Worksheet)
     wsTarget.Range("C12:D18").NumberFormat = "#,##0.00"
 End Sub
 
-' 列号转字母
-Private Function ColLetter(ByVal colNum As Long) As String
-    ColLetter = Split(Cells(1, colNum).Address(True, False), "$")(0)
-End Function

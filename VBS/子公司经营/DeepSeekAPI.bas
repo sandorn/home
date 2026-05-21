@@ -159,6 +159,8 @@ Public Function CallDeepSeekAPI(ByVal prompt As String, ByVal apiKey As String, 
         Exit Function
     End If
 
+    If maxRetries < 1 Then maxRetries = 1
+
     For retryCount = 1 To maxRetries
         Set http = CreateHTTPObject()
         If http Is Nothing Then

@@ -99,123 +99,6 @@ Private Function GetTargetWorksheet() As Worksheet
     On Error GoTo 0
 End Function
 
-' ============================================================
-' 从填写页读取报告月份（填写页!A2）
-' ============================================================
-Private Function GetTargetMonth() As Long
-    Dim wsConfig As Worksheet
-    Dim v As Variant
-
-    On Error Resume Next
-    Set wsConfig = ThisWorkbook.Worksheets(CONFIG_SHEET_NAME)
-    On Error GoTo 0
-
-    If wsConfig Is Nothing Then
-        GetTargetMonth = GetMonthFromFolderName()
-        Exit Function
-    End If
-
-    v = wsConfig.Range(MONTH_NUMBER_CELL).Value
-    If IsNumeric(v) Then
-        GetTargetMonth = CLng(v)
-    ElseIf IsDate(v) Then
-        GetTargetMonth = Month(CDate(v))
-    Else
-        GetTargetMonth = GetMonthFromFolderName()
-    End If
-End Function
-
-' ============================================================
-' 从文件夹名解析报告月份（回退方案）
-' ============================================================
-Private Function GetMonthFromFolderName() As Long
-    Dim pathParts As Variant
-    Dim folderName As String
-    Dim yearPos As Long
-    Dim monthPos As Long
-    Dim monthStr As String
-    Dim i As Long
-
-    pathParts = Split(ThisWorkbook.path, "\")
-    folderName = pathParts(UBound(pathParts))
-
-    yearPos = InStr(1, folderName, "年", vbTextCompare)
-    If yearPos = 0 Then GoTo Fallback
-
-    monthPos = InStr(yearPos + 1, folderName, "月", vbTextCompare)
-    If monthPos = 0 Then GoTo Fallback
-
-    monthStr = ""
-    For i = yearPos + 1 To monthPos - 1
-        If IsNumeric(Mid$(folderName, i, 1)) Then
-            monthStr = monthStr & Mid$(folderName, i, 1)
-        End If
-    Next i
-
-    If Len(monthStr) > 0 And IsNumeric(monthStr) Then
-        GetMonthFromFolderName = CLng(monthStr)
-        Exit Function
-    End If
-
-Fallback:
-    GetMonthFromFolderName = Month(Date)
-End Function
-
-' ============================================================
-' 将单元格值转为数值：数字直接转，文本提取其中的数字（如 "1组"→1）
-' ============================================================
-Private Function ParseNumeric(ByVal v As Variant) As Double
-    Dim s As String
-    Dim i As Long
-    Dim numStr As String
-
-    If IsEmpty(v) Then
-        ParseNumeric = 0
-        Exit Function
-    End If
-
-    If IsNumeric(v) Then
-        ParseNumeric = CDbl(v)
-        Exit Function
-    End If
-
-    ' 文本：提取所有数字和小数点
-    s = CStr(v)
-    numStr = ""
-    For i = 1 To Len(s)
-        If IsNumeric(Mid$(s, i, 1)) Or Mid$(s, i, 1) = "." Then
-            numStr = numStr & Mid$(s, i, 1)
-        End If
-    Next i
-
-    If Len(numStr) > 0 And IsNumeric(numStr) Then
-        ParseNumeric = CDbl(numStr)
-    Else
-        ParseNumeric = 0
-    End If
-End Function
-
-' 读取单元格并转为数值
-Private Function SafeRead(ByVal ws As Worksheet, ByVal r As Long, ByVal c As Long) As Double
-    SafeRead = ParseNumeric(ws.Cells(r, c).Value)
-End Function
-
-' 计算指定源行从1月到报告月的达成列之和
-Private Function SumAchievementCols(ByVal wsSource As Worksheet, _
-                                     ByVal sourceRow As Long, _
-                                     ByVal numMonths As Long) As Double
-    Dim total As Double
-    Dim m As Long
-    Dim col As Long
-
-    total = 0
-    For m = 1 To numMonths
-        col = 2 * m + 2  ' D=4,F=6,H=8,J=10,...
-        total = total + SafeRead(wsSource, sourceRow, col)
-    Next m
-    SumAchievementCols = total
-End Function
-
 ' 处理单个公司的数据
 Private Sub ProcessCompany(ByVal sourceFolderPath As String, _
                            ByRef config As CompanyConfig, _
@@ -339,12 +222,6 @@ Private Sub WriteFormulas(ByVal wsTarget As Worksheet)
     wsTarget.Range("C16:G16").NumberFormat = "0%"
 End Sub
 
-' 列号转字母
-Private Function ColLetter(ByVal colNum As Long) As String
-    ColLetter = Split(Cells(1, colNum).Address(True, False), "$")(0)
-End Function
-
-' 获取源工作表
 Private Function GetSourceWorksheet(ByVal wb As Workbook) As Worksheet
     On Error Resume Next
     Set GetSourceWorksheet = wb.Worksheets(SOURCE_SHEET_NAME)
