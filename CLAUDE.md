@@ -32,7 +32,6 @@
 
 | Skill        | 触发词                                              | 用途                           |
 | ------------ | --------------------------------------------------- | ------------------------------ |
-| `neat-freak` | `/neat`, `/sync`, `同步一下`, `整理文档`, `收尾` 等 | 会话结束后文档与记忆洁癖级同步 |
 | `commit`     | `/commit`                                           | 规范化 git commit 消息         |
 | `forch`      | `/forch`                                            | 代码审查与重构                 |
 | `help`       | `/help`                                             | 技能帮助                       |
@@ -59,4 +58,4 @@ ruff check --fix --unsafe-fixes .; ruff format --check .; basedpyright .
 - `configs/help/` — 开发流程、符号链接、打包上传等帮助文档
 - `configs/rules/` — 项目标准、模板、设置脚本
 - `xjlib/xt_pyqt/README.md` — PyQt 工具库说明
-- `.claude/skills/neat-freak/references/` — neat-freak 参考资料（变更影响矩阵、Agent 路径速查）
+
