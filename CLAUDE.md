@@ -30,14 +30,12 @@
 
 ## Agent Skills（`.claude/skills/`）
 
-| Skill        | 触发词                                              | 用途                           |
-| ------------ | --------------------------------------------------- | ------------------------------ |
-| `commit`     | `/commit`                                           | 规范化 git commit 消息         |
-| `forch`      | `/forch`                                            | 代码审查与重构                 |
-| `help`       | `/help`                                             | 技能帮助                       |
-| `lint`       | `/lint`                                             | 代码检查                       |
-| `test`       | `/test`                                             | 测试                           |
-| `typecheck`  | `/typecheck`                                        | 类型检查                       |
+| Skill       | 触发词       | 用途       |
+| ----------- | ------------ | ---------- |
+| `help`      | `/help`      | 技能帮助   |
+| `typecheck` | `/typecheck` | 类型检查   |
+
+全局 skills（`~/.claude/skills/`）由 agent 自动识别，不在本表列出。
 
 ## 开发命令
 
@@ -56,6 +54,6 @@ ruff check --fix --unsafe-fixes .; ruff format --check .; basedpyright .
 ## 深入文档
 
 - `configs/help/` — 开发流程、符号链接、打包上传等帮助文档
-- `configs/rules/` — 项目标准、模板、设置脚本
+- `configs/rules/` — 项目标准、模板
 - `xjlib/xt_pyqt/README.md` — PyQt 工具库说明
 

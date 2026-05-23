@@ -13,12 +13,13 @@ globs:
 
 ## 可用技能列表
 
+### 项目级技能（`.claude/skills/`）
+
 | 技能 | 触发词 | 用途 |
 |------|--------|------|
-| neat-freak | `/neat`, `/sync`, `同步一下`, `整理文档`, `收尾` | 文档同步与整理 |
-| commit | `/commit` | 规范化 git commit |
-| forch | `/forch` | 代码审查与重构 |
 | help | `/help` | 技能帮助 |
-| lint | `/lint` | 代码检查 |
-| test | `/test` | 测试 |
 | typecheck | `/typecheck` | 类型检查 |
+
+### 全局技能（`~/.claude/skills/`）
+
+提交 `git commit`、代码审查 `/forch`、整理文档 `/neat` 等通用操作由全局 skills 处理，不在本表逐一罗列。
