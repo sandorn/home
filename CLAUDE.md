@@ -17,7 +17,7 @@
 | `configs/` | 开发环境配置文件（git、ruff、uv、pyproject 等）          |
 | `VBS/`     | VBScript 脚本（Excel/Word 自动化、VBA 脚本库）           |
 | `xjlib/`   | 自定义 Python 工具库（数据库、HTTP、线程、日志、ORM 等） |
-| `.claude/` | Claude/Cursor 共享配置（skills、rules 等）               |
+| `.claude/` | Claude/Cursor 共享配置（skills 等）                      |
 
 ## 关键约定
 
@@ -28,12 +28,23 @@
 - VBScript 脚本在 `VBS/` 目录下，VBA 脚本在 `VBS/VBA脚本/`
 - 项目根 `pyproject.toml` 为 uv 项目配置（含依赖声明）
 
+## Python 编码规范
+
+- 行长度限制 200 字符，必须通过 `ruff check --fix` 和 `basedpyright` 类型检查
+- 语义化命名：`user_count` 而非 `uc`；布尔变量用 `is_`/`has_`/`can_` 前缀；常量全大写 `MAX_RETRIES`
+- 所有函数参数和返回值必须标注类型，使用现代语法 `list[int]` 而非 `List[int]`，禁止 `Optional`/`Union`
+- 使用 `from __future__ import annotations` 延迟求值
+- 函数/类单一职责，嵌套不超过 4 层，优先使用卫语句提前返回
+- 绝对路径导入，禁止相对导入
+- 日志统一使用 `from xtlog import mylog`
+- 捕获特定异常，禁止裸 `except:`；数据库操作必须有事务处理和异常回滚
+
 ## Agent Skills（`.claude/skills/`）
 
-| Skill       | 触发词       | 用途       |
-| ----------- | ------------ | ---------- |
-| `help`      | `/help`      | 技能帮助   |
-| `typecheck` | `/typecheck` | 类型检查   |
+| Skill       | 触发词       | 用途     |
+| ----------- | ------------ | -------- |
+| `help`      | `/help`      | 技能帮助 |
+| `typecheck` | `/typecheck` | 类型检查 |
 
 全局 skills（`~/.claude/skills/`）由 agent 自动识别，不在本表列出。
 
@@ -56,4 +67,3 @@ ruff check --fix --unsafe-fixes .; ruff format --check .; basedpyright .
 - `configs/help/` — 开发流程、符号链接、打包上传等帮助文档
 - `configs/rules/` — 项目标准、模板
 - `xjlib/xt_pyqt/README.md` — PyQt 工具库说明
-

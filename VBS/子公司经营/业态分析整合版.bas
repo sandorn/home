@@ -7,21 +7,21 @@ Option Explicit
 
 ' ---- 商写业态配置 ----
 Private Const OS_SHEET_NAME As String = "商写类"
-Private Const OS_DATA_RANGE As String = "A1:G18"
+Private Const OS_DATA_RANGE As String = "A1:G18" ' 包含商写子公司的运营数据
 Private Const OS_RESULT_CELL As String = "L14"
 Private Const OS_SYSTEM_PROMPT_CELL As String = "L1"
 
 ' ---- 保险业态配置 ----
 Private Const INS_SHEET_NAME As String = "保险类"
-Private Const INS_DATA_RANGE As String = "F2:H25"
+Private Const INS_DATA_RANGE As String = "F1:H25" ' 包含规模保费和人力两部分数据
 Private Const INS_RESULT_CELL As String = "L14"
 Private Const INS_SYSTEM_PROMPT_CELL As String = "L1"
 
 ' ---- 酒店业态配置 ----
 Private Const HTL_SHEET_NAME As String = "酒店类"
-Private Const HTL_RANGE_MARKETING As String = "B1:D5"
-Private Const HTL_RANGE_OTA As String = "E1:G13"
-Private Const HTL_RANGE_OCC As String = "I1:K13"
+Private Const HTL_RANGE_MARKETING As String = "B1:D5" ' 营销活动数据区域
+Private Const HTL_RANGE_OTA As String = "E1:G13" ' OTA网络评价数据区域
+Private Const HTL_RANGE_OCC As String = "I1:K13" ' 月均入住率数据区域
 Private Const HTL_RESULT_CELL As String = "M14"
 Private Const HTL_SYSTEM_PROMPT_CELL As String = "M1"
 
