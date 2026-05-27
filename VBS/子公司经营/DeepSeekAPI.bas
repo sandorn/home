@@ -11,7 +11,7 @@ Public Const DEBUG_MODE As Boolean = False
 
 ' ---- API 配置常量 ----
 Public Const API_BASE_URL As String = "https://api.deepseek.com"
-Public Const API_MODEL As String = "deepseek-v4-pro"
+Public Const API_MODEL As String = "deepseek-chat"
 Public Const API_TIMEOUT_MS As Long = 30000
 Public Const MAX_TOKENS As Long = 1000
 Public Const TEMPERATURE As Double = 0.3
